@@ -1,0 +1,49 @@
+package de.erethon.factions.player;
+
+import de.erethon.aergia.ui.UIComponent;
+import de.erethon.factions.Factions;
+import de.erethon.factions.region.Region;
+import de.erethon.factions.region.RegionCache;
+import de.erethon.factions.ui.UIFactionsListener;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
+
+/**
+ * @author Fyreum
+ */
+public class FPlayerListener implements Listener {
+
+    final Factions plugin = Factions.get();
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerMove(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+        FPlayer fPlayer = plugin.getFPlayerCache().getByPlayerIfCached(player);
+        if (fPlayer == null) {
+            return;
+        }
+        fPlayer.getAutomatedChunkManager().handle(event.getTo().getChunk());
+        updateLastRegion(fPlayer, event.getTo());
+    }
+
+    private void updateLastRegion(FPlayer fPlayer, Location to) {
+        RegionCache regionCache = plugin.getRegionManager().getCache(to.getWorld());
+        if (regionCache == null) {
+            fPlayer.setLastRegion(null);
+            return;
+        }
+        Region region = regionCache.getByLocation(to);
+        if (region != fPlayer.getLastRegion()) {
+            UIComponent component = fPlayer.getUIActionBar().getCenter().getById(UIFactionsListener.REGION_DISPLAY_ID);
+            if (component != null) {
+                component.resetDuration();
+            }
+        }
+        fPlayer.setLastRegion(region);
+    }
+
+}

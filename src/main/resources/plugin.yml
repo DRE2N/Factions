@@ -1,0 +1,13 @@
+name: Factions
+version: 1.0-SNAPSHOT
+main: de.erethon.factions.Factions
+api-version: 1.19
+depend: [ Aergia ]
+softdepend: [ LWC ]
+authors: [ Fyreum, Malfrador ]
+description: A Factions plugin
+commands:
+  factions:
+    aliases:
+      - f
+    description: Main faction command

@@ -1,0 +1,53 @@
+package de.erethon.factions.command;
+
+import de.erethon.bedrock.chat.MessageUtil;
+import de.erethon.bedrock.misc.JavaUtil;
+import de.erethon.factions.command.logic.FCommand;
+import de.erethon.factions.data.FMessage;
+import de.erethon.factions.faction.Faction;
+import de.erethon.factions.player.FPlayer;
+import org.bukkit.command.CommandSender;
+
+import java.util.List;
+
+/**
+ * @author Fyreum
+ */
+public class ShowCommand extends FCommand {
+
+    public ShowCommand() {
+        setCommand("show");
+        setAliases("who", "info");
+        setMinMaxArgs(0, 1);
+        setConsoleCommand(true);
+        setPermissionFromName();
+        setFUsage(getCommand() + " ([faction|player])");
+        setDescription("Zeigt Informationen der Fraktion an");
+    }
+
+    @Override
+    public void onExecute(CommandSender sender, String[] args) {
+        Faction faction = args.length == 2 ? getFaction(args[1]) : getFaction(getFPlayer(sender));
+        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_SEPARATOR.getMessage());
+        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_HEADER.getMessage(faction.getName()));
+        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_SEPARATOR.getMessage());
+        sender.sendMessage(FMessage.CMD_SHOW_NAME.message(faction.getDisplayShortName()));
+        sender.sendMessage(FMessage.CMD_SHOW_DESCRIPTION.message(faction.getDisplayDescription()));
+        sender.sendMessage(FMessage.CMD_SHOW_MONEY.message(faction.getFAccount().getFormatted()));
+        sender.sendMessage(FMessage.CMD_SHOW_CORE_REGION.message(faction.getCoreRegion().getName()));
+        sender.sendMessage(FMessage.CMD_SHOW_ADMIN.message(faction.getAdmin().getDisplayName()));
+        sender.sendMessage(FMessage.CMD_SHOW_MEMBERS.message(String.valueOf(faction.getMembers().size()), getMembersString(faction)));
+    }
+
+    private String getMembersString(Faction faction) {
+        return JavaUtil.toString(faction.getMembers().stream().map(FPlayer::getDisplayName).toList());
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
+        if (args.length == 2) {
+            return getTabFactions(args[1]);
+        }
+        return null;
+    }
+}

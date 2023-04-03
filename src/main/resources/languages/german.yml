@@ -1,0 +1,176 @@
+acm:
+  addedChunk: "Chunk <gold>&v1</gold> wurde hinzugefügt."
+  addInsideRegion: "Chunk gehört bereits einer Region an."
+  prefix: "<dark_gray>[<dark_red>ACM</dark_red>]</dark_gray><gray> "
+  notSelected: "Du hast zurzeit keine Region ausgewählt."
+  removedChunk: "Chunk <gold>&v1</gold> wurde entfernt."
+  selected: "Die Region <green>&v1</green> wurde ausgewählt."
+  unselected: "Die Auswahl der Region <green>&v1</green> wurde aufgehoben."
+cmd:
+  alliance:
+    choose:
+      onCooldown: "<red>Du kannst erst in <gold>&v1</gold> wieder die Alliance wechseln."
+      success: "<green>Du hast die Allianz <dark_green>&v1</dark_green> ausgewählt."
+  disband:
+    confirmationRequired: "<red>Wenn du die Fraktion auflöst, gehen alle Regionalansprüche und jeglicher Fortschritt verloren. <gold>&v1</gold>"
+  invite:
+    success: "<green>Du hats den Spieler <dark_green>&v1</dark_green> in die Fraktion <dark_green>&v2</dark_green> eingeladen."
+  join:
+    notInvited: "<red>Du musst eingeladen werden, um dieser Fraktion beizutreten."
+    onCooldown: "<red>Du kannst erst in <gold>&v1</gold> wieder einer Fraktion beitreten."
+    success: "<green>Du bist der Fraktion <dark_green>&v1</dark_green> beigetreten."
+  kick:
+    success: "<green>Du hast den Spieler <dark_green>&v1</dark_green> aus der Fraktion <dark_green>&v2</dark_green> geworfen."
+  leave:
+    confirmationRequired: "<red>Wenn du als Fraktionsadmin die Fraktion verlässt, übernimmt ein anderes Mitglied die Leitung. Sind keine Mitglieder mehr übrig, wird die Fraktion gelöscht. <gold>&v1</gold>"
+    success: "<green>Du hast die Fraktion <dark_green>&v1</dark_green> verlassen."
+  region:
+    addChunk:
+      success: "<green>Der Chunk wurde der Region <dark_green>&v1</dark_green> erfolgreich hinzugefügt."
+    addNeighbour:
+      success: "<green>Die Regionen <gold>&v1</gold> und <gold>&v2</gold> sind jetzt benachbart."
+    create:
+      success: "<green>Die Region <dark_green>&v1<green> wurde erfolgreich erstellt."
+    delete:
+      confirmationRequired: "<gray>Die Region gehört einer Fraktion an. Möchtest du sie dennoch mit allen dazu gehörigen Dateien löschen? <green>&v1</green>"
+      failed: "<red>Region konnte nicht gelöscht werden."
+      success: "<green>Region wurde erfolgreich gelöscht."
+    description:
+      success: "<green>Die Beschreibung von <dark_green>&v1</dark_green> wurde zu <dark_green>\"&v2\"</dark_green> geändert."
+    info:
+      adjacentRegions: "<green>Benachbarte Regionen<dark_gray>:<gray> &v1"
+      chunks: "<green>Chunks<dark_gray>:<gray> &v1"
+      description: "<green>Beschreibung<dark_gray>:<gray> &v1"
+      header: "<dark_green><b>[</b><green> &v1 </green><b>]</b>"
+      id: "<green>ID<dark_gray>:<gray> &v1"
+      owner: "<green>Besitzer<dark_gray>:<gray> &v1"
+      price: "<green>Preis<dark_gray>:<gray> &v1"
+      type: "<green>Typ<dark_green>:<gray> &v1"
+    removeChunk:
+      success: "<green>Chunk wurde aus der Region <gold>&v1</gold> entfernt."
+    removeNeighbour:
+      success: "<green>Die Regionen <gold>&v1</gold> und <gold>&v2</gold> sind nun nicht mehr benachbart."
+    type:
+      success: "<green>Der Gebietstyp von <dark_green>&v1</dark_green> wurde zu <dark_green>&v2</dark_green> gesetzt."
+  reload:
+    allEnd: "<dark_green>Das Plugin wurde in <gold>&v1ms</gold> neu geladen."
+    allStart: "<dark_green>Lade das Plugin neu..."
+    caches: "<dark_green>Die Zwischenspeicher wurden neu geladen."
+    configs: "<dark_green>Die Konfigurationen wurden neu geladen."
+    messages: "<dark_green>Die Nachrichten wurden neu geladen."
+  show:
+    admin: "<gold>Admin<dark_gray>:<gray> &v1"
+    coreRegion: "<gold>Kerngebiet<dark_gray>:<gray> &v1"
+    description: "<gold>Beschreibung<dark_gray>:<gray> &v1"
+    header: "<gold>===<b><dark_green> &v1 </dark_green></b>==="
+    name: "<gold>Name<dark_gray>:<gray> &v1"
+    members: "<gold>Mitglieder (&v1)<dark_gray>:<gray> &v2"
+    money: "<gold>Konto<dark_gray>:<gray> &v1"
+    separator: "<gold>____________________________________"
+  version:
+    authors: "<dark_green>Autoren<dark_gray>:<gray> &v1"
+    header: "<dark_green><b>&v1</b> <dark_gray>-</dark_gray> &v2"
+    status: "<gray><dark_green>&v1</dark_green> Spieler <dark_gray>/</dark_gray> <dark_green>&v2</dark_green> Regionen <dark_gray>/</dark_gray> <dark_green>&v3</dark_green> Fraktionen <dark_gray>/</dark_gray> <dark_green>&v4</dark_green> Allianzen"
+error:
+  cannotKickYourself: "<red>Du kannst dich nicht selbst kicken."
+  cannotUnclaimCoreRegion: "<red>Kerngebiete einer Fraktion können nicht entclaimt werden."
+  chunkAlreadyARegion: "<red>Der Chunk ist bereits Teil einer Region."
+  factionHasNotEnoughMoney: "<red>Die Fraktion benötigt <gold>&v1</gold>, um dies tun zu dürfen."
+  factionNotFound: "<red>Die Fraktion <gold>&v1</gold> konnte nicht gefunden werden."
+  nameInUse: "<red>Der Name <gold>&v1</gold> wird bereits verwendet."
+  nameIsForbidden: "<red>Dieser Fraktions-Name ist nicht erlaubt."
+  noPermission: "<red>Du hast keine Berechtigung, um dies tun zu dürfen."
+  notEnoughMoney: "<red>Du benötigst <gold>&v1</gold>, um dies tun zu dürfen."
+  playerAlreadyInAFaction: "<red>Du befindest dich bereits in einer Fraktion."
+  playerIsNotInAFaction: "<red>Du befindest dich zurzeit in keiner Fraktion."
+  playerNotFound: "<red>Der Spieler <gold>&v1</gold> konnte nicht gefunden werden."
+  playerRegionNull: "<red>Du musst dich in einer Region befinden, um dies tun zu dürfen."
+  regionInAnotherWorld: "<red>Die Region befindet sich in einer anderen Welt als du."
+  regionIsNotClaimable: "<red>Die Region kann nicht beansprucht werden."
+  regionNotFound: "<red>Die Region <gold>&v1</gold> konnte nicht gefunden werden."
+  regionsAlreadyNeighbours: "<red>Die Regionen <gold>&v1</gold> und <gold>&v2</gold> sind bereits benachbart."
+  regionsAreNotNeighbours: "<red>Die Regionen <gold>&v1</gold> und <gold>&v2</gold> sind nicht benachbart."
+  regionTypeNotFound: "<red>Der Gebietstyp <gold>&v1</gold> konnte nicht gefunden werden."
+  senderIsNoPlayer: "<red>Du musst ein Spieler sein, um dies tun zu dürfen."
+  targetIsAlreadyAdmin: "<red>Der Spieler <gold>&v1</gold> ist bereits Admin der Fraktion <gold>&v2</gold>."
+  targetIsAlreadyInThisFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich bereits in der Fraktion <gold>&v2</gold>."
+  targetIsNotInAFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich in keiner Fraktion."
+  targetIsNotInThisFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich nicht in der Fraktion <gold>&v2</gold>."
+faction:
+  info:
+    adminChanged: "<gray>Der Spieler <green>&v1</green> hat <green>&v2</green> zum neuen Anführer der Fraktion <green>&v3</green> gemacht."
+    created: "<gray>Der Spieler <green>&v1</green> hat die Fraktion <green>&v2</green> erstellt."
+    descriptionChanged: "<gray>Die Fraktion <green>&v1</green> hat ihre Beschreibung zu <green>&v2</green> geändert."
+    disbanded: "<gray>Die Fraktion <green>&v1</green> wurde aufgelöst."
+    inactivePlayerKicked: "<green>&v1</green> wurde wegen Inaktivität gekickt."
+    nameChanged: "<gray>Die Fraktion <green>&v1</green> hat ihren Namen zu <green>&v2</green> geändert."
+    playerGotKicked: "<green>&v1</green> wurde aus der Fraktion geworfen."
+    playerJoined: "<green>&v1</green> ist der Fraktion beigetreten."
+    playerLeft: "<red>&v1</red> hat die Fraktion verlassen."
+    prefix: "<dark_gray>[<dark_green>&v1</dark_green>]<gray> "
+    regionClaimed: "<gray>Die Region <green>&v1</green> wurde für <green>&v2</green> beansprucht."
+    shortNameChanged: "<gray>Die Fraktion <green>&v1</green> hat ihren Kürzel zu <green>&v2</green> geändert."
+  invite:
+    accept: "<dark_red>[Akzeptieren]</dark_red>"
+    acceptHover: "<gray>Fraktion beitreten."
+    decline: "<dark_green>[Ablehnen]</dark_green>"
+    declineHover: "<gray>Einladung ablehnen."
+    message: "<green>Die Fraktion <dark_green>&v1</dark_green> hat dich eingeladen."
+general:
+  defaultDescription: "Default Beschreibung :("
+  faction: "Fraktion"
+  loner: "Eremit"
+  none: "keine"
+  regionDefaultNamePrefix: "PROV_"
+  spectator: "Zuschauer"
+  wilderness: "Wildnis"
+protection:
+  cannotAttack:
+    capital: "<red>Du darfst nicht in dem Kapital von <gold>&v1</gold> angreifen."
+    faction: "<red>Du darfst nicht in dem Gebiet von <gold>&v1</gold> angreifen."
+    inCurrentPhase: "<red>Du darfst während der aktuellen Kriegsphase nicht angreifen."
+    player: "<red>Du darfst nicht Mitglieder von <gold>&v1</gold> angreifen."
+  cannotBuildFaction: "<red>Du darfst nicht in dem Gebiet von <gold>&v1</gold> bauen."
+  cannotBuildWilderness: "<red>Du darfst nicht in der Wildnis bauen."
+  cannotDestroyFaction: "<red>Du darfst nicht das Gebiet <gold>&v1</gold> zerstören."
+  cannotDestroyWilderness: "<red>Du darfst die Wildnis nicht zerstören."
+  cannotEquipFaction: "<red>Du darfst keine Rüstungsständer in dem Gebiet von <gold>&v1</gold> ausrüsten."
+  cannotInteractFaction: "<red>Du darfst nicht mit <gold>&v1</gold> in dem Gebiet von <gold>&v2</gold> interagieren."
+  cannotLeashFaction: "<red>Du darfst keine Tiere in dem Gebiet von <gold>&v1</gold> anleinen."
+  cannotShearFaction: "<red>Du darfst keine Tiere in dem Gebiet von <gold>&v1</gold> scheren."
+  cannotSplashPotionFaction: "<red>Du darfst keine Tränke in dem Gebiet von <gold>&v1</gold> werfen."
+  cannotTameFaction: "<red>Du darfst keine Tiere in dem Gebiet von <gold>&v1</gold> zähmen."
+  cannotRegisterFaction: "<red>Du darfst keine LWC Sicherungen in dem Gebiet von <gold>&v1</gold> registrieren."
+  damageReduced: "<red>Dein Schaden wird um &v1% in dem Gebiet von <gold>&v2</gold> reduziert!"
+  cannotUnleashFaction: "<red>Du darfst keine Tiere in dem Gebiet von <gold>&v1</gold> ableinen."
+  warZoneIsClosed: "<red>Während der aktuellen Kriegsphase sind die Kriegsgebiete geschlossen."
+region:
+  barren: "Ödland"
+  city: "Stadt"
+  desert: "Wüste"
+  farmland: "Farmland"
+  forest: "Wald"
+  magic: "Magie"
+  mountainous: "Gebirge"
+  sea: "See"
+  warZone: "Kriegsgebiet"
+ui:
+  region:
+    displayName: "<gold>&v1"
+war:
+  phase:
+    active:
+      announcement: "<dark_red>Die Kampfphase hat begonnen. Kriegsgebiete können nun umkämpft werden."
+      displayName: "Kampfphase"
+    announcement:
+      minute: "&v1-Phase beginnt in einer <gold>&v2</gold> Minute."
+      minutes: "&v1-Phase beginnt in <gold>&v2</gold> Minuten."
+      second: "&v1-Phase beginnt in einer <gold>&v2</gold> Sekunde."
+      seconds: "&v1-Phase beginnt in <gold>&v2</gold> Sekunden."
+    inactive:
+      announcement: "<dark_green>Die Kampfphase ist vorübergehend beendet. Kriegsgebiete können nicht mehr umkämpft werden und PvP wird temporär <red>deaktiviert</red>."
+      displayName: "Normalzustand"
+    passive:
+      announcement: "<red>Die Vorbereitungsphase hat begonnen. PvP ist wieder <green>aktiviert</green>."
+      displayName: "Vorbereitungsphase"
+  prefix: "<dark_gray><b>[ <dark_red>KRIEG</dark_red> ]</b></dark_gray><gray> "

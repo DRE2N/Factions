@@ -1,0 +1,36 @@
+package de.erethon.factions.ui;
+
+import de.erethon.aergia.player.EPlayer;
+import de.erethon.aergia.ui.UIComponent;
+import de.erethon.aergia.ui.UIUpdater;
+import de.erethon.aergia.ui.event.UICreateEvent;
+import de.erethon.aergia.util.TickUtil;
+import de.erethon.factions.Factions;
+import de.erethon.factions.data.FMessage;
+import de.erethon.factions.player.FPlayer;
+import net.kyori.adventure.text.Component;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+
+/**
+ * @author Fyreum
+ */
+public class UIFactionsListener implements Listener {
+
+    public static final String FACTIONS_INFO_ID = "factionsInfo";
+    public static final String REGION_DISPLAY_ID = "regionDisplay";
+
+    final Factions plugin = Factions.get();
+
+    @EventHandler
+    public void onUICreate(UICreateEvent event) {
+        UIUpdater uiUpdater = event.getUIUpdater();
+        uiUpdater.getBossBar().getCenter().add(UIComponent.reactivatable(p -> FMessage.UI_REGION_DISPLAY_NAME.message(getFPlayer(p).getDisplayRegion()),
+                TickUtil.SECOND*6, REGION_DISPLAY_ID));
+        uiUpdater.getActionBar().getCenter().add(UIComponent.reactivatable(p -> Component.empty(), TickUtil.SECOND * 4, FACTIONS_INFO_ID));
+    }
+
+    private FPlayer getFPlayer(EPlayer ePlayer) {
+        return plugin.getFPlayerCache().getByPlayer(ePlayer.getPlayer());
+    }
+}

@@ -1,0 +1,291 @@
+package de.erethon.factions;
+
+import de.erethon.aergia.placeholder.ChatPlaceholder;
+import de.erethon.aergia.placeholder.ChatPlaceholders;
+import de.erethon.aergia.placeholder.HoverEventBuilder;
+import de.erethon.aergia.placeholder.HoverInfo;
+import de.erethon.bedrock.chat.MessageUtil;
+import de.erethon.bedrock.compatibility.Internals;
+import de.erethon.bedrock.misc.FileUtil;
+import de.erethon.bedrock.plugin.EPlugin;
+import de.erethon.bedrock.plugin.EPluginSettings;
+import de.erethon.factions.alliance.AllianceCache;
+import de.erethon.factions.command.logic.FCommandCache;
+import de.erethon.factions.data.FConfig;
+import de.erethon.factions.data.FMessage;
+import de.erethon.factions.faction.FactionCache;
+import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.player.FPlayerCache;
+import de.erethon.factions.player.FPlayerListener;
+import de.erethon.factions.region.AutomatedChunkManager;
+import de.erethon.factions.region.RegionManager;
+import de.erethon.factions.ui.UIFactionsListener;
+import de.erethon.factions.util.FLogger;
+import de.erethon.factions.war.WarPhaseManager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import org.bukkit.Bukkit;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+import java.util.UUID;
+
+public final class Factions extends EPlugin {
+
+    private static Factions instance;
+
+    /* Folders */
+    public static File ALLIANCES;
+    public static File FACTIONS;
+    public static File REGIONS;
+    public static File PLAYERS;
+
+    /* Files */
+    private File fLoggerFile;
+    private File fConfigFile;
+    private File warPhaseManagerFile;
+
+    /* Configs */
+    private FConfig fConfig;
+
+    /* Caches */
+    private AllianceCache allianceCache;
+    private FactionCache factionCache;
+    private RegionManager regionManager;
+    private FPlayerCache fPlayerCache;
+    private FCommandCache fCommandCache;
+
+    /* Instances */
+    private WarPhaseManager warPhaseManager;
+
+    /* Listeners */
+    private FPlayerListener fPlayerListener;
+    private UIFactionsListener uiFactionsListener;
+
+    public Factions() {
+        settings = EPluginSettings.builder()
+                .internals(Internals.v1_18_R2.andHigher())
+                .forcePaper(true)
+                .economy(true)
+                .build();
+    }
+
+    @Override
+    public void onEnable() {
+        super.onEnable();
+        instance = this;
+        loadCore();
+        registerAergiaPlaceholders();
+    }
+
+    @Override
+    public void onDisable() {
+        HandlerList.unregisterAll(this);
+        Bukkit.getScheduler().cancelTasks(this);
+        for (FPlayer fPlayer : fPlayerCache.getCachedUsers()) {
+            fPlayer.getUIBossBar().getCenter().remove(UIFactionsListener.REGION_DISPLAY_ID);
+            fPlayer.getUIActionBar().getCenter().remove(AutomatedChunkManager.ACTION_BAR_ID);
+        }
+        saveData();
+    }
+
+    public void loadCore() {
+        initFolders();
+        initFiles();
+        loadFLogger();
+        loadConfigs();
+        loadFMessages();
+        initializeCaches();
+        loadCaches();
+        loadWarManager();
+        runTasks();
+        loadCommands();
+        registerListeners();
+    }
+
+    public void initFolders() {
+        initFolder(getDataFolder());
+        initFolder(ALLIANCES = new File(getDataFolder(), "alliances"));
+        initFolder(FACTIONS = new File(getDataFolder(), "factions"));
+        initFolder(REGIONS = new File(getDataFolder(), "regions"));
+        initFolder(PLAYERS = new File(getDataFolder(), "players"));
+    }
+
+    public void initFiles() {
+        fLoggerFile = new File(getDataFolder(), "logger.yml");
+        fConfigFile = new File(getDataFolder(), "config.yml");
+        warPhaseManagerFile = FileUtil.initFile(this, new File(getDataFolder(), "war.yml"), "defaults/war.yml");
+    }
+
+    public void loadFLogger() {
+        FLogger.load(fLoggerFile);
+    }
+
+    public void loadConfigs() {
+        fConfig = new FConfig(fConfigFile);
+    }
+
+    public void loadFMessages() {
+        reloadBedrockMessageHandler();
+        reloadMessageHandler();
+        bedrockMessageHandler.setDefaultLanguage(fConfig.getLanguage());
+        messageHandler.setDefaultLanguage(fConfig.getLanguage());
+    }
+
+    public void initializeCaches() {
+        allianceCache = new AllianceCache(ALLIANCES);
+        factionCache = new FactionCache(FACTIONS);
+        regionManager = new RegionManager(REGIONS);
+        fPlayerCache = new FPlayerCache(this);
+    }
+
+    public void loadCaches() {
+        allianceCache.loadAll();
+        factionCache.loadAll();
+        regionManager.loadAll();
+        fPlayerCache.loadAll();
+    }
+
+    public void loadWarManager() {
+        warPhaseManager = new WarPhaseManager(warPhaseManagerFile);
+        warPhaseManager.load();
+    }
+
+    public void runTasks() {
+        factionCache.runKickTask();
+        warPhaseManager.updateCurrentStageTask();
+    }
+
+    public void loadCommands() {
+        setCommandCache(fCommandCache = new FCommandCache(this));
+        fCommandCache.register(this);
+    }
+
+    public void registerListeners() {
+        register(fPlayerListener = new FPlayerListener());
+        register(uiFactionsListener = new UIFactionsListener());
+    }
+
+    private void register(Listener listener) {
+        Bukkit.getPluginManager().registerEvents(listener, this);
+    }
+
+    public void registerAergiaPlaceholders() {
+        ChatPlaceholders.register(ChatPlaceholder.builder()
+                .placeHolder("faction")
+                .baseBuilder((s, r) -> {
+                    FPlayer fSender = fPlayerCache.getByPlayer(s.getPlayer());
+                    FPlayer fRecipient = fPlayerCache.getByPlayer(r.getPlayer());
+                    String faction = fSender.hasFaction() ? fSender.getFaction().getDisplayShortName() : FMessage.GENERAL_LONER.getMessage();
+                    return Component.text()
+                            .color(fRecipient.getRelation(fSender).getColor())
+                            .append(MessageUtil.parse("<dark_gray>[</dark_gray>" + faction + "<dark_gray>]</dark_gray>"))
+                            .build();
+                })
+                .clickBuilder((s, r) -> {
+                    FPlayer fPlayer = fPlayerCache.getByPlayer(s.getPlayer());
+                    return !fPlayer.hasFaction() ? null : ClickEvent.suggestCommand("/f show " + fPlayer.getFaction().getName());
+                })
+                .addHoverInfo((s, r) -> {
+                    FPlayer fPlayer = fPlayerCache.getByPlayer(s.getPlayer());
+                    return !fPlayer.hasFaction() ? null : MessageUtil.parse("<gold>Fraktion<dark_gray>:<gray> " + fPlayer.getFaction().getName());
+                })
+                .build());
+        ChatPlaceholders.register(ChatPlaceholder.builder()
+                .placeHolder("faction-rank")
+                .baseStringBuilder((s, r) -> {
+                    FPlayer fPlayer = fPlayerCache.getByPlayer(s.getPlayer());
+                    if (!fPlayer.hasFaction()) {
+                        return "";
+                    }
+                    return fPlayer.isAdminRaw() ? "<dark_gray>**" : fPlayer.isMod() ? "<green>*" : "";
+                })
+                .build());
+        HoverInfo info = (sender, recipient) -> {
+            FPlayer fSender = fPlayerCache.getByPlayer(sender.getPlayer());
+            Component faction = fSender.getFactionTag(fPlayerCache.getByPlayer(recipient.getPlayer()));
+            return MessageUtil.parse("<gold>" + FMessage.GENERAL_FACTION.getMessage() + "<dark_gray>: <gray>")
+                    .append(faction)
+                    .append(Component.newline());
+        };
+        registerPlaceholderInfo("player-name", info);
+        registerPlaceholderInfo("player-display-name", info);
+        registerPlaceholderInfo("recipient-name", info);
+        registerPlaceholderInfo("recipient-display-name", info);
+    }
+
+    private void registerPlaceholderInfo(String placeholder, HoverInfo info) {
+        ChatPlaceholder chatPlaceholder = ChatPlaceholders.get(placeholder);
+        if (chatPlaceholder == null) {
+            return;
+        }
+        HoverEventBuilder hoverBuilder = chatPlaceholder.getHoverEventBuilder();
+        if (hoverBuilder == null) {
+            return;
+        }
+        hoverBuilder.addHoverInfo(2, info);
+    }
+
+    public void saveData() {
+        allianceCache.saveAll();
+        factionCache.saveAll();
+        regionManager.saveAll();
+        fPlayerCache.saveAll();
+        warPhaseManager.saveData();
+        FLogger.save();
+    }
+
+    /* Getters and setters */
+
+    public @NotNull FConfig getFConfig() {
+        return fConfig;
+    }
+
+    public @NotNull AllianceCache getAllianceCache() {
+        return allianceCache;
+    }
+
+    public @NotNull FactionCache getFactionCache() {
+        return factionCache;
+    }
+
+    public @NotNull RegionManager getRegionManager() {
+        return regionManager;
+    }
+
+    public @NotNull FPlayerCache getFPlayerCache() {
+        return fPlayerCache;
+    }
+
+    public @NotNull FCommandCache getFCommandCache() {
+        return fCommandCache;
+    }
+
+    public @NotNull WarPhaseManager getWarPhaseManager() {
+        return warPhaseManager;
+    }
+
+    public @NotNull FPlayerListener getFPlayerListener() {
+        return fPlayerListener;
+    }
+
+    public @NotNull UIFactionsListener getUiFactionsListener() {
+        return uiFactionsListener;
+    }
+
+    public boolean hasEconomyProvider() {
+        return getEconomyProvider() != null;
+    }
+
+    /* Statics */
+
+    public static @NotNull File getPlayerFile(@NotNull UUID uuid) {
+        return new File(PLAYERS, uuid + ".yml");
+    }
+
+    public static @NotNull Factions get() {
+        return instance;
+    }
+}
