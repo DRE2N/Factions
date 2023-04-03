@@ -14,7 +14,7 @@ public class RegionAddNeighbourCommand extends FCommand {
         setCommand("addneighbour");
         setAliases("an");
         setMinMaxArgs(1, 2);
-        setPlayerCommand(true);
+        setConsoleCommand(true);
         setPermissionFromName(RegionCommand.LABEL);
         setFUsage(RegionCommand.LABEL + " " + getCommand() + " [region]");
         setDescription("Markiert zwei Regionen als benachbart");

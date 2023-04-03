@@ -31,6 +31,8 @@ cmd:
       success: "<green>Die Regionen <gold>&v1</gold> und <gold>&v2</gold> sind jetzt benachbart."
     create:
       success: "<green>Die Region <dark_green>&v1<green> wurde erfolgreich erstellt."
+    damageReduction:
+      success: "<green>Die Schadensreduktion der Region <gold>&v1</gold> wurde auf <gold>&v2</gold> gesetzt."
     delete:
       confirmationRequired: "<gray>Die Region gehört einer Fraktion an. Möchtest du sie dennoch mit allen dazu gehörigen Dateien löschen? <green>&v1</green>"
       failed: "<red>Region konnte nicht gelöscht werden."
@@ -96,6 +98,7 @@ error:
   targetIsAlreadyInThisFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich bereits in der Fraktion <gold>&v2</gold>."
   targetIsNotInAFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich in keiner Fraktion."
   targetIsNotInThisFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich nicht in der Fraktion <gold>&v2</gold>."
+  wrongDoubleValue: "<red>Der angegebene Zahlenwert muss zwischen <gold>&v1</gold> und </gold> liegen."
 faction:
   info:
     adminChanged: "<gray>Der Spieler <green>&v1</green> hat <green>&v2</green> zum neuen Anführer der Fraktion <green>&v3</green> gemacht."

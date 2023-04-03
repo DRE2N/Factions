@@ -30,6 +30,7 @@ public enum FMessage implements Message {
     CMD_REGION_ADD_CHUNK_SUCCESS("cmd.region.addChunk.success"),
     CMD_REGION_ADD_NEIGHBOUR_SUCCESS("cmd.region.addNeighbour.success"),
     CMD_REGION_CREATE_SUCCESS("cmd.region.create.success"),
+    CMD_REGION_DAMAGE_REDUCTION_SUCCESS("cmd.region.damageReduction.success"),
     CMD_REGION_DELETE_CONFIRMATION_REQUIRED("cmd.region.delete.confirmationRequired"),
     CMD_REGION_DELETE_FAILED("cmd.region.delete.failed"),
     CMD_REGION_DELETE_SUCCESS("cmd.region.delete.success"),
@@ -87,6 +88,7 @@ public enum FMessage implements Message {
     ERROR_TARGET_IS_ALREADY_IN_THIS_FACTION("error.targetIsAlreadyInThisFaction"),
     ERROR_TARGET_IS_NOT_IN_A_FACTION("error.targetIsNotInAFaction"),
     ERROR_TARGET_IS_NOT_IN_THIS_FACTION("error.targetIsNotInThisFaction"),
+    ERROR_WRONG_DOUBLE_VALUE("error.wrongDoubleValue"),
 
     FACTION_INFO_ADMIN_CHANGED("faction.info.adminChanged"),
     FACTION_INFO_CREATED("faction.info.created"),

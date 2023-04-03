@@ -14,7 +14,7 @@ public class RegionRemoveNeighbourCommand extends FCommand {
         setCommand("removeneighbour");
         setAliases("rn");
         setMinMaxArgs(1, 2);
-        setPlayerCommand(true);
+        setConsoleCommand(true);
         setPermissionFromName(RegionCommand.LABEL);
         setFUsage(RegionCommand.LABEL + " " + getCommand() + " [region]");
         setDescription("Markiert zwei Regionen als nicht benachbart");
