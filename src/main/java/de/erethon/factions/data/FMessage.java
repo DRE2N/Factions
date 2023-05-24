@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public enum FMessage implements Message {
 
+    ALLIANCE_INFO_NEW_POLL("alliance.info.newPoll"),
     ALLIANCE_INFO_PREFIX("alliance.info.prefix"),
 
     ACM_ADDED_CHUNK("acm.addedChunk"),
@@ -130,6 +131,7 @@ public enum FMessage implements Message {
     GUI_POLL_PREVIOUS_PAGE_INFO("gui.poll.previousPage.info"),
     GUI_POLL_PREVIOUS_PAGE_NAME("gui.poll.previousPage.name"),
     GUI_POLL_TITLE("gui.poll.title"),
+    GUI_POLL_TITLE_CLOSED("gui.poll.titleClosed"),
     GUI_POLL_REGION_TYPE_DISPLAY("gui.poll.regionTypeDisplay"),
     GUI_POLL_VOTES_DISPLAY("gui.poll.votesDisplay"),
 

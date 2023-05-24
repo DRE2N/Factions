@@ -48,12 +48,14 @@ public abstract class Poll<V> implements Listener {
     protected final TreeSet<PollEntry> subjects;
     protected final Function<V, ItemStack> subjectConverter;
     protected final Map<Integer, Inventory> inventories = new HashMap<>();
+    protected boolean open = true;
 
     public Poll(@NotNull String name, @NotNull PollScope scope, @NotNull Collection<@NotNull V> subjects, @NotNull Function<V, ItemStack> subjectConverter) {
         this(name, scope, subjects, subjectConverter, null);
     }
 
     public Poll(@NotNull String name, @NotNull PollScope scope, @NotNull Collection<@NotNull V> subjects, @NotNull Function<V, ItemStack> subjectConverter, @Nullable Comparator<V> comparator) {
+        assert !name.contains(" ") : "Illegal name found: whitespaces are not allowed";
         this.name = name;
         this.scope = scope;
         Comparator<PollEntry> comp = comparator == null ? Comparator.naturalOrder() : (o1, o2) -> {
@@ -65,6 +67,12 @@ public abstract class Poll<V> implements Listener {
             this.subjects.add(new PollEntry(subject));
         }
         this.subjectConverter = subjectConverter;
+        buildInventories();
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+    }
+
+    public void closePoll() {
+        open = false;
         buildInventories();
     }
 
@@ -89,7 +97,7 @@ public abstract class Poll<V> implements Listener {
 
     private void buildInventory(int page) {
         List<PollEntry> subjectsCopy = new ArrayList<>(subjects).subList(page * ITEMS_PER_PAGE, Math.min((page + 1) * ITEMS_PER_PAGE, subjects.size()));
-        Inventory inventory = Bukkit.createInventory(null, 54, FMessage.GUI_POLL_TITLE.message(name));
+        Inventory inventory = Bukkit.createInventory(null, 54, open ? FMessage.GUI_POLL_TITLE.message(name) : FMessage.GUI_POLL_TITLE_CLOSED.message(name));
         ItemStack[] contents = new ItemStack[54];
 
         for (int i = 0; i < subjectsCopy.size(); i++) {
@@ -117,6 +125,9 @@ public abstract class Poll<V> implements Listener {
             return;
         }
         event.setCancelled(true);
+        if (!open) {
+            return;
+        }
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer((Player) event.getWhoClicked());
 
         if (hasParticipated(fPlayer) || !canParticipate(fPlayer)) {
@@ -210,6 +221,10 @@ public abstract class Poll<V> implements Listener {
 
     public @NotNull TreeSet<PollEntry> getSubjects() {
         return subjects;
+    }
+
+    public boolean isOpen() {
+        return open;
     }
 
     /* Statics */

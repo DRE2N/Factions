@@ -5,6 +5,7 @@ import de.erethon.aergia.util.TickUtil;
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
+import de.erethon.factions.poll.polls.CapturedRegionsPoll;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionCache;
 import de.erethon.factions.region.RegionType;
@@ -126,7 +127,9 @@ public class WarPhaseManager extends EConfig {
                 winner.getUnconfirmedTemporaryRegions().add(region);
             }
         }
-
+        for (Alliance alliance : plugin.getAllianceCache()) {
+            alliance.addPoll(new CapturedRegionsPoll(alliance));
+        }
     }
 
     private Alliance getRegionalWinner(Region region) {

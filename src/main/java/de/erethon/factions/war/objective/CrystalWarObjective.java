@@ -4,7 +4,7 @@ import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
-import de.erethon.factions.util.WarBroadcastUtil;
+import de.erethon.factions.util.FBroadcastUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.persistence.PersistentDataType;
@@ -48,9 +48,9 @@ public class CrystalWarObjective extends TickingWarObjective {
         Region region = plugin.getRegionManager().getRegionByLocation(location);
         String regionName = region != null ? region.getName() : FMessage.GENERAL_WILDERNESS.getMessage();
         if (damager != null) {
-            WarBroadcastUtil.broadcast(FMessage.WAR_OBJECTIVE_DESYTROYED_BY_PLAYER, alliance.getDisplayShortName(), regionName, damager.getLastName());
+            FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED_BY_PLAYER, alliance.getDisplayShortName(), regionName, damager.getLastName());
         } else {
-            WarBroadcastUtil.broadcast(FMessage.WAR_OBJECTIVE_DESYTROYED, alliance.getDisplayShortName(), regionName);
+            FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED, alliance.getDisplayShortName(), regionName);
         }
         deactivate();
         location.createExplosion(4f, false, false);

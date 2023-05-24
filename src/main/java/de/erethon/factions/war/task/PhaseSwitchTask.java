@@ -3,7 +3,7 @@ package de.erethon.factions.war.task;
 import de.erethon.aergia.util.TickUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
-import de.erethon.factions.util.WarBroadcastUtil;
+import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.war.WarPhaseManager;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -36,16 +36,16 @@ public class PhaseSwitchTask extends BukkitRunnable {
     public void run() {
         if (m == m2 && m != 0) {
             if (m > 1) {
-                WarBroadcastUtil.broadcast(FMessage.WAR_PHASE_ANNOUNCEMENT_MINUTES, warPhaseManager.getNextWarPhase().getDisplayName().getMessage(), String.valueOf(m));
+                FBroadcastUtil.broadcastWar(FMessage.WAR_PHASE_ANNOUNCEMENT_MINUTES, warPhaseManager.getNextWarPhase().getDisplayName().getMessage(), String.valueOf(m));
             } else {
-                WarBroadcastUtil.broadcast(FMessage.WAR_PHASE_ANNOUNCEMENT_MINUTE, warPhaseManager.getNextWarPhase().getDisplayName().getMessage());
+                FBroadcastUtil.broadcastWar(FMessage.WAR_PHASE_ANNOUNCEMENT_MINUTE, warPhaseManager.getNextWarPhase().getDisplayName().getMessage());
             }
             --m2;
         } else if (finalSeconds.contains(s)) {
             if (m > 1) {
-                WarBroadcastUtil.broadcast(FMessage.WAR_PHASE_ANNOUNCEMENT_SECONDS, warPhaseManager.getNextWarPhase().getDisplayName().getMessage(), String.valueOf(s));
+                FBroadcastUtil.broadcastWar(FMessage.WAR_PHASE_ANNOUNCEMENT_SECONDS, warPhaseManager.getNextWarPhase().getDisplayName().getMessage(), String.valueOf(s));
             } else {
-                WarBroadcastUtil.broadcast(FMessage.WAR_PHASE_ANNOUNCEMENT_SECOND, warPhaseManager.getNextWarPhase().getDisplayName().getMessage());
+                FBroadcastUtil.broadcastWar(FMessage.WAR_PHASE_ANNOUNCEMENT_SECOND, warPhaseManager.getNextWarPhase().getDisplayName().getMessage());
             }
         }
         if (s <= 0) {

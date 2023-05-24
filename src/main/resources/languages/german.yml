@@ -1,5 +1,6 @@
 alliance:
   info:
+    newPoll: "<green>Eine neue Abstimmung wurde erstellt. Stimme mit <dark_green>/f vote &v1</dark_green> ab!"
     prefix: "<dark_gray>[<dark_purple>&v1</dark_purple>]<gray> "
 acm:
   addedChunk: "Chunk <gold>&v1</gold> wurde hinzugefügt."
@@ -145,6 +146,7 @@ gui:
       name: "<gold>Vorherige Seite"
       info: "<gray>Zur vorherigen Seite gehen."
     title: "<green>Abstimmung<dark_gray>:</dark_gray></green> &v1"
+    titleClosed: "<st><green>Abstimmung<dark_gray>:</dark_gray></green> &v1"
     regionTypeDisplay: "<gold>Regionstyp<dark_gray>:</dark_gray></gold><gray> &v1"
     votesDisplay: "<gray><gold>&v1</gold> Stimmen"
 protection:

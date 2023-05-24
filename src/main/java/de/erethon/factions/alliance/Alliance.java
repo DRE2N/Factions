@@ -3,17 +3,24 @@ package de.erethon.factions.alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.faction.Faction;
+import de.erethon.factions.poll.Poll;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.WarScores;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -23,12 +30,15 @@ import java.util.Set;
  */
 public class Alliance extends FLegalEntity {
 
+    /* Data */
     private final Set<Region> coreRegions = new HashSet<>();
     private final Set<Region> temporaryRegions = new HashSet<>();
     private final Set<Region> unconfirmedTemporaryRegions = new HashSet<>();
     private final Set<Faction> factions = new HashSet<>();
     private String shortName;
     private WarScores warScores;
+    /* Functionality */
+    private final Map<String, Poll<?>> activePolls = new HashMap<>();
 
     protected Alliance(@NotNull File file, int id, @NotNull String name, @Nullable String description) {
         super(file, id, name, description);
@@ -46,8 +56,11 @@ public class Alliance extends FLegalEntity {
 
     public void sendMessage(@NotNull Component msg, boolean prefix) {
         Component message = prefix ? FMessage.ALLIANCE_INFO_PREFIX.message().append(msg) : msg;
-        for (Faction faction : factions) {
-            faction.sendMessage(message, false);
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (plugin.getFPlayerCache().getByPlayer(player).getAlliance() != this) {
+                continue;
+            }
+            player.sendMessage(message);
         }
     }
 
@@ -154,5 +167,19 @@ public class Alliance extends FLegalEntity {
 
     public @NotNull WarScores getWarScores() {
         return warScores;
+    }
+
+    public @NotNull Map<String, Poll<?>> getActivePolls() {
+        return activePolls;
+    }
+
+    public void addPoll(@NotNull Poll<?> poll) {
+        activePolls.put(poll.getName(), poll);
+        FBroadcastUtil.broadcastIf(FMessage.ALLIANCE_INFO_NEW_POLL.message(poll.getName()), fPlayer -> fPlayer.getAlliance() == this && poll.canParticipate(fPlayer));
+    }
+
+    public void removePoll(@NotNull Poll<?> poll) {
+        activePolls.remove(poll.getName());
+        HandlerList.unregisterAll(poll);
     }
 }
