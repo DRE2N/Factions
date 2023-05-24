@@ -3,6 +3,7 @@ package de.erethon.factions.entity;
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,6 +68,9 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
 
     public @NotNull String getName() {
         return name;
+    }
+    public @NotNull Component name() {
+        return Component.text(name);
     }
 
     public void setName(@NotNull String name) {

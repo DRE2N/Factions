@@ -4,6 +4,10 @@ import de.erethon.aergia.util.DateUtil;
 import de.erethon.aergia.util.TickUtil;
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.Factions;
+import de.erethon.factions.alliance.Alliance;
+import de.erethon.factions.region.Region;
+import de.erethon.factions.region.RegionCache;
+import de.erethon.factions.region.RegionType;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.task.PhaseSwitchTask;
 import org.bukkit.Bukkit;
@@ -19,7 +23,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -74,6 +77,7 @@ public class WarPhaseManager extends EConfig {
             if (dayOfWeek == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
                 currentWeek -= schedule.size();
             }
+            currentStage = schedule.get(currentWeek).get(dayOfWeek.getValue());
         }
         // Cancel previous tasks.
         if (!runningTasks.isEmpty()) {
@@ -85,10 +89,67 @@ public class WarPhaseManager extends EConfig {
         }
         // Initialize or progress the current stage.
         if (currentStage == null) {
-            currentStage = schedule.get(currentWeek).get(midnight.get(ChronoField.DAY_OF_WEEK));
-        } else {
-            currentStage = currentStage.getNextStage();
+            currentStage = schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
+            return;
         }
+        WarPhaseStage nextStage = currentStage.getNextStage();
+        // (De)activate war objectives, based on the next war phase.
+        if (nextStage != null && nextStage.getWarPhase().isOpenWarZones()) {
+            plugin.getWarObjectiveManager().activateAll();
+        } else if (nextStage == null || currentStage.getWarPhase().isOpenWarZones() && !nextStage.getWarPhase().isOpenWarZones()) {
+            plugin.getWarObjectiveManager().deactivateAll();
+            onWarZoneClose();
+        }
+        currentStage = nextStage;
+    }
+
+    // todo: Calculate winners and losers
+    private void onWarZoneClose() {
+        for (RegionCache cache : plugin.getRegionManager().getCaches().values()) {
+            for (Region region : cache) {
+                if (region.getType() != RegionType.WAR_ZONE) {
+                    continue;
+                }
+                Alliance winner = getRegionalWinner(region);
+                Alliance rAlliance = region.getAlliance();
+                if (winner == null) {
+                    if (rAlliance != null) {
+                        FLogger.WAR.log("Region '" + region.getId() + "' is no longer held by alliance '" + rAlliance + "'");
+                        region.setAlliance(null);
+                    }
+                    continue;
+                }
+                FLogger.WAR.log("Region '" + region.getId() + "' was captured by alliance '" + winner.getId() + "'");
+                if (rAlliance != null) {
+                    rAlliance.getTemporaryRegions().remove(region);
+                }
+                winner.getUnconfirmedTemporaryRegions().add(region);
+            }
+        }
+
+    }
+
+    private Alliance getRegionalWinner(Region region) {
+        Alliance winner = null;
+        double score = -1;
+        double secondScore = 0;
+        for (Alliance alliance : plugin.getAllianceCache()) {
+            RegionalScore regionalScore = alliance.getWarScores().get(region);
+            if (regionalScore == null) {
+                continue;
+            }
+            double currentScore = regionalScore.getTotalScore();
+            if (currentScore <= 0) {
+                continue;
+            }
+            if (currentScore > score) {
+                winner = alliance;
+                score = currentScore;
+            } else if (currentScore > secondScore) {
+                secondScore = currentScore;
+            }
+        }
+        return score > secondScore ? winner : null;
     }
 
     /* Serialization */
@@ -110,22 +171,7 @@ public class WarPhaseManager extends EConfig {
                 return;
             }
             for (String week : scheduleSection.getKeys(false)) {
-                List<Integer> weeks = new ArrayList<>();
-                if (week.contains("-")) {
-                    String[] split = week.split("-");
-                    int start = Integer.parseInt(split[0]);
-                    int end = Integer.parseInt(split[1]);
-                    weeks.add(start); // Add the first week
-
-                    while (start != end) {
-                        if (++start > 7) {
-                            start -= 7;
-                        }
-                        weeks.add(start);
-                    }
-                } else {
-                    weeks.add(Integer.parseInt(week));
-                }
+                List<Integer> weeks = getSeparatedValues(week);
                 ConfigurationSection weekSection = scheduleSection.getConfigurationSection(week);
                 assert weekSection != null : "Section for week '" + week + "' not found.";
                 for (int w : weeks) {
@@ -153,22 +199,7 @@ public class WarPhaseManager extends EConfig {
     private void loadWeek(int week, ConfigurationSection section) {
         schedule.putIfAbsent(week, new HashMap<>());
         for (String key : section.getKeys(false)) {
-            List<Integer> days = new ArrayList<>();
-            if (key.contains("-")) {
-                String[] split = key.split("-");
-                int start = Integer.parseInt(split[0]);
-                int end = Integer.parseInt(split[1]);
-                days.add(start); // Add the first day
-
-                while (start != end) {
-                    if (++start > 7) {
-                        start -= 7;
-                    }
-                    days.add(start);
-                }
-            } else {
-                days.add(Integer.parseInt(key));
-            }
+            List<Integer> days = getSeparatedValues(key);
             ConfigurationSection daySection = section.getConfigurationSection(key);
             assert daySection != null : "Section for week '" + week + "' day '" + key + "' not found.";
 
@@ -187,6 +218,26 @@ public class WarPhaseManager extends EConfig {
                 schedule.get(week).put(day, warPhaseStage);
             }
         }
+    }
+
+    private List<Integer> getSeparatedValues(String key) {
+        List<Integer> result = new ArrayList<>();
+        if (key.contains("-")) {
+            String[] split = key.split("-");
+            int start = Integer.parseInt(split[0]);
+            int end = Integer.parseInt(split[1]);
+            result.add(start); // Add the first value
+
+            while (start != end) {
+                if (++start > 7) {
+                    start -= 7;
+                }
+                result.add(start);
+            }
+        } else {
+            result.add(Integer.parseInt(key));
+        }
+        return result;
     }
 
     public void saveData() {

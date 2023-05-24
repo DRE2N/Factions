@@ -176,7 +176,10 @@ public class RegionManager {
     }
 
     public @Nullable Region getRegionByPlayer(@NotNull Player player) {
-        Location location = player.getLocation();
+        return getRegionByLocation(player.getLocation());
+    }
+
+    public @Nullable Region getRegionByLocation(@NotNull Location location) {
         RegionCache cache = getCache(location.getWorld());
         return cache != null ? cache.getByLocation(location) : null;
     }

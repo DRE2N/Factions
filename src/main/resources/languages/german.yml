@@ -1,3 +1,6 @@
+alliance:
+  info:
+    prefix: "<dark_gray>[<dark_purple>&v1</dark_purple>]<gray> "
 acm:
   addedChunk: "Chunk <gold>&v1</gold> wurde hinzugefügt."
   addInsideRegion: "Chunk gehört bereits einer Region an."
@@ -24,6 +27,9 @@ cmd:
   leave:
     confirmationRequired: "<red>Wenn du als Fraktionsadmin die Fraktion verlässt, übernimmt ein anderes Mitglied die Leitung. Sind keine Mitglieder mehr übrig, wird die Fraktion gelöscht. <gold>&v1</gold>"
     success: "<green>Du hast die Fraktion <dark_green>&v1</dark_green> verlassen."
+  objective:
+    create:
+      success: "<green>Kriegsziel wurde erstellt."
   region:
     addChunk:
       success: "<green>Der Chunk wurde der Region <dark_green>&v1</dark_green> erfolgreich hinzugefügt."
@@ -88,6 +94,7 @@ error:
   playerNotFound: "<red>Der Spieler <gold>&v1</gold> konnte nicht gefunden werden."
   playerRegionNull: "<red>Du musst dich in einer Region befinden, um dies tun zu dürfen."
   regionInAnotherWorld: "<red>Die Region befindet sich in einer anderen Welt als du."
+  regionIsNotAWarzone: "<red>Die Region is kein Kriegsgebiet."
   regionIsNotClaimable: "<red>Die Region kann nicht beansprucht werden."
   regionNotFound: "<red>Die Region <gold>&v1</gold> konnte nicht gefunden werden."
   regionsAlreadyNeighbours: "<red>Die Regionen <gold>&v1</gold> und <gold>&v2</gold> sind bereits benachbart."
@@ -98,6 +105,7 @@ error:
   targetIsAlreadyInThisFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich bereits in der Fraktion <gold>&v2</gold>."
   targetIsNotInAFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich in keiner Fraktion."
   targetIsNotInThisFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich nicht in der Fraktion <gold>&v2</gold>."
+  warObjectiveNotFound: "<red>Der Kriegszieltyp <gold>&v1</gold> konnte nicht gefunden werden."
   wrongDoubleValue: "<red>Der angegebene Zahlenwert muss zwischen <gold>&v1</gold> und </gold> liegen."
 faction:
   info:
@@ -126,13 +134,26 @@ general:
   none: "keine"
   regionDefaultNamePrefix: "PROV_"
   spectator: "Zuschauer"
+  warZones: "Kriegsgebiete"
   wilderness: "Wildnis"
+gui:
+  poll:
+    nextPage:
+      name: "<gold>Nächste Seite"
+      info: "<gray>Zur nächsten Seite gehen."
+    previousPage:
+      name: "<gold>Vorherige Seite"
+      info: "<gray>Zur vorherigen Seite gehen."
+    title: "<green>Abstimmung<dark_gray>:</dark_gray></green> &v1"
+    regionTypeDisplay: "<gold>Regionstyp<dark_gray>:</dark_gray></gold><gray> &v1"
+    votesDisplay: "<gray><gold>&v1</gold> Stimmen"
 protection:
   cannotAttack:
     capital: "<red>Du darfst nicht in dem Kapital von <gold>&v1</gold> angreifen."
     faction: "<red>Du darfst nicht in dem Gebiet von <gold>&v1</gold> angreifen."
     inCurrentPhase: "<red>Du darfst während der aktuellen Kriegsphase nicht angreifen."
     player: "<red>Du darfst nicht Mitglieder von <gold>&v1</gold> angreifen."
+    warObjective: "<red>Du darfst nicht Kriegsobjekte von <gold>&v1</gold> angreifen."
   cannotBuildFaction: "<red>Du darfst nicht in dem Gebiet von <gold>&v1</gold> bauen."
   cannotBuildWilderness: "<red>Du darfst nicht in der Wildnis bauen."
   cannotDestroyFaction: "<red>Du darfst nicht das Gebiet <gold>&v1</gold> zerstören."
@@ -160,7 +181,20 @@ region:
 ui:
   region:
     displayName: "<gold>&v1"
+  warObjective:
+    occupyContested: "<b><dark_gray>[</b><dark_green>&v1</dark_green> <dark_gray>-</dark_gray> <green>&v2%</green><b><dark_gray>]</dark_gray></b> <red>  Gebiet wird umkämpft!</red>"
+    occupyContestedOther: "<b><dark_gray>[</b><dark_red>&v1</dark_red> <dark_gray>-</dark_gray> <red>&v2%</red><b><dark_gray>]</dark_gray></b> <red>  Gebiet wird umkämpft!</red>"
+    occupyProgress: "<b><dark_gray>[</b><dark_green>&v1</dark_green> <dark_gray>-</dark_gray> <green>&v2%</green><b><dark_gray>]</dark_gray></b> <green>  Gebiet wird eingenommen...</green>"
+    occupyProgressOther: "<dark_gray><b>[</b><dark_red>&v1</dark_red> <dark_gray>-</dark_gray> <red>&v2%</red><b>]</b></dark_gray> <gold>  Gegnerischer Einfluss schwindet...</gold>"
+    occupyNeutral: "<dark_gray><b>[</b><yellow>0%</yellow><b>]</b></dark_gray> <gray>  Gebiet nicht umkämpft.</gray>"
+    occupied: "<b><dark_gray>[</b><dark_green>&v1</dark_green> <dark_gray>-</dark_gray> <green>100%</green><b><dark_gray>]</dark_gray></b> <green>  Gebiet wurde eingenommen.</green>"
+    occupiedContested: "<b><dark_gray>[</b><dark_green>&v1</dark_green> <dark_gray>-</dark_gray> <green>100%</green><b><dark_gray>]</dark_gray></b> <red>  Gebiet wird angegriffen!</red>"
+    occupiedContestedOther: "<b><dark_gray>[</b><dark_red>&v1</dark_red> <dark_gray>-</dark_gray> <red>100%</red><b><dark_gray>]</dark_gray></b> <red>  Gebiet wird angegriffen!</red>"
 war:
+  objective:
+    crystal:
+      destroyed: "<gray>Der Kristall von <gold>&v1</gold> in der Region <gold>&v2</gold> wurde zerstört."
+      destroyedByPlayer: "<gray>Der Kristall von <gold>&v1</gold> in der Region <gold>&v2</gold> wurde von <gold>&v3</gold> zerstört."
   phase:
     active:
       announcement: "<dark_red>Die Kampfphase hat begonnen. Kriegsgebiete können nun umkämpft werden."

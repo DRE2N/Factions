@@ -290,6 +290,10 @@ public abstract class FCommand extends ECommand {
         return getTabList(Bukkit.getOnlinePlayers(), Player::getName, arg);
     }
 
+    protected @NotNull List<String> getTabObjectives(@NotNull String arg) {
+        return getTabList(plugin.getWarObjectiveManager().getObjectives().keySet(), arg);
+    }
+
     /* Assure methods */
 
     protected void fAssure(boolean b, @NotNull Supplier<String> message) {

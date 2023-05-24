@@ -40,6 +40,10 @@ public class FConfig extends EConfig {
     private double regionPricePerRegionFactor = 0.25;
     private double regionPriceTotalMultiplier = 1.0;
 
+    /* War */
+    private double warScorePerKill = 5.0;
+    private int warCapturedRegionsPerBattle = 5;
+
     public FConfig(File file) {
         super(file, CONFIG_VERSION);
         initialize();
@@ -61,6 +65,8 @@ public class FConfig extends EConfig {
         initValue("regionPrice.perRegion", regionPricePerRegion);
         initValue("regionPrice.perRegionFactor", regionPricePerRegionFactor);
         initValue("regionPrice.totalMultiplier", regionPriceTotalMultiplier);
+        initValue("war.scorePerKill", warScorePerKill);
+        initValue("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
         save();
     }
 
@@ -79,6 +85,8 @@ public class FConfig extends EConfig {
         regionPricePerRegion = config.getDouble("regionPrice.perRegion", regionPricePerRegion);
         regionPricePerRegionFactor = config.getDouble("regionPrice.perRegionFactor", regionPricePerRegionFactor);
         regionPriceTotalMultiplier = config.getDouble("regionPrice.totalMultiplier", regionPriceTotalMultiplier);
+        warScorePerKill = config.getDouble("war.scorePerKill", warScorePerKill);
+        warCapturedRegionsPerBattle = config.getInt("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
     }
 
     /* Getters */
@@ -160,4 +168,11 @@ public class FConfig extends EConfig {
         return regionPriceTotalMultiplier;
     }
 
+    public double getWarScorePerKill() {
+        return warScorePerKill;
+    }
+
+    public int getWarCapturedRegionsPerBattle() {
+        return warCapturedRegionsPerBattle;
+    }
 }

@@ -3,11 +3,16 @@ package de.erethon.factions.data;
 import de.erethon.bedrock.config.Message;
 import de.erethon.bedrock.config.MessageHandler;
 import de.erethon.factions.Factions;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Fyreum
  */
 public enum FMessage implements Message {
+
+    ALLIANCE_INFO_PREFIX("alliance.info.prefix"),
 
     ACM_ADDED_CHUNK("acm.addedChunk"),
     ACM_ADD_INSIDE_REGION("acm.addInsideRegion"),
@@ -27,6 +32,7 @@ public enum FMessage implements Message {
     CMD_KICK_SUCCESS("cmd.kick.success"),
     CMD_LEAVE_CONFIRMATION_REQUIRED("cmd.leave.confirmationRequired"),
     CMD_LEAVE_SUCCESS("cmd.leave.success"),
+    CMD_OBJECTIVE_CREATE_SUCCESS("cmd.objective.create.success"),
     CMD_REGION_ADD_CHUNK_SUCCESS("cmd.region.addChunk.success"),
     CMD_REGION_ADD_NEIGHBOUR_SUCCESS("cmd.region.addNeighbour.success"),
     CMD_REGION_CREATE_SUCCESS("cmd.region.create.success"),
@@ -78,6 +84,7 @@ public enum FMessage implements Message {
     ERROR_PLAYER_REGION_NULL("error.playerRegionNull"),
     ERROR_REGION_ALREADY_CLAIMED("error.regionAlreadyClaimed"),
     ERROR_REGION_IN_ANOTHER_WORLD("error.regionInAnotherWorld"),
+    ERROR_REGION_IS_NOT_A_WARZONE("error.regionIsNotAWarzone"),
     ERROR_REGION_IS_NOT_CLAIMABLE("error.regionIsNotClaimable"),
     ERROR_REGION_NOT_FOUND("error.regionNotFound"),
     ERROR_REGION_TYPE_NOT_FOUND("error.regionTypeNotFound"),
@@ -88,6 +95,7 @@ public enum FMessage implements Message {
     ERROR_TARGET_IS_ALREADY_IN_THIS_FACTION("error.targetIsAlreadyInThisFaction"),
     ERROR_TARGET_IS_NOT_IN_A_FACTION("error.targetIsNotInAFaction"),
     ERROR_TARGET_IS_NOT_IN_THIS_FACTION("error.targetIsNotInThisFaction"),
+    ERROR_WAR_OBJECTIVE_TYPE_NOT_FOUND("error.warObjectiveNotFound"),
     ERROR_WRONG_DOUBLE_VALUE("error.wrongDoubleValue"),
 
     FACTION_INFO_ADMIN_CHANGED("faction.info.adminChanged"),
@@ -114,11 +122,22 @@ public enum FMessage implements Message {
     GENERAL_NONE("general.none"),
     GENERAL_REGION_DEFAULT_NAME_PREFIX("general.regionDefaultNamePrefix"),
     GENERAL_SPECTATOR("general.spectator"),
+    GENERAL_WAR_ZONES("general.warZones"),
     GENERAL_WILDERNESS("general.wilderness"),
 
+    GUI_POLL_NEXT_PAGE_INFO("gui.poll.nextPage.info"),
+    GUI_POLL_NEXT_PAGE_NAME("gui.poll.nextPage.name"),
+    GUI_POLL_PREVIOUS_PAGE_INFO("gui.poll.previousPage.info"),
+    GUI_POLL_PREVIOUS_PAGE_NAME("gui.poll.previousPage.name"),
+    GUI_POLL_TITLE("gui.poll.title"),
+    GUI_POLL_REGION_TYPE_DISPLAY("gui.poll.regionTypeDisplay"),
+    GUI_POLL_VOTES_DISPLAY("gui.poll.votesDisplay"),
+
+    PROTECTION_CANNOT_ATTACK_CAPITAL("protection.cannotAttack.capital"),
     PROTECTION_CANNOT_ATTACK_FACTION("protection.cannotAttack.faction"),
     PROTECTION_CANNOT_ATTACK_IN_CURRENT_PHASE("protection.cannotAttack.inCurrentPhase"),
     PROTECTION_CANNOT_ATTACK_PLAYER("protection.cannotAttack.player"),
+    PROTECTION_CANNOT_ATTACK_WAR_OBJECTIVE("protection.cannotAttack.warObjective"),
     PROTECTION_CANNOT_BUILD_FACTION("protection.cannotBuildFaction"),
     PROTECTION_CANNOT_DESTROY_FACTION("protection.cannotDestroyFaction"),
     PROTECTION_CANNOT_EQUIP_FACTION("protection.cannotEquipFaction"),
@@ -140,7 +159,17 @@ public enum FMessage implements Message {
     REGION_WAR_ZONE("region.warZone"),
 
     UI_REGION_DISPLAY_NAME("ui.region.displayName"),
+    UI_WAR_OBJECTIVE_OCCUPY_CONTESTED("ui.warObjective.occupyContested"),
+    UI_WAR_OBJECTIVE_OCCUPY_CONTESTED_OTHER("ui.warObjective.occupyContestedOther"),
+    UI_WAR_OBJECTIVE_OCCUPY_PROGRESS("ui.warObjective.occupyProgress"),
+    UI_WAR_OBJECTIVE_OCCUPY_PROGRESS_OTHER("ui.warObjective.occupyProgressOther"),
+    UI_WAR_OBJECTIVE_OCCUPY_NEUTRAL("ui.warObjective.occupyNeutral"),
+    UI_WAR_OBJECTIVE_OCCUPIED("ui.warObjective.occupied"),
+    UI_WAR_OBJECTIVE_OCCUPIED_CONTESTED("ui.warObjective.occupiedContested"),
+    UI_WAR_OBJECTIVE_OCCUPIED_CONTESTED_OTHER("ui.warObjective.occupiedContestedOther"),
 
+    WAR_OBJECTIVE_DESYTROYED("war.objective.destroyed"),
+    WAR_OBJECTIVE_DESYTROYED_BY_PLAYER("war.objective.destroyedByPlayer"),
     WAR_PHASE_ACTIVE_ANNOUNCEMENT("war.phase.active.announcement"),
     WAR_PHASE_ACTIVE_DISPLAY_NAME("war.phase.active.displayName"),
     WAR_PHASE_ANNOUNCEMENT_MINUTE("war.phase.announcement.minute"),
@@ -158,6 +187,20 @@ public enum FMessage implements Message {
 
     FMessage(String path) {
         this.path = path;
+    }
+
+    /* Getters */
+
+    public @NotNull Component itemMessage() {
+        return Component.text().decoration(TextDecoration.ITALIC, false).append(message()).build();
+    }
+
+    public @NotNull Component itemMessage(String... args) {
+        return Component.text().decoration(TextDecoration.ITALIC, false).append(message(args)).build();
+    }
+
+    public @NotNull Component itemMessage(Component... args) {
+        return Component.text().decoration(TextDecoration.ITALIC, false).append(message(args)).build();
     }
 
     @Override

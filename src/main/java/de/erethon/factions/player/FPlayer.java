@@ -19,6 +19,8 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.ui.UIFactionsListener;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FPermissionUtil;
+import de.erethon.factions.war.WarStats;
+import de.erethon.factions.war.objective.WarObjective;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -28,7 +30,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -50,18 +53,20 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
     private boolean bypass = false;
     private long lastAllianceJoinDate;
     private long lastFactionJoinDate;
+    private WarStats warStats;
     /* Functionality */
     private Region lastRegion;
     private final AutomatedChunkManager automatedChunkManager = new AutomatedChunkManager(this);
+    private final Set<WarObjective> activeWarObjectives = new HashSet<>();
 
     public FPlayer(@NotNull UUID uuid) {
-        super(new File(Factions.PLAYERS, uuid + ".yml"), CONFIG_VERSION);
+        super(Factions.getPlayerFile(uuid), CONFIG_VERSION);
         this.uuid = uuid;
         this.player = Bukkit.getPlayer(uuid);
     }
 
     public FPlayer(@NotNull Player player) {
-        super(new File(Factions.PLAYERS, player.getUniqueId() + ".yml"), CONFIG_VERSION);
+        super(Factions.getPlayerFile(player.getUniqueId()), CONFIG_VERSION);
         this.player = player;
         this.uuid = player.getUniqueId();
         this.lastName = player.getName();
@@ -78,6 +83,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
         bypass = config.getBoolean("bypass", bypass);
         lastAllianceJoinDate = config.getLong("lastAllianceJoinDate", lastAllianceJoinDate);
         lastFactionJoinDate = config.getLong("lastFactionJoinDate", lastFactionJoinDate);
+        warStats = new WarStats(config.getConfigurationSection("warStats"));
     }
 
     /* LoadableUser methods */
@@ -107,6 +113,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
         config.set("bypass", bypass);
         config.set("lastAllianceJoinDate", lastAllianceJoinDate);
         config.set("lastFactionJoinDate", lastFactionJoinDate);
+        config.set("warStats", warStats.serialize());
         save();
     }
 
@@ -272,6 +279,10 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
         this.lastFactionJoinDate = lastFactionJoinDate;
     }
 
+    public @NotNull WarStats getWarStats() {
+        return warStats;
+    }
+
     public @Nullable Region getLastRegion() {
         return lastRegion;
     }
@@ -296,6 +307,10 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
 
     public @NotNull AutomatedChunkManager getAutomatedChunkManager() {
         return automatedChunkManager;
+    }
+
+    public @NotNull Set<WarObjective> getActiveWarObjectives() {
+        return activeWarObjectives;
     }
 
     /* Object methods */

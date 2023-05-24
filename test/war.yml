@@ -1,7 +1,7 @@
 # INTERNAL USE ONLY - DON'T CHANGE IT ON YOUR OWN
 configVersion: 1
 
-# The current days.
+# The current week of the schedule.
 currentWeek: 0
 
 # The schedule of each war phase per day/week.

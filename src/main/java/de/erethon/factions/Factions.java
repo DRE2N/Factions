@@ -21,6 +21,8 @@ import de.erethon.factions.region.AutomatedChunkManager;
 import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.ui.UIFactionsListener;
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.war.WarListener;
+import de.erethon.factions.war.WarObjectiveManager;
 import de.erethon.factions.war.WarPhaseManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -41,10 +43,12 @@ public final class Factions extends EPlugin {
     public static File FACTIONS;
     public static File REGIONS;
     public static File PLAYERS;
+    public static File WAR;
 
     /* Files */
     private File fLoggerFile;
     private File fConfigFile;
+    private File warObjectiveManagerFile;
     private File warPhaseManagerFile;
 
     /* Configs */
@@ -58,11 +62,13 @@ public final class Factions extends EPlugin {
     private FCommandCache fCommandCache;
 
     /* Instances */
+    private WarObjectiveManager warObjectiveManager;
     private WarPhaseManager warPhaseManager;
 
     /* Listeners */
     private FPlayerListener fPlayerListener;
     private UIFactionsListener uiFactionsListener;
+    private WarListener warListener;
 
     public Factions() {
         settings = EPluginSettings.builder()
@@ -99,7 +105,8 @@ public final class Factions extends EPlugin {
         loadFMessages();
         initializeCaches();
         loadCaches();
-        loadWarManager();
+        loadWarObjectiveManager();
+        loadWarPhaseManager();
         runTasks();
         loadCommands();
         registerListeners();
@@ -111,12 +118,14 @@ public final class Factions extends EPlugin {
         initFolder(FACTIONS = new File(getDataFolder(), "factions"));
         initFolder(REGIONS = new File(getDataFolder(), "regions"));
         initFolder(PLAYERS = new File(getDataFolder(), "players"));
+        initFolder(WAR = new File(getDataFolder(), "war"));
     }
 
     public void initFiles() {
         fLoggerFile = new File(getDataFolder(), "logger.yml");
         fConfigFile = new File(getDataFolder(), "config.yml");
-        warPhaseManagerFile = FileUtil.initFile(this, new File(getDataFolder(), "war.yml"), "defaults/war.yml");
+        warPhaseManagerFile = FileUtil.initFile(this, new File(WAR, "war.yml"), "defaults/war.yml");
+        warObjectiveManagerFile = FileUtil.initFile(this, new File(getDataFolder(), "objectives.yml"), "defaults/objectives.yml");
     }
 
     public void loadFLogger() {
@@ -148,7 +157,12 @@ public final class Factions extends EPlugin {
         fPlayerCache.loadAll();
     }
 
-    public void loadWarManager() {
+    public void loadWarObjectiveManager() {
+        warObjectiveManager = new WarObjectiveManager(warObjectiveManagerFile);
+        warObjectiveManager.load();
+    }
+
+    public void loadWarPhaseManager() {
         warPhaseManager = new WarPhaseManager(warPhaseManagerFile);
         warPhaseManager.load();
     }
@@ -166,6 +180,7 @@ public final class Factions extends EPlugin {
     public void registerListeners() {
         register(fPlayerListener = new FPlayerListener());
         register(uiFactionsListener = new UIFactionsListener());
+        register(warListener = new WarListener());
     }
 
     private void register(Listener listener) {
@@ -233,6 +248,7 @@ public final class Factions extends EPlugin {
         factionCache.saveAll();
         regionManager.saveAll();
         fPlayerCache.saveAll();
+        warObjectiveManager.saveAll();
         warPhaseManager.saveData();
         FLogger.save();
     }
@@ -263,6 +279,10 @@ public final class Factions extends EPlugin {
         return fCommandCache;
     }
 
+    public @NotNull WarObjectiveManager getWarObjectiveManager() {
+        return warObjectiveManager;
+    }
+
     public @NotNull WarPhaseManager getWarPhaseManager() {
         return warPhaseManager;
     }
@@ -273,6 +293,10 @@ public final class Factions extends EPlugin {
 
     public @NotNull UIFactionsListener getUiFactionsListener() {
         return uiFactionsListener;
+    }
+
+    public @NotNull WarListener getWarListener() {
+        return warListener;
     }
 
     public boolean hasEconomyProvider() {
