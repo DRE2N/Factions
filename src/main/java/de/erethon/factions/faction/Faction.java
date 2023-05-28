@@ -3,10 +3,17 @@ package de.erethon.factions.faction;
 import de.erethon.aergia.util.BroadcastUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
+import de.erethon.factions.building.BuildSite;
+import de.erethon.factions.building.Building;
+import de.erethon.factions.building.BuildingEffect;
+import de.erethon.factions.building.FSetTag;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.FAccount;
 import de.erethon.factions.economy.FAccountDummy;
 import de.erethon.factions.economy.FAccountImpl;
+import de.erethon.factions.economy.FStorage;
+import de.erethon.factions.economy.FactionLevel;
+import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.event.FPlayerFactionLeaveEvent;
 import de.erethon.factions.event.FactionDisbandEvent;
@@ -20,12 +27,16 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -48,6 +59,12 @@ public class Faction extends FLegalEntity {
     /* Temporary */
     private final Set<FPlayer> invitedPlayers = new HashSet<>();
     private FAccount fAccount;
+    private FStorage fStorage;
+    private FactionLevel level = FactionLevel.HAMLET;
+
+    private Set<BuildSite> buildSites = new HashSet<>();
+    private Set<BuildingEffect> buildingEffects = new HashSet<>();
+    private HashMap<PopulationLevel, Integer> population = new HashMap<>();
 
     protected Faction(@NotNull FPlayer admin, @NotNull Region coreRegion, int id, String name, String description) {
         super(new File(Factions.FACTIONS, id + ".yml"), id, name, description);
@@ -194,6 +211,12 @@ public class Faction extends FLegalEntity {
             this.adjacentFactions.add(faction);
         }
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
+        for (PopulationLevel level : PopulationLevel.values()) {
+            this.population.put(level, config.getInt("population." + level.name(), 0));
+        }
+        for (String key : config.getConfigurationSection("buildSites").getKeys(false)) {
+            buildSites.add(new BuildSite(config.getConfigurationSection("buildSites." + key)));
+        }
     }
 
     private Set<FPlayer> getFPlayers(String path) {
@@ -223,6 +246,11 @@ public class Faction extends FLegalEntity {
         config.set("coreRegion", coreRegion == null ? null : coreRegion.getId());
         config.set("shortName", shortName);
         config.set("open", open);
+        config.set("level", level);
+        for (PopulationLevel level : PopulationLevel.values()) {
+            config.set("population." + level.name(), population.get(level));
+        }
+        config.set("buildSites", buildSites);
         saveEntities("authorisedBuilders", authorisedBuilders);
         saveEntities("adjacentFactions", adjacentFactions);
     }
@@ -416,5 +444,29 @@ public class Faction extends FLegalEntity {
 
     public FAccount getFAccount() {
         return fAccount;
+    }
+
+    public FStorage getStorage() {
+        return fStorage;
+    }
+
+    public HashMap<PopulationLevel, Integer> getPopulation() {
+        return population;
+    }
+
+    public int getPopulation(PopulationLevel level) {
+        return population.getOrDefault(level, 0);
+    }
+
+    public Set<BuildSite> getFactionBuildings() {
+        return buildSites;
+    }
+
+    public boolean hasBuilding(Building building) {
+        return buildSites.stream().anyMatch(buildSite -> buildSite.getBuilding() == building && buildSite.isFinished() && !buildSite.isDestroyed());
+    }
+
+    public Set<BuildingEffect> getBuildingEffects() {
+        return buildingEffects;
     }
 }

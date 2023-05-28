@@ -10,6 +10,7 @@ import de.erethon.bedrock.misc.FileUtil;
 import de.erethon.bedrock.plugin.EPlugin;
 import de.erethon.bedrock.plugin.EPluginSettings;
 import de.erethon.factions.alliance.AllianceCache;
+import de.erethon.factions.building.BuildingManager;
 import de.erethon.factions.command.logic.FCommandCache;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
@@ -40,6 +41,7 @@ public final class Factions extends EPlugin {
 
     /* Folders */
     public static File ALLIANCES;
+    public static File BUILDINGS;
     public static File FACTIONS;
     public static File REGIONS;
     public static File PLAYERS;
@@ -64,6 +66,7 @@ public final class Factions extends EPlugin {
     /* Instances */
     private WarObjectiveManager warObjectiveManager;
     private WarPhaseManager warPhaseManager;
+    private BuildingManager buildingManager;
 
     /* Listeners */
     private FPlayerListener fPlayerListener;
@@ -115,6 +118,7 @@ public final class Factions extends EPlugin {
     public void initFolders() {
         initFolder(getDataFolder());
         initFolder(ALLIANCES = new File(getDataFolder(), "alliances"));
+        initFolder(BUILDINGS = new File(getDataFolder(), "buildings"));
         initFolder(FACTIONS = new File(getDataFolder(), "factions"));
         initFolder(REGIONS = new File(getDataFolder(), "regions"));
         initFolder(PLAYERS = new File(getDataFolder(), "players"));
@@ -145,6 +149,7 @@ public final class Factions extends EPlugin {
 
     public void initializeCaches() {
         allianceCache = new AllianceCache(ALLIANCES);
+        buildingManager = new BuildingManager(BUILDINGS);
         factionCache = new FactionCache(FACTIONS);
         regionManager = new RegionManager(REGIONS);
         fPlayerCache = new FPlayerCache(this);
@@ -299,6 +304,10 @@ public final class Factions extends EPlugin {
         return warListener;
     }
 
+    public BuildingManager getBuildingManager() {
+        return buildingManager;
+    }
+
     public boolean hasEconomyProvider() {
         return getEconomyProvider() != null;
     }
@@ -312,4 +321,5 @@ public final class Factions extends EPlugin {
     public static @NotNull Factions get() {
         return instance;
     }
+
 }

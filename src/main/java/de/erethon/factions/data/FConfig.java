@@ -2,12 +2,20 @@ package de.erethon.factions.data;
 
 import de.erethon.aergia.util.TickUtil;
 import de.erethon.bedrock.config.EConfig;
+import de.erethon.factions.Factions;
+import de.erethon.factions.building.Building;
+import de.erethon.factions.economy.FactionLevel;
+import de.erethon.factions.economy.population.PopulationLevel;
+import de.erethon.factions.economy.resource.Resource;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,6 +30,8 @@ public class FConfig extends EConfig {
     /* General */
     private List<String> excludedWorlds = new ArrayList<>();
     private String language = "german";
+
+    private final Factions plugin = Factions.get();
 
     /* Alliance */
     private long allianceJoinCooldown = TimeUnit.DAYS.toMillis(30);
@@ -39,6 +49,9 @@ public class FConfig extends EConfig {
     private double regionPricePerRegion = 50.0;
     private double regionPricePerRegionFactor = 0.25;
     private double regionPriceTotalMultiplier = 1.0;
+    private HashMap<Resource, Integer> defaultResourceLimits = new HashMap<>();
+    private HashMap<FactionLevel, HashMap<PopulationLevel, Integer>> requiredPopulation = new HashMap<>();
+    private HashMap<FactionLevel, Set<Building>> requiredBuildings = new HashMap<>();
 
     /* War */
     private double warScorePerKill = 5.0;
@@ -67,6 +80,14 @@ public class FConfig extends EConfig {
         initValue("regionPrice.totalMultiplier", regionPriceTotalMultiplier);
         initValue("war.scorePerKill", warScorePerKill);
         initValue("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
+        for (Resource resource : Resource.values()) {
+            initValue("defaultResourceLimits." + resource.name(), 512);
+        }
+        for (FactionLevel factionLevel : FactionLevel.values()) {
+            for (PopulationLevel populationLevel : PopulationLevel.values()) {
+                initValue("requiredPopulation." + factionLevel.name() + "." + populationLevel.name(), 0);
+            }
+        }
         save();
     }
 
@@ -87,6 +108,27 @@ public class FConfig extends EConfig {
         regionPriceTotalMultiplier = config.getDouble("regionPrice.totalMultiplier", regionPriceTotalMultiplier);
         warScorePerKill = config.getDouble("war.scorePerKill", warScorePerKill);
         warCapturedRegionsPerBattle = config.getInt("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
+        defaultResourceLimits = new HashMap<>();
+        for (Resource resource : Resource.values()) {
+            defaultResourceLimits.put(resource, config.getInt("defaultResourceLimits." + resource.name(), 512));
+        }
+        requiredPopulation = new HashMap<>();
+        for (FactionLevel factionLevel : FactionLevel.values()) {
+            HashMap<PopulationLevel, Integer> populationLevelIntegerHashMap = new HashMap<>();
+            for (PopulationLevel populationLevel : PopulationLevel.values()) {
+                populationLevelIntegerHashMap.put(populationLevel, config.getInt("requiredPopulation." + factionLevel.name() + "." + populationLevel.name(), 0));
+            }
+            requiredPopulation.put(factionLevel, populationLevelIntegerHashMap);
+        }
+        requiredBuildings = new HashMap<>();
+        for (FactionLevel factionLevel : FactionLevel.values()) {
+            Set<Building> buildings = new HashSet<>();
+            for (String s : config.getStringList("requiredBuildings." + factionLevel.name())) {
+                buildings.add(plugin.getBuildingManager().getByID(s));
+            }
+            requiredBuildings.put(factionLevel, buildings);
+
+        }
     }
 
     /* Getters */
@@ -168,11 +210,23 @@ public class FConfig extends EConfig {
         return regionPriceTotalMultiplier;
     }
 
+    public HashMap<Resource, Integer> getDefaultResourceLimits() {
+        return defaultResourceLimits;
+    }
+
+    public HashMap<PopulationLevel, Integer> getRequiredPopulation(FactionLevel level) {
+        return requiredPopulation.get(level);
+    }
+
     public double getWarScorePerKill() {
         return warScorePerKill;
     }
 
     public int getWarCapturedRegionsPerBattle() {
         return warCapturedRegionsPerBattle;
+    }
+
+    public Set<Building> getRequiredBuildings(FactionLevel factionLevel) {
+        return requiredBuildings.get(factionLevel);
     }
 }

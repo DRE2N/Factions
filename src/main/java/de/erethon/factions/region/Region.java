@@ -1,6 +1,8 @@
 package de.erethon.factions.region;
 
 import de.erethon.factions.alliance.Alliance;
+import de.erethon.factions.building.BuildSite;
+import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FLegalEntity;
@@ -12,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -31,6 +34,8 @@ public class Region extends FLegalEntity {
     private double damageReduction = 0.0;
     private Faction owner;
     private RegionType type = RegionType.BARREN;
+    private Set<BuildSite> buildSites = new HashSet<>();
+    private Set<BuildingEffect> effects = new HashSet<>();
 
     protected Region(@NotNull RegionCache regionCache, @NotNull File file, int id, @NotNull String name, @Nullable String description) {
         super(file, id, name, description);
@@ -244,5 +249,13 @@ public class Region extends FLegalEntity {
     @Override
     public String toString() {
         return "Region[world=" + getWorldId() + ",id=" + id + "]";
+    }
+
+    public Set<BuildSite> getBuildSites() {
+        return buildSites;
+    }
+
+    public Set<BuildingEffect> getBuildingEffects() {
+        return effects;
     }
 }

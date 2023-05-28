@@ -23,6 +23,8 @@ public enum FMessage implements Message {
     ACM_SELECTED("acm.selected"),
     ACM_UNSELECTED("acm.unselected"),
 
+    BUILDING_SITE_CREATED("buildingSite.created"),
+
     CMD_ALLIANCE_CHOOSE_ON_COOLDOWN("cmd.alliance.choose.onCooldown"),
     CMD_ALLIANCE_CHOOSE_SUCCESS("cmd.alliance.choose.success"),
     CMD_DISBAND_CONFIRMATION_REQUIRED("cmd.disband.confirmationRequired"),
@@ -70,6 +72,11 @@ public enum FMessage implements Message {
     CMD_VERSION_HEADER("cmd.version.header"),
     CMD_VERSION_STATUS("cmd.version.status"),
 
+    ERROR_BUILDING_BLOCKED("error.buildingBlocked"),
+    ERROR_BUILDING_REQUIRED_TYPE("error.buildingRequiredType"),
+    ERROR_BUILDING_REQUIRED_FACTION("error.buildingRequiredFaction"),
+    ERROR_BUILDING_POPULATION("error.buildingPopulation"),
+    ERROR_BUILDING_NOT_ENOUGH_RESOURCES("error.buildingNotEnoughResources"),
     ERROR_CANNOT_KICK_YOURSELF("error.cannotKickYourself"),
     ERROR_CANNOT_UNCLAIM_CORE_REGION("error.cannotUnclaimCoreRegion"),
     ERROR_CHUNK_ALREADY_A_REGION("error.chunkAlreadyARegion"),
