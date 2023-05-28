@@ -113,7 +113,9 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
         config.set("bypass", bypass);
         config.set("lastAllianceJoinDate", lastAllianceJoinDate);
         config.set("lastFactionJoinDate", lastFactionJoinDate);
-        config.set("warStats", warStats.serialize());
+        if (warStats != null) {
+            config.set("warStats", warStats.serialize());
+        }
         save();
     }
 

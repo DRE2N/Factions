@@ -138,6 +138,8 @@ public final class Factions extends EPlugin {
 
     public void loadConfigs() {
         fConfig = new FConfig(fConfigFile);
+        fConfig.lateInit();
+        fConfig.lateLoad();
     }
 
     public void loadFMessages() {

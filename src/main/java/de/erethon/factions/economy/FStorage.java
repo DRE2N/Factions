@@ -15,6 +15,11 @@ public class FStorage {
     private final HashMap<Resource, Integer> resources = new HashMap<>();
     private final HashMap<Resource, Integer> resourceLimits;
 
+    public FStorage(Faction faction) {
+        this.faction = faction;
+        resourceLimits = Factions.get().getFConfig().getDefaultResourceLimits();
+    }
+
     public FStorage(Faction faction, ConfigurationSection section) {
         this.faction = faction;
         resourceLimits = Factions.get().getFConfig().getDefaultResourceLimits();

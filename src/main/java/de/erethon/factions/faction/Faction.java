@@ -3,10 +3,9 @@ package de.erethon.factions.faction;
 import de.erethon.aergia.util.BroadcastUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
+import de.erethon.factions.building.ActiveBuildingEffect;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.Building;
-import de.erethon.factions.building.BuildingEffect;
-import de.erethon.factions.building.FSetTag;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.FAccount;
 import de.erethon.factions.economy.FAccountDummy;
@@ -27,16 +26,13 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -63,8 +59,8 @@ public class Faction extends FLegalEntity {
     private FactionLevel level = FactionLevel.HAMLET;
 
     private Set<BuildSite> buildSites = new HashSet<>();
-    private Set<BuildingEffect> buildingEffects = new HashSet<>();
-    private HashMap<PopulationLevel, Integer> population = new HashMap<>();
+    private final Set<ActiveBuildingEffect> buildingEffects = new HashSet<>();
+    private final HashMap<PopulationLevel, Integer> population = new HashMap<>();
 
     protected Faction(@NotNull FPlayer admin, @NotNull Region coreRegion, int id, String name, String description) {
         super(new File(Factions.FACTIONS, id + ".yml"), id, name, description);
@@ -76,6 +72,7 @@ public class Faction extends FLegalEntity {
         this.coreRegion = coreRegion;
         this.coreRegion.setOwner(this);
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
+        this.fStorage = new FStorage(this);
         saveData();
     }
 
@@ -468,7 +465,7 @@ public class Faction extends FLegalEntity {
         return buildSites.stream().anyMatch(buildSite -> buildSite.getBuilding() == building && buildSite.isFinished() && !buildSite.isDestroyed());
     }
 
-    public Set<BuildingEffect> getBuildingEffects() {
+    public Set<ActiveBuildingEffect> getBuildingEffects() {
         return buildingEffects;
     }
 }

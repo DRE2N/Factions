@@ -35,7 +35,6 @@ public class Region extends FLegalEntity {
     private Faction owner;
     private RegionType type = RegionType.BARREN;
     private Set<BuildSite> buildSites = new HashSet<>();
-    private Set<BuildingEffect> effects = new HashSet<>();
 
     protected Region(@NotNull RegionCache regionCache, @NotNull File file, int id, @NotNull String name, @Nullable String description) {
         super(file, id, name, description);
@@ -255,7 +254,4 @@ public class Region extends FLegalEntity {
         return buildSites;
     }
 
-    public Set<BuildingEffect> getBuildingEffects() {
-        return effects;
-    }
 }

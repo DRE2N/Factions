@@ -9,15 +9,12 @@ import de.erethon.factions.economy.resource.Resource;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
-import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.region.RegionType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Chunk;
 import org.bukkit.Color;
-import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -52,8 +49,6 @@ public class Building {
     private Component name;
     private List<Component> description;
     private boolean isCoreRequired;
-    private boolean isCapitalRequired;
-    private boolean isFactionBuilding;
     private boolean isWarBuilding;
     private int size;
     private Map<Resource, Integer> unlockCost = new HashMap<>();
@@ -138,12 +133,12 @@ public class Building {
             return false;
         }
         // If the building requires other buildings to be built first in this faction
-        if (isFactionBuilding() && !hasRequiredBuilding(faction)) {
+        if (!hasRequiredBuilding(faction)) {
             MessageUtil.sendMessage(p, FMessage.ERROR_BUILDING_REQUIRED_FACTION.getMessage());
             return false;
         }
         // If the building requires a certain amount of population at a specific level
-        if (!isFactionBuilding() && !hasRequiredPopulation(rg)) {
+        if (!hasRequiredPopulation(rg)) {
             MessageUtil.sendMessage(p, FMessage.ERROR_BUILDING_POPULATION.getMessage());
             return false;
         }
@@ -183,28 +178,6 @@ public class Building {
             return false;
         }
         for (BuildSite bs : f.getFactionBuildings()) {
-            if (!bs.isFinished()) {
-                continue;
-            }
-            buildings.add(bs.getBuilding());
-        }
-        Set<Building> required = new HashSet<>();
-        for (String s : requiredBuildings) {
-            required.add(buildingManager.getByID(s));
-        }
-        return buildings.containsAll(required);
-    }
-
-    public boolean hasRequiredBuilding(Region rg) {
-        BuildingManager buildingManager = plugin.getBuildingManager();
-        Set<Building> buildings = new HashSet<>();
-        if (getRequiredBuildings() == null || getRequiredBuildings().isEmpty()) {
-            return true;
-        }
-        if (rg.getBuildSites() == null || rg.getBuildSites().isEmpty()) {
-            return false;
-        }
-        for (BuildSite bs : rg.getBuildSites()) {
             if (!bs.isFinished()) {
                 continue;
             }
@@ -332,21 +305,10 @@ public class Building {
         isCoreRequired = coreRequired;
     }
 
-    public boolean isCapitalRequired() {
-        return isCapitalRequired;
-    }
-
-    public boolean isFactionBuilding() {
-        return isFactionBuilding;
-    }
-
     public boolean isWarBuilding() {
         return isWarBuilding;
     }
 
-    public void setCapitalRequired(boolean capitalRequired) {
-        isCapitalRequired = capitalRequired;
-    }
 
     public int getSize() {
         return size;
@@ -419,84 +381,11 @@ public class Building {
         return false;
     }
 
-    public BuildingEffect loadEffect(ConfigurationSection section) {
-        BuildingEffect effect = null;
-        MessageUtil.log("Loading effect... " + section.getKeys(false).toString());
-        boolean isRegional = section.getBoolean("regionEffect", true);
-        long expiration = section.getLong("expiration", 0);
-        effect = new BuildingEffect(isRegional, expiration);
-        // Modifiers
-        effect.setMemberModifier(section.getDouble("member", 0.0));
-        effect.setRegionModifier(section.getDouble("regions", 0.0));
-        effect.setManpowerModifier(section.getDouble("manpower", 0.0));
-        effect.setStabilityModifier(section.getDouble("stability", 0.0));
-        effect.setExhaustionModifier(section.getDouble("exhaustion", 0.0));
-        effect.setAttackDamageModifier(section.getDouble("attackDamage", 0.0));
-        effect.setShieldModifier(section.getDouble("shield", 0.0));
-        // Flat buffs/limits
-        effect.setTransportShipLimit(section.getInt("transportShipLimit", 0));
-        effect.setTransportCoachLimit(section.getInt("transportShipLimit", 0));
-        effect.setTransportAirshipLimit(section.getInt("transportAirshipLimit",0));
-        effect.setAllianceLimitBuff(section.getInt("allianceLimit", 0));
-        effect.setImportDailyLimit(section.getInt("importLimit", 0));
-        effect.setExportDailyLimit(section.getInt("exportLimit", 0));
-        effect.setPrestige(section.getInt("prestige", 0));
-        // Other
-        effect.setDisplayName(section.getString("displayName"));
-        effect.setChangeTypeTo(RegionType.valueOf(section.getString("type")));
-        effect.setMemberPermission(section.getString("permission"));
-
-        // Lists
-        if (section.contains("production")) {
-            Set<String> cfgList = section.getConfigurationSection("production").getKeys(false);
-            for (String s : cfgList) {
-                Resource resource = Resource.getByID(s);
-                double mod = section.getDouble("production." + s);
-                effect.getProductionModifier().put(resource, mod);
-            }
-        }
-        if (section.contains("consumption")) {
-            Set<String> cfgList = section.getConfigurationSection("consumption").getKeys(false);
-            for (String s : cfgList) {
-                Resource resource = Resource.getByID(s);
-                double mod = section.getDouble("consumption." + s);
-                effect.getConsumptionModifier().put(resource, mod);
-            }
-        }
-        if (section.contains("productionBuff")) {
-            Set<String> cfgList = section.getConfigurationSection("productionBuff").getKeys(false);
-            for (String s : cfgList) {
-                Resource resource = Resource.getByID(s);
-                int mod = section.getInt("productionBuff." + s);
-                effect.getProductionBuff().put(resource, mod);
-            }
-        }
-        if (section.contains("happiness")) {
-            Set<String> cfgList = section.getConfigurationSection("happiness").getKeys(false);
-            for (String s : cfgList) {
-                PopulationLevel level = PopulationLevel.valueOf(s);
-                int mod = section.getInt("happiness." + s);
-                effect.getHappinessBuff().put(level, mod);
-            }
-        }
-        if (section.contains("effects")) {
-            Set<String> cfgList = section.getConfigurationSection("effects").getKeys(false);
-            for (String s : cfgList) {
-                Effect eff = Effect.valueOf(s);
-                int level = section.getInt("effects." + s);
-                effect.getMinecraftEffects().put(eff, level);
-            }
-        }
-        return effect;
-    }
-
     public void load() {
         ConfigurationSection config = this.config;
         name = MiniMessage.miniMessage().deserialize(config.getString("name"));
         MessageUtil.log("Loading building " + name + "...");
         isCoreRequired = config.getBoolean("coreRequired");
-        isCapitalRequired = config.getBoolean("capitalRequired");
-        isFactionBuilding = config.getBoolean("isFactionBuilding");
         size = config.getInt("size");
         for (String s : config.getStringList("description")) {
             description.add(MiniMessage.miniMessage().deserialize(s));
@@ -553,7 +442,7 @@ public class Building {
         if (config.contains("effects")) {
             for (String key : config.getConfigurationSection("effects").getKeys(false)) {
                 try {
-                    effects.add(loadEffect(config.getConfigurationSection("effects." + key)));
+                    effects.add(new BuildingEffect().fromConfigSection(config.getConfigurationSection("effects." + key)));
                 } catch (NullPointerException ex) {
                     MessageUtil.log("There was an error loading effect " + key + " (Building: " + name + ")");
                     MessageUtil.log(ex.toString());

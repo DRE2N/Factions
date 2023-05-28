@@ -2,7 +2,6 @@ package de.erethon.factions.building;
 
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
-import de.erethon.factions.data.FConfig;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import org.apache.commons.lang.math.IntRange;
@@ -27,7 +26,6 @@ public class BuildSite implements ConfigurationSerializable {
 
     Factions plugin = Factions.get();
     BuildingManager buildingManager = plugin.getBuildingManager();
-    FConfig fConfig = plugin.getFConfig();
 
     private final Building building;
     private final Region region;
@@ -39,6 +37,7 @@ public class BuildSite implements ConfigurationSerializable {
     private boolean finished;
     private boolean hasTicket = false;
     private boolean isBusy = false;
+    private Set<ActiveBuildingEffect> activeBuildingEffects = new HashSet<>();
 
     public BuildSite(Building b, Region rg, Location loc1, Location loc2, Location center) {
         building = b;
@@ -145,9 +144,8 @@ public class BuildSite implements ConfigurationSerializable {
     }*/
 
     public void finishBuilding() {
-        region.getBuildingEffects().addAll(getBuilding().getEffects());
-        if (getBuilding().isFactionBuilding()) {
-            region.getOwner().getBuildingEffects().addAll(getBuilding().getEffects());
+        for (BuildingEffect effect : building.getEffects()) {
+            getRegion().getOwner().getBuildingEffects().add(new ActiveBuildingEffect(effect, this, effect.getDuration()));
         }
         finished = true;
         problemMessage = null;
@@ -156,8 +154,11 @@ public class BuildSite implements ConfigurationSerializable {
     }
 
     public void removeEffects() {
-        getRegion().getBuildingEffects().removeIf(effect -> effect.getOrigin() == getSite());
-        getRegion().getOwner().getBuildingEffects().removeIf(effect -> effect.getOrigin() == getSite());
+        for (ActiveBuildingEffect effect : getRegion().getOwner().getBuildingEffects()) {
+            if (effect.site() == this) {
+                effect.effect().remove(getRegion().getOwner());
+            }
+        }
     }
 
     public void scheduleProgressUpdate() {

@@ -83,12 +83,15 @@ public class FConfig extends EConfig {
         for (Resource resource : Resource.values()) {
             initValue("defaultResourceLimits." + resource.name(), 512);
         }
+        save();
+    }
+
+    public void lateInit() { // Config values that depend on FConfig already being initialized
         for (FactionLevel factionLevel : FactionLevel.values()) {
             for (PopulationLevel populationLevel : PopulationLevel.values()) {
                 initValue("requiredPopulation." + factionLevel.name() + "." + populationLevel.name(), 0);
             }
         }
-        save();
     }
 
     @Override
@@ -112,6 +115,9 @@ public class FConfig extends EConfig {
         for (Resource resource : Resource.values()) {
             defaultResourceLimits.put(resource, config.getInt("defaultResourceLimits." + resource.name(), 512));
         }
+    }
+
+    public void lateLoad() { // Config values that depend on FConfig already being loaded
         requiredPopulation = new HashMap<>();
         for (FactionLevel factionLevel : FactionLevel.values()) {
             HashMap<PopulationLevel, Integer> populationLevelIntegerHashMap = new HashMap<>();
