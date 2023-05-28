@@ -217,6 +217,7 @@ public class Faction extends FLegalEntity {
         for (String key : config.getConfigurationSection("buildSites").getKeys(false)) {
             buildSites.add(new BuildSite(config.getConfigurationSection("buildSites." + key)));
         }
+        fStorage = new FStorage(this, config.getConfigurationSection("storage"));
     }
 
     private Set<FPlayer> getFPlayers(String path) {
@@ -251,6 +252,7 @@ public class Faction extends FLegalEntity {
             config.set("population." + level.name(), population.get(level));
         }
         config.set("buildSites", buildSites);
+        config.set("storage", fStorage.save());
         saveEntities("authorisedBuilders", authorisedBuilders);
         saveEntities("adjacentFactions", adjacentFactions);
     }
