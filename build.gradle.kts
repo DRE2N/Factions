@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    paperDevBundle("1.19.3-R0.1-SNAPSHOT")
+    paperDevBundle("1.19.4-R0.1-SNAPSHOT")
     implementation("de.erethon:bedrock:1.2.5")
     compileOnly("de.erethon.aergia:Aergia:1.0.0-SNAPSHOT")
     implementation("org.jetbrains:annotations:23.1.0")
