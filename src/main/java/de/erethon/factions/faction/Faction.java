@@ -368,7 +368,7 @@ public class Faction extends FLegalEntity implements PollContainer {
                 continue;
             }
             if (!FactionUtil.isAdjacent(this, other)) {
-                this.removeAdjacentFaction(other);
+                removeAdjacentFaction(other);
             }
         }
     }

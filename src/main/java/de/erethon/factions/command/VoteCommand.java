@@ -18,7 +18,7 @@ public class VoteCommand extends FCommand {
         setMinMaxArgs(1, 1);
         setPermissionFromName();
         setFUsage(getCommand() + " [poll]");
-        setDescription("Öffnet das Menü zum abstimmen ab");
+        setDescription("Öffnet das Menü zum abstimmen");
     }
 
     @Override
