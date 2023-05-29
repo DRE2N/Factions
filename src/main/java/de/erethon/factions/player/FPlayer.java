@@ -14,6 +14,7 @@ import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.faction.Faction;
+import de.erethon.factions.poll.Poll;
 import de.erethon.factions.region.AutomatedChunkManager;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.ui.UIFactionsListener;
@@ -30,7 +31,9 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -113,9 +116,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
         config.set("bypass", bypass);
         config.set("lastAllianceJoinDate", lastAllianceJoinDate);
         config.set("lastFactionJoinDate", lastFactionJoinDate);
-        if (warStats != null) {
-            config.set("warStats", warStats.serialize());
-        }
+        config.set("warStats", warStats.serialize());
         save();
     }
 
@@ -315,10 +316,29 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
         return activeWarObjectives;
     }
 
+    public @NotNull Map<String, Poll<?>> getParticipativePolls() {
+        Map<String, Poll<?>> polls = new HashMap<>();
+        if (alliance != null) {
+            polls.putAll(alliance.getPollsFor(this));
+        }
+        if (faction != null) {
+            polls.putAll(faction.getPollsFor(this));
+        }
+        return polls;
+    }
+
     /* Object methods */
 
     @Override
     public int hashCode() {
         return uuid.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof FPlayer fPlayer)) {
+            return false;
+        }
+        return uuid.equals(fPlayer.getUniqueId());
     }
 }

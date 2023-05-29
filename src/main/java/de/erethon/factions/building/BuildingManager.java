@@ -2,10 +2,14 @@ package de.erethon.factions.building;
 
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
+import de.erethon.factions.faction.Faction;
 import de.erethon.factions.region.Region;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -16,14 +20,14 @@ public class BuildingManager {
 
     Factions plugin = Factions.get();
 
-    private List<Building> buildings = new CopyOnWriteArrayList<>();
-    private List<BuildSite> buildingTickets = new ArrayList<>();
+    private final List<Building> buildings = new CopyOnWriteArrayList<>();
+    private final List<BuildSite> buildingTickets = new ArrayList<>();
 
-    public BuildingManager(File dir) {
+    public BuildingManager(@NotNull File dir) {
         load(dir);
     }
 
-    public Building getByID(String id) {
+    public @Nullable Building getById(@NotNull String id) {
         for (Building building : buildings) {
             if (building.getId().equals(id)) {
                 return building;
@@ -32,11 +36,11 @@ public class BuildingManager {
         return null;
     }
 
-    public List<Building> getBuildings() {
+    public @NotNull List<Building> getBuildings() {
         return buildings;
     }
 
-    public void load(File dir) {
+    public void load(@NotNull File dir) {
         if (dir.listFiles() == null) {
             MessageUtil.log("No buildings found. Please create some.");
             return;
@@ -47,7 +51,7 @@ public class BuildingManager {
         MessageUtil.log("Loaded " + buildings.size() + " Buildings.");
     }
 
-    public void deleteBuilding(Player player) {
+    public void deleteBuilding(@NotNull Player player) {
         Region rg = plugin.getFPlayerCache().getByPlayer(player).getLastRegion();
         if (rg == null) {
             MessageUtil.sendMessage(player, "&cNot in Region.");
@@ -58,12 +62,12 @@ public class BuildingManager {
             MessageUtil.sendMessage(player, "&cNot a build site.");
         }
         buildSite.getRegion().getBuildSites().remove(buildSite);
-        buildSite.getRegion().getOwner().getFactionBuildings().remove(buildSite);
+        Faction owner = buildSite.getRegion().getOwner();
+        owner.getFactionBuildings().remove(buildSite);
         MessageUtil.sendMessage(player, "&aBuildSite deleted.");
-
     }
 
-    public BuildSite getBuildSite(Location loc, Region region) {
+    public @Nullable BuildSite getBuildSite(@NotNull Location loc, @NotNull Region region) {
         for (BuildSite buildSite : region.getBuildSites()) {
             if (buildSite.isInBuildSite(loc)) {
                 return buildSite;
@@ -72,11 +76,15 @@ public class BuildingManager {
         return null;
     }
 
-    public boolean hasOverlap(Location corner1, Location corner2, BuildSite existingSite) {
+    public boolean hasOverlap(@NotNull Location corner1, @NotNull Location corner2, @NotNull BuildSite existingSite) {
         return existingSite.isInBuildSite(corner1) || existingSite.isInBuildSite(corner2);
     }
 
-    public BuildSite getBuildSite(Block check, Region region) {
+    @Contract("null, _ -> null; !null, _ -> _")
+    public @Nullable BuildSite getBuildSite(@Nullable Block check, @NotNull Region region) {
+        if (check == null) {
+            return null;
+        }
         for (BuildSite buildSite : region.getBuildSites()) {
             if (buildSite.getInteractive().equals(check.getLocation())) {
                 return buildSite;

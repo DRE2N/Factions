@@ -1,5 +1,7 @@
 package de.erethon.factions.economy.resource;
 
+import org.jetbrains.annotations.NotNull;
+
 public enum Resource {
 
     BREAD,
@@ -11,15 +13,12 @@ public enum Resource {
     BEER,
     CANDLES;
 
-
-    public static Resource getByID(String id) {
+    public static Resource getById(@NotNull String id) {
         return valueOf(id.toUpperCase());
     }
 
-    public String getID() {
+    public @NotNull String getId() {
         return name().toLowerCase();
     }
-
-
 
 }

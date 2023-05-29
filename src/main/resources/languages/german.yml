@@ -4,6 +4,7 @@ alliance:
     prefix: "<dark_gray>[<dark_purple>&v1</dark_purple>]<gray> "
 acm:
   addedChunk: "Chunk <gold>&v1</gold> wurde hinzugefügt."
+  addedChunks: "<gold>&v1</gold> Chunks wurden hinzugefügt."
   addInsideRegion: "Chunk gehört bereits einer Region an."
   prefix: "<dark_gray>[<dark_red>ACM</dark_red>]</dark_gray><gray> "
   notSelected: "Du hast zurzeit keine Region ausgewählt."
@@ -94,6 +95,7 @@ error:
   playerIsNotInAFaction: "<red>Du befindest dich zurzeit in keiner Fraktion."
   playerNotFound: "<red>Der Spieler <gold>&v1</gold> konnte nicht gefunden werden."
   playerRegionNull: "<red>Du musst dich in einer Region befinden, um dies tun zu dürfen."
+  pollNotFound: "<red>Die Abstimmung <gold>&v1</gold> konnte nicht gefunden werden."
   regionInAnotherWorld: "<red>Die Region befindet sich in einer anderen Welt als du."
   regionIsNotAWarzone: "<red>Die Region is kein Kriegsgebiet."
   regionIsNotClaimable: "<red>Die Region kann nicht beansprucht werden."
@@ -116,6 +118,7 @@ faction:
     disbanded: "<gray>Die Fraktion <green>&v1</green> wurde aufgelöst."
     inactivePlayerKicked: "<green>&v1</green> wurde wegen Inaktivität gekickt."
     nameChanged: "<gray>Die Fraktion <green>&v1</green> hat ihren Namen zu <green>&v2</green> geändert."
+    newPoll: "<green>Eine neue Abstimmung wurde erstellt. Stimme mit <dark_green>/f vote &v1</dark_green> ab!"
     playerGotKicked: "<green>&v1</green> wurde aus der Fraktion geworfen."
     playerJoined: "<green>&v1</green> ist der Fraktion beigetreten."
     playerLeft: "<red>&v1</red> hat die Fraktion verlassen."

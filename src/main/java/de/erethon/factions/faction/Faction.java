@@ -17,7 +17,10 @@ import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.event.FPlayerFactionLeaveEvent;
 import de.erethon.factions.event.FactionDisbandEvent;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.poll.Poll;
+import de.erethon.factions.poll.PollContainer;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FException;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FPermissionUtil;
@@ -27,19 +30,21 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 /**
  * @author Fyreum
  */
-public class Faction extends FLegalEntity {
+public class Faction extends FLegalEntity implements PollContainer {
 
     /* Persistent */
     private Alliance alliance;
@@ -52,15 +57,15 @@ public class Faction extends FLegalEntity {
     private boolean open = false;
     private final Set<Faction> authorisedBuilders = new HashSet<>();
     private final Set<Faction> adjacentFactions = new HashSet<>();
+    private final Set<BuildSite> buildSites = new HashSet<>();
+    private final Map<PopulationLevel, Integer> population = new HashMap<>();
+    private FStorage fStorage;
+    private FactionLevel level = FactionLevel.HAMLET;
     /* Temporary */
     private final Set<FPlayer> invitedPlayers = new HashSet<>();
     private FAccount fAccount;
-    private FStorage fStorage;
-    private FactionLevel level = FactionLevel.HAMLET;
-
-    private Set<BuildSite> buildSites = new HashSet<>();
     private final Set<ActiveBuildingEffect> buildingEffects = new HashSet<>();
-    private final HashMap<PopulationLevel, Integer> population = new HashMap<>();
+    private final Map<String, Poll<?>> polls = new HashMap<>();
 
     protected Faction(@NotNull FPlayer admin, @NotNull Region coreRegion, int id, String name, String description) {
         super(new File(Factions.FACTIONS, id + ".yml"), id, name, description);
@@ -425,6 +430,26 @@ public class Faction extends FLegalEntity {
         return adjacentFactions.remove(other) | other.adjacentFactions.remove(this);
     }
 
+    public @NotNull Set<BuildSite> getFactionBuildings() {
+        return buildSites;
+    }
+
+    public boolean hasBuilding(@NotNull Building building) {
+        return buildSites.stream().anyMatch(buildSite -> buildSite.getBuilding() == building && buildSite.isFinished() && !buildSite.isDestroyed());
+    }
+
+    public @NotNull FStorage getStorage() {
+        return fStorage;
+    }
+
+    public @NotNull Map<PopulationLevel, Integer> getPopulation() {
+        return population;
+    }
+
+    public int getPopulation(@NotNull PopulationLevel level) {
+        return population.getOrDefault(level, 0);
+    }
+
     public @NotNull Set<FPlayer> getInvitedPlayers() {
         return invitedPlayers;
     }
@@ -441,31 +466,39 @@ public class Faction extends FLegalEntity {
         invitedPlayers.remove(fPlayer);
     }
 
-    public FAccount getFAccount() {
+    public @NotNull FAccount getFAccount() {
         return fAccount;
     }
 
-    public FStorage getStorage() {
-        return fStorage;
-    }
-
-    public HashMap<PopulationLevel, Integer> getPopulation() {
-        return population;
-    }
-
-    public int getPopulation(PopulationLevel level) {
-        return population.getOrDefault(level, 0);
-    }
-
-    public Set<BuildSite> getFactionBuildings() {
-        return buildSites;
-    }
-
-    public boolean hasBuilding(Building building) {
-        return buildSites.stream().anyMatch(buildSite -> buildSite.getBuilding() == building && buildSite.isFinished() && !buildSite.isDestroyed());
-    }
-
-    public Set<ActiveBuildingEffect> getBuildingEffects() {
+    public @NotNull Set<ActiveBuildingEffect> getBuildingEffects() {
         return buildingEffects;
+    }
+
+    @Override
+    public @NotNull Map<String, Poll<?>> getPolls() {
+        return polls;
+    }
+
+    @Override
+    public void addPoll(@NotNull Poll<?> poll) {
+        addPoll(poll, Poll.DEFAULT_DURATION);
+    }
+
+    @Override
+    public void addPoll(@NotNull Poll<?> poll, long duration) {
+        if (!poll.isOpen()) {
+            poll.openPoll(duration);
+        }
+        polls.put(poll.getName(), poll);
+        FBroadcastUtil.broadcastIf(FMessage.FACTION_INFO_NEW_POLL.message(poll.getName()), fPlayer -> fPlayer.getFaction() == this && poll.canParticipate(fPlayer));
+    }
+
+    @Override
+    public void removePoll(@NotNull Poll<?> poll) {
+        polls.remove(poll.getName());
+        if (poll.isOpen()) {
+            poll.closePoll();
+        }
+        HandlerList.unregisterAll(poll);
     }
 }

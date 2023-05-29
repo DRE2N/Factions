@@ -1,5 +1,6 @@
 package de.erethon.factions.poll;
 
+import de.erethon.aergia.util.TickUtil;
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
@@ -19,6 +20,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,6 +39,7 @@ import java.util.function.Function;
  */
 public abstract class Poll<V> implements Listener {
 
+    public static final long DEFAULT_DURATION = TickUtil.HOUR;
     public static final int ITEMS_PER_PAGE = 45;
     public static final NamespacedKey POLL_ITEM_ID_KEY = new NamespacedKey(Factions.get(), "pollItemId");
     public static final ItemStack NEXT_PAGE_BUTTON = buildFillItemStack(Material.PAPER, FMessage.GUI_POLL_NEXT_PAGE_NAME.message(), FMessage.GUI_POLL_NEXT_PAGE_INFO.itemMessage());
@@ -48,7 +51,9 @@ public abstract class Poll<V> implements Listener {
     protected final TreeSet<PollEntry> subjects;
     protected final Function<V, ItemStack> subjectConverter;
     protected final Map<Integer, Inventory> inventories = new HashMap<>();
-    protected boolean open = true;
+    protected boolean open = false;
+    protected long closeTime;
+    protected BukkitTask closeTask = null;
 
     public Poll(@NotNull String name, @NotNull PollScope scope, @NotNull Collection<@NotNull V> subjects, @NotNull Function<V, ItemStack> subjectConverter) {
         this(name, scope, subjects, subjectConverter, null);
@@ -67,12 +72,30 @@ public abstract class Poll<V> implements Listener {
             this.subjects.add(new PollEntry(subject));
         }
         this.subjectConverter = subjectConverter;
+    }
+
+    public void openPoll() {
+        openPoll(DEFAULT_DURATION);
+    }
+
+    public void openPoll(long duration) {
+        open = true;
         buildInventories();
         Bukkit.getPluginManager().registerEvents(this, plugin);
+
+        if (duration > 0) {
+            closeTime = System.currentTimeMillis() + duration;
+            closeTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, this::closePoll, duration);
+        }
     }
 
     public void closePoll() {
         open = false;
+        closeTime = System.currentTimeMillis();
+        if (closeTask != null) {
+            closeTask.cancel();
+            closeTask = null;
+        }
         buildInventories();
     }
 
@@ -225,6 +248,14 @@ public abstract class Poll<V> implements Listener {
 
     public boolean isOpen() {
         return open;
+    }
+
+    public long getCloseTime() {
+        return closeTime;
+    }
+
+    public @Nullable BukkitTask getCloseTask() {
+        return closeTask;
     }
 
     /* Statics */

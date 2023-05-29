@@ -1,30 +1,31 @@
 package de.erethon.factions.economy;
 
 import de.erethon.factions.Factions;
-import de.erethon.factions.data.FConfig;
 import de.erethon.factions.economy.resource.Resource;
 import de.erethon.factions.faction.Faction;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class FStorage {
 
     private Faction faction;
-    private final HashMap<Resource, Integer> resources = new HashMap<>();
-    private final HashMap<Resource, Integer> resourceLimits;
+    private final Map<Resource, Integer> resources = new HashMap<>();
+    private final Map<Resource, Integer> resourceLimits;
 
-    public FStorage(Faction faction) {
+    public FStorage(@NotNull Faction faction) {
         this.faction = faction;
         resourceLimits = Factions.get().getFConfig().getDefaultResourceLimits();
     }
 
-    public FStorage(Faction faction, ConfigurationSection section) {
+    public FStorage(@NotNull Faction faction, @NotNull ConfigurationSection section) {
         this.faction = faction;
         resourceLimits = Factions.get().getFConfig().getDefaultResourceLimits();
         for (String key : section.getKeys(false)) {
-            Resource resource = Resource.getByID(key);
+            Resource resource = Resource.getById(key);
             if (resource == null) {
                 continue;
             }
@@ -32,7 +33,7 @@ public class FStorage {
         }
     }
 
-    public boolean addResource(Resource resource, int amount) {
+    public boolean addResource(@NotNull Resource resource, int amount) {
         int current = resources.getOrDefault(resource, 0);
         int limit = resourceLimits.getOrDefault(resource, 0);
         if (current + amount > limit) {
@@ -42,7 +43,7 @@ public class FStorage {
         return true;
     }
 
-    public boolean removeResource(Resource resource, int amount) {
+    public boolean removeResource(@NotNull Resource resource, int amount) {
         int current = resources.getOrDefault(resource, 0);
         if (current - amount < 0) {
             return false;
@@ -51,31 +52,31 @@ public class FStorage {
         return true;
     }
 
-    public boolean canAfford(Resource resource, int amount) {
+    public boolean canAfford(@NotNull Resource resource, int amount) {
         return resources.getOrDefault(resource, 0) >= amount;
     }
 
-    public int getResource(Resource resource) {
+    public int getResource(@NotNull Resource resource) {
         return resources.getOrDefault(resource, 0);
     }
 
-    public void setResourceLimit(Resource resource, int amount) {
+    public void setResourceLimit(@NotNull Resource resource, int amount) {
         resourceLimits.put(resource, amount);
     }
 
-    public void increaseResourceLimit(Resource resource, int amount) {
+    public void increaseResourceLimit(@NotNull Resource resource, int amount) {
         int current = resourceLimits.getOrDefault(resource, 0);
         resourceLimits.put(resource, current + amount);
     }
 
-    public boolean isFull(Resource resource) {
+    public boolean isFull(@NotNull Resource resource) {
         return resources.getOrDefault(resource, 0) >= resourceLimits.getOrDefault(resource, 0);
     }
 
-    public ConfigurationSection save() {
+    public @NotNull ConfigurationSection save() {
         ConfigurationSection section = new YamlConfiguration();
         for (Resource resource : resources.keySet()) {
-            section.set(resource.getID(), resources.get(resource));
+            section.set(resource.getId(), resources.get(resource));
         }
         return section;
     }

@@ -231,6 +231,10 @@ public class Region extends FLegalEntity {
         this.type = type;
     }
 
+    public @NotNull Set<BuildSite> getBuildSites() {
+        return buildSites;
+    }
+
     /* Object methods */
 
     @Override
@@ -248,10 +252,6 @@ public class Region extends FLegalEntity {
     @Override
     public String toString() {
         return "Region[world=" + getWorldId() + ",id=" + id + "]";
-    }
-
-    public Set<BuildSite> getBuildSites() {
-        return buildSites;
     }
 
 }

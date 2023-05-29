@@ -4,6 +4,7 @@ import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.poll.Poll;
+import de.erethon.factions.poll.PollContainer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
@@ -28,17 +29,17 @@ import java.util.Set;
  *
  * @author Fyreum
  */
-public class Alliance extends FLegalEntity {
+public class Alliance extends FLegalEntity implements PollContainer {
 
-    /* Data */
+    /* Persistent */
     private final Set<Region> coreRegions = new HashSet<>();
     private final Set<Region> temporaryRegions = new HashSet<>();
     private final Set<Region> unconfirmedTemporaryRegions = new HashSet<>();
     private final Set<Faction> factions = new HashSet<>();
     private String shortName;
     private WarScores warScores;
-    /* Functionality */
-    private final Map<String, Poll<?>> activePolls = new HashMap<>();
+    /* Temporary */
+    private final Map<String, Poll<?>> polls = new HashMap<>();
 
     protected Alliance(@NotNull File file, int id, @NotNull String name, @Nullable String description) {
         super(file, id, name, description);
@@ -169,17 +170,31 @@ public class Alliance extends FLegalEntity {
         return warScores;
     }
 
-    public @NotNull Map<String, Poll<?>> getActivePolls() {
-        return activePolls;
+    @Override
+    public @NotNull Map<String, Poll<?>> getPolls() {
+        return polls;
     }
 
+    @Override
     public void addPoll(@NotNull Poll<?> poll) {
-        activePolls.put(poll.getName(), poll);
+        addPoll(poll, Poll.DEFAULT_DURATION);
+    }
+
+    @Override
+    public void addPoll(@NotNull Poll<?> poll, long duration) {
+        if (!poll.isOpen()) {
+            poll.openPoll(duration);
+        }
+        polls.put(poll.getName(), poll);
         FBroadcastUtil.broadcastIf(FMessage.ALLIANCE_INFO_NEW_POLL.message(poll.getName()), fPlayer -> fPlayer.getAlliance() == this && poll.canParticipate(fPlayer));
     }
 
+    @Override
     public void removePoll(@NotNull Poll<?> poll) {
-        activePolls.remove(poll.getName());
+        polls.remove(poll.getName());
+        if (poll.isOpen()) {
+            poll.closePoll();
+        }
         HandlerList.unregisterAll(poll);
     }
 }

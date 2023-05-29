@@ -1,5 +1,7 @@
 package de.erethon.factions.building;
 
-public record ActiveBuildingEffect(BuildingEffect effect, BuildSite site, long expiration) {
+import org.jetbrains.annotations.NotNull;
+
+public record ActiveBuildingEffect(@NotNull BuildingEffect effect, @NotNull BuildSite site, long expiration) {
 
 }

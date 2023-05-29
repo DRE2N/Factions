@@ -8,6 +8,8 @@ import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,36 +40,36 @@ public class BuildingEffect implements ConfigurationSerializable {
     private int exportDailyLimit = 0;
     private String memberPermission;
 
-    public void add(Faction faction) {
+    public void add(@NotNull Faction faction) {
 
     }
 
-    public void remove(Faction faction) {
+    public void remove(@NotNull Faction faction) {
 
     }
 
 
-    public Map<Resource, Double> getConsumptionModifier() {
+    public @NotNull Map<Resource, Double> getConsumptionModifier() {
         return consumptionModifier;
     }
 
-    public void setConsumptionModifier(Map<Resource, Double> consumptionModifier) {
+    public void setConsumptionModifier(@NotNull Map<Resource, Double> consumptionModifier) {
         this.consumptionModifier = consumptionModifier;
     }
 
-    public Map<Resource, Double> getProductionModifier() {
+    public @NotNull Map<Resource, Double> getProductionModifier() {
         return productionModifier;
     }
 
-    public void setProductionModifier(Map<Resource, Double> productionModifier) {
+    public void setProductionModifier(@NotNull Map<Resource, Double> productionModifier) {
         this.productionModifier = productionModifier;
     }
 
-    public Map<PopulationLevel, Integer> getHappinessBuff() {
+    public @NotNull Map<PopulationLevel, Integer> getHappinessBuff() {
         return happinessBuff;
     }
 
-    public void setHappinessBuff(Map<PopulationLevel, Integer> happinessBuff) {
+    public void setHappinessBuff(@NotNull Map<PopulationLevel, Integer> happinessBuff) {
         this.happinessBuff = happinessBuff;
     }
 
@@ -104,27 +106,27 @@ public class BuildingEffect implements ConfigurationSerializable {
     }
 
 
-    public String getDisplayName() {
+    public @NotNull String getDisplayName() {
         return displayName;
     }
 
-    public void setDisplayName(String displayName) {
+    public void setDisplayName(@NotNull String displayName) {
         this.displayName = displayName;
     }
 
-    public Map<Effect, Integer> getMinecraftEffects() {
+    public @NotNull Map<Effect, Integer> getMinecraftEffects() {
         return minecraftEffects;
     }
 
-    public void setMinecraftEffects(Map<Effect, Integer> minecraftEffects) {
+    public void setMinecraftEffects(@NotNull Map<Effect, Integer> minecraftEffects) {
         this.minecraftEffects = minecraftEffects;
     }
 
-    public RegionType getChangeTypeTo() {
+    public @NotNull RegionType getChangeTypeTo() {
         return changeTypeTo;
     }
 
-    public void setChangeTypeTo(RegionType changeTypeTo) {
+    public void setChangeTypeTo(@NotNull RegionType changeTypeTo) {
         this.changeTypeTo = changeTypeTo;
     }
 
@@ -176,11 +178,11 @@ public class BuildingEffect implements ConfigurationSerializable {
         this.exportDailyLimit = exportDailyLimit;
     }
 
-    public String getMemberPermission() {
+    public @Nullable String getMemberPermission() {
         return memberPermission;
     }
 
-    public void setMemberPermission(String memberPermission) {
+    public void setMemberPermission(@Nullable String memberPermission) {
         this.memberPermission = memberPermission;
     }
 
@@ -188,20 +190,20 @@ public class BuildingEffect implements ConfigurationSerializable {
         return duration;
     }
 
-    public BuildingEffect fromConfigSection(ConfigurationSection section) {
+    public @NotNull BuildingEffect fromConfigSection(@NotNull ConfigurationSection section) {
         displayName = (String) section.get("displayName");
         for (String key : section.getKeys(false)) {
             if (key.contains("consumptionModifier.")) {
                 String name = key.replace("consumptionModifier.", "");
-                consumptionModifier.put(Resource.getByID(name), section.getDouble(key, 0.0));
+                consumptionModifier.put(Resource.getById(name), section.getDouble(key, 0.0));
             }
             if (key.contains("productionModifier.")) {
                 String name = key.replace("productionModifier.", "");
-                productionModifier.put(Resource.getByID(name), section.getDouble(key, 0.0));
+                productionModifier.put(Resource.getById(name), section.getDouble(key, 0.0));
             }
             if (key.contains("virtualResourceProduction.")) {
                 String name = key.replace("virtualResourceProduction.", "");
-                virtualResourceProduction.put(Resource.getByID(name), section.getInt(key));
+                virtualResourceProduction.put(Resource.getById(name), section.getInt(key));
             }
             if (key.contains("physicalResourceProduction.")) {
                 String name = key.replace("physicalResourceProduction.", "");
@@ -234,14 +236,14 @@ public class BuildingEffect implements ConfigurationSerializable {
     }
 
     @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         Map<String, Object> args = new HashMap<>();
         args.put("displayName", displayName);
         for (Resource resource : consumptionModifier.keySet()) {
-            args.put("consumption." + resource.getID(), consumptionModifier.get(resource));
+            args.put("consumption." + resource.getId(), consumptionModifier.get(resource));
         }
         for (Resource resource : productionModifier.keySet()) {
-            args.put("production." + resource.getID(), productionModifier.get(resource));
+            args.put("production." + resource.getId(), productionModifier.get(resource));
         }
         for (PopulationLevel pop : happinessBuff.keySet()) {
             args.put("happiness." + pop, happinessBuff.get(pop));
@@ -250,7 +252,7 @@ public class BuildingEffect implements ConfigurationSerializable {
             args.put("effects." + eff, minecraftEffects.get(eff));
         }
         for (Resource resource : virtualResourceProduction.keySet()) {
-            args.put("virtualResourceProduction." + resource.getID(), virtualResourceProduction.get(resource));
+            args.put("virtualResourceProduction." + resource.getId(), virtualResourceProduction.get(resource));
         }
         for (Material material : physicalResourceProduction.keySet()) {
             args.put("physicalResourceProduction." + material.name(), physicalResourceProduction.get(material));

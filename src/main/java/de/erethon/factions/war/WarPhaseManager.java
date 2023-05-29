@@ -104,7 +104,6 @@ public class WarPhaseManager extends EConfig {
         currentStage = nextStage;
     }
 
-    // todo: Calculate winners and losers
     private void onWarZoneClose() {
         for (RegionCache cache : plugin.getRegionManager().getCaches().values()) {
             for (Region region : cache) {
@@ -229,11 +228,12 @@ public class WarPhaseManager extends EConfig {
             String[] split = key.split("-");
             int start = Integer.parseInt(split[0]);
             int end = Integer.parseInt(split[1]);
+            int max = Math.max(start, Math.max(end, 7));
             result.add(start); // Add the first value
 
             while (start != end) {
-                if (++start > 7) {
-                    start -= 7;
+                if (++start > max) {
+                    start -= max;
                 }
                 result.add(start);
             }

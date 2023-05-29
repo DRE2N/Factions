@@ -1,6 +1,7 @@
 package de.erethon.factions.building;
 
 import de.erethon.bedrock.chat.MessageUtil;
+import de.erethon.bedrock.config.ConfigUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
@@ -15,6 +16,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,27 +40,27 @@ public class BuildSite implements ConfigurationSerializable {
     private boolean finished;
     private boolean hasTicket = false;
     private boolean isBusy = false;
-    private Set<ActiveBuildingEffect> activeBuildingEffects = new HashSet<>();
+    private final Set<ActiveBuildingEffect> activeBuildingEffects = new HashSet<>();
 
-    public BuildSite(Building b, Region rg, Location loc1, Location loc2, Location center) {
-        building = b;
-        region = rg;
+    public BuildSite(@NotNull Building building, @NotNull Region region, @NotNull Location loc1, @NotNull Location loc2, @NotNull Location center) {
+        this.building = building;
+        this.region = region;
         finished = false;
         corner = loc1;
         otherCorner = loc2;
         interactive = center;
-        MessageUtil.log("Created new building site in " + region.getName() + ". Building type: " + b.getName());
-        rg.getBuildSites().add(this);
+        MessageUtil.log("Created new building site in " + this.region.getName() + ". Building type: " + building.getName());
+        region.getBuildSites().add(this);
         //setupHolo();
     }
 
-    public BuildSite (Map<String, Object> args) {
-        building = buildingManager.getByID((String) args.get("building"));
+    public BuildSite(@NotNull Map<String, Object> args) {
+        building = buildingManager.getById((String) args.get("building"));
         region = plugin.getRegionManager().getRegionById((int) args.get("region"));
-        corner = Location.deserialize((Map<String, Object>) args.get("location.corner"));
-        otherCorner = Location.deserialize((Map<String, Object>) args.get("location.otherCorner"));
+        corner = Location.deserialize(ConfigUtil.getMap(args.get("location.corner")));
+        otherCorner = Location.deserialize(ConfigUtil.getMap(args.get("location.otherCorner")));
         MessageUtil.log((String) args.get("location.interactable"));
-        interactive = Location.deserialize((Map<String, Object>)args.get("location.interactable"));
+        interactive = Location.deserialize(ConfigUtil.getMap(args.get("location.interactable")));
         finished = (boolean) args.get("finished");
         hasTicket = (boolean) args.get("hasTicket");
         problemMessage = (String) args.get("problemMessage");
@@ -68,8 +71,8 @@ public class BuildSite implements ConfigurationSerializable {
         //setupHolo();
     }
 
-    public BuildSite (ConfigurationSection config) {
-        building = buildingManager.getByID(config.getString("building"));
+    public BuildSite(@NotNull ConfigurationSection config) {
+        building = buildingManager.getById(config.getString("building"));
         region = plugin.getRegionManager().getRegionById((int) config.get("region"));
         corner =  Location.deserialize(config.getConfigurationSection("location.corner").getValues(false));
         otherCorner = Location.deserialize(config.getConfigurationSection("location.otherCorner").getValues(false));
@@ -178,7 +181,7 @@ public class BuildSite implements ConfigurationSerializable {
 
     public boolean isDestroyed() {
         boolean damaged = false;
-        for (org.bukkit.Material material : building.getRequiredBlocks().keySet()) {
+        for (Material material : building.getRequiredBlocks().keySet()) {
             if (getPlacedBlocks().get(material) < building.getRequiredBlocks().get(material)) {
                 damaged = true;
             }
@@ -239,7 +242,7 @@ public class BuildSite implements ConfigurationSerializable {
         runAsync.runTaskAsynchronously(plugin);
     }
 
-    public String getProgressString(Material block) {
+    public @NotNull String getProgressString(@Nullable Material block) {
         int total = 0;
         if (building.getRequiredBlocks().get(block) != null) {
             total = building.getRequiredBlocks().get(block);
@@ -254,7 +257,7 @@ public class BuildSite implements ConfigurationSerializable {
         return ChatColor.translateAlternateColorCodes('&', "&a" + placed + "&8/&7" + total);
     }
 
-    public boolean isInBuildSite(Location location) {
+    public boolean isInBuildSite(@NotNull Location location) {
         double xp = location.getX();
         double yp = location.getY();
         double zp = location.getZ();
@@ -268,7 +271,7 @@ public class BuildSite implements ConfigurationSerializable {
         return new IntRange(x1, x2).containsDouble(xp) && new IntRange(y1, y2).containsDouble(yp) && new IntRange(z1, z2).containsDouble(zp);
     }
 
-    public boolean isInBuildSite(Player player) {
+    public boolean isInBuildSite(@NotNull Player player) {
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
         Region rg = fPlayer.getLastRegion();
         if (rg == null) {
@@ -278,9 +281,7 @@ public class BuildSite implements ConfigurationSerializable {
         return isInBuildSite(location);
     }
 
-
-
-    public Set<Block> getBlocks(World world) {
+    public @NotNull Set<Block> getBlocks(@NotNull World world) {
         Set<Block> blockList = new HashSet<>();
         Set<Location> result = new HashSet<>();
         double minX = Math.min(corner.getX(), otherCorner.getX());
@@ -299,35 +300,34 @@ public class BuildSite implements ConfigurationSerializable {
         for (Location location : result) {
             blockList.add(world.getBlockAt(location));
         }
-
         return blockList;
     }
 
-    public BuildSite getSite(){
+    public @NotNull BuildSite getSite(){
         return this;
     }
 
-    public Building getBuilding() {
+    public @NotNull Building getBuilding() {
         return building;
     }
 
-    public Region getRegion() {
+    public @NotNull Region getRegion() {
         return region;
     }
 
-    public Location getCorner() {
+    public @NotNull Location getCorner() {
         return corner;
     }
 
-    public Location getOtherCorner() {
+    public @NotNull Location getOtherCorner() {
         return otherCorner;
     }
 
-    public Location getInteractive() {
+    public @NotNull Location getInteractive() {
         return interactive;
     }
 
-    public Map<Material, Integer> getPlacedBlocks() {
+    public @NotNull Map<Material, Integer> getPlacedBlocks() {
         return placedBlocks;
     }
 
@@ -335,21 +335,19 @@ public class BuildSite implements ConfigurationSerializable {
         return finished;
     }
 
-    public void setProblemMessage(String msg) {
+    public void setProblemMessage(@NotNull String msg) {
         problemMessage = msg;
     }
 
-
     /**
-     * true if there is already a async operation running
-     * on this buildsite
+     * @return true if there is already an async operation running on this buildsite.
      */
     public boolean isBusy() {
         return isBusy;
     }
 
     @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         Map<String, Object> args = new HashMap<>();
         args.put("building", building.getId());
         args.put("region", region.getId());

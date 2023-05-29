@@ -64,9 +64,9 @@ public final class Factions extends EPlugin {
     private FCommandCache fCommandCache;
 
     /* Instances */
+    private BuildingManager buildingManager;
     private WarObjectiveManager warObjectiveManager;
     private WarPhaseManager warPhaseManager;
-    private BuildingManager buildingManager;
 
     /* Listeners */
     private FPlayerListener fPlayerListener;
@@ -286,6 +286,10 @@ public final class Factions extends EPlugin {
         return fCommandCache;
     }
 
+    public @NotNull BuildingManager getBuildingManager() {
+        return buildingManager;
+    }
+
     public @NotNull WarObjectiveManager getWarObjectiveManager() {
         return warObjectiveManager;
     }
@@ -304,10 +308,6 @@ public final class Factions extends EPlugin {
 
     public @NotNull WarListener getWarListener() {
         return warListener;
-    }
-
-    public BuildingManager getBuildingManager() {
-        return buildingManager;
     }
 
     public boolean hasEconomyProvider() {

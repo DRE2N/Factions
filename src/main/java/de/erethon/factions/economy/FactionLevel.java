@@ -4,8 +4,11 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.building.Building;
 import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.faction.Faction;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public enum FactionLevel {
@@ -16,28 +19,28 @@ public enum FactionLevel {
     METROPOLIS("Metropole");
 
     private final String name;
-    private final HashMap<PopulationLevel, Integer> requiredPopulation;
+    private final Map<PopulationLevel, Integer> requiredPopulation;
     private final Set<Building> requiredBuildings;
 
-    FactionLevel(String name) {
+    FactionLevel(@NotNull String name) {
         this.name = name;
         this.requiredPopulation = Factions.get().getFConfig().getRequiredPopulation(this);
         this.requiredBuildings = Factions.get().getFConfig().getRequiredBuildings(this);
     }
 
-    public String getName() {
+    public @NotNull String getName() {
         return name;
     }
 
-    public HashMap<PopulationLevel, Integer> getRequiredPopulation() {
+    public @NotNull Map<PopulationLevel, Integer> getRequiredPopulation() {
         return requiredPopulation;
     }
 
-    public Set<Building> getRequiredBuildings() {
+    public @NotNull Set<Building> getRequiredBuildings() {
         return requiredBuildings;
     }
 
-    public boolean hasRequiredPopulationToLevelUpToThis(Faction faction) {
+    public boolean hasRequiredPopulationToLevelUpToThis(@NotNull Faction faction) {
         if (this == METROPOLIS) {
             return false; // Max level
         }
@@ -49,7 +52,7 @@ public enum FactionLevel {
         return true;
     }
 
-    public boolean hasRequiredBuildingsToLevelUpToThis(Faction faction) {
+    public boolean hasRequiredBuildingsToLevelUpToThis(@NotNull Faction faction) {
         if (this == METROPOLIS) {
             return false; // Max level
         }
@@ -61,7 +64,7 @@ public enum FactionLevel {
         return true;
     }
 
-    public FactionLevel next() {
+    public @Nullable FactionLevel next() {
         return switch (this) {
             case HAMLET -> TOWN;
             case TOWN -> VILLAGE;

@@ -21,6 +21,7 @@ import de.erethon.factions.command.ShortNameCommand;
 import de.erethon.factions.command.ShowCommand;
 import de.erethon.factions.command.UnclaimCommand;
 import de.erethon.factions.command.VersionCommand;
+import de.erethon.factions.command.VoteCommand;
 
 /**
  * @author Fyreum
@@ -49,6 +50,7 @@ public class FCommandCache extends ECommandCache {
         addCommand(new ShowCommand());
         addCommand(new UnclaimCommand());
         addCommand(new VersionCommand());
+        addCommand(new VoteCommand());
     }
 
     @Override

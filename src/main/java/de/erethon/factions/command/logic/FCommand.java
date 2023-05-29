@@ -294,6 +294,14 @@ public abstract class FCommand extends ECommand {
         return getTabList(plugin.getWarObjectiveManager().getObjectives().keySet(), arg);
     }
 
+    protected @NotNull List<String> getTabPolls(@NotNull CommandSender sender, @NotNull String arg) {
+        FPlayer fPlayer = getFPlayerRaw(sender);
+        if (fPlayer == null) {
+            return List.of();
+        }
+        return getTabList(fPlayer.getParticipativePolls().keySet(), arg);
+    }
+
     /* Assure methods */
 
     protected void fAssure(boolean b, @NotNull Supplier<String> message) {

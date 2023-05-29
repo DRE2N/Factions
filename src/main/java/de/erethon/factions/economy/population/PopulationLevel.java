@@ -1,5 +1,7 @@
 package de.erethon.factions.economy.population;
 
+import org.jetbrains.annotations.NotNull;
+
 public enum PopulationLevel {
 
     BEGGAR(),
@@ -11,7 +13,7 @@ public enum PopulationLevel {
     PopulationLevel() {
     }
 
-    public PopulationLevel above() {
+    public @NotNull PopulationLevel above() {
         return switch (this) {
             case BEGGAR -> PEASANT;
             case PEASANT -> CITIZEN;
@@ -21,7 +23,7 @@ public enum PopulationLevel {
         };
     }
 
-    public PopulationLevel below() {
+    public @NotNull PopulationLevel below() {
         return switch (this) {
             case BEGGAR -> BEGGAR;
             case PEASANT -> BEGGAR;

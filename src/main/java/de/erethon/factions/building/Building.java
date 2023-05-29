@@ -25,6 +25,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +44,8 @@ public class Building {
 
     public static final String YAML = ".yml";
 
-    private File file;
-    private FileConfiguration config;
+    private final File file;
+    private final FileConfiguration config;
 
     private String id;
     private Component name;
@@ -53,21 +55,20 @@ public class Building {
     private int size;
     private Map<Resource, Integer> unlockCost = new HashMap<>();
     private Map<Material, Integer> requiredBlocks = new HashMap<>();
-    private Map<FSetTag, Integer> requiredBlockTypes = new HashMap<>();
-    private Map<PopulationLevel, Integer> requiredPopulation = new HashMap<>();
-    private Set<RegionType> requiredRegionTypes = new HashSet<>();
+    private final Map<FSetTag, Integer> requiredBlockTypes = new HashMap<>();
+    private final Map<PopulationLevel, Integer> requiredPopulation = new HashMap<>();
+    private final Set<RegionType> requiredRegionTypes = new HashSet<>();
     private Biome requiredBiome;
     private List<String> requiredBuildings = new ArrayList<>(); // String with ids because the other buildings might not be loaded yet.
-    private Set<BuildingEffect> effects = new HashSet<>();
+    private final Set<BuildingEffect> effects = new HashSet<>();
     Material icon;
 
-
-    public Building(File file) {
+    public Building(@NotNull File file) {
         this.file = file;
         if (!file.exists()) {
             try {
                 file.createNewFile();
-            } catch (IOException exception) {
+            } catch (IOException ignored) {
             }
         }
         config = YamlConfiguration.loadConfiguration(file);
@@ -75,45 +76,44 @@ public class Building {
         load();
     }
 
-
-    public void build(Player p, Faction faction, Region rg, Location center) {
+    public void build(@NotNull Player player, @NotNull Faction faction, @NotNull Region region, @NotNull Location center) {
         pay(faction);
-        new BuildSite(this, rg, getCorner1(center), getCorner2(center), center);
-        MessageUtil.sendMessage(p, FMessage.BUILDING_SITE_CREATED.getMessage());
+        new BuildSite(this, region, getCorner1(center), getCorner2(center), center);
+        MessageUtil.sendMessage(player, FMessage.BUILDING_SITE_CREATED.getMessage());
     }
 
-    public boolean checkRequirements(Player p, Faction faction, Location loc) {
+    public boolean checkRequirements(@NotNull Player player, @Nullable Faction faction, @NotNull Location loc) {
         FPlayerCache playerCache = plugin.getFPlayerCache();
         RegionManager board = plugin.getRegionManager();
-        FPlayer fPlayer = playerCache.getByPlayer(p);
+        FPlayer fPlayer = playerCache.getByPlayer(player);
         if (faction == null) {
-            MessageUtil.sendMessage(p, FMessage.ERROR_PLAYER_IS_NOT_IN_A_FACTION.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_PLAYER_IS_NOT_IN_A_FACTION.getMessage());
             return false;
         }
         if (!faction.isPrivileged(fPlayer)) {
-            MessageUtil.sendMessage(p, FMessage.ERROR_NO_PERMISSION.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_NO_PERMISSION.getMessage());
             return false;
         }
         Region rg = fPlayer.getLastRegion();
         if (rg == null) {
-            MessageUtil.sendMessage(p, FMessage.ERROR_REGION_NOT_FOUND.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_REGION_NOT_FOUND.getMessage());
             return false;
         }
         // If the faction does not own the region and the building is not a war building
         if (rg.getOwner() != faction && !isWarBuilding()) {
-            MessageUtil.sendMessage(p, FMessage.ERROR_REGION_NOT_FOUND.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_REGION_NOT_FOUND.getMessage());
             return false;
         }
         /*boolean isBorder = false;
-        LazyChunk chunk = new LazyChunk(p.getChunk());
-        for (Chunk c : chunk.getFastChunksAround(p.getWorld())) {
+        LazyChunk chunk = new LazyChunk(player.getChunk());
+        for (Chunk c : chunk.getFastChunksAround(player.getWorld())) {
             if (board.getRegionByChunk(c, rg) != rg) {
                 isBorder = true;
             }
         }
         // If the building area overlaps with another region
         if (isBorder) {
-            MessageUtil.sendMessage(p, FMessage.ERROR_BUILDING_TOO_CLOSE_BORDER.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_TOO_CLOSE_BORDER.getMessage());
             return false;
         }*/
         boolean isInOtherBuilding = false;
@@ -124,34 +124,34 @@ public class Building {
         }
         // If the building overlaps with an existing building
         if (isInOtherBuilding) {
-            MessageUtil.sendMessage(p, FMessage.ERROR_BUILDING_BLOCKED.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_BLOCKED.getMessage());
             return false;
         }
         // If the region is not of the correct RegionType
         if (!hasRequiredType(rg)) {
-            MessageUtil.sendMessage(p, FMessage.ERROR_BUILDING_REQUIRED_TYPE.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_REQUIRED_TYPE.getMessage());
             return false;
         }
         // If the building requires other buildings to be built first in this faction
         if (!hasRequiredBuilding(faction)) {
-            MessageUtil.sendMessage(p, FMessage.ERROR_BUILDING_REQUIRED_FACTION.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_REQUIRED_FACTION.getMessage());
             return false;
         }
         // If the building requires a certain amount of population at a specific level
         if (!hasRequiredPopulation(rg)) {
-            MessageUtil.sendMessage(p, FMessage.ERROR_BUILDING_POPULATION.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_POPULATION.getMessage());
             return false;
         }
         // If the faction can not afford the unlock costs.
         if (!canPay(faction)) {
-            MessageUtil.sendMessage(p, FMessage.ERROR_BUILDING_NOT_ENOUGH_RESOURCES.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_NOT_ENOUGH_RESOURCES.getMessage());
             return false;
         }
         return true;
     }
 
-    public boolean canPay(Faction f) {
-        FStorage storage = f.getStorage();
+    public boolean canPay(@NotNull Faction faction) {
+        FStorage storage = faction.getStorage();
         boolean canPay = true;
         for (Map.Entry<Resource, Integer> resource : getUnlockCost().entrySet()) {
             if (!storage.canAfford(resource.getKey(), resource.getValue())) {
@@ -161,23 +161,23 @@ public class Building {
         return canPay;
     }
 
-    public void pay(Faction faction) {
+    public void pay(@NotNull Faction faction) {
         FStorage storage = faction.getStorage();
         for (Map.Entry<Resource, Integer> resource : getUnlockCost().entrySet()) {
             storage.removeResource(resource.getKey(), resource.getValue());
         }
     }
 
-    public boolean hasRequiredBuilding(Faction f) {
+    public boolean hasRequiredBuilding(@NotNull Faction faction) {
         BuildingManager buildingManager = plugin.getBuildingManager();
         Set<Building> buildings = new HashSet<>();
-        if (getRequiredBuildings() == null || getRequiredBuildings().isEmpty()) {
+        if (getRequiredBuildings().isEmpty()) {
             return true;
         }
-        if (f.getFactionBuildings() == null || f.getFactionBuildings().isEmpty()) {
+        if (faction.getFactionBuildings().isEmpty()) {
             return false;
         }
-        for (BuildSite bs : f.getFactionBuildings()) {
+        for (BuildSite bs : faction.getFactionBuildings()) {
             if (!bs.isFinished()) {
                 continue;
             }
@@ -185,21 +185,21 @@ public class Building {
         }
         Set<Building> required = new HashSet<>();
         for (String s : requiredBuildings) {
-            required.add(buildingManager.getByID(s));
+            required.add(buildingManager.getById(s));
         }
         return buildings.containsAll(required);
     }
 
-    public boolean hasRequiredPopulation(Region rg) {
+    public boolean hasRequiredPopulation(@NotNull Region region) {
         Set<PopulationLevel> pop = new HashSet<>();
-        Faction f = rg.getOwner();
+        Faction f = region.getOwner();
         if (f == null) {
             return false;
         }
-        if (getRequiredPopulation() == null || getRequiredPopulation().isEmpty()) {
+        if (getRequiredPopulation().isEmpty()) {
             return true;
         }
-        if (f.getPopulation() == null || f.getPopulation().isEmpty()) {
+        if (f.getPopulation().isEmpty()) {
             return false;
         }
         boolean requirements = true;
@@ -211,8 +211,8 @@ public class Building {
         return requirements;
     }
 
-    public boolean hasRequiredType(Region rg) {
-        return requiredRegionTypes.contains(rg.getType());
+    public boolean hasRequiredType(@NotNull Region region) {
+        return requiredRegionTypes.contains(region.getType());
     }
 
     /**
@@ -221,7 +221,7 @@ public class Building {
      * @param center the center location of the building
      * @param allowed true/false = green/red
      */
-    public void displayFrame(Player player, Location center, boolean allowed) {
+    public void displayFrame(@NotNull Player player, @NotNull Location center, boolean allowed) {
         BukkitRunnable particleTask = new BukkitRunnable() {
             @Override
             public void run() {
@@ -275,7 +275,7 @@ public class Building {
         cancel.runTaskLater(plugin, 200);
     }
 
-    public Location getCorner1(Location center) {
+    public @NotNull Location getCorner1(@NotNull Location center) {
         World world = center.getWorld();
         int radius = getSize();
         int x = center.getBlockX() + radius;
@@ -284,7 +284,7 @@ public class Building {
         return new Location(world, x, y, z);
     }
 
-    public Location getCorner2(Location center) {
+    public @NotNull Location getCorner2(@NotNull Location center) {
         World world = center.getWorld();
         int radius = getSize();
         int x = center.getBlockX() - radius;
@@ -293,7 +293,7 @@ public class Building {
         return new Location(world, x, y, z);
     }
 
-    public void setId(String identifier) {
+    public void setId(@NotNull String identifier) {
         this.id = identifier;
     }
 
@@ -318,53 +318,56 @@ public class Building {
         this.size = size;
     }
 
-    public Map<Resource, Integer> getUnlockCost() {
+    public @NotNull Map<Resource, Integer> getUnlockCost() {
         return unlockCost;
     }
 
-    public void setUnlockCost(Map<Resource, Integer> unlockCost) {
+    public void setUnlockCost(@NotNull Map<Resource, Integer> unlockCost) {
         this.unlockCost = unlockCost;
     }
 
-    public Map<Material, Integer> getRequiredBlocks() {
+    public @NotNull Map<Material, Integer> getRequiredBlocks() {
         return requiredBlocks;
     }
 
-    public Map<PopulationLevel, Integer> getRequiredPopulation() {
-        return requiredPopulation;
-    }
-
-    public void setRequiredBlocks(Map<Material, Integer> requiredBlocks) {
+    public void setRequiredBlocks(@NotNull Map<Material, Integer> requiredBlocks) {
         this.requiredBlocks = requiredBlocks;
     }
 
-    public List<String> getRequiredBuildings() {
+    public @NotNull Map<FSetTag, Integer> getRequiredBlockTypes() {
+        return requiredBlockTypes;
+    }
+
+    public @NotNull Map<PopulationLevel, Integer> getRequiredPopulation() {
+        return requiredPopulation;
+    }
+
+    public @NotNull List<String> getRequiredBuildings() {
         return requiredBuildings;
     }
 
-
-    public String getId() {
+    public @NotNull String getId() {
         return id;
     }
 
-    public List<Component> getDescription() {
+    public @NotNull List<Component> getDescription() {
         return description;
     }
 
-    public Component getName() {
+    public @NotNull Component getName() {
         return name;
     }
 
-    public Set<BuildingEffect> getEffects() {
+    public @NotNull Set<BuildingEffect> getEffects() {
         return effects;
     }
 
-    public Material getIcon() {
+    public @NotNull Material getIcon() {
         return icon;
     }
 
-    public boolean isBuilt(Region rg) {
-        for (BuildSite buildSite : rg.getBuildSites()) {
+    public boolean isBuilt(@NotNull Region region) {
+        for (BuildSite buildSite : region.getBuildSites()) {
             if (buildSite.getBuilding() == this && buildSite.isFinished() && !buildSite.isDestroyed()) {
                 return true;
             }
@@ -372,7 +375,7 @@ public class Building {
         return false;
     }
 
-    public boolean isBuilt(Faction faction) {
+    public boolean isBuilt(@NotNull Faction faction) {
         for (BuildSite buildSite : faction.getFactionBuildings()) {
             if (buildSite.getBuilding() == this && buildSite.isFinished() && !buildSite.isDestroyed()) {
                 return true;
@@ -390,15 +393,10 @@ public class Building {
         for (String s : config.getStringList("description")) {
             description.add(MiniMessage.miniMessage().deserialize(s));
         }
-        requiredBuildings = (List<String>) config.getList("requiredBuildings");
+        requiredBuildings = config.getStringList("requiredBuildings");
         if (config.contains("icon")) {
-
             Material material = Material.getMaterial(config.getString("icon"));
-            if (material == null) {
-                icon = Material.BARRIER;
-            } else {
-                icon = material;
-            }
+            icon = material == null ? Material.BARRIER : material;
         }
         if (config.contains("requiredCategories")) {
             Set<String> cfgList = config.getConfigurationSection("requiredCategories").getKeys(false);
@@ -419,7 +417,7 @@ public class Building {
         if (config.contains("unlockCost")) {
             Set<String> cfgList = config.getConfigurationSection("unlockCost").getKeys(false);
             for (String s : cfgList) {
-                Resource resource = Resource.getByID(s);
+                Resource resource = Resource.getById(s);
                 int mod = config.getInt("unlockCost." + s);
                 unlockCost.put(resource, mod);
             }
@@ -451,7 +449,7 @@ public class Building {
         }
         MessageUtil.log("Loaded building with size " + size);
         MessageUtil.log("Blocks: " + requiredBlocks.toString());
-        MessageUtil.log("Effects: " + effects.toString());
+        MessageUtil.log("Effects: " + effects);
 
     }
 

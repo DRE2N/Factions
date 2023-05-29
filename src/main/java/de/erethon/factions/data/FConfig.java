@@ -9,12 +9,14 @@ import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.economy.resource.Resource;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -130,7 +132,7 @@ public class FConfig extends EConfig {
         for (FactionLevel factionLevel : FactionLevel.values()) {
             Set<Building> buildings = new HashSet<>();
             for (String s : config.getStringList("requiredBuildings." + factionLevel.name())) {
-                buildings.add(plugin.getBuildingManager().getByID(s));
+                buildings.add(plugin.getBuildingManager().getById(s));
             }
             requiredBuildings.put(factionLevel, buildings);
 
@@ -216,11 +218,11 @@ public class FConfig extends EConfig {
         return regionPriceTotalMultiplier;
     }
 
-    public HashMap<Resource, Integer> getDefaultResourceLimits() {
+    public @NotNull Map<Resource, Integer> getDefaultResourceLimits() {
         return defaultResourceLimits;
     }
 
-    public HashMap<PopulationLevel, Integer> getRequiredPopulation(FactionLevel level) {
+    public @Nullable Map<PopulationLevel, Integer> getRequiredPopulation(@NotNull FactionLevel level) {
         return requiredPopulation.get(level);
     }
 
@@ -232,7 +234,7 @@ public class FConfig extends EConfig {
         return warCapturedRegionsPerBattle;
     }
 
-    public Set<Building> getRequiredBuildings(FactionLevel factionLevel) {
+    public @Nullable Set<Building> getRequiredBuildings(@NotNull FactionLevel factionLevel) {
         return requiredBuildings.get(factionLevel);
     }
 }

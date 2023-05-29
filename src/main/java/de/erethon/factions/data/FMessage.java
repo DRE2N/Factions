@@ -16,6 +16,7 @@ public enum FMessage implements Message {
     ALLIANCE_INFO_PREFIX("alliance.info.prefix"),
 
     ACM_ADDED_CHUNK("acm.addedChunk"),
+    ACM_ADDED_CHUNKS("acm.addedChunks"),
     ACM_ADD_INSIDE_REGION("acm.addInsideRegion"),
     ACM_PREFIX("acm.prefix"),
     ACM_NOT_SELECTED("acm.notSelected"),
@@ -90,6 +91,7 @@ public enum FMessage implements Message {
     ERROR_PLAYER_IS_NOT_IN_A_FACTION("error.playerIsNotInAFaction"),
     ERROR_PLAYER_NOT_FOUND("error.playerNotFound"),
     ERROR_PLAYER_REGION_NULL("error.playerRegionNull"),
+    ERROR_POLL_NOT_FOUND("error.pollNotFound"),
     ERROR_REGION_ALREADY_CLAIMED("error.regionAlreadyClaimed"),
     ERROR_REGION_IN_ANOTHER_WORLD("error.regionInAnotherWorld"),
     ERROR_REGION_IS_NOT_A_WARZONE("error.regionIsNotAWarzone"),
@@ -112,6 +114,7 @@ public enum FMessage implements Message {
     FACTION_INFO_DISBANDED("faction.info.disbanded"),
     FACTION_INFO_INACTIVE_PLAYER_KICKED("faction.info.inactivePlayerKicked"),
     FACTION_INFO_NAME_CHANGED("faction.info.nameChanged"),
+    FACTION_INFO_NEW_POLL("faction.info.newPoll"),
     FACTION_INFO_PLAYER_GOT_KICKED("faction.info.playerGotKicked"),
     FACTION_INFO_PLAYER_JOINED("faction.info.playerJoined"),
     FACTION_INFO_PLAYER_LEFT("faction.info.playerLeft"),

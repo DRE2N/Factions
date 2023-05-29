@@ -1,5 +1,7 @@
 package de.erethon.factions.economy.resource;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,18 +14,18 @@ public enum ResourceCategory {
     CULTURE_RELIGION_SCIENCE("Culture, Religion, Science");
 
     private final String name;
-    private Set<Resource> resources = new HashSet<>();
+    private Set<Resource> resources;
 
     ResourceCategory(String name, Resource... resources) {
         this.name = name;
         this.resources = Set.of(resources);
     }
 
-    public String getName() {
+    public @NotNull String getName() {
         return name;
     }
 
-    public Set<Resource> getResources() {
+    public @NotNull Set<Resource> getResources() {
         return resources;
     }
 }
