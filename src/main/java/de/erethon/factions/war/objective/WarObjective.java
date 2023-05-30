@@ -77,11 +77,7 @@ public abstract class WarObjective {
     public void load() {
         name = config.getString("name");
         location = Location.deserialize(config.getConfigurationSection("location").getValues(false));
-        radius = config.getDouble("radius");
-    }
-
-    public void save() {
-        serialize().forEach((key, value) -> config.set(key, value));
+        radius = config.getDouble("radius", 5.0);
     }
 
     public @NotNull Map<String, Object> serialize() {
@@ -163,6 +159,7 @@ public abstract class WarObjective {
         if (!(object instanceof WarObjective objective)) {
             throw new IllegalArgumentException("Illegal war objective type '" + typeName + "': Not a war objective");
         }
+        objective.load();
         return objective;
     }
 }

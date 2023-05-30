@@ -321,4 +321,39 @@ public class OccupyWarObjective extends TickingWarObjective {
     public void setCurrentOccupiedProgress(int score) {
         this.currentOccupiedProgress = score;
     }
+
+    /* Sub classes */
+
+    public static class Builder extends TickingWarObjective.Builder<Builder, OccupyWarObjective> {
+
+        public @NotNull Builder occupyDuration(long occupyDuration) {
+            data.set("occupyDuration", occupyDuration);
+            return this;
+        }
+
+        public @NotNull Builder occupiedInterval(long occupiedInterval) {
+            data.set("occupiedInterval", occupiedInterval);
+            return this;
+        }
+
+        public @NotNull Builder warProgressDecline(long warProgressDecline) {
+            data.set("warProgressDecline", warProgressDecline);
+            return this;
+        }
+
+        public @NotNull Builder warProgressDeclineContested(long warProgressDeclineContested) {
+            data.set("warProgressDeclineContested", warProgressDeclineContested);
+            return this;
+        }
+
+        public @NotNull Builder warProgressPerOccupiedInterval(long warProgressPerOccupiedInterval) {
+            data.set("warProgressPerOccupiedInterval", warProgressPerOccupiedInterval);
+            return this;
+        }
+
+        @Override
+        public @NotNull OccupyWarObjective build() {
+            return new OccupyWarObjective(data);
+        }
+    }
 }

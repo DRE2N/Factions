@@ -111,6 +111,7 @@ public enum FMessage implements Message {
     ERROR_TARGET_IS_NOT_IN_A_FACTION("error.targetIsNotInAFaction"),
     ERROR_TARGET_IS_NOT_IN_THIS_FACTION("error.targetIsNotInThisFaction"),
     ERROR_WAR_OBJECTIVE_TYPE_NOT_FOUND("error.warObjectiveNotFound"),
+    ERROR_WAR_OBJECTIVE_WRONG_ARG_FORMAT("error.warObjectiveWrongArgFormat"),
     ERROR_WRONG_DOUBLE_VALUE("error.wrongDoubleValue"),
 
     FACTION_INFO_ADMIN_CHANGED("faction.info.adminChanged"),

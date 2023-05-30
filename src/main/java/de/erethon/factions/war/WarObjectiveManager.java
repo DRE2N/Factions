@@ -73,9 +73,11 @@ public class WarObjectiveManager extends EConfig {
     }
 
     public void saveAll() {
+        Map<String, Object> serialized = new HashMap<>(objectives.size());
         for (WarObjective objective : objectives.values()) {
-            objective.save();
+            serialized.put(objective.getName(), objective.serialize());
         }
+        config.set("objectives", serialized);
         save();
     }
 

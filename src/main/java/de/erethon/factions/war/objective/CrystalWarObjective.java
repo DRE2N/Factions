@@ -1,5 +1,6 @@
 package de.erethon.factions.war.objective;
 
+import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
@@ -7,6 +8,7 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FBroadcastUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EnderCrystal;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +26,7 @@ public class CrystalWarObjective extends TickingWarObjective {
     /* Temporary */
     protected Alliance alliance;
     protected EnderCrystal crystal;
+    protected TextDisplay textDisplay;
     protected double health;
 
     public CrystalWarObjective(@NotNull ConfigurationSection config) {
@@ -36,11 +39,11 @@ public class CrystalWarObjective extends TickingWarObjective {
     }
 
     public void damage(double damage, @Nullable FPlayer damager) {
-        health -= damage;
+        health = Math.max(health - damage, 0);
+        displayHealth(textDisplay);
         if (health > 0) {
             return;
         }
-        health = 0;
         destroy(damager);
     }
 
@@ -62,12 +65,20 @@ public class CrystalWarObjective extends TickingWarObjective {
     public void activate() {
         super.activate();
         crystal = location.getWorld().spawn(location, EnderCrystal.class, c -> c.getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name));
+        crystal.addPassenger(textDisplay = location.getWorld().spawn(location, TextDisplay.class, this::displayHealth));
     }
 
     @Override
     public void deactivate() {
         super.deactivate();
         crystal.remove();
+        textDisplay.remove();
+    }
+
+    private void displayHealth(TextDisplay display) {
+        int parts = 20;
+        int red = (int) (parts * (1 / maxHealth * health));
+        display.text(MessageUtil.parse("<red>" + "█".repeat(red) + "<gray>" + "█".repeat(parts - red)));
     }
 
     /* Serialization */
@@ -96,7 +107,7 @@ public class CrystalWarObjective extends TickingWarObjective {
     public void setMaxHealth(double maxHealth) {
         this.maxHealth = maxHealth;
         if (maxHealth < health) {
-            health = maxHealth;
+            setHealth(maxHealth);
         }
     }
 
@@ -107,6 +118,7 @@ public class CrystalWarObjective extends TickingWarObjective {
     public void setHealth(double health) {
         assert health > 0 && health < maxHealth : "The health number must lie between 0 and " + maxHealth;
         this.health = health;
+        displayHealth(textDisplay);
     }
 
     public @NotNull  Alliance getAlliance() {

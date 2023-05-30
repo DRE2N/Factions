@@ -114,6 +114,7 @@ error:
   targetIsNotInAFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich in keiner Fraktion."
   targetIsNotInThisFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich nicht in der Fraktion <gold>&v2</gold>."
   warObjectiveNotFound: "<red>Der Kriegszieltyp <gold>&v1</gold> konnte nicht gefunden werden."
+  warObjectiveWrongArgFormat: "<red>Zusätzliche Einstellungen müssen wie folgt angegeben werden: <gold>NAME</gold><gold>:</gold><gold>WERT</gold>."
   wrongDoubleValue: "<red>Der angegebene Zahlenwert muss zwischen <gold>&v1</gold> und </gold> liegen."
 faction:
   info:

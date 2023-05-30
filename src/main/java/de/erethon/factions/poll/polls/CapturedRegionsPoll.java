@@ -3,6 +3,7 @@ package de.erethon.factions.poll.polls;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FLegalEntity;
+import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.poll.AlliancePoll;
 import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.PollScope;
@@ -33,6 +34,11 @@ public class CapturedRegionsPoll extends AlliancePoll<Region> {
 
     public CapturedRegionsPoll(@NotNull Alliance alliance) {
         super(FMessage.GENERAL_WAR_ZONES.getMessage(), alliance, PollScope.ADMIN, alliance.getUnconfirmedTemporaryRegions(), CONVERTER);
+    }
+
+    @Override
+    public int getVotingWeight(@NotNull FPlayer fPlayer) {
+        return fPlayer.getFaction().getMembers().size();
     }
 
     @Override

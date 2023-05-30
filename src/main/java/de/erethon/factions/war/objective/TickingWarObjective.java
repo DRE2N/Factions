@@ -60,4 +60,15 @@ public abstract class TickingWarObjective extends WarObjective {
     public boolean isTicking() {
         return task != null;
     }
+
+    /* Sub classes */
+
+    public static abstract class Builder<THIS extends Builder<THIS, TYPE>, TYPE extends WarObjective> extends WarObjectiveBuilder<THIS, TYPE> {
+
+        public @NotNull THIS tickInterval(long tickInterval) {
+            data.set("tickInterval", tickInterval);
+            return (THIS) this;
+        }
+
+    }
 }
