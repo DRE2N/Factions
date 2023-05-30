@@ -302,6 +302,22 @@ public abstract class FCommand extends ECommand {
         return getTabList(fPlayer.getParticipativePolls().keySet(), arg);
     }
 
+    protected double parseDouble(@NotNull String arg) {
+        try {
+            return Double.parseDouble(arg);
+        } catch (NumberFormatException e) {
+            throw new CommandFailedException(FMessage.ERROR_NOT_PARSABLE_DOUBLE);
+        }
+    }
+
+    protected int parseInt(@NotNull String arg) {
+        try {
+            return Integer.parseInt(arg);
+        } catch (NumberFormatException e) {
+            throw new CommandFailedException(FMessage.ERROR_NOT_PARSABLE_INTEGER);
+        }
+    }
+
     /* Assure methods */
 
     protected void fAssure(boolean b, @NotNull Supplier<String> message) {

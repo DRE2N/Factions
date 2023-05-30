@@ -7,9 +7,11 @@ import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Chunk;
-import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
+import java.util.function.BiPredicate;
 
 /**
  * @author Fyreum
@@ -24,7 +26,7 @@ public class AutomatedChunkManager {
     private final FPlayer fPlayer;
     private ChunkOperation operation = ChunkOperation.IDLE;
     private Region selection;
-    private int radius = 1;
+    private int radius = 0;
 
     public AutomatedChunkManager(@NotNull FPlayer fPlayer) {
         this.fPlayer = fPlayer;
@@ -34,24 +36,26 @@ public class AutomatedChunkManager {
         if (operation == ChunkOperation.IDLE) {
             return;
         }
-        if (selection != null && !selection.getWorldId().equals(chunk.getWorld().getUID())) {
+        UUID worldId = chunk.getWorld().getUID();
+        if (selection != null && !selection.getWorldId().equals(worldId) || plugin.getRegionManager().getCache(worldId) == null) {
             deactivate(true);
             return;
         }
-        if (radius == 1) {
-            Region existingRegion = plugin.getRegionManager().getRegionByChunk(chunk);
-            switch (operation) {
-                case ADD -> add(existingRegion, chunk);
-                case REMOVE -> remove(existingRegion, chunk);
-            }
-            return;
+        switch (operation) {
+            case ADD -> add(chunk);
+            case REMOVE -> remove(chunk);
         }
     }
 
-    private void add(Region existingRegion, Chunk chunk) {
+    private void add(Chunk chunk) {
         if (selection == null) {
             return;
         }
+        if (radius > 0) {
+            addMultiple(chunk);
+            return;
+        }
+        Region existingRegion = plugin.getRegionManager().getRegionByChunk(chunk);
         if (existingRegion != null) {
             if (existingRegion != selection) {
                 sendActionBar(FMessage.ACM_ADD_INSIDE_REGION.message());
@@ -64,27 +68,18 @@ public class AutomatedChunkManager {
     }
 
     private void addMultiple(Chunk chunk) {
-        if (selection == null) {
-            return;
+        int added = squaredAction(chunk, (c, rg) -> rg == null && selection.addChunk(c));
+        if (added > 0) {
+            sendActionBar(FMessage.ACM_ADDED_CHUNKS.message(String.valueOf(added)));
         }
-        int added = 0;
-        int maxX = chunk.getX() + radius;
-        int maxZ = chunk.getZ() + radius;
-        for (int x = chunk.getX() - radius; x < maxX; x++) {
-            for (int z = chunk.getZ() - radius; z < maxZ; z++) {
-                LazyChunk lazyChunk = new LazyChunk(x, z);
-                Region existingRegion = plugin.getRegionManager().getCache(chunk.getWorld()).getByChunk(lazyChunk);
-                if (existingRegion != null) {
-                    continue;
-                }
-                selection.addChunk(lazyChunk);
-                added++;
-            }
-        }
-        sendActionBar(FMessage.ACM_ADDED_CHUNKS.message(String.valueOf(added)));
     }
 
-    private void remove(Region existingRegion, Chunk chunk) {
+    private void remove(Chunk chunk) {
+        if (radius > 0) {
+            removeMultiple(chunk);
+            return;
+        }
+        Region existingRegion = plugin.getRegionManager().getRegionByChunk(chunk);
         if (existingRegion == null) {
             return;
         }
@@ -97,11 +92,28 @@ public class AutomatedChunkManager {
         }
     }
 
-    private boolean remove(Region existingRegion, LazyChunk chunk) {
-        if (existingRegion == null || (selection != null && existingRegion != selection)){
-            return false;
+    private void removeMultiple(Chunk chunk) {
+        int removed = squaredAction(chunk, (c, rg) -> rg != null && (selection == null || rg == selection) && rg.removeChunk(c));
+        if (removed > 0) {
+            sendActionBar(FMessage.ACM_REMOVED_CHUNKS.message(String.valueOf(removed)));
         }
-        return (existingRegion.removeChunk(chunk));
+    }
+
+    private int squaredAction(Chunk chunk, BiPredicate<LazyChunk, Region> action) {
+        int modified = 0;
+        int maxX = chunk.getX() + radius;
+        int maxZ = chunk.getZ() + radius;
+
+        for (int x = chunk.getX() - radius; x < maxX; x++) {
+            for (int z = chunk.getZ() - radius; z < maxZ; z++) {
+                LazyChunk lazyChunk = new LazyChunk(x, z);
+                Region existingRegion = plugin.getRegionManager().getCache(chunk.getWorld()).getByChunk(lazyChunk);
+                if (action.test(lazyChunk, existingRegion)) {
+                    modified++;
+                }
+            }
+        }
+        return modified;
     }
 
     private String toString(Chunk chunk) {
@@ -149,9 +161,9 @@ public class AutomatedChunkManager {
 
     public void setSelection(@Nullable Region region) {
         if (region != null) {
-            sendActionBar(p -> FMessage.ACM_SELECTED.message(region.getName()));
+            sendActionBar(FMessage.ACM_SELECTED.message(region.getName()));
         } else if (selection != null) {
-            sendActionBar(p -> FMessage.ACM_UNSELECTED.message(selection.getName()));
+            sendActionBar(FMessage.ACM_UNSELECTED.message(selection.getName()));
         }
         this.selection = region;
     }
@@ -161,7 +173,12 @@ public class AutomatedChunkManager {
     }
 
     public void setRadius(int radius) {
-        assert radius >= 1 && radius <= 3 : "Radius must lie between 1 and 3";
+        if (radius < 0 || radius > 2) {
+            sendActionBar(FMessage.ACM_ILLEGAL_RADIUS.message("0", "2"));
+            return;
+        } else {
+            sendActionBar(FMessage.ACM_RADIUS_SELECTED.message(String.valueOf(radius)));
+        }
         this.radius = radius;
     }
 }

@@ -20,9 +20,10 @@ public class RegionCommand extends FCommand {
         setHelpType(HelpType.LISTED);
         setListedHelpHeader("Regionsbefehle");
         addSubCommands(new RegionAddChunkCommand(), new RegionAddNeighbourCommand(), new RegionAutoAddChunkCommand(),
-                new RegionAutoRemoveCommand(), new RegionCreateCommand(), new RegionDamageReductionCommand(),
-                new RegionDeleteCommand(), new RegionDescriptionCommand(), new RegionInfoCommand(), new RegionRemoveChunkCommand(),
-                new RegionRemoveNeighbourCommand(), new RegionTypeCommand());
+                new RegionAutoRadiusCommand(), new RegionAutoRemoveCommand(), new RegionCreateCommand(),
+                new RegionDamageReductionCommand(), new RegionDeleteCommand(), new RegionDescriptionCommand(),
+                new RegionInfoCommand(), new RegionRemoveChunkCommand(), new RegionRemoveNeighbourCommand(),
+                new RegionTypeCommand());
         setAllExecutionPrefixes();
     }
 
