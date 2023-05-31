@@ -1,4 +1,5 @@
 package de.erethon.factions.war;
+
 import de.erethon.factions.util.WarMath;
 import org.jetbrains.annotations.NotNull;
 

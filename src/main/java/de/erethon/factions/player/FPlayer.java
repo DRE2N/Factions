@@ -66,6 +66,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
         super(Factions.getPlayerFile(uuid), CONFIG_VERSION);
         this.uuid = uuid;
         this.player = Bukkit.getPlayer(uuid);
+        load();
     }
 
     public FPlayer(@NotNull Player player) {
@@ -73,6 +74,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
         this.player = player;
         this.uuid = player.getUniqueId();
         this.lastName = player.getName();
+        load();
     }
 
     /* EConfig methods */
