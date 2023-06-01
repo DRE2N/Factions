@@ -50,7 +50,7 @@ public class FBroadcastUtil {
     }
 
     private static Component prefixWar(Component msg) {
-        return FMessage.WAR_PREFIX.message().append(msg);
+        return FMessage.WAR_PREFIX.message(msg);
     }
 
     private static void broadcastWarFinal(@NotNull Component finalMessage) {

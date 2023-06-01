@@ -101,8 +101,8 @@ public class AutomatedChunkManager {
 
     private int squaredAction(Chunk chunk, BiPredicate<LazyChunk, Region> action) {
         int modified = 0;
-        int maxX = chunk.getX() + radius;
-        int maxZ = chunk.getZ() + radius;
+        int maxX = chunk.getX() + radius + 1;
+        int maxZ = chunk.getZ() + radius + 1;
 
         for (int x = chunk.getX() - radius; x < maxX; x++) {
             for (int z = chunk.getZ() - radius; z < maxZ; z++) {
@@ -125,7 +125,7 @@ public class AutomatedChunkManager {
     }
 
     private void sendActionBar(DynamicComponent component) {
-        fPlayer.updateOrSendActionBarCenter(ACTION_BAR_ID, p -> FMessage.ACM_PREFIX.message().append(component.get(p)), ACTION_BAR_TICKS);
+        fPlayer.updateOrSendActionBarCenter(ACTION_BAR_ID, p -> FMessage.ACM_PREFIX.message(component.get(p)), ACTION_BAR_TICKS);
     }
 
     public void deactivate() {

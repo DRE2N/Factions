@@ -33,7 +33,7 @@ public class RegionAutoAddChunkCommand extends FCommand {
             return;
         }
         Region region = getRegion(args[1]);
-        if (acm.getSelection() == region) {
+        if (acm.getOperation() == ChunkOperation.ADD &&acm.getSelection() == region) {
             acm.deactivate();
             return;
         }

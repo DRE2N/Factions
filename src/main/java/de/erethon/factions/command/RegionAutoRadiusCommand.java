@@ -15,7 +15,6 @@ public class RegionAutoRadiusCommand extends FCommand {
 
     public RegionAutoRadiusCommand() {
         setCommand("autoradius");
-        setAliases("ar");
         setMinMaxArgs(1, 1);
         setPermissionFromName(RegionCommand.LABEL);
         setFUsage(getCommand() + " [radius]");

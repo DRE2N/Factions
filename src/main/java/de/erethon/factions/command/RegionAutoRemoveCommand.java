@@ -26,7 +26,7 @@ public class RegionAutoRemoveCommand extends FCommand {
         FPlayer fPlayer = getFPlayerRaw(sender);
         AutomatedChunkManager acm = fPlayer.getAutomatedChunkManager();
         Region region = args.length == 2 ? getRegion(args[1]) : null;
-        if (acm.getSelection() == region) {
+        if (acm.getOperation() == ChunkOperation.REMOVE && acm.getSelection() == region) {
             acm.deactivate(false);
             return;
         }

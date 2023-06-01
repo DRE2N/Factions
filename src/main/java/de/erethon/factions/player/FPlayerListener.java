@@ -32,18 +32,15 @@ public class FPlayerListener implements Listener {
 
     private void updateLastRegion(FPlayer fPlayer, Location to) {
         RegionCache regionCache = plugin.getRegionManager().getCache(to.getWorld());
-        if (regionCache == null) {
-            fPlayer.setLastRegion(null);
+        Region region = regionCache == null ? null : regionCache.getByLocation(to);
+        if (region == fPlayer.getLastRegion()) {
             return;
         }
-        Region region = regionCache.getByLocation(to);
-        if (region != fPlayer.getLastRegion()) {
-            UIComponent component = fPlayer.getUIActionBar().getCenter().getById(UIFactionsListener.REGION_DISPLAY_ID);
-            if (component != null) {
-                component.resetDuration();
-            }
-        }
         fPlayer.setLastRegion(region);
+        UIComponent component = fPlayer.getUIBossBar().getCenter().getById(UIFactionsListener.REGION_DISPLAY_ID);
+        if (component != null) {
+            component.resetDuration();
+        }
     }
 
 }
