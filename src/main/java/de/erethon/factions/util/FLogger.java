@@ -18,6 +18,7 @@ public enum FLogger {
 
     DEBUG(false),
     ALLIANCE(false),
+    BUILDING(false),
     FACTION(false),
     REGION(false),
     PLAYER(true),

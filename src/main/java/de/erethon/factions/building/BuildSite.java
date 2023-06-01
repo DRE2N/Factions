@@ -1,10 +1,10 @@
 package de.erethon.factions.building;
 
-import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.config.ConfigUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.util.FLogger;
 import org.apache.commons.lang.math.IntRange;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -49,7 +49,7 @@ public class BuildSite implements ConfigurationSerializable {
         corner = loc1;
         otherCorner = loc2;
         interactive = center;
-        MessageUtil.log("Created new building site in " + this.region.getName() + ". Building type: " + building.getName());
+        FLogger.BUILDING.log("Created new building site in " + this.region.getName() + ". Building type: " + building.getName());
         region.getBuildSites().add(this);
         //setupHolo();
     }
@@ -59,7 +59,7 @@ public class BuildSite implements ConfigurationSerializable {
         region = plugin.getRegionManager().getRegionById((int) args.get("region"));
         corner = Location.deserialize(ConfigUtil.getMap(args.get("location.corner")));
         otherCorner = Location.deserialize(ConfigUtil.getMap(args.get("location.otherCorner")));
-        MessageUtil.log((String) args.get("location.interactable"));
+        FLogger.BUILDING.log((String) args.get("location.interactable"));
         interactive = Location.deserialize(ConfigUtil.getMap(args.get("location.interactable")));
         finished = (boolean) args.get("finished");
         hasTicket = (boolean) args.get("hasTicket");
@@ -77,7 +77,7 @@ public class BuildSite implements ConfigurationSerializable {
         corner =  Location.deserialize(config.getConfigurationSection("location.corner").getValues(false));
         otherCorner = Location.deserialize(config.getConfigurationSection("location.otherCorner").getValues(false));
         interactive = Location.deserialize(config.getConfigurationSection("location.interactable").getValues(false));
-        MessageUtil.log(corner.toString());
+        FLogger.BUILDING.log(corner.toString());
         finished = config.getBoolean("finished");
         hasTicket = config.getBoolean("hasTicket");
         problemMessage = config.getString("problemMessage");
@@ -212,7 +212,7 @@ public class BuildSite implements ConfigurationSerializable {
                     hasTicket = true;
                     //getRegion().getOwner().sendMessage("&aEin(e) &6" + getBuilding().getName() + " &ain " + getRegion().getName() + " &awurde fertiggestellt");
                     //getRegion().getOwner().sendMessage("&7&oEin Ticket wurde automatisch erstellt und das Gebäude wird zeitnah überprüft.");
-                    MessageUtil.log("A new BuildSite ticket for " + getBuilding().getName() + " in " + getRegion().getName() + " was created.");
+                    FLogger.BUILDING.log("A new BuildSite ticket for " + getBuilding().getName() + " in " + getRegion().getName() + " was created.");
                 }
             }
         };
@@ -222,7 +222,7 @@ public class BuildSite implements ConfigurationSerializable {
                 Set<Block> blocks;
                 Map<Material, Integer> placed = new HashMap<>();
                 blocks = getBlocks(corner.getWorld());
-                MessageUtil.log(building.getRequiredBlocks().toString());
+                FLogger.BUILDING.log(building.getRequiredBlocks().toString());
                 for (Block block : blocks) {
                     Material type = block.getType();
                     if (building.getRequiredBlocks().containsKey(type)) {
@@ -233,8 +233,8 @@ public class BuildSite implements ConfigurationSerializable {
                         placed.put(type, amount + 1);
                     }
                 }
-                MessageUtil.log("-------------------");
-                MessageUtil.log(placed.toString());
+                FLogger.BUILDING.log("-------------------");
+                FLogger.BUILDING.log(placed.toString());
                 placedBlocks = placed;
                 complete.runTask(plugin);
             }

@@ -4,6 +4,7 @@ import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.util.FLogger;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -42,13 +43,13 @@ public class BuildingManager {
 
     public void load(@NotNull File dir) {
         if (dir.listFiles() == null) {
-            MessageUtil.log("No buildings found. Please create some.");
+            FLogger.INFO.log("No buildings found. Please create some.");
             return;
         }
         for (File file : dir.listFiles()) {
             buildings.add(new Building(file));
         }
-        MessageUtil.log("Loaded " + buildings.size() + " Buildings.");
+        FLogger.INFO.log("Loaded " + buildings.size() + " Buildings.");
     }
 
     public void deleteBuilding(@NotNull Player player) {

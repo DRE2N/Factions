@@ -140,7 +140,7 @@ faction:
 general:
   defaultDescription: "Default Beschreibung :("
   faction: "Fraktion"
-  loner: "Eremit"
+  loner: "fraktionslos"
   none: "keine"
   regionDefaultNamePrefix: "PROV_"
   spectator: "Zuschauer"

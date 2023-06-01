@@ -47,6 +47,7 @@ public class WarObjectiveManager extends EConfig {
                 e.printStackTrace();
             }
         }
+        FLogger.INFO.log("Loaded " + objectives.size() + " war objectives");
     }
 
     public <T extends WarObjective> @NotNull T instantiateObjective(@NotNull String name, @NotNull Function<@NotNull ConfigurationSection, @NotNull T> builder) {

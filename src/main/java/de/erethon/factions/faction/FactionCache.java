@@ -91,6 +91,12 @@ public class FactionCache extends FEntityCache<Faction> {
         }
     }
 
+    @Override
+    public void loadAll() {
+        super.loadAll();
+        FLogger.INFO.log("Loaded " + cache.size() + " factions");
+    }
+
     /* Getters */
 
     public @Nullable BukkitTask getKickTask() {

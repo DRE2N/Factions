@@ -12,6 +12,7 @@ import de.erethon.factions.player.FPlayerCache;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.region.RegionType;
+import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Color;
@@ -387,7 +388,7 @@ public class Building {
     public void load() {
         ConfigurationSection config = this.config;
         name = MiniMessage.miniMessage().deserialize(config.getString("name"));
-        MessageUtil.log("Loading building " + name + "...");
+        FLogger.BUILDING.log("Loading building " + name + "...");
         isCoreRequired = config.getBoolean("coreRequired");
         size = config.getInt("size");
         for (String s : config.getStringList("description")) {
@@ -442,15 +443,14 @@ public class Building {
                 try {
                     effects.add(new BuildingEffect().fromConfigSection(config.getConfigurationSection("effects." + key)));
                 } catch (NullPointerException ex) {
-                    MessageUtil.log("There was an error loading effect " + key + " (Building: " + name + ")");
-                    MessageUtil.log(ex.toString());
+                    FLogger.ERROR.log("There was an error loading effect " + key + " (Building: " + name + ")");
+                    FLogger.ERROR.log(ex.toString());
                 }
             }
         }
-        MessageUtil.log("Loaded building with size " + size);
-        MessageUtil.log("Blocks: " + requiredBlocks.toString());
-        MessageUtil.log("Effects: " + effects);
-
+        FLogger.BUILDING.log("Loaded building with size " + size);
+        FLogger.BUILDING.log("Blocks: " + requiredBlocks.toString());
+        FLogger.BUILDING.log("Effects: " + effects);
     }
 
     public void save() {

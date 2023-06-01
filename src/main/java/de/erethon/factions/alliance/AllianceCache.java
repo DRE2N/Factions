@@ -25,4 +25,10 @@ public class AllianceCache extends FEntityCache<Alliance> {
             return null;
         }
     }
+
+    @Override
+    public void loadAll() {
+        super.loadAll();
+        FLogger.INFO.log("Loaded " + cache.size() + " alliances");
+    }
 }

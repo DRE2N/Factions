@@ -68,6 +68,12 @@ public class RegionCache extends FEntityCache<Region> {
         }
     }
 
+    @Override
+    public void loadAll() {
+        super.loadAll();
+        FLogger.INFO.log("Loaded " + cache.size() + " regions");
+    }
+
     /* Getters */
 
     public @NotNull RegionManager getRegionManager() {
