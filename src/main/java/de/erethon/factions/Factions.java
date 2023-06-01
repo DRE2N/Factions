@@ -27,6 +27,7 @@ import de.erethon.factions.war.WarObjectiveManager;
 import de.erethon.factions.war.WarPhaseManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -199,10 +200,9 @@ public final class Factions extends EPlugin {
                 .placeHolder("faction")
                 .baseBuilder((s, r) -> {
                     FPlayer fSender = fPlayerCache.getByPlayer(s.getPlayer());
-                    FPlayer fRecipient = fPlayerCache.getByPlayer(r.getPlayer());
                     String faction = fSender.hasFaction() ? fSender.getFaction().getDisplayShortName() : FMessage.GENERAL_LONER.getMessage();
                     return Component.text()
-                            .color(fRecipient.getRelation(fSender).getColor())
+                            .color(r == null ? NamedTextColor.GRAY : fPlayerCache.getByPlayer(r.getPlayer()).getRelation(fSender).getColor())
                             .append(MessageUtil.parse("<dark_gray>[</dark_gray>" + faction + "<dark_gray>]</dark_gray>"))
                             .build();
                 })
@@ -227,7 +227,7 @@ public final class Factions extends EPlugin {
                 .build());
         HoverInfo info = (sender, recipient) -> {
             FPlayer fSender = fPlayerCache.getByPlayer(sender.getPlayer());
-            Component faction = fSender.getFactionTag(fPlayerCache.getByPlayer(recipient.getPlayer()));
+            Component faction = fSender.getFactionTag(recipient == null ? null : fPlayerCache.getByPlayer(recipient.getPlayer()));
             return MessageUtil.parse("<gold>" + FMessage.GENERAL_FACTION.getMessage() + "<dark_gray>: <gray>")
                     .append(faction)
                     .append(Component.newline());

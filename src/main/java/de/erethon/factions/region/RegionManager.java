@@ -95,9 +95,12 @@ public class RegionManager {
     }
 
     public void loadAll() {
+        int loaded = 0;
         for (RegionCache cache : caches.values()) {
             cache.loadAll();
+            loaded += cache.getCache().size();
         }
+        FLogger.INFO.log("Loaded " + loaded + " regions");
     }
 
     public void saveAll() {

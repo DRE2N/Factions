@@ -98,6 +98,6 @@ tasks {
         group = "publishing-fix"
         from(mavenLocalPath)
         include(correctJarName)
-        into("${System.getProperties()["user.home"]}/OneDrive/Development/Server 1.19.3/plugins") // this path is individual for each user
+        into("${System.getProperties()["user.home"]}/OneDrive/Development/Server 1.19.4/plugins") // this path is individual for each user
     }
 }
