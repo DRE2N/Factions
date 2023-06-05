@@ -19,6 +19,9 @@ cmd:
     choose:
       onCooldown: "<red>Du kannst erst in <gold>&v1</gold> wieder die Alliance wechseln."
       success: "<green>Du hast die Allianz <dark_green>&v1</dark_green> ausgewählt."
+  authorised:
+    added: "<green>Du hast der Fraktion <dark_green>&v1</dark_green> die Erlaubnis <dark_green>erteilt</dark_green>, auf dem Gebiet von <dark_green>&v2</dark_green> zu bauen."
+    removed: "<green>Du hast der Fraktion <dark_green>&v1</dark_green> die Erlaubnis <dark_green>entzogen</dark_green>, auf dem Gebiet von <dark_green>&v2</dark_green> zu bauen."
   disband:
     confirmationRequired: "<red>Wenn du die Fraktion auflöst, gehen alle Regionalansprüche und jeglicher Fortschritt verloren. <gold>&v1</gold>"
   invite:
@@ -72,19 +75,29 @@ cmd:
     configs: "<dark_green>Die Konfigurationen wurden neu geladen."
     messages: "<dark_green>Die Nachrichten wurden neu geladen."
   show:
-    admin: "<gold>Admin<dark_gray>:<gray> &v1"
-    coreRegion: "<gold>Kerngebiet<dark_gray>:<gray> &v1"
-    description: "<gold>Beschreibung<dark_gray>:<gray> &v1"
-    header: "<gold>===<b><dark_green> &v1 </dark_green></b>==="
-    name: "<gold>Name<dark_gray>:<gray> &v1"
-    members: "<gold>Mitglieder (&v1)<dark_gray>:<gray> &v2"
-    money: "<gold>Konto<dark_gray>:<gray> &v1"
-    separator: "<gold>____________________________________"
+    admin: "<dark_green>Admin</dark_green><dark_gray>:</dark_gray><gray> &v1"
+    alliance: "<dark_green>Allianz</dark_green><dark_gray>:</dark_gray><gray> &v1"
+    coreRegion: "<dark_green>Kerngebiet</dark_green><dark_gray>:</dark_gray><gray> &v1"
+    description: "<dark_green>Beschreibung</dark_green><dark_gray>:</dark_gray><gray> &v1"
+    header: "<green>-===[<b><dark_green> &v1 </dark_green></b>]===-"
+    name: "<dark_green>Name</dark_green><dark_gray>:<gray> &v1"
+    members: "<dark_green>Mitglieder (&v1)</dark_green><dark_gray>:</dark_gray><gray> &v2"
+    money: "<dark_green>Konto</dark_green><dark_gray>:</dark_gray><gray> &v1"
+    separator: ""
+  stats:
+    capturingTime: "<dark_green>Eroberungszeit</dark_green><dark_gray>:</dark_gray><gray> &v1"
+    header: "<green>-===[<b><dark_green> Stats </dark_green></b>-<b><dark_green> &v1 </dark_green></b>]===-"
+    highestKillStreak: "<dark_green>Höchste Killstreak</dark_green><dark_gray>:</dark_gray><gray> &v1"
+    kd: "<dark_green>Kills/Tode</dark_green><dark_gray>:</dark_gray><gray> &v1 <dark_gray>/</dark_gray> &v2 <dark_gray>-</dark_gray> &v3"
+    killStreak: "<dark_green>Killstreak</dark_green><dark_gray>:</dark_gray><gray> &v1"
+    separator: ""
   version:
-    authors: "<dark_green>Autoren<dark_gray>:<gray> &v1"
+    authors: "<dark_green>Autoren<dark_gray>:</dark_gray><gray> &v1"
     header: "<dark_green><b>&v1</b> <dark_gray>-</dark_gray> &v2"
     status: "<gray><dark_green>&v1</dark_green> Spieler <dark_gray>/</dark_gray> <dark_green>&v2</dark_green> Regionen <dark_gray>/</dark_gray> <dark_green>&v3</dark_green> Fraktionen <dark_gray>/</dark_gray> <dark_green>&v4</dark_green> Allianzen"
 error:
+  cannotAuthoriseSameFaction: "<red>Du kannst eine Fraktion nicht für sich selbst autorisieren."
+  cannotChooseAlliance: "<red>Du kannst deine Allianz nicht wechseln, solange du in einer Fraktion bist."
   cannotKickYourself: "<red>Du kannst dich nicht selbst kicken."
   cannotUnclaimCoreRegion: "<red>Kerngebiete einer Fraktion können nicht entclaimt werden."
   chunkAlreadyARegion: "<red>Der Chunk ist bereits Teil einer Region."
@@ -96,8 +109,10 @@ error:
   notEnoughMoney: "<red>Du benötigst <gold>&v1</gold>, um dies tun zu dürfen."
   notParsableDouble: "&cDer angegebene Zahlenwert &6&v1 &cist ungültig"
   notParsableInteger: "&cDer angegebene Zahlenwert &6&v1 &cist ungültig"
+  permitlessAlliance: "<red>Dein Allianz hat keine Befugnis dies zu tun."
   playerAlreadyInAFaction: "<red>Du befindest dich bereits in einer Fraktion."
   playerIsNotInAFaction: "<red>Du befindest dich zurzeit in keiner Fraktion."
+  playerIsNotInAnAlliance: "<red>Du befindest dich zurzeit in keiner Allianz."
   playerNotFound: "<red>Der Spieler <gold>&v1</gold> konnte nicht gefunden werden."
   playerRegionNull: "<red>Du musst dich in einer Region befinden, um dies tun zu dürfen."
   pollNotFound: "<red>Die Abstimmung <gold>&v1</gold> konnte nicht gefunden werden."
@@ -118,6 +133,8 @@ error:
   wrongDoubleValue: "<red>Der angegebene Zahlenwert muss zwischen <gold>&v1</gold> und </gold> liegen."
 faction:
   info:
+    addedBuilderAuthority: "<green>Deine Fraktion hat die Erlaubnis erhalten, auf dem Gebiet von <dark_green>&v1</dark_green> zu bauen."
+    addedBuilderAuthorityOther: "<green>Deine Fraktion hat <dark_green>&v1</dark_green> die Erlaubnis erteilt, auf eurem Gebiet zu bauen."
     adminChanged: "<gray>Der Spieler <green>&v1</green> hat <green>&v2</green> zum neuen Anführer der Fraktion <green>&v3</green> gemacht."
     created: "<gray>Der Spieler <green>&v1</green> hat die Fraktion <green>&v2</green> erstellt."
     descriptionChanged: "<gray>Die Fraktion <green>&v1</green> hat ihre Beschreibung zu <green>&v2</green> geändert."
@@ -130,6 +147,8 @@ faction:
     playerLeft: "<red>&v1</red> hat die Fraktion verlassen."
     prefix: "<dark_gray>[<dark_green>&v1</dark_green>]<gray> "
     regionClaimed: "<gray>Die Region <green>&v1</green> wurde für <green>&v2</green> beansprucht."
+    removedBuilderAuthority: "<gray>Deine Fraktion hat nicht mehr die Erlaubnis, auf dem Gebiet von <dark_green>&v1</dark_green> zu bauen."
+    removedBuilderAuthorityOther: "<gray>Deine Fraktion hat <dark_green>&v1</dark_green> die Erlaubnis entzogen, auf eurem Gebiet zu bauen."
     shortNameChanged: "<gray>Die Fraktion <green>&v1</green> hat ihren Kürzel zu <green>&v2</green> geändert."
   invite:
     accept: "<dark_red>[Akzeptieren]</dark_red>"
@@ -158,6 +177,9 @@ gui:
     titleClosed: "<st><green>Abstimmung<dark_gray>:</dark_gray></green> &v1"
     regionTypeDisplay: "<gold>Regionstyp<dark_gray>:</dark_gray></gold><gray> &v1"
     votesDisplay: "<gray><gold>&v1</gold> Stimmen"
+placeholder:
+  allianceDisplay: "<gold>Allianz</gold><dark_gray>:</dark_gray> <gray>&v1"
+  factionDisplay: "<gold>Fraktion</gold><dark_gray>:</dark_gray> <gray>&v1"
 protection:
   cannotAttack:
     capital: "<red>Du darfst nicht in dem Kapital von <gold>&v1</gold> angreifen."

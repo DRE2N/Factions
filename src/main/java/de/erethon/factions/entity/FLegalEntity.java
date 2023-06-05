@@ -69,6 +69,7 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
     public @NotNull String getName() {
         return name;
     }
+
     public @NotNull Component name() {
         return Component.text(name);
     }

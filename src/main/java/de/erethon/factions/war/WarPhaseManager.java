@@ -93,13 +93,14 @@ public class WarPhaseManager extends EConfig {
             currentStage = schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
             return;
         }
-        WarPhaseStage nextStage = currentStage.getNextStage();
-        // (De)activate war objectives, based on the next war phase.
-        if (nextStage != null && nextStage.getWarPhase().isOpenWarZones()) {
-            plugin.getWarObjectiveManager().activateAll();
-        } else if (nextStage == null || currentStage.getWarPhase().isOpenWarZones() && !nextStage.getWarPhase().isOpenWarZones()) {
+        // Deactivate current war objectives.
+        if (currentStage.getWarPhase().isOpenWarZones()) {
             plugin.getWarObjectiveManager().deactivateAll();
             onWarZoneClose();
+        }
+        WarPhaseStage nextStage = currentStage.getNextStage();
+        if (nextStage != null && nextStage.getWarPhase().isOpenWarZones()) {
+            plugin.getWarObjectiveManager().activateAll();
         }
         currentStage = nextStage;
     }

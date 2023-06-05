@@ -14,6 +14,7 @@ import de.erethon.factions.building.BuildingManager;
 import de.erethon.factions.command.logic.FCommandCache;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.faction.FactionCache;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
@@ -227,10 +228,12 @@ public final class Factions extends EPlugin {
                 .build());
         HoverInfo info = (sender, recipient) -> {
             FPlayer fSender = fPlayerCache.getByPlayer(sender.getPlayer());
-            Component faction = fSender.getFactionTag(recipient == null ? null : fPlayerCache.getByPlayer(recipient.getPlayer()));
-            return MessageUtil.parse("<gold>" + FMessage.GENERAL_FACTION.getMessage() + "<dark_gray>: <gray>")
-                    .append(faction)
-                    .append(Component.newline());
+            FEntity fRecipient = recipient == null ? null : fPlayerCache.getByPlayer(recipient.getPlayer());
+            Component alliance = fSender.getAllianceTag(fRecipient);
+            Component faction = fSender.getFactionTag(fRecipient);
+            return FMessage.PLACEHOLDER_ALLIANCE_DISPLAY.message(alliance)
+                    .append(FMessage.PLACEHOLDER_FACTION_DISPLAY.message(faction))
+                    .appendNewline();
         };
         registerPlaceholderInfo("player-name", info);
         registerPlaceholderInfo("player-display-name", info);

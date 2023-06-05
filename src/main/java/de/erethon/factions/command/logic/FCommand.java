@@ -6,6 +6,7 @@ import de.erethon.bedrock.command.ECommand;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.entity.FEntityCache;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.faction.Faction;
@@ -341,6 +342,10 @@ public abstract class FCommand extends ECommand {
         assure(!fPlayer.hasFaction(), FMessage.ERROR_PLAYER_ALREADY_IN_A_FACTION);
     }
 
+    protected void assurePlayerHasAlliance(@NotNull FPlayer fPlayer) {
+        assure(fPlayer.hasAlliance(), FMessage.ERROR_PLAYER_IS_NOT_IN_AN_ALLIANCE);
+    }
+
     protected void assurePlayerHasFaction(@NotNull FPlayer fPlayer) {
         assure(fPlayer.hasFaction(), FMessage.ERROR_PLAYER_IS_NOT_IN_A_FACTION);
     }
@@ -360,6 +365,10 @@ public abstract class FCommand extends ECommand {
 
     protected void assureRegionIsClaimable(@NotNull Region region) {
         assure(region.isClaimable(), FMessage.ERROR_REGION_IS_NOT_CLAIMABLE);
+    }
+
+    protected void assureSameAlliance(@NotNull FEntity a, @NotNull FEntity b) {
+        assure(a.getAlliance() == b.getAlliance(), FMessage.ERROR_PERMITLESS_ALLIANCE);
     }
 
     protected void assureSameWorld(@NotNull Region region, @NotNull Player player) {

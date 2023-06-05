@@ -26,6 +26,8 @@ public class ClaimCommand extends FCommand {
         FPlayer fPlayer = getFPlayerRaw(sender);
         Faction faction = getFaction(fPlayer);
         Region region = args.length == 2 ? getClaimableRegion(fPlayer) : getClaimableRegion(args[1]);
+        assureSameAlliance(region, fPlayer);
+
         FAccount fAccount = faction.getFAccount();
         double price = region.calculatePriceFor(faction);
 

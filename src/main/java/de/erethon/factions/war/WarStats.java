@@ -59,6 +59,10 @@ public class WarStats {
         this.deaths = deaths;
     }
 
+    public double getKDRatio() {
+        return deaths == 0 ? kills : (double) kills / deaths;
+    }
+
     public int getKillStreak() {
         return killStreak;
     }

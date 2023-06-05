@@ -19,6 +19,7 @@ import de.erethon.factions.command.RegionCommand;
 import de.erethon.factions.command.ReloadCommand;
 import de.erethon.factions.command.ShortNameCommand;
 import de.erethon.factions.command.ShowCommand;
+import de.erethon.factions.command.StatsCommand;
 import de.erethon.factions.command.UnclaimCommand;
 import de.erethon.factions.command.VersionCommand;
 import de.erethon.factions.command.VoteCommand;
@@ -48,6 +49,7 @@ public class FCommandCache extends ECommandCache {
         addCommand(new ReloadCommand());
         addCommand(new ShortNameCommand());
         addCommand(new ShowCommand());
+        addCommand(new StatsCommand());
         addCommand(new UnclaimCommand());
         addCommand(new VersionCommand());
         addCommand(new VoteCommand());

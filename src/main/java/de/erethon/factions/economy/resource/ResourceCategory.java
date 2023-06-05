@@ -2,7 +2,6 @@ package de.erethon.factions.economy.resource;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public enum ResourceCategory {

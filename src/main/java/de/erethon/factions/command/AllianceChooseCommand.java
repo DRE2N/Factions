@@ -32,7 +32,7 @@ public class AllianceChooseCommand extends FCommand {
             long cooldownExpirationDate = fPlayer.getLastAllianceJoinDate() + plugin.getFConfig().getAllianceJoinCooldown();
             assure(cooldownExpirationDate >= System.currentTimeMillis(), FMessage.CMD_ALLIANCE_CHOOSE_ON_COOLDOWN, DateUtil.formatDateDiff(cooldownExpirationDate));
         }
-        fPlayer.setAlliance(alliance);
+        assure(fPlayer.setAlliance(alliance), FMessage.ERROR_CANNOT_CHOOSE_ALLIANCE);
         fPlayer.setLastAllianceJoinDate(System.currentTimeMillis());
         sender.sendMessage(FMessage.CMD_ALLIANCE_CHOOSE_SUCCESS.message(alliance.getName()));
     }

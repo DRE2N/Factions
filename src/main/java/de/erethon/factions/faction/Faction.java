@@ -31,6 +31,8 @@ import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BannerMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,6 +55,7 @@ public class Faction extends FLegalEntity implements PollContainer {
     private Set<FPlayer> members;
     private final Set<Region> regions = new HashSet<>();
     private Region coreRegion;
+    private ItemStack flag;
     private String shortName;
     private boolean open = false;
     private final Set<Faction> authorisedBuilders = new HashSet<>();
@@ -194,6 +197,7 @@ public class Faction extends FLegalEntity implements PollContainer {
         if (coreRegion == null) {
             FLogger.ERROR.log("Unknown core region ID in faction '" + id + "' found: " + coreRegionId);
         }
+        this.flag = config.getItemStack("flag");
         this.shortName = config.getString("shortName");
         this.open = config.getBoolean("open", open);
         for (int factionId : config.getIntegerList("authorisedBuilders")) {
@@ -212,14 +216,14 @@ public class Faction extends FLegalEntity implements PollContainer {
             }
             this.adjacentFactions.add(faction);
         }
-        this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
         for (PopulationLevel level : PopulationLevel.values()) {
             this.population.put(level, config.getInt("population." + level.name(), 0));
         }
         for (String key : config.getConfigurationSection("buildSites").getKeys(false)) {
-            buildSites.add(new BuildSite(config.getConfigurationSection("buildSites." + key)));
+            this.buildSites.add(new BuildSite(config.getConfigurationSection("buildSites." + key)));
         }
-        fStorage = new FStorage(this, config.getConfigurationSection("storage"));
+        this.fStorage = new FStorage(this, config.getConfigurationSection("storage"));
+        this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
     }
 
     private Set<FPlayer> getFPlayers(String path) {
@@ -247,6 +251,7 @@ public class Faction extends FLegalEntity implements PollContainer {
         config.set("members", members.stream().map(p -> p.getUniqueId().toString()).toList());
         saveEntities("regions", regions);
         config.set("coreRegion", coreRegion == null ? null : coreRegion.getId());
+        config.set("flag", flag);
         config.set("shortName", shortName);
         config.set("open", open);
         config.set("level", level);
@@ -326,7 +331,7 @@ public class Faction extends FLegalEntity implements PollContainer {
         return members.contains(fPlayer);
     }
 
-    public Region getCoreRegion() {
+    public @NotNull Region getCoreRegion() {
         return coreRegion;
     }
 
@@ -334,8 +339,33 @@ public class Faction extends FLegalEntity implements PollContainer {
         return coreRegion == region;
     }
 
-    public void setCoreRegion(Region coreRegion) {
+    public void setCoreRegion(@NotNull Region coreRegion) {
         this.coreRegion = coreRegion;
+    }
+
+    public @Nullable ItemStack getFlag() {
+        return flag;
+    }
+
+    public void setFlag(@Nullable ItemStack flag) {
+        if (flag == null) {
+            this.flag = null;
+            return;
+        }
+        BannerMeta bannerMeta;
+        try {
+            bannerMeta = (BannerMeta) flag.getItemMeta();
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException("Flag ItemStack must be a banner item");
+        }
+        ItemStack copy = new ItemStack(flag.getType());
+        BannerMeta copyMeta = (BannerMeta) copy.getItemMeta();
+
+        copyMeta.setBaseColor(bannerMeta.getBaseColor());
+        copyMeta.setPatterns(bannerMeta.getPatterns());
+
+        copy.setItemMeta(copyMeta);
+        this.flag = copy;
     }
 
     public @NotNull Set<Region> getRegions() {
@@ -406,15 +436,33 @@ public class Faction extends FLegalEntity implements PollContainer {
         return authorisedBuilders.contains(faction);
     }
 
+    public boolean toggleAuthorisedBuilder(@NotNull Faction faction) {
+        if (faction.isAuthorisedBuilder(faction)) {
+            faction.removeAuthorisedBuilder(faction);
+            return false;
+        } else {
+            faction.addAuthorisedBuilder(faction);
+            return true;
+        }
+    }
+
     public void addAuthorisedBuilder(@NotNull Faction faction) {
         if (faction == this) {
             return;
         }
-        authorisedBuilders.add(faction);
+        if (!authorisedBuilders.add(faction)) {
+            return;
+        }
+        sendMessage(FMessage.FACTION_INFO_ADDED_BUILDER_AUTHORITY.message(faction.getDisplayShortName()));
+        faction.sendMessage(FMessage.FACTION_INFO_ADDED_BUILDER_AUTHORITY_OTHER.message(getDisplayShortName()));
     }
 
     public void removeAuthorisedBuilder(@NotNull Faction faction) {
-        authorisedBuilders.remove(faction);
+        if (!authorisedBuilders.remove(faction)) {
+            return;
+        }
+        sendMessage(FMessage.FACTION_INFO_ADDED_BUILDER_AUTHORITY.message(faction.getDisplayShortName()));
+        faction.sendMessage(FMessage.FACTION_INFO_ADDED_BUILDER_AUTHORITY_OTHER.message(getDisplayShortName()));
     }
 
     public @NotNull Set<Faction> getAdjacentFactions() {
@@ -438,16 +486,24 @@ public class Faction extends FLegalEntity implements PollContainer {
         return buildSites.stream().anyMatch(buildSite -> buildSite.getBuilding() == building && buildSite.isFinished() && !buildSite.isDestroyed());
     }
 
-    public @NotNull FStorage getStorage() {
-        return fStorage;
-    }
-
     public @NotNull Map<PopulationLevel, Integer> getPopulation() {
         return population;
     }
 
     public int getPopulation(@NotNull PopulationLevel level) {
         return population.getOrDefault(level, 0);
+    }
+
+    public @NotNull FStorage getStorage() {
+        return fStorage;
+    }
+
+    public @NotNull FactionLevel getLevel() {
+        return level;
+    }
+
+    public void setLevel(@NotNull FactionLevel level) {
+        this.level = level;
     }
 
     public @NotNull Set<FPlayer> getInvitedPlayers() {

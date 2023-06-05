@@ -25,8 +25,10 @@ public class CreateCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         FPlayer fPlayer = getFPlayerRaw(sender);
         assurePlayerIsFactionless(fPlayer);
+        assurePlayerHasAlliance(fPlayer);
 
         Region region = getClaimableRegion(fPlayer);
+        assureSameAlliance(region, fPlayer);
 
         if (plugin.hasEconomyProvider()) {
             Economy economy = plugin.getEconomyProvider();

@@ -73,7 +73,7 @@ public class BuildSite implements ConfigurationSerializable {
 
     public BuildSite(@NotNull ConfigurationSection config) {
         building = buildingManager.getById(config.getString("building"));
-        region = plugin.getRegionManager().getRegionById((int) config.get("region"));
+        region = plugin.getRegionManager().getRegionById(config.getInt("region"));
         corner =  Location.deserialize(config.getConfigurationSection("location.corner").getValues(false));
         otherCorner = Location.deserialize(config.getConfigurationSection("location.otherCorner").getValues(false));
         interactive = Location.deserialize(config.getConfigurationSection("location.interactable").getValues(false));

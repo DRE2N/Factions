@@ -13,6 +13,7 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FEntity;
+import de.erethon.factions.entity.Relation;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.poll.Poll;
 import de.erethon.factions.region.AutomatedChunkManager;
@@ -221,11 +222,23 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
         return alliance;
     }
 
-    public void setAlliance(@Nullable Alliance alliance) {
+    public boolean setAlliance(@Nullable Alliance alliance) {
         if (alliance != this.alliance && faction != null) {
-            return;
+            return false;
         }
         this.alliance = alliance;
+        return true;
+    }
+
+    public @NotNull Component getAllianceTag() {
+        return getAllianceTag(null);
+    }
+
+    public @NotNull Component getAllianceTag(@Nullable FEntity relationEntity) {
+        if (alliance == null) {
+            return FMessage.GENERAL_NONE.message();
+        }
+        return relationEntity == null ? Component.text(faction.getDisplayShortName()) : Relation.getRelation(relationEntity, alliance).color(faction.getDisplayShortName());
     }
 
     @Override
@@ -243,7 +256,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
 
     public @NotNull Component getFactionTag(@Nullable FEntity relationEntity) {
         if (faction == null) {
-            return relationEntity == null ? FMessage.GENERAL_LONER.message() : getRelation(relationEntity).color(FMessage.GENERAL_LONER.message());
+            return relationEntity == null ? FMessage.GENERAL_LONER.message() : getRelation(relationEntity).color(FMessage.GENERAL_LONER.getMessage());
         }
         return relationEntity == null ? Component.text(faction.getDisplayShortName()) : getRelation(relationEntity).color(faction.getDisplayShortName());
     }

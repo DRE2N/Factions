@@ -6,6 +6,7 @@ import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
@@ -28,15 +29,17 @@ public class ShowCommand extends FCommand {
     @Override
     public void onExecute(CommandSender sender, String[] args) {
         Faction faction = args.length == 2 ? getFaction(args[1]) : getFaction(getFPlayer(sender));
-        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_SEPARATOR.getMessage());
+        sender.sendMessage(Component.empty());
         MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_HEADER.getMessage(faction.getName()));
         MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_SEPARATOR.getMessage());
         sender.sendMessage(FMessage.CMD_SHOW_NAME.message(faction.getDisplayShortName()));
         sender.sendMessage(FMessage.CMD_SHOW_DESCRIPTION.message(faction.getDisplayDescription()));
+        sender.sendMessage(FMessage.CMD_SHOW_ALLIANCE.message(faction.hasAlliance() ? faction.getAlliance().getName() : FMessage.GENERAL_NONE.getMessage()));
         sender.sendMessage(FMessage.CMD_SHOW_MONEY.message(faction.getFAccount().getFormatted()));
         sender.sendMessage(FMessage.CMD_SHOW_CORE_REGION.message(faction.getCoreRegion().getName()));
         sender.sendMessage(FMessage.CMD_SHOW_ADMIN.message(faction.getAdmin().getDisplayName()));
         sender.sendMessage(FMessage.CMD_SHOW_MEMBERS.message(String.valueOf(faction.getMembers().size()), getMembersString(faction)));
+        sender.sendMessage(Component.empty());
     }
 
     private String getMembersString(Faction faction) {

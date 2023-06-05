@@ -58,7 +58,7 @@ public enum Relation {
     }
 
     public @NotNull Component color(@NotNull Component component) {
-        return Component.text().color(color).append(component).build();
+        return component.color(color);
     }
 
     public boolean canBuild() {
