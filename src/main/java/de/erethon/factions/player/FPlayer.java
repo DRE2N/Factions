@@ -8,6 +8,7 @@ import de.erethon.aergia.util.AergiaUtil;
 import de.erethon.aergia.util.DynamicComponent;
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.config.EConfig;
+import de.erethon.bedrock.player.PlayerWrapper;
 import de.erethon.bedrock.user.LoadableUser;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
@@ -41,7 +42,7 @@ import java.util.UUID;
 /**
  * @author Fyreum
  */
-public class FPlayer extends EConfig implements FEntity, LoadableUser {
+public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWrapper {
 
     public static final int CONFIG_VERSION = 1;
 
@@ -209,6 +210,8 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
         return player;
     }
 
+
+
     public @NotNull OfflinePlayer getOfflinePlayer() {
         return Bukkit.getOfflinePlayer(uuid);
     }
@@ -259,6 +262,11 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser {
             return relationEntity == null ? FMessage.GENERAL_LONER.message() : getRelation(relationEntity).color(FMessage.GENERAL_LONER.getMessage());
         }
         return relationEntity == null ? Component.text(faction.getDisplayShortName()) : getRelation(relationEntity).color(faction.getDisplayShortName());
+    }
+
+    @Override
+    public String getName() {
+        return lastName;
     }
 
     public @NotNull String getLastName() {

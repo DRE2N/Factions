@@ -1,6 +1,7 @@
 package de.erethon.factions.faction;
 
 import de.erethon.aergia.util.BroadcastUtil;
+import de.erethon.bedrock.player.PlayerCollection;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.building.ActiveBuildingEffect;
@@ -28,6 +29,7 @@ import de.erethon.factions.util.FactionUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -50,9 +52,9 @@ public class Faction extends FLegalEntity implements PollContainer {
 
     /* Persistent */
     private Alliance alliance;
-    private FPlayer admin;
-    private Set<FPlayer> mods;
-    private Set<FPlayer> members;
+    private UUID admin;
+    private PlayerCollection mods;
+    private PlayerCollection members;
     private final Set<Region> regions = new HashSet<>();
     private Region coreRegion;
     private ItemStack flag;
@@ -72,9 +74,9 @@ public class Faction extends FLegalEntity implements PollContainer {
 
     protected Faction(@NotNull FPlayer admin, @NotNull Region coreRegion, int id, String name, String description) {
         super(new File(Factions.FACTIONS, id + ".yml"), id, name, description);
-        this.admin = admin;
-        this.mods = new HashSet<>();
-        this.members = new HashSet<>();
+        this.admin = admin.getUniqueId();
+        this.mods = new PlayerCollection();
+        this.members = new PlayerCollection();
         this.members.add(admin);
         this.regions.add(coreRegion);
         this.coreRegion = coreRegion;
@@ -127,12 +129,16 @@ public class Faction extends FLegalEntity implements PollContainer {
                 disband(FactionDisbandEvent.Reason.NO_MEMBERS_LEFT);
                 return;
             }
-            Set<FPlayer> possibleSuccessors = mods.isEmpty() ? members : mods;
+            PlayerCollection possibleSuccessors = mods.isEmpty() ? members : mods;
             long selected = Long.MAX_VALUE;
 
-            for (FPlayer member : possibleSuccessors) {
+            for (UUID uuid : possibleSuccessors) {
+                FPlayer member = plugin.getFPlayerCache().getByUniqueId(uuid);
+                if (member == null) {
+                    continue;
+                }
                 if (member.getLastFactionJoinDate() < selected) {
-                    admin = member;
+                    admin = member.getUniqueId();
                     selected = member.getLastFactionJoinDate();
                 }
             }
@@ -147,7 +153,11 @@ public class Faction extends FLegalEntity implements PollContainer {
         if (alliance != null) {
             alliance.removeFaction(this);
         }
-        for (FPlayer member : members) {
+        for (UUID uuid : members) {
+            FPlayer member = plugin.getFPlayerCache().getByUniqueId(uuid);
+            if (member == null) {
+                continue;
+            }
             member.setFaction(null);
         }
         mods.clear();
@@ -165,8 +175,12 @@ public class Faction extends FLegalEntity implements PollContainer {
 
     public void sendMessage(@NotNull Component msg, boolean prefix) {
         Component message = prefix ? FMessage.FACTION_INFO_PREFIX.message().append(msg) : msg;
-        for (FPlayer member : members) {
-            member.sendMessage(message);
+        for (UUID uuid : members) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player == null) {
+                continue;
+            }
+            player.sendMessage(message);
         }
     }
 
@@ -178,12 +192,12 @@ public class Faction extends FLegalEntity implements PollContainer {
         this.alliance = plugin.getAllianceCache().getById(config.getInt("alliance", -1));
         String adminId = config.getString("admin", "null");
         try {
-            this.admin = plugin.getFPlayerCache().getByUniqueId(UUID.fromString(adminId));
+            this.admin = UUID.fromString(adminId);
         } catch (IllegalArgumentException e) {
             FLogger.ERROR.log("Illegal UUID in faction '" + file.getName() + "' found: '" + adminId + "'");
         }
-        this.mods = getFPlayers("mods");
-        this.members = getFPlayers("members");
+        this.mods = new PlayerCollection(config.getStringList("mods"));
+        this.members = new PlayerCollection(config.getStringList("mods"));
         for (int regionId : config.getIntegerList("regions")) {
             Region region = plugin.getRegionManager().getRegionById(regionId);
             if (region == null) {
@@ -246,9 +260,9 @@ public class Faction extends FLegalEntity implements PollContainer {
     @Override
     protected void serializeData() {
         config.set("alliance", alliance == null ? null : alliance.getId());
-        config.set("admin", admin.getUniqueId().toString());
-        config.set("mods", mods.stream().map(p -> p.getUniqueId().toString()).toList());
-        config.set("members", members.stream().map(p -> p.getUniqueId().toString()).toList());
+        config.set("admin", admin.toString());
+        config.set("mods", mods.serialize());
+        config.set("members", members.serialize());
         saveEntities("regions", regions);
         config.set("coreRegion", coreRegion == null ? null : coreRegion.getId());
         config.set("flag", flag);
@@ -299,31 +313,43 @@ public class Faction extends FLegalEntity implements PollContainer {
         return this;
     }
 
-    public @NotNull FPlayer getAdmin() {
+    public @NotNull UUID getAdmin() {
         return admin;
     }
 
     public boolean isAdmin(@NotNull FPlayer fPlayer) {
-        return admin == fPlayer;
+        return isAdmin(fPlayer.getUniqueId());
+    }
+
+    public boolean isAdmin(@NotNull UUID uuid) {
+        return admin.equals(uuid);
     }
 
     public void setAdmin(@NotNull FPlayer fPlayer) {
-        this.admin = fPlayer;
+        setAdmin(fPlayer.getUniqueId());
     }
 
-    public @NotNull Set<FPlayer> getMods() {
+    public void setAdmin(@NotNull UUID uuid) {
+        this.admin = uuid;
+    }
+
+    public @NotNull PlayerCollection getMods() {
         return mods;
     }
 
-    public boolean isMod(FPlayer fPlayer) {
+    public boolean isMod(@NotNull FPlayer fPlayer) {
         return mods.contains(fPlayer);
+    }
+
+    public boolean isMod(@NotNull UUID uuid) {
+        return mods.contains(uuid);
     }
 
     public void addMod(@NotNull FPlayer fPlayer) {
         mods.add(fPlayer);
     }
 
-    public @NotNull Set<FPlayer> getMembers() {
+    public @NotNull PlayerCollection getMembers() {
         return members;
     }
 

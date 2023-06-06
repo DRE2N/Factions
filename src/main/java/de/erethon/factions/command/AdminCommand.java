@@ -5,11 +5,13 @@ import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Fyreum
@@ -47,9 +49,10 @@ public class AdminCommand extends FCommand {
                 return getTabPlayers(args[1]);
             }
             List<String> completes = new ArrayList<>();
-            for (FPlayer member : faction.getMembers()) {
-                if (member.getLastName().toLowerCase().startsWith(args[1].toLowerCase())) {
-                    completes.add(member.getLastName());
+            for (UUID uuid : faction.getMembers()) {
+                String name = Bukkit.getOfflinePlayer(uuid).getName();
+                if (name != null && name.toLowerCase().startsWith(args[1].toLowerCase())) {
+                    completes.add(name);
                 }
             }
             return completes;

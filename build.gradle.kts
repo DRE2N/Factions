@@ -54,6 +54,7 @@ tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
         options.release.set(17)
+        options.compilerArgs.add("--enable-preview")
     }
     processResources {
         filteringCharset = Charsets.UTF_8.name()

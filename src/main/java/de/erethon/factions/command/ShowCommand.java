@@ -5,11 +5,13 @@ import de.erethon.bedrock.misc.JavaUtil;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.faction.Faction;
-import de.erethon.factions.player.FPlayer;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Fyreum
@@ -37,13 +39,18 @@ public class ShowCommand extends FCommand {
         sender.sendMessage(FMessage.CMD_SHOW_ALLIANCE.message(faction.hasAlliance() ? faction.getAlliance().getName() : FMessage.GENERAL_NONE.getMessage()));
         sender.sendMessage(FMessage.CMD_SHOW_MONEY.message(faction.getFAccount().getFormatted()));
         sender.sendMessage(FMessage.CMD_SHOW_CORE_REGION.message(faction.getCoreRegion().getName()));
-        sender.sendMessage(FMessage.CMD_SHOW_ADMIN.message(faction.getAdmin().getDisplayName()));
+        sender.sendMessage(FMessage.CMD_SHOW_ADMIN.message(getDisplayName(faction, faction.getAdmin())));
         sender.sendMessage(FMessage.CMD_SHOW_MEMBERS.message(String.valueOf(faction.getMembers().size()), getMembersString(faction)));
         sender.sendMessage(Component.empty());
     }
 
     private String getMembersString(Faction faction) {
-        return JavaUtil.toString(faction.getMembers().stream().map(FPlayer::getDisplayName).toList());
+        return JavaUtil.toString(faction.getMembers().stream().map(uuid -> getDisplayName(faction, uuid)).toList());
+    }
+
+    private String getDisplayName(Faction faction, UUID uuid) {
+        Player player = Bukkit.getPlayer(uuid);
+        return (faction.isAdmin(uuid) ? "**" : faction.isMod(uuid) ? "*" : "") + (player == null ? uuid.toString() : player.getName());
     }
 
     @Override

@@ -12,11 +12,13 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FException;
 import de.erethon.factions.util.FLogger;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.UUID;
 
 /**
  * @author Fyreum
@@ -82,11 +84,17 @@ public class FactionCache extends FEntityCache<Faction> {
         long kickAfter = fConfig.getInactiveKickDuration();
 
         for (Faction faction : cache.values()) {
-            for (FPlayer member : faction.getMembers()) {
-                if (member.getOfflinePlayer().getLastSeen() + (member.isAdminRaw() ? kickAdminAfter : kickAfter) > System.currentTimeMillis()) {
+            for (UUID uuid : faction.getMembers()) {
+                OfflinePlayer member = Bukkit.getOfflinePlayer(uuid);
+                if (member.getLastSeen() + (faction.isAdmin(uuid) ? kickAdminAfter : kickAfter) > System.currentTimeMillis()) {
                     continue;
                 }
-                faction.playerLeave(member, FPlayerFactionLeaveEvent.Reason.INACTIVE);
+                FPlayer fPlayer = plugin.getFPlayerCache().getByUniqueId(uuid);
+                if (fPlayer == null) {
+                    FLogger.ERROR.log("Couldn't kick inactive player '" + uuid + "': FPlayer is null");
+                    continue;
+                }
+                faction.playerLeave(fPlayer, FPlayerFactionLeaveEvent.Reason.INACTIVE);
             }
         }
     }
