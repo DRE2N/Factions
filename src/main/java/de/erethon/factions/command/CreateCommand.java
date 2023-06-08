@@ -30,6 +30,9 @@ public class CreateCommand extends FCommand {
         Region region = getClaimableRegion(fPlayer);
         assureSameAlliance(region, fPlayer);
 
+        int maximumChars = plugin.getFConfig().getMaximumNameChars();
+        assure(args[1].length() <= maximumChars, FMessage.ERROR_TEXT_IS_TOO_LONG, String.valueOf(maximumChars));
+
         if (plugin.hasEconomyProvider()) {
             Economy economy = plugin.getEconomyProvider();
             double regionPrice = region.calculatePriceFor(null);

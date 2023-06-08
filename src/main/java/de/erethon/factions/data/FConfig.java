@@ -29,11 +29,14 @@ public class FConfig extends EConfig {
 
     public static final int CONFIG_VERSION = 1;
 
+    private final Factions plugin = Factions.get();
+
     /* General */
     private List<String> excludedWorlds = new ArrayList<>();
     private String language = "german";
-
-    private final Factions plugin = Factions.get();
+    private int maximumDescriptionChars = 256;
+    private int maximumNameChars = 64;
+    private int maximumShortNameChars = 32;
 
     /* Alliance */
     private long allianceJoinCooldown = TimeUnit.DAYS.toMillis(30);
@@ -69,6 +72,9 @@ public class FConfig extends EConfig {
     public void initialize() {
         initValue("excludedWorlds", excludedWorlds);
         initValue("language", language);
+        initValue("maximumDescriptionChars", maximumDescriptionChars);
+        initValue("maximumNameChars", maximumNameChars);
+        initValue("maximumShortNameChars", maximumShortNameChars);
         initValue("allianceJoinCooldown", allianceJoinCooldown);
         initValue("factionJoinCooldown", factionJoinCooldown);
         initValue("forbiddenNames", forbiddenNames);
@@ -100,6 +106,9 @@ public class FConfig extends EConfig {
     public void load() {
         excludedWorlds = getStringList("excludedWorlds", excludedWorlds);
         language = config.getString("language", language);
+        maximumDescriptionChars = config.getInt("maximumDescriptionChars", maximumDescriptionChars);
+        maximumNameChars = config.getInt("maximumNameChars", maximumNameChars);
+        maximumShortNameChars = config.getInt("maximumShortNameChars", maximumShortNameChars);
         allianceJoinCooldown = config.getLong("allianceJoinCooldown", allianceJoinCooldown);
         factionJoinCooldown = config.getLong("factionJoinCooldown", factionJoinCooldown);
         forbiddenNames = getStringList("forbiddenNames", forbiddenNames);
@@ -156,6 +165,18 @@ public class FConfig extends EConfig {
 
     public @NotNull String getLanguage() {
         return language;
+    }
+
+    public int getMaximumDescriptionChars() {
+        return maximumDescriptionChars;
+    }
+
+    public int getMaximumNameChars() {
+        return maximumNameChars;
+    }
+
+    public int getMaximumShortNameChars() {
+        return maximumShortNameChars;
     }
 
     public long getAllianceJoinCooldown() {

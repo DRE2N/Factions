@@ -27,6 +27,8 @@ public class ShortNameCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         Faction faction = args.length == 2 ? getFaction(getFPlayer(sender)) : getFaction(args[2]);
         assureSenderHasAdminPerms(sender, faction);
+        int maximumChars = plugin.getFConfig().getMaximumShortNameChars();
+        assure(args[1].length() <= maximumChars, FMessage.ERROR_TEXT_IS_TOO_LONG, String.valueOf(maximumChars));
         faction.setShortName(args[1]);
         BroadcastUtil.broadcast(FMessage.FACTION_INFO_SHORT_NAME_CHANGED.message(faction.getName(), args[1]));
     }

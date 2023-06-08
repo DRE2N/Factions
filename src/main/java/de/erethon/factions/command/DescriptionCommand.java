@@ -20,7 +20,7 @@ public class DescriptionCommand extends FCommand {
         setConsoleCommand(true);
         setMinMaxArgs(1, Integer.MAX_VALUE);
         setPermissionFromName();
-        setFUsage(getCommand() + "([faction]) [...]");
+        setFUsage(getCommand() + " ([faction]) [...]");
         setDescription("Setzt die Beschreibung der Fraktion");
     }
 
@@ -36,6 +36,8 @@ public class DescriptionCommand extends FCommand {
         } else {
             description = getFinalArg(args, 1);
         }
+        int maximumChars = plugin.getFConfig().getMaximumDescriptionChars();
+        assure(description.length() <= maximumChars, FMessage.ERROR_TEXT_IS_TOO_LONG, String.valueOf(maximumChars));
         faction.setDescription(description);
         BroadcastUtil.broadcast(FMessage.FACTION_INFO_DESCRIPTION_CHANGED.message(faction.getName(), description));
     }
