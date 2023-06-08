@@ -7,7 +7,7 @@ import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.util.FLogger;
-import de.erethon.factions.util.FactionUtil;
+import de.erethon.factions.util.FUtil;
 import org.bukkit.Chunk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -136,7 +136,7 @@ public class Region extends FLegalEntity {
             return false;
         }
         // Check whether another region ensures the adjacency and remove adjacent faction if not.
-        if (owner != null && other.getOwner() != null && !FactionUtil.isAdjacent(owner, other.getOwner())) {
+        if (owner != null && other.getOwner() != null && !FUtil.isAdjacent(owner, other.getOwner())) {
             owner.removeAdjacentFaction(other.getOwner());
         }
         return true;

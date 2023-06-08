@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 public enum RegionType {
 
     BARREN(FMessage.REGION_BARREN, Material.DEAD_BUSH, NamedTextColor.GOLD),
+    CAPITAL(FMessage.REGION_CAPITAL, Material.BRICK, NamedTextColor.DARK_RED),
     CITY(FMessage.REGION_CITY, Material.GLASS_PANE, NamedTextColor.WHITE),
     DESERT(FMessage.REGION_DESERT, Material.SAND, NamedTextColor.YELLOW),
     FARMLAND(FMessage.REGION_FARMLAND, Material.GRASS, NamedTextColor.GREEN),

@@ -8,8 +8,11 @@ import de.erethon.factions.poll.PollContainer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.util.FUtil;
 import de.erethon.factions.war.WarScores;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -36,6 +39,7 @@ public class Alliance extends FLegalEntity implements PollContainer {
     private final Set<Region> temporaryRegions = new HashSet<>();
     private final Set<Region> unconfirmedTemporaryRegions = new HashSet<>();
     private final Set<Faction> factions = new HashSet<>();
+    private TextColor color;
     private String shortName;
     private WarScores warScores;
     /* Temporary */
@@ -80,6 +84,8 @@ public class Alliance extends FLegalEntity implements PollContainer {
             }
             this.factions.add(faction);
         }
+        String colorString = config.getString("color", NamedTextColor.WHITE.toString());
+        this.color = FUtil.getNotNullOr(NamedTextColor.WHITE, () -> NamedTextColor.NAMES.value(colorString), () -> TextColor.fromHexString(colorString));
         this.shortName = config.getString("shortName");
         this.warScores = new WarScores(this, config.getConfigurationSection("warScores"));
     }
@@ -101,6 +107,7 @@ public class Alliance extends FLegalEntity implements PollContainer {
         saveEntities("temporaryRegions", temporaryRegions);
         saveEntities("unconfirmedTemporaryRegions", unconfirmedTemporaryRegions);
         saveEntities("factions", factions);
+        config.set("color", color.toString());
         config.set("shortName", shortName);
         config.set("warScores", warScores.serialize());
     }
@@ -147,6 +154,14 @@ public class Alliance extends FLegalEntity implements PollContainer {
 
     public void removeFaction(@NotNull Faction faction) {
         factions.remove(faction);
+    }
+
+    public @NotNull TextColor getColor() {
+        return color;
+    }
+
+    public void setColor(@NotNull TextColor color) {
+        this.color = color;
     }
 
     public @Nullable String getShortName() {

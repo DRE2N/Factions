@@ -14,7 +14,6 @@ import de.erethon.factions.building.BuildingManager;
 import de.erethon.factions.command.logic.FCommandCache;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
-import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.faction.FactionCache;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
@@ -203,7 +202,7 @@ public final class Factions extends EPlugin {
                     FPlayer fSender = fPlayerCache.getByPlayer(s.getPlayer());
                     String faction = fSender.hasFaction() ? fSender.getFaction().getDisplayShortName() : FMessage.GENERAL_LONER.getMessage();
                     return Component.text()
-                            .color(r == null ? NamedTextColor.GRAY : fPlayerCache.getByPlayer(r.getPlayer()).getRelation(fSender).getColor())
+                            .color(fSender.hasAlliance() ? fSender.getAlliance().getColor() : NamedTextColor.WHITE)
                             .append(MessageUtil.parse("<dark_gray>[</dark_gray>" + faction + "<dark_gray>]</dark_gray>"))
                             .build();
                 })
@@ -228,11 +227,8 @@ public final class Factions extends EPlugin {
                 .build());
         HoverInfo info = (sender, recipient) -> {
             FPlayer fSender = fPlayerCache.getByPlayer(sender.getPlayer());
-            FEntity fRecipient = recipient == null ? null : fPlayerCache.getByPlayer(recipient.getPlayer());
-            Component alliance = fSender.getAllianceTag(fRecipient);
-            Component faction = fSender.getFactionTag(fRecipient);
-            return FMessage.PLACEHOLDER_ALLIANCE_DISPLAY.message(alliance)
-                    .append(FMessage.PLACEHOLDER_FACTION_DISPLAY.message(faction))
+            return FMessage.PLACEHOLDER_ALLIANCE_DISPLAY.message(fSender.getAllianceTag())
+                    .append(FMessage.PLACEHOLDER_FACTION_DISPLAY.message(fSender.getFactionTag()))
                     .appendNewline();
         };
         registerPlaceholderInfo("player-name", info);

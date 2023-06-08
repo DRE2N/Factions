@@ -144,6 +144,7 @@ faction:
     disbanded: "<gray>Die Fraktion <green>&v1</green> wurde aufgelöst."
     inactivePlayerKicked: "<green>&v1</green> wurde wegen Inaktivität gekickt."
     nameChanged: "<gray>Die Fraktion <green>&v1</green> hat ihren Namen zu <green>&v2</green> geändert."
+    newAdmin: "<gray>Der Spieler <green>&v1</green> wurde zum neuen Anführer der Fraktion <green>&v2</green> ernannt."
     newPoll: "<green>Eine neue Abstimmung wurde erstellt. Stimme mit <dark_green>/f vote &v1</dark_green> ab!"
     playerGotKicked: "<green>&v1</green> wurde aus der Fraktion geworfen."
     playerJoined: "<green>&v1</green> ist der Fraktion beigetreten."
@@ -206,6 +207,7 @@ protection:
   warZoneIsClosed: "<red>Während der aktuellen Kriegsphase sind die Kriegsgebiete geschlossen."
 region:
   barren: "Ödland"
+  capital: "Hauptstadt"
   city: "Stadt"
   desert: "Wüste"
   farmland: "Farmland"
@@ -235,6 +237,9 @@ war:
     active:
       announcement: "<dark_red>Die Kampfphase hat begonnen. Kriegsgebiete können nun umkämpft werden."
       displayName: "Kampfphase"
+    capital:
+      announcement: "<dark_red>Die Hauptstadteroberung hat begonnen. Die Hauptstadt kann nun umkämpft werden."
+      displayName: "Hauptstadteroberung"
     announcement:
       minute: "&v1-Phase beginnt in einer <gold>&v2</gold> Minute."
       minutes: "&v1-Phase beginnt in <gold>&v2</gold> Minuten."

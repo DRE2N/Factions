@@ -25,7 +25,7 @@ import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FException;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FPermissionUtil;
-import de.erethon.factions.util.FactionUtil;
+import de.erethon.factions.util.FUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -67,9 +67,9 @@ public class Faction extends FLegalEntity implements PollContainer {
     private FStorage fStorage;
     private FactionLevel level = FactionLevel.HAMLET;
     /* Temporary */
-    private final Set<FPlayer> invitedPlayers = new HashSet<>();
-    private FAccount fAccount;
     private final Set<ActiveBuildingEffect> buildingEffects = new HashSet<>();
+    private FAccount fAccount;
+    private final Set<FPlayer> invitedPlayers = new HashSet<>();
     private final Map<String, Poll<?>> polls = new HashMap<>();
 
     protected Faction(@NotNull FPlayer admin, @NotNull Region coreRegion, int id, String name, String description) {
@@ -124,24 +124,24 @@ public class Faction extends FLegalEntity implements PollContainer {
         event.callEvent();
 
         if (isAdmin(fPlayer)) {
-            admin = null;
             if (members.isEmpty()) {
                 disband(FactionDisbandEvent.Reason.NO_MEMBERS_LEFT);
                 return;
             }
             PlayerCollection possibleSuccessors = mods.isEmpty() ? members : mods;
-            long selected = Long.MAX_VALUE;
+            FPlayer successor = null;
 
             for (UUID uuid : possibleSuccessors) {
                 FPlayer member = plugin.getFPlayerCache().getByUniqueId(uuid);
                 if (member == null) {
                     continue;
                 }
-                if (member.getLastFactionJoinDate() < selected) {
-                    admin = member.getUniqueId();
-                    selected = member.getLastFactionJoinDate();
+                if (successor == null || member.getLastFactionJoinDate() < successor.getLastFactionJoinDate()) {
+                    successor = member;
                 }
             }
+            admin = successor.getUniqueId();
+            BroadcastUtil.broadcast(FMessage.FACTION_INFO_NEW_ADMIN.message(successor.getLastName(), name));
         }
         sendMessage(event.getMessage());
     }
@@ -160,6 +160,7 @@ public class Faction extends FLegalEntity implements PollContainer {
             }
             member.setFaction(null);
         }
+        admin = null;
         mods.clear();
         for (Region region : regions) {
             region.setOwner(null);
@@ -423,7 +424,7 @@ public class Faction extends FLegalEntity implements PollContainer {
             if (other == null) {
                 continue;
             }
-            if (!FactionUtil.isAdjacent(this, other)) {
+            if (!FUtil.isAdjacent(this, other)) {
                 removeAdjacentFaction(other);
             }
         }
@@ -532,6 +533,14 @@ public class Faction extends FLegalEntity implements PollContainer {
         this.level = level;
     }
 
+    public @NotNull Set<ActiveBuildingEffect> getBuildingEffects() {
+        return buildingEffects;
+    }
+
+    public @NotNull FAccount getFAccount() {
+        return fAccount;
+    }
+
     public @NotNull Set<FPlayer> getInvitedPlayers() {
         return invitedPlayers;
     }
@@ -546,14 +555,6 @@ public class Faction extends FLegalEntity implements PollContainer {
 
     public void removeInvitedPlayer(@NotNull FPlayer fPlayer) {
         invitedPlayers.remove(fPlayer);
-    }
-
-    public @NotNull FAccount getFAccount() {
-        return fAccount;
-    }
-
-    public @NotNull Set<ActiveBuildingEffect> getBuildingEffects() {
-        return buildingEffects;
     }
 
     @Override
