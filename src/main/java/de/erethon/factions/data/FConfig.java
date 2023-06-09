@@ -34,6 +34,7 @@ public class FConfig extends EConfig {
     /* General */
     private List<String> excludedWorlds = new ArrayList<>();
     private String language = "german";
+    private int maximumAutomatedChunkManagerRadius = 2;
     private int maximumDescriptionChars = 256;
     private int maximumLongNameChars = 128;
     private int maximumNameChars = 64;
@@ -73,6 +74,7 @@ public class FConfig extends EConfig {
     public void initialize() {
         initValue("excludedWorlds", excludedWorlds);
         initValue("language", language);
+        initValue("maximumAutomatedChunkManagerRadius", maximumAutomatedChunkManagerRadius);
         initValue("maximumDescriptionChars", maximumDescriptionChars);
         initValue("maximumNameChars", maximumNameChars);
         initValue("maximumShortNameChars", maximumShortNameChars);
@@ -107,6 +109,7 @@ public class FConfig extends EConfig {
     public void load() {
         excludedWorlds = getStringList("excludedWorlds", excludedWorlds);
         language = config.getString("language", language);
+        maximumAutomatedChunkManagerRadius = Math.max(config.getInt("maximumAutomatedChunkManagerRadius", maximumAutomatedChunkManagerRadius), 1);
         maximumDescriptionChars = config.getInt("maximumDescriptionChars", maximumDescriptionChars);
         maximumLongNameChars = config.getInt("maximumLongNameChars", maximumLongNameChars);
         maximumNameChars = config.getInt("maximumNameChars", maximumNameChars);
@@ -167,6 +170,10 @@ public class FConfig extends EConfig {
 
     public @NotNull String getLanguage() {
         return language;
+    }
+
+    public int getMaximumAutomatedChunkManagerRadius() {
+        return maximumAutomatedChunkManagerRadius;
     }
 
     public int getMaximumDescriptionChars() {

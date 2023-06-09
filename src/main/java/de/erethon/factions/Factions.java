@@ -212,7 +212,7 @@ public final class Factions extends EPlugin {
                 })
                 .addHoverInfo((s, r) -> {
                     FPlayer fPlayer = fPlayerCache.getByPlayer(s.getPlayer());
-                    return !fPlayer.hasFaction() ? null : MessageUtil.parse("<gold>Fraktion<dark_gray>:<gray> " + fPlayer.getFaction().getName());
+                    return !fPlayer.hasFaction() ? null : MessageUtil.parse("<gold>Fraktion</gold><dark_gray>:</dark_gray><gray> " + fPlayer.getFaction().getName());
                 })
                 .build());
         ChatPlaceholders.register(ChatPlaceholder.builder()

@@ -52,6 +52,10 @@ public class LazyChunk {
         return z;
     }
 
+    public boolean equalsChunk(@NotNull Chunk chunk) {
+        return this.x == chunk.getX() && this.z == chunk.getZ();
+    }
+
     @Override
     public boolean equals(Object chunk) {
         if(chunk == null) return false;

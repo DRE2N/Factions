@@ -27,6 +27,7 @@ public class AutomatedChunkManager {
     private ChunkOperation operation = ChunkOperation.IDLE;
     private Region selection;
     private int radius = 0;
+    private LazyChunk lastChunk;
 
     public AutomatedChunkManager(@NotNull FPlayer fPlayer) {
         this.fPlayer = fPlayer;
@@ -41,6 +42,11 @@ public class AutomatedChunkManager {
             deactivate(true);
             return;
         }
+        // Stop early when inside the same chunk, to improve performance.
+        if (lastChunk != null && lastChunk.equalsChunk(chunk)) {
+            return;
+        }
+        lastChunk = new LazyChunk(chunk.getX(), chunk.getZ());
         switch (operation) {
             case ADD -> add(chunk);
             case REMOVE -> remove(chunk);
@@ -99,6 +105,7 @@ public class AutomatedChunkManager {
         }
     }
 
+    // Note: Might use an async task for this in the future.
     private int squaredAction(Chunk chunk, BiPredicate<LazyChunk, Region> action) {
         int modified = 0;
         int maxX = chunk.getX() + radius + 1;
@@ -173,8 +180,9 @@ public class AutomatedChunkManager {
     }
 
     public void setRadius(int radius) {
-        if (radius < 0 || radius > 2) {
-            sendActionBar(FMessage.ACM_ILLEGAL_RADIUS.message("0", "2"));
+        int maxRadius = plugin.getFConfig().getMaximumAutomatedChunkManagerRadius();
+        if (radius < 0 || radius > maxRadius) {
+            sendActionBar(FMessage.ACM_ILLEGAL_RADIUS.message("0", String.valueOf(maxRadius)));
             return;
         } else {
             sendActionBar(FMessage.ACM_RADIUS_SELECTED.message(String.valueOf(radius)));

@@ -4,14 +4,13 @@ import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.player.FPlayer;
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Fyreum
  */
 public class RegionAutoRadiusCommand extends FCommand {
-
-    private final List<String> radiusOptions = List.of("0", "1", "2");
 
     public RegionAutoRadiusCommand() {
         setCommand("autoradius");
@@ -30,7 +29,14 @@ public class RegionAutoRadiusCommand extends FCommand {
     @Override
     public List<String> onTabComplete(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return getTabList(radiusOptions, args[1]);
+            int max = plugin.getFConfig().getMaximumAutomatedChunkManagerRadius() + 1;
+            List<String> completes = new ArrayList<>(max);
+            for (int i = 0; i < max; i++) {
+                if (args[1].startsWith(String.valueOf(i))) {
+                    completes.add(String.valueOf(i));
+                }
+            }
+            return completes;
         }
         return null;
     }
