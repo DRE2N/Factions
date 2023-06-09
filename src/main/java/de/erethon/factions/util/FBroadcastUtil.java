@@ -54,7 +54,7 @@ public class FBroadcastUtil {
     }
 
     private static void broadcastWarFinal(@NotNull Component finalMessage) {
-        FLogger.WAR.log(() -> finalMessage);
+        FLogger.WAR.log(finalMessage);
         MessageUtil.broadcastMessage(finalMessage);
     }
 }

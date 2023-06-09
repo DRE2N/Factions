@@ -28,7 +28,7 @@ public interface FEntity {
     }
 
     default @NotNull String getDisplayMembership() {
-        return hasFaction() ? getFaction().getDisplayShortName() : (hasAlliance() ? getAlliance().getDisplayShortName() : FMessage.GENERAL_SPECTATOR.getMessage());
+        return hasFaction() ? getFaction().getDisplayShortName() : (hasAlliance() ? getAlliance().getDisplayShortName() : FMessage.GENERAL_LONER.getMessage());
     }
 
 }

@@ -30,6 +30,6 @@ public class LeaveCommand extends FCommand {
             assure(args.length == 2 && args[1].equalsIgnoreCase("confirm"), FMessage.CMD_LEAVE_CONFIRMATION_REQUIRED, getUsage() + " confirm");
         }
         faction.playerLeave(fPlayer, FPlayerFactionLeaveEvent.Reason.COMMAND);
-        sender.sendMessage(FMessage.CMD_LEAVE_SUCCESS.message());
+        sender.sendMessage(FMessage.CMD_LEAVE_SUCCESS.message(faction.getName()));
     }
 }

@@ -35,7 +35,7 @@ cmd:
   kick:
     success: "<green>Du hast den Spieler <dark_green>&v1</dark_green> aus der Fraktion <dark_green>&v2</dark_green> geworfen."
   leave:
-    confirmationRequired: "<red>Wenn du als Fraktionsadmin die Fraktion verlässt, übernimmt ein anderes Mitglied die Leitung. Sind keine Mitglieder mehr übrig, wird die Fraktion gelöscht. <gold>&v1</gold>"
+    confirmationRequired: "<red>Wenn du als Fraktionsadmin die Fraktion verlässt, übernimmt ein anderes Mitglied die Leitung. Sind keine Mitglieder mehr übrig, löst sich die Fraktion auf. <gold>&v1</gold>"
     success: "<green>Du hast die Fraktion <dark_green>&v1</dark_green> verlassen."
   objective:
     create:
@@ -45,6 +45,8 @@ cmd:
       success: "<green>Der Chunk wurde der Region <dark_green>&v1</dark_green> erfolgreich hinzugefügt."
     addNeighbour:
       success: "<green>Die Regionen <gold>&v1</gold> und <gold>&v2</gold> sind jetzt benachbart."
+    alliance:
+      success: "<green>Die Region <dark_green>&v1</dark_green> gehört nun zu der Allianz <dark_green>&v2</dark_green>."
     create:
       success: "<green>Die Region <dark_green>&v1<green> wurde erfolgreich erstellt."
     damageReduction:
@@ -72,7 +74,7 @@ cmd:
       success: "<green>Der Gebietstyp von <dark_green>&v1</dark_green> wurde zu <dark_green>&v2</dark_green> gesetzt."
   reload:
     allEnd: "<dark_green>Das Plugin wurde in <gold>&v1ms</gold> neu geladen."
-    allStart: "<dark_green>Lade das Plugin neu..."
+    allStart: "<green>Lade das Plugin neu..."
     caches: "<dark_green>Die Zwischenspeicher wurden neu geladen."
     configs: "<dark_green>Die Konfigurationen wurden neu geladen."
     messages: "<dark_green>Die Nachrichten wurden neu geladen."
@@ -82,10 +84,11 @@ cmd:
     coreRegion: "<dark_green>Kerngebiet</dark_green><dark_gray>:</dark_gray><gray> &v1"
     description: "<dark_green>Beschreibung</dark_green><dark_gray>:</dark_gray><gray> &v1"
     header: "<green>-===[<b><dark_green> &v1 </dark_green></b>]===-"
-    name: "<dark_green>Name</dark_green><dark_gray>:<gray> &v1"
+    longName: "<dark_green>Langer Name</dark_green><dark_gray>:<gray> &v1"
     members: "<dark_green>Mitglieder (&v1)</dark_green><dark_gray>:</dark_gray><gray> &v2"
     money: "<dark_green>Konto</dark_green><dark_gray>:</dark_gray><gray> &v1"
     separator: ""
+    shortName: "<dark_green>Kürzel</dark_green><dark_gray>:<gray> &v1"
   stats:
     capturingTime: "<dark_green>Eroberungszeit</dark_green><dark_gray>:</dark_gray><gray> &v1"
     header: "<green>-===[<b><dark_green> Stats </dark_green></b>-<b><dark_green> &v1 </dark_green></b>]===-"
@@ -143,13 +146,14 @@ faction:
     descriptionChanged: "<gray>Die Fraktion <green>&v1</green> hat ihre Beschreibung zu <green>&v2</green> geändert."
     disbanded: "<gray>Die Fraktion <green>&v1</green> wurde aufgelöst."
     inactivePlayerKicked: "<green>&v1</green> wurde wegen Inaktivität gekickt."
+    longNameChanged: "<gray>Die Fraktion <green>&v1</green> hat ihren ausführlichen Namen zu <green>&v2</green> geändert."
     nameChanged: "<gray>Die Fraktion <green>&v1</green> hat ihren Namen zu <green>&v2</green> geändert."
     newAdmin: "<gray>Der Spieler <green>&v1</green> wurde zum neuen Anführer der Fraktion <green>&v2</green> ernannt."
     newPoll: "<green>Eine neue Abstimmung wurde erstellt. Stimme mit <dark_green>/f vote &v1</dark_green> ab!"
     playerGotKicked: "<green>&v1</green> wurde aus der Fraktion geworfen."
     playerJoined: "<green>&v1</green> ist der Fraktion beigetreten."
     playerLeft: "<red>&v1</red> hat die Fraktion verlassen."
-    prefix: "<dark_gray>[<dark_green>&v1</dark_green>]<gray> "
+    prefix: "<dark_gray>[<dark_green>&v1</dark_green>]</dark_prefix><gray> "
     regionClaimed: "<gray>Die Region <green>&v1</green> wurde für <green>&v2</green> beansprucht."
     removedBuilderAuthority: "<gray>Deine Fraktion hat nicht mehr die Erlaubnis, auf dem Gebiet von <dark_green>&v1</dark_green> zu bauen."
     removedBuilderAuthorityOther: "<gray>Deine Fraktion hat <dark_green>&v1</dark_green> die Erlaubnis entzogen, auf eurem Gebiet zu bauen."
@@ -241,9 +245,9 @@ war:
       announcement: "<dark_red>Die Hauptstadteroberung hat begonnen. Die Hauptstadt kann nun umkämpft werden."
       displayName: "Hauptstadteroberung"
     announcement:
-      minute: "&v1-Phase beginnt in einer <gold>&v2</gold> Minute."
+      minute: "&v1-Phase beginnt in <gold>einer</gold> Minute."
       minutes: "&v1-Phase beginnt in <gold>&v2</gold> Minuten."
-      second: "&v1-Phase beginnt in einer <gold>&v2</gold> Sekunde."
+      second: "&v1-Phase beginnt in <gold>einer</gold> Sekunde."
       seconds: "&v1-Phase beginnt in <gold>&v2</gold> Sekunden."
     inactive:
       announcement: "<dark_green>Die Kampfphase ist vorübergehend beendet. Kriegsgebiete können nicht mehr umkämpft werden und PvP wird temporär <red>deaktiviert</red>."

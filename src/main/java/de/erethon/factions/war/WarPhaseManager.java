@@ -9,6 +9,7 @@ import de.erethon.factions.poll.polls.CapturedRegionsPoll;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionCache;
 import de.erethon.factions.region.RegionType;
+import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.task.PhaseSwitchTask;
 import org.bukkit.Bukkit;
@@ -90,7 +91,7 @@ public class WarPhaseManager extends EConfig {
         }
         // Initialize or progress the current stage.
         if (currentStage == null) {
-            currentStage = schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
+            initializeStage();
             return;
         }
         // Deactivate current war objectives.
@@ -103,6 +104,16 @@ public class WarPhaseManager extends EConfig {
             plugin.getWarObjectiveManager().activateAll();
         }
         currentStage = nextStage;
+        FBroadcastUtil.broadcastWar(currentStage.getWarPhase().getAnnouncementMessage());
+    }
+
+    private void initializeStage() {
+        currentStage = schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
+        long currentProgress = System.currentTimeMillis() - midnight.toInstant().toEpochMilli();
+
+        while (currentStage != null && currentStage.getFullDuration() < currentProgress) {
+            currentStage = currentStage.getNextStage();
+        }
     }
 
     private void onWarZoneClose() {

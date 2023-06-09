@@ -5,6 +5,8 @@ import de.erethon.factions.data.FMessage;
 import de.erethon.factions.faction.Faction;
 import org.bukkit.command.CommandSender;
 
+import java.util.List;
+
 /**
  * @author Fyreum
  */
@@ -31,5 +33,14 @@ public class AuthoriseCommand extends FCommand {
         } else {
             sender.sendMessage(FMessage.CMD_AUTHORISE_REMOVED.message(faction.getDisplayShortName(), other.getDisplayShortName()));
         }
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
+        return switch (args.length) {
+            case 2 -> getTabFactions(args[1]);
+            case 3 -> getTabFactions(args[2]);
+            default -> null;
+        };
     }
 }

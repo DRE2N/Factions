@@ -35,6 +35,7 @@ public class FConfig extends EConfig {
     private List<String> excludedWorlds = new ArrayList<>();
     private String language = "german";
     private int maximumDescriptionChars = 256;
+    private int maximumLongNameChars = 128;
     private int maximumNameChars = 64;
     private int maximumShortNameChars = 32;
 
@@ -107,6 +108,7 @@ public class FConfig extends EConfig {
         excludedWorlds = getStringList("excludedWorlds", excludedWorlds);
         language = config.getString("language", language);
         maximumDescriptionChars = config.getInt("maximumDescriptionChars", maximumDescriptionChars);
+        maximumLongNameChars = config.getInt("maximumLongNameChars", maximumLongNameChars);
         maximumNameChars = config.getInt("maximumNameChars", maximumNameChars);
         maximumShortNameChars = config.getInt("maximumShortNameChars", maximumShortNameChars);
         allianceJoinCooldown = config.getLong("allianceJoinCooldown", allianceJoinCooldown);
@@ -169,6 +171,10 @@ public class FConfig extends EConfig {
 
     public int getMaximumDescriptionChars() {
         return maximumDescriptionChars;
+    }
+
+    public int getMaximumLongNameChars() {
+        return maximumLongNameChars;
     }
 
     public int getMaximumNameChars() {

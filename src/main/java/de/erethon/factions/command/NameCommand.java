@@ -29,6 +29,7 @@ public class NameCommand extends FCommand {
         assureSenderHasAdminPerms(sender, faction);
         int maximumChars = plugin.getFConfig().getMaximumNameChars();
         assure(args[1].length() <= maximumChars, FMessage.ERROR_TEXT_IS_TOO_LONG, String.valueOf(maximumChars));
+        assure(plugin.getFactionCache().getByName(args[1]) == null, FMessage.ERROR_NAME_IN_USE, args[1]);
         String oldName = faction.getName();
         faction.setName(args[1]);
         BroadcastUtil.broadcast(FMessage.FACTION_INFO_NAME_CHANGED.message(oldName, args[1]));

@@ -34,7 +34,8 @@ public class ShowCommand extends FCommand {
         sender.sendMessage(Component.empty());
         MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_HEADER.getMessage(faction.getName()));
         MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_SEPARATOR.getMessage());
-        sender.sendMessage(FMessage.CMD_SHOW_NAME.message(faction.getDisplayShortName()));
+        sender.sendMessage(FMessage.CMD_SHOW_SHORT_NAME.message(faction.getDisplayShortName()));
+        sender.sendMessage(FMessage.CMD_SHOW_LONG_NAME.message(faction.getDisplayLongName()));
         sender.sendMessage(FMessage.CMD_SHOW_DESCRIPTION.message(faction.getDisplayDescription()));
         sender.sendMessage(FMessage.CMD_SHOW_ALLIANCE.message(faction.hasAlliance() ? faction.getAlliance().getName() : FMessage.GENERAL_NONE.getMessage()));
         sender.sendMessage(FMessage.CMD_SHOW_MONEY.message(faction.getFAccount().getFormatted()));

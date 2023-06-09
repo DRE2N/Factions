@@ -42,7 +42,7 @@ public class PhaseSwitchTask extends BukkitRunnable {
             }
             --m2;
         } else if (finalSeconds.contains(s)) {
-            if (m > 1) {
+            if (s > 1) {
                 FBroadcastUtil.broadcastWar(FMessage.WAR_PHASE_ANNOUNCEMENT_SECONDS, warPhaseManager.getNextWarPhase().getDisplayName().getMessage(), String.valueOf(s));
             } else {
                 FBroadcastUtil.broadcastWar(FMessage.WAR_PHASE_ANNOUNCEMENT_SECOND, warPhaseManager.getNextWarPhase().getDisplayName().getMessage());

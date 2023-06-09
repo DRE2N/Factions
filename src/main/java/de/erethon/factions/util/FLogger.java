@@ -66,9 +66,9 @@ public enum FLogger {
             return;
         }
         if (color != null) {
-            MessageUtil.log(Factions.get(), Component.text().color(color).content("[" + name() + "] " + msg.get()).build());
+            MessageUtil.log(Factions.get(), Component.text().color(color).content("[" + name() + "] ").append(msg.get()).build());
         } else {
-            MessageUtil.log(Factions.get(), "[" + name() + "] " + msg.get());
+            MessageUtil.log(Factions.get(), Component.text("[" + name() + "] ").append(msg.get()));
         }
     }
 

@@ -228,6 +228,7 @@ public final class Factions extends EPlugin {
         HoverInfo info = (sender, recipient) -> {
             FPlayer fSender = fPlayerCache.getByPlayer(sender.getPlayer());
             return FMessage.PLACEHOLDER_ALLIANCE_DISPLAY.message(fSender.getAllianceTag())
+                    .appendNewline()
                     .append(FMessage.PLACEHOLDER_FACTION_DISPLAY.message(fSender.getFactionTag()))
                     .appendNewline();
         };

@@ -1,9 +1,11 @@
 package de.erethon.factions.command;
 
+import de.erethon.bedrock.command.CommandFailedException;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.event.FactionDisbandEvent;
 import de.erethon.factions.faction.Faction;
+import de.erethon.factions.player.FPlayer;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
@@ -26,6 +28,11 @@ public class DisbandCommand extends FCommand {
 
     @Override
     public void onExecute(CommandSender sender, String[] args) {
+        if (args.length == 1) {
+            Faction faction = getFaction(getFPlayer(sender));
+            assureSenderHasAdminPerms(sender, faction);
+            throw new CommandFailedException(FMessage.CMD_DISBAND_CONFIRMATION_REQUIRED, getUsage().replace("([faction])", "") + " confirm");
+        }
         Map.Entry<Faction, Boolean> result = getSenderFactionOrFromArgs(sender, args[1]);
         Faction faction = result.getKey();
         assureSenderHasAdminPerms(sender, faction);

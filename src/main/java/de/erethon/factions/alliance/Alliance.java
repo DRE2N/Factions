@@ -2,6 +2,7 @@ package de.erethon.factions.alliance;
 
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FLegalEntity;
+import de.erethon.factions.entity.ShortableNamed;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.PollContainer;
@@ -32,7 +33,7 @@ import java.util.Set;
  *
  * @author Fyreum
  */
-public class Alliance extends FLegalEntity implements PollContainer {
+public class Alliance extends FLegalEntity implements ShortableNamed, PollContainer {
 
     /* Persistent */
     private final Set<Region> coreRegions = new HashSet<>();
@@ -41,6 +42,7 @@ public class Alliance extends FLegalEntity implements PollContainer {
     private final Set<Faction> factions = new HashSet<>();
     private TextColor color;
     private String shortName;
+    private String longName;
     private WarScores warScores;
     /* Temporary */
     private final Map<String, Poll<?>> polls = new HashMap<>();
@@ -84,9 +86,10 @@ public class Alliance extends FLegalEntity implements PollContainer {
             }
             this.factions.add(faction);
         }
-        String colorString = config.getString("color", NamedTextColor.WHITE.toString());
-        this.color = FUtil.getNotNullOr(NamedTextColor.WHITE, () -> NamedTextColor.NAMES.value(colorString), () -> TextColor.fromHexString(colorString));
+        String colorString = config.getString("color", NamedTextColor.GRAY.toString());
+        this.color = FUtil.getNotNullOr(NamedTextColor.GRAY, () -> NamedTextColor.NAMES.value(colorString), () -> TextColor.fromHexString(colorString));
         this.shortName = config.getString("shortName");
+        this.longName = config.getString("longName");
         this.warScores = new WarScores(this, config.getConfigurationSection("warScores"));
     }
 
@@ -109,6 +112,7 @@ public class Alliance extends FLegalEntity implements PollContainer {
         saveEntities("factions", factions);
         config.set("color", color.toString());
         config.set("shortName", shortName);
+        config.set("longName", longName);
         config.set("warScores", warScores.serialize());
     }
 
@@ -164,21 +168,29 @@ public class Alliance extends FLegalEntity implements PollContainer {
         this.color = color;
     }
 
+    @Override
     public @Nullable String getShortName() {
         return shortName;
     }
 
-    public @NotNull String getDisplayShortName() {
-        return shortName == null || shortName.isEmpty() ? name : shortName;
-    }
-
+    @Override
     public void setShortName(@Nullable String shortName) {
         this.shortName = shortName;
     }
 
     @Override
+    public @Nullable String getLongName() {
+        return longName;
+    }
+
+    @Override
+    public void setLongName(@Nullable String longName) {
+        this.longName = longName;
+    }
+
+    @Override
     public boolean matchingName(@NotNull String name) {
-        return super.matchingName(name) || this.shortName.equalsIgnoreCase(name);
+        return super.matchingName(name) || this.name.equalsIgnoreCase(shortName);
     }
 
     public @NotNull WarScores getWarScores() {

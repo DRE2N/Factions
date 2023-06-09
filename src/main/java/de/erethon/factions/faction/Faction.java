@@ -15,6 +15,7 @@ import de.erethon.factions.economy.FStorage;
 import de.erethon.factions.economy.FactionLevel;
 import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.entity.FLegalEntity;
+import de.erethon.factions.entity.ShortableNamed;
 import de.erethon.factions.event.FPlayerFactionLeaveEvent;
 import de.erethon.factions.event.FactionDisbandEvent;
 import de.erethon.factions.player.FPlayer;
@@ -48,7 +49,7 @@ import java.util.UUID;
 /**
  * @author Fyreum
  */
-public class Faction extends FLegalEntity implements PollContainer {
+public class Faction extends FLegalEntity implements ShortableNamed, PollContainer {
 
     /* Persistent */
     private Alliance alliance;
@@ -59,6 +60,7 @@ public class Faction extends FLegalEntity implements PollContainer {
     private Region coreRegion;
     private ItemStack flag;
     private String shortName;
+    private String longName;
     private boolean open = false;
     private final Set<Faction> authorisedBuilders = new HashSet<>();
     private final Set<Faction> adjacentFactions = new HashSet<>();
@@ -83,6 +85,10 @@ public class Faction extends FLegalEntity implements PollContainer {
         this.coreRegion.setOwner(this);
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
         this.fStorage = new FStorage(this);
+        if (admin.hasAlliance()) {
+            alliance = admin.getAlliance();
+            alliance.addFaction(this);
+        }
         saveData();
     }
 
@@ -109,6 +115,7 @@ public class Faction extends FLegalEntity implements PollContainer {
         FLogger.FACTION.log("Processing '" + fPlayer.getUniqueId() + "' joining faction '" + name + "'...");
         invitedPlayers.remove(fPlayer);
         members.add(fPlayer);
+        fPlayer.setFaction(this);
         fPlayer.setLastFactionJoinDate(System.currentTimeMillis());
         sendMessage(FMessage.FACTION_INFO_PLAYER_JOINED.message(fPlayer.getLastName()));
     }
@@ -122,6 +129,7 @@ public class Faction extends FLegalEntity implements PollContainer {
         fPlayer.setFaction(null);
         FPlayerFactionLeaveEvent event = new FPlayerFactionLeaveEvent(this, fPlayer, reason);
         event.callEvent();
+        sendMessage(event.getMessage());
 
         if (isAdmin(fPlayer)) {
             if (members.isEmpty()) {
@@ -143,7 +151,6 @@ public class Faction extends FLegalEntity implements PollContainer {
             admin = successor.getUniqueId();
             BroadcastUtil.broadcast(FMessage.FACTION_INFO_NEW_ADMIN.message(successor.getLastName(), name));
         }
-        sendMessage(event.getMessage());
     }
 
     public void disband(@NotNull FactionDisbandEvent.Reason reason) {
@@ -162,10 +169,25 @@ public class Faction extends FLegalEntity implements PollContainer {
         }
         admin = null;
         mods.clear();
+        members.clear();
         for (Region region : regions) {
             region.setOwner(null);
         }
-        BroadcastUtil.broadcast(FMessage.FACTION_INFO_DISBANDED.message());
+        try {
+            file.delete();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+        BroadcastUtil.broadcast(FMessage.FACTION_INFO_DISBANDED.message(name));
+    }
+
+    private void updateMemberDisplayNames() {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            for (Player online : members.getOnlinePlayers()) {
+                FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(online);
+                fPlayer.updateDisplayNames();
+            }
+        });
     }
 
     /* Messages */
@@ -175,7 +197,7 @@ public class Faction extends FLegalEntity implements PollContainer {
     }
 
     public void sendMessage(@NotNull Component msg, boolean prefix) {
-        Component message = prefix ? FMessage.FACTION_INFO_PREFIX.message().append(msg) : msg;
+        Component message = prefix ? FMessage.FACTION_INFO_PREFIX.message(name).append(msg) : msg;
         for (UUID uuid : members) {
             Player player = Bukkit.getPlayer(uuid);
             if (player == null) {
@@ -198,7 +220,7 @@ public class Faction extends FLegalEntity implements PollContainer {
             FLogger.ERROR.log("Illegal UUID in faction '" + file.getName() + "' found: '" + adminId + "'");
         }
         this.mods = new PlayerCollection(config.getStringList("mods"));
-        this.members = new PlayerCollection(config.getStringList("mods"));
+        this.members = new PlayerCollection(config.getStringList("members"));
         for (int regionId : config.getIntegerList("regions")) {
             Region region = plugin.getRegionManager().getRegionById(regionId);
             if (region == null) {
@@ -214,6 +236,7 @@ public class Faction extends FLegalEntity implements PollContainer {
         }
         this.flag = config.getItemStack("flag");
         this.shortName = config.getString("shortName");
+        this.longName = config.getString("longName");
         this.open = config.getBoolean("open", open);
         for (int factionId : config.getIntegerList("authorisedBuilders")) {
             Faction faction = plugin.getFactionCache().getById(factionId);
@@ -241,23 +264,6 @@ public class Faction extends FLegalEntity implements PollContainer {
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
     }
 
-    private Set<FPlayer> getFPlayers(String path) {
-        Set<FPlayer> players = new HashSet<>();
-        for (String string : config.getStringList(path)) {
-            try {
-                UUID uuid = UUID.fromString(string);
-                FPlayer fPlayer = plugin.getFPlayerCache().getByUniqueId(uuid);
-                if (fPlayer == null) {
-                    continue;
-                }
-                players.add(fPlayer);
-            } catch (IllegalArgumentException e) {
-                FLogger.ERROR.log("Illegal UUID in faction '" + file.getName() + "' found: '" + string + "'");
-            }
-        }
-        return players;
-    }
-
     @Override
     protected void serializeData() {
         config.set("alliance", alliance == null ? null : alliance.getId());
@@ -268,6 +274,7 @@ public class Faction extends FLegalEntity implements PollContainer {
         config.set("coreRegion", coreRegion == null ? null : coreRegion.getId());
         config.set("flag", flag);
         config.set("shortName", shortName);
+        config.set("longName", longName);
         config.set("open", open);
         config.set("level", level);
         for (PopulationLevel level : PopulationLevel.values()) {
@@ -430,21 +437,36 @@ public class Faction extends FLegalEntity implements PollContainer {
         }
     }
 
+    @Override
+    public void setName(@NotNull String name) {
+        super.setName(name);
+        updateMemberDisplayNames();
+    }
+
+    @Override
     public @Nullable String getShortName() {
         return shortName;
     }
 
-    public @NotNull String getDisplayShortName() {
-        return shortName == null || shortName.isEmpty() ? name : shortName;
-    }
-
+    @Override
     public void setShortName(@Nullable String shortName) {
         this.shortName = shortName;
+        updateMemberDisplayNames();
+    }
+
+    @Override
+    public @Nullable String getLongName() {
+        return longName;
+    }
+
+    @Override
+    public void setLongName(@Nullable String longName) {
+        this.longName = longName;
     }
 
     @Override
     public boolean matchingName(@NotNull String name) {
-        return super.matchingName(name) || this.shortName.equalsIgnoreCase(name);
+        return super.matchingName(name) || this.name.equalsIgnoreCase(shortName);
     }
 
     public boolean isOpen() {

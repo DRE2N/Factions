@@ -335,7 +335,7 @@ public abstract class FCommand extends ECommand {
         if (FPermissionUtil.isBypass(sender)) {
             return;
         }
-        assure(sender instanceof Player player && faction.isAdmin(plugin.getFPlayerCache().getByPlayer(player)), FMessage.ERROR_NO_PERMISSION);
+        assure(sender instanceof Player player && faction.isAdmin(player.getUniqueId()), FMessage.ERROR_NO_PERMISSION);
     }
 
     protected void assurePlayerIsFactionless(@NotNull FPlayer fPlayer) {

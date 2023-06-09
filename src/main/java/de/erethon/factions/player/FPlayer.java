@@ -24,6 +24,7 @@ import de.erethon.factions.util.FPermissionUtil;
 import de.erethon.factions.war.WarStats;
 import de.erethon.factions.war.objective.WarObjective;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -97,6 +98,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     @Override
     public void onJoin(PlayerJoinEvent event) {
         lastName = event.getPlayer().getName();
+        updateDisplayNames();
     }
 
     @Override
@@ -209,8 +211,6 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         return player;
     }
 
-
-
     public @NotNull OfflinePlayer getOfflinePlayer() {
         return Bukkit.getOfflinePlayer(uuid);
     }
@@ -233,7 +233,10 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     }
 
     public @NotNull Component getAllianceTag() {
-        return alliance == null ? FMessage.GENERAL_NONE.message() : Component.text(alliance.getDisplayShortName()).color(alliance.getColor());
+        return (alliance == null ?
+                Component.text().color(NamedTextColor.GRAY).content(FMessage.GENERAL_NONE.getMessage()) :
+                Component.text().color(alliance.getColor()).content(alliance.getName()))
+                .build();
     }
 
     @Override
@@ -243,11 +246,14 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
 
     public void setFaction(@Nullable Faction faction) {
         this.faction = faction;
+        updateDisplayNames();
     }
 
     public @NotNull Component getFactionTag() {
-        return (faction == null ? FMessage.GENERAL_LONER.message() : Component.text(faction.getDisplayShortName()))
-                .color(alliance == null ? null : alliance.getColor());
+        return Component.text()
+                .color(alliance == null ? NamedTextColor.GRAY : alliance.getColor())
+                .content(faction == null ? FMessage.GENERAL_LONER.getMessage() : faction.getName())
+                .build();
     }
 
     @Override
@@ -261,6 +267,19 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
 
     public @NotNull String getDisplayName() {
         return hasFaction() ? (isAdminRaw() ? "**" : isModRaw() ? "*" : "") + lastName : lastName;
+    }
+
+    public void updateDisplayNames() {
+        if (!isOnline()) {
+            return;
+        }
+        Component displayName = Component.text()
+                .content("[" + getDisplayMembership() + "] ")
+                .color(hasAlliance() ? alliance.getColor() : NamedTextColor.WHITE)
+                .append(Component.text(lastName).color(NamedTextColor.WHITE))
+                .build();
+        player.displayName(displayName);
+        player.playerListName(displayName);
     }
 
     public void setLastName(@NotNull String lastName) {
