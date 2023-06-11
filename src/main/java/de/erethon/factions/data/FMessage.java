@@ -25,6 +25,7 @@ public enum FMessage implements Message {
     ACM_REMOVED_CHUNK("acm.removedChunk"),
     ACM_REMOVED_CHUNKS("acm.removedChunks"),
     ACM_SELECTED("acm.selected"),
+    ACM_SHAPE("acm.shape"),
     ACM_UNSELECTED("acm.unselected"),
 
     BUILDING_SITE_CREATED("buildingSite.created"),
@@ -88,6 +89,7 @@ public enum FMessage implements Message {
     CMD_VERSION_HEADER("cmd.version.header"),
     CMD_VERSION_STATUS("cmd.version.status"),
 
+    ERROR_ACM_SHAPE_NOT_FOUND("error.acmShapeNotFound"),
     ERROR_BUILDING_BLOCKED("error.buildingBlocked"),
     ERROR_BUILDING_REQUIRED_TYPE("error.buildingRequiredType"),
     ERROR_BUILDING_REQUIRED_FACTION("error.buildingRequiredFaction"),

@@ -6,12 +6,14 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 
 /**
  * @author Fyreum
@@ -25,6 +27,7 @@ public class AutomatedChunkManager {
 
     private final FPlayer fPlayer;
     private ChunkOperation operation = ChunkOperation.IDLE;
+    private ChunkOperation.Shape shape = ChunkOperation.Shape.SQUARE;
     private Region selection;
     private int radius = 0;
     private LazyChunk lastChunk;
@@ -74,10 +77,8 @@ public class AutomatedChunkManager {
     }
 
     private void addMultiple(Chunk chunk) {
-        int added = squaredAction(chunk, (c, rg) -> rg == null && selection.addChunk(c));
-        if (added > 0) {
-            sendActionBar(FMessage.ACM_ADDED_CHUNKS.message(String.valueOf(added)));
-        }
+        BiPredicate<LazyChunk, Region> action = (c, rg) -> rg == null && selection.addChunk(c);
+        squaredAction(chunk, action, FMessage.ACM_ADDED_CHUNKS);
     }
 
     private void remove(Chunk chunk) {
@@ -99,28 +100,33 @@ public class AutomatedChunkManager {
     }
 
     private void removeMultiple(Chunk chunk) {
-        int removed = squaredAction(chunk, (c, rg) -> rg != null && (selection == null || rg == selection) && rg.removeChunk(c));
-        if (removed > 0) {
-            sendActionBar(FMessage.ACM_REMOVED_CHUNKS.message(String.valueOf(removed)));
-        }
+        BiPredicate<LazyChunk, Region> action = (c, rg) -> rg != null && (selection == null || rg == selection) && rg.removeChunk(c);
+        squaredAction(chunk, action, FMessage.ACM_REMOVED_CHUNKS);
     }
 
-    // Note: Might use an async task for this in the future.
-    private int squaredAction(Chunk chunk, BiPredicate<LazyChunk, Region> action) {
-        int modified = 0;
-        int maxX = chunk.getX() + radius + 1;
-        int maxZ = chunk.getZ() + radius + 1;
+    private void squaredAction(Chunk chunk, BiPredicate<LazyChunk, Region> action, FMessage message) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            RegionCache regionCache = plugin.getRegionManager().getCache(chunk.getWorld());
+            LazyChunk center = new LazyChunk(chunk);
 
-        for (int x = chunk.getX() - radius; x < maxX; x++) {
-            for (int z = chunk.getZ() - radius; z < maxZ; z++) {
-                LazyChunk lazyChunk = new LazyChunk(x, z);
-                Region existingRegion = plugin.getRegionManager().getCache(chunk.getWorld()).getByChunk(lazyChunk);
-                if (action.test(lazyChunk, existingRegion)) {
-                    modified++;
+            int modified = 0;
+            int maxX = center.getX() + radius + 1;
+            int maxZ = center.getZ() + radius + 1;
+
+            for (int x = center.getX() - radius; x < maxX; x++) {
+                for (int z = center.getZ() - radius; z < maxZ; z++) {
+                    LazyChunk lazyChunk = new LazyChunk(x, z);
+                    Region existingRegion = regionCache.getByChunk(lazyChunk);
+
+                    if (shape.isIncluded(center, radius, lazyChunk) && action.test(lazyChunk, existingRegion)) {
+                        modified++;
+                    }
                 }
             }
-        }
-        return modified;
+            if (modified > 0) {
+                sendActionBar(message.message(String.valueOf(modified)));
+            }
+        });
     }
 
     private String toString(Chunk chunk) {
@@ -148,6 +154,12 @@ public class AutomatedChunkManager {
         }
     }
 
+    private void resetLastChunkIf(boolean b) {
+        if (b) {
+            lastChunk = null;
+        }
+    }
+
     /* Getters and setters */
 
     public @NotNull ChunkOperation getOperation() {
@@ -155,7 +167,18 @@ public class AutomatedChunkManager {
     }
 
     public void setOperation(@NotNull ChunkOperation operation) {
+        resetLastChunkIf(this.operation != operation);
         this.operation = operation;
+    }
+
+    public @NotNull ChunkOperation.Shape getShape() {
+        return shape;
+    }
+
+    public void setShape(@NotNull ChunkOperation.Shape shape) {
+        sendActionBar(FMessage.ACM_SHAPE.message(shape.name()));
+        resetLastChunkIf(this.shape != shape);
+        this.shape = shape;
     }
 
     public boolean isActivated() {
@@ -172,6 +195,7 @@ public class AutomatedChunkManager {
         } else if (selection != null) {
             sendActionBar(FMessage.ACM_UNSELECTED.message(selection.getName()));
         }
+        resetLastChunkIf(this.selection != region);
         this.selection = region;
     }
 
@@ -187,6 +211,7 @@ public class AutomatedChunkManager {
         } else {
             sendActionBar(FMessage.ACM_RADIUS_SELECTED.message(String.valueOf(radius)));
         }
+        resetLastChunkIf(this.radius != radius);
         this.radius = radius;
     }
 }

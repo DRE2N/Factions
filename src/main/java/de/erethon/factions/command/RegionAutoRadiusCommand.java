@@ -15,8 +15,8 @@ public class RegionAutoRadiusCommand extends FCommand {
     public RegionAutoRadiusCommand() {
         setCommand("autoradius");
         setMinMaxArgs(1, 1);
-        setPermissionFromName(RegionCommand.LABEL);
-        setFUsage(getCommand() + " [radius]");
+        setPermissionFromName(RegionAutoCommand.PERM_PREFIX);
+        setFUsage(RegionCommand.LABEL + " " + RegionAutoCommand.LABEL + " " + getCommand() + " [radius]");
         setDescription("Setzt den Radius für automatische Chunkaktionen");
     }
 
@@ -32,7 +32,7 @@ public class RegionAutoRadiusCommand extends FCommand {
             int max = plugin.getFConfig().getMaximumAutomatedChunkManagerRadius() + 1;
             List<String> completes = new ArrayList<>(max);
             for (int i = 0; i < max; i++) {
-                if (args[1].startsWith(String.valueOf(i))) {
+                if (String.valueOf(i).startsWith(args[1])) {
                     completes.add(String.valueOf(i));
                 }
             }

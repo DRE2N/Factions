@@ -34,7 +34,7 @@ public class FConfig extends EConfig {
     /* General */
     private List<String> excludedWorlds = new ArrayList<>();
     private String language = "german";
-    private int maximumAutomatedChunkManagerRadius = 2;
+    private int maximumAutomatedChunkManagerRadius = 5;
     private int maximumDescriptionChars = 256;
     private int maximumLongNameChars = 128;
     private int maximumNameChars = 64;

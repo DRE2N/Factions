@@ -13,14 +13,14 @@ import java.util.List;
 /**
  * @author Fyreum
  */
-public class RegionAutoAddChunkCommand extends FCommand {
+public class RegionAutoAddCommand extends FCommand {
 
-    public RegionAutoAddChunkCommand() {
-        setCommand("autoaddchunk");
-        setAliases("aa");
+    public RegionAutoAddCommand() {
+        setCommand("add");
+        setAliases("a");
         setMinMaxArgs(0, 1);
-        setPermissionFromName(RegionCommand.LABEL);
-        setFUsage(getCommand() + " [region]");
+        setPermissionFromName(RegionAutoCommand.PERM_PREFIX);
+        setFUsage(RegionCommand.LABEL + " " + RegionAutoCommand.LABEL + " " + getCommand() + " [region]");
         setDescription("Fügt automatisch den jeweiligen Chunk der Region hinzu");
     }
 
@@ -33,8 +33,8 @@ public class RegionAutoAddChunkCommand extends FCommand {
             return;
         }
         Region region = getRegion(args[1]);
-        if (acm.getOperation() == ChunkOperation.ADD &&acm.getSelection() == region) {
-            acm.deactivate();
+        if (acm.getOperation() == ChunkOperation.ADD && acm.getSelection() == region) {
+            acm.deactivate(true);
             return;
         }
         assureSameWorld(region, fPlayer.getPlayer());

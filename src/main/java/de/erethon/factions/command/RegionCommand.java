@@ -14,16 +14,16 @@ public class RegionCommand extends FCommand {
         setCommand(LABEL);
         setAliases("r");
         setMinMaxArgs(0, Integer.MAX_VALUE);
+        setConsoleCommand(true);
         setPermissionFromName();
         setFUsage(getCommand() + " [...]");
         setDescription("Befehle rund um Regionen");
         setHelpType(HelpType.LISTED);
         setListedHelpHeader("Regionsbefehle");
-        addSubCommands(new RegionAddChunkCommand(), new RegionAddNeighbourCommand(), new RegionAllianceCommand(),
-                new RegionAutoAddChunkCommand(), new RegionAutoRadiusCommand(), new RegionAutoRemoveCommand(),
-                new RegionCreateCommand(), new RegionDamageReductionCommand(), new RegionDeleteCommand(),
-                new RegionDescriptionCommand(), new RegionInfoCommand(), new RegionRemoveChunkCommand(),
-                new RegionRemoveNeighbourCommand(), new RegionTypeCommand());
+        addSubCommands(new RegionAddCommand(), new RegionAddNeighbourCommand(), new RegionAllianceCommand(),
+                new RegionAutoCommand(), new RegionCreateCommand(), new RegionDamageReductionCommand(),
+                new RegionDeleteCommand(), new RegionDescriptionCommand(), new RegionInfoCommand(),
+                new RegionRemoveCommand(), new RegionRemoveNeighbourCommand(), new RegionTypeCommand());
         setAllExecutionPrefixes();
     }
 

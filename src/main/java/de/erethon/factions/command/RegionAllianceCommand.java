@@ -17,8 +17,8 @@ public class RegionAllianceCommand extends FCommand {
         setCommand("alliance");
         setMinMaxArgs(1, 2);
         setConsoleCommand(true);
-        setPermissionFromName(RegionCommand.PERM_PREFIX);
-        setFUsage(getCommand() + " [alliance] ([region])");
+        setPermissionFromName(RegionCommand.LABEL);
+        setFUsage(RegionCommand.LABEL + " " + getCommand() + " [alliance] ([region])");
         setDescription("Setzt die Allianz der Region");
     }
 

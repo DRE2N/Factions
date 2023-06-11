@@ -239,6 +239,10 @@ public abstract class FCommand extends ECommand {
         return Arrays.stream(array).filter(e -> converter.apply(e).toLowerCase().startsWith(arg.toLowerCase())).map(converter).collect(Collectors.toList());
     }
 
+    protected @NotNull List<String> getTabList(@NotNull Enum<?>[] enums, @NotNull String arg) {
+        return Arrays.stream(enums).map(Enum::name).filter(name -> name.toLowerCase().startsWith(arg.toLowerCase())).collect(Collectors.toList());
+    }
+
     protected @NotNull List<String> getTabEntities(@NotNull FEntityCache<?> cache, @NotNull String arg) {
         return getTabList(cache.getCache().values(), FLegalEntity::getName, arg);
     }
@@ -281,10 +285,6 @@ public abstract class FCommand extends ECommand {
             regions.addAll(getTabEntities(cache, arg));
         }
         return regions;
-    }
-
-    protected @NotNull List<String> getTabRegionTypes(@NotNull String arg) {
-        return getTabList(RegionType.values(), Enum::name, arg);
     }
 
     protected @NotNull List<String> getTabPlayers(@NotNull String arg) {

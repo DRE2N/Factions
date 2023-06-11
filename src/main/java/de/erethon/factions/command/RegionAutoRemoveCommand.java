@@ -13,11 +13,11 @@ import org.bukkit.command.CommandSender;
 public class RegionAutoRemoveCommand extends FCommand {
 
     public RegionAutoRemoveCommand() {
-        setCommand("autoremove");
-        setAliases("ar");
+        setCommand("remove");
+        setAliases("r");
         setMinMaxArgs(0, 1);
-        setPermissionFromName(RegionCommand.LABEL);
-        setFUsage(getCommand() + " ([region])");
+        setPermissionFromName(RegionAutoCommand.PERM_PREFIX);
+        setFUsage(RegionCommand.LABEL + " " + RegionAutoCommand.LABEL + " " + getCommand() + " ([region])");
         setDescription("Entfernt automatisch den jeweiligen Chunk aus der Region");
     }
 

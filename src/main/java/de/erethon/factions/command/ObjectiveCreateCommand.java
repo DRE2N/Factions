@@ -21,8 +21,8 @@ public class ObjectiveCreateCommand extends FCommand {
 
     public static final List<String> OBJECTIVE_TYPES = List.of("crystal", "occupy");
     public static final List<String> CRYSTAL_OPTIONS = List.of("damagePerTick:", "maxHealth:", "radius:", "tickInterval:");
-    public static final List<String> OCCUPY_OPTIONS = List.of("damagePerTick:", "occupyDuration:", "occupiedInterval:", "radius:",
-            "tickInterval:", "warProgressDecline:", "warProgressDeclineContested:", "warProgressPerOccupiedInterval:");
+    public static final List<String> OCCUPY_OPTIONS = List.of("occupyDuration:", "occupiedInterval:", "radius:", "tickInterval:",
+            "warProgressDecline:", "warProgressDeclineContested:", "warProgressPerOccupiedInterval:");
 
     public ObjectiveCreateCommand() {
         setCommand("create");

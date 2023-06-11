@@ -13,10 +13,10 @@ import java.util.List;
 /**
  * @author Fyreum
  */
-public class RegionAddChunkCommand extends FCommand {
+public class RegionAddCommand extends FCommand {
 
-    public RegionAddChunkCommand() {
-        setCommand("addchunk");
+    public RegionAddCommand() {
+        setCommand("add");
         setAliases("a");
         setMinMaxArgs(1, 1);
         setPermissionFromName(RegionCommand.LABEL);

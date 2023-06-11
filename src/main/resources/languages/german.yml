@@ -13,6 +13,7 @@ acm:
   removedChunk: "Chunk <gold>&v1</gold> wurde entfernt."
   removedChunks: "<gold>&v1</gold> Chunks wurden entfernt."
   selected: "Die Region <green>&v1</green> wurde ausgewählt."
+  shape: "Die geometrische Form wurde zu <gold>&v1</gold> geändert."
   unselected: "Die Auswahl der Region <green>&v1</green> wurde aufgehoben."
 cmd:
   alliance:
@@ -101,6 +102,7 @@ cmd:
     header: "<dark_green><b>&v1</b> <dark_gray>-</dark_gray> &v2"
     status: "<gray><dark_green>&v1</dark_green> Spieler <dark_gray>/</dark_gray> <dark_green>&v2</dark_green> Regionen <dark_gray>/</dark_gray> <dark_green>&v3</dark_green> Fraktionen <dark_gray>/</dark_gray> <dark_green>&v4</dark_green> Allianzen"
 error:
+  acmShapeNotFound: "<red>Die Form <gold>&v1</gold> konnte nicht gefunden werden."
   cannotAuthoriseSameFaction: "<red>Du kannst eine Fraktion nicht für sich selbst autorisieren."
   cannotChooseAlliance: "<red>Du kannst deine Allianz nicht wechseln, solange du in einer Fraktion bist."
   cannotKickYourself: "<red>Du kannst dich nicht selbst kicken."

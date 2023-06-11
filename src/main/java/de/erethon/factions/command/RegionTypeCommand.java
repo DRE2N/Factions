@@ -36,7 +36,7 @@ public class RegionTypeCommand extends FCommand {
     @Override
     public List<String> onTabComplete(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return getTabRegionTypes(args[1]);
+            return getTabList(RegionType.values(), args[1]);
         }
         return null;
     }

@@ -9,10 +9,10 @@ import org.bukkit.command.CommandSender;
 /**
  * @author Fyreum
  */
-public class RegionRemoveChunkCommand extends FCommand {
+public class RegionRemoveCommand extends FCommand {
 
-    public RegionRemoveChunkCommand() {
-        setCommand("removechunk");
+    public RegionRemoveCommand() {
+        setCommand("remove");
         setAliases("r");
         setPermissionFromName(RegionCommand.LABEL);
         setFUsage(RegionCommand.LABEL + " " + getCommand());
