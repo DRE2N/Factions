@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 import java.util.function.BiPredicate;
-import java.util.function.Consumer;
 
 /**
  * @author Fyreum
@@ -53,6 +52,7 @@ public class AutomatedChunkManager {
         switch (operation) {
             case ADD -> add(chunk);
             case REMOVE -> remove(chunk);
+            case TRANSFER -> transfer(chunk);
         }
     }
 
@@ -67,7 +67,7 @@ public class AutomatedChunkManager {
         Region existingRegion = plugin.getRegionManager().getRegionByChunk(chunk);
         if (existingRegion != null) {
             if (existingRegion != selection) {
-                sendActionBar(FMessage.ACM_ADD_INSIDE_REGION.message());
+                sendActionBar(FMessage.ACM_CHUNK_ALREADY_REGION.message());
             }
             return;
         }
@@ -91,7 +91,7 @@ public class AutomatedChunkManager {
             return;
         }
         if (selection != null && existingRegion != selection){
-            sendActionBar(FMessage.ACM_ADD_INSIDE_REGION.message());
+            sendActionBar(FMessage.ACM_CHUNK_ALREADY_REGION.message());
             return;
         }
         if (existingRegion.removeChunk(chunk)) {
@@ -102,6 +102,29 @@ public class AutomatedChunkManager {
     private void removeMultiple(Chunk chunk) {
         BiPredicate<LazyChunk, Region> action = (c, rg) -> rg != null && (selection == null || rg == selection) && rg.removeChunk(c);
         squaredAction(chunk, action, FMessage.ACM_REMOVED_CHUNKS);
+    }
+
+    private void transfer(Chunk chunk) {
+        if (radius > 0) {
+            transferMultiple(chunk);
+            return;
+        }
+        Region existingRegion = plugin.getRegionManager().getRegionByChunk(chunk);
+        if (existingRegion == null) {
+            return;
+        }
+        if (existingRegion == selection){
+            sendActionBar(FMessage.ACM_CHUNK_ALREADY_REGION.message());
+            return;
+        }
+        existingRegion.removeChunk(chunk);
+        selection.addChunk(chunk);
+        sendActionBar(FMessage.ACM_TRANSFERRED_CHUNK.message(toString(chunk)));
+    }
+
+    private void transferMultiple(Chunk chunk) {
+        BiPredicate<LazyChunk, Region> action = (c, rg) -> rg != null && rg == selection && rg.removeChunk(c) && selection.addChunk(c);
+        squaredAction(chunk, action, FMessage.ACM_TRANSFERRED_CHUNKS);
     }
 
     private void squaredAction(Chunk chunk, BiPredicate<LazyChunk, Region> action, FMessage message) {
@@ -149,8 +172,9 @@ public class AutomatedChunkManager {
         if (!ignoreOperation && operation == ChunkOperation.IDLE) {
             sendActionBar(FMessage.ACM_NOT_SELECTED.message());
         } else {
-            setOperation(ChunkOperation.IDLE);
-            setSelection(null);
+            operation = ChunkOperation.IDLE;
+            selection = null;
+            sendActionBar(FMessage.ACM_DEACTIVATED.message());
         }
     }
 

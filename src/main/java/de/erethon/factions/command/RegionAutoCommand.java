@@ -20,7 +20,7 @@ public class RegionAutoCommand extends FCommand {
         setHelpType(HelpType.LISTED);
         setListedHelpHeader("Automatische Befehle");
         addSubCommands(new RegionAutoAddCommand(), new RegionAutoRadiusCommand(), new RegionAutoRemoveCommand(),
-                new RegionAutoShapeCommand());
+                new RegionAutoShapeCommand(), new RegionAutoTransferCommand());
         setAllExecutionPrefixes();
     }
 

@@ -19,7 +19,11 @@ public enum ChunkOperation {
     /**
      * Removes the current chunk from the region.
      */
-    REMOVE;
+    REMOVE,
+    /**
+     * Transfers the current chunk to another region.
+     */
+    TRANSFER;
 
     /**
      * The shape defines, whether a chunk will be progressed, or not.

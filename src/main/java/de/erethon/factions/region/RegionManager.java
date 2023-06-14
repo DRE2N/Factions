@@ -2,6 +2,7 @@ package de.erethon.factions.region;
 
 import de.erethon.bedrock.misc.FileUtil;
 import de.erethon.bedrock.misc.JavaUtil;
+import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.util.FException;
 import de.erethon.factions.util.FLogger;
@@ -10,15 +11,18 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Fyreum
@@ -130,25 +134,55 @@ public class RegionManager {
         } else {
             regionCache = createRegionCache(world);
         }
-        int id = generateId();
+        LazyChunk lazyChunk = new LazyChunk(chunk);
+        int id = generateId(true);
         if (name == null) {
-            return regionCache.createRegion(id, chunk);
+            return regionCache.createRegion(id, lazyChunk);
         }
         FException.throwIf(getRegionByName(name) != null, "Couldn't create region: Name already in use", FMessage.ERROR_NAME_IN_USE, name);
-        return regionCache.createRegion(id, chunk, name);
+        return regionCache.createRegion(id, lazyChunk, name);
+    }
+
+    public @NotNull CompletableFuture<Region> splitRegion(@NotNull Region region, @NotNull LazyChunk start, @NotNull Vector direction) {
+        FException.throwIf(!region.getChunks().contains(start), "The starting point is not inside the region", FMessage.ERROR_CHUNK_OUTSIDE_THE_REGION);
+        CompletableFuture<Region> completableFuture = new CompletableFuture<>();
+        Bukkit.getScheduler().runTaskAsynchronously(Factions.get(), () -> {
+            Set<LazyChunk> rightChunks = new HashSet<>();
+            Iterator<LazyChunk> iterator = region.getChunks().iterator();
+
+            while (iterator.hasNext()) {
+                LazyChunk chunk = iterator.next();
+                double d = direction.getX() * (chunk.getZ() - start.getZ()) - direction.getZ() * (chunk.getX() - start.getX());
+                if (d > 0) {
+                    continue;
+                }
+                rightChunks.add(chunk);
+                iterator.remove();
+            }
+            int id = generateId(true);
+            Region newRegion = region.getRegionCache().createRegion(id, start);
+            newRegion.addChunks(rightChunks);
+            completableFuture.complete(newRegion);
+        });
+        return completableFuture;
     }
 
     /**
-     * Returns an unused region id.
+     * Returns an unused region ID. Uses a variable to presume an unused ID
+     * on each call. The variable gets incremented each time an ID is generated
+     * (if 'updatePrediction' is set true).
      *
-     * @return an unused region id
+     * @param updatePrediction whether the presumable unused variable should be changed
+     * @return an unused region ID
      */
-    public synchronized int generateId() {
+    public synchronized int generateId(boolean updatePrediction) {
         int id = presumableUnusedId;
         while (getRegionById(id) != null) {
             id++;
         }
-        presumableUnusedId = id + 1;
+        if (updatePrediction) {
+            presumableUnusedId = id + 1;
+        }
         return id;
     }
     

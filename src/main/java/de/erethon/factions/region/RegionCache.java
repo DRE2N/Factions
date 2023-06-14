@@ -39,11 +39,11 @@ public class RegionCache extends FEntityCache<Region> {
         }
     }
 
-    protected @NotNull Region createRegion(int id, @NotNull Chunk chunk) {
+    protected @NotNull Region createRegion(int id, @NotNull LazyChunk chunk) {
         return createRegion(id, chunk, FMessage.GENERAL_REGION_DEFAULT_NAME_PREFIX.getMessage() + id);
     }
 
-    protected @NotNull Region createRegion(int id, @NotNull Chunk chunk, @NotNull String name) {
+    protected @NotNull Region createRegion(int id, @NotNull LazyChunk chunk, @NotNull String name) {
         FLogger.REGION.log("Creating region " + id + " (" + name + ") at " + chunk.getX() + "," + chunk.getZ() + "...");
         Region region = new Region(this, new File(folder, id + ".yml"), id, name, null);
         region.addChunk(chunk);

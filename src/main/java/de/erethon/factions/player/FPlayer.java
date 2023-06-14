@@ -17,6 +17,7 @@ import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.poll.Poll;
 import de.erethon.factions.region.AutomatedChunkManager;
+import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.ui.UIFactionsListener;
 import de.erethon.factions.util.FLogger;
@@ -30,6 +31,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -334,6 +336,10 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
 
     public @NotNull String getDisplayRegion() {
         return lastRegion == null ? FMessage.GENERAL_WILDERNESS.getMessage() : lastRegion.getName();
+    }
+
+    public @NotNull LazyChunk getCurrentChunk() {
+        return new LazyChunk(player.getLocation().getChunk());
     }
 
     public @NotNull AutomatedChunkManager getAutomatedChunkManager() {

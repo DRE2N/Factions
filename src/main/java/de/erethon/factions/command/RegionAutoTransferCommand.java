@@ -10,27 +10,30 @@ import org.bukkit.command.CommandSender;
 /**
  * @author Fyreum
  */
-public class RegionAutoRemoveCommand extends FCommand {
+public class RegionAutoTransferCommand extends FCommand {
 
-    public RegionAutoRemoveCommand() {
-        setCommand("remove");
-        setAliases("r");
+    public RegionAutoTransferCommand() {
+        setCommand("transfer");
+        setAliases("t");
         setMinMaxArgs(0, 1);
-        setPermissionFromName(RegionAutoCommand.PERM_PREFIX);
-        setFUsage(RegionCommand.LABEL + " " + RegionAutoCommand.LABEL + " " + getCommand() + " ([region])");
-        setDescription("Entfernt automatisch den jeweiligen Chunk aus der Region");
+        setFUsage(RegionCommand.LABEL + " " + RegionAutoCommand.LABEL + " " + getCommand() + " [region]");
+        setDescription("Übergibt den Chunk an eine andere Region");
     }
 
     @Override
     public void onExecute(CommandSender sender, String[] args) {
         FPlayer fPlayer = getFPlayerRaw(sender);
         AutomatedChunkManager acm = fPlayer.getAutomatedChunkManager();
-        Region region = args.length == 2 ? getRegion(args[1]) : null;
-        if (acm.getOperation() == ChunkOperation.REMOVE && acm.getSelection() == region) {
+        if (args.length < 2) {
+            acm.deactivate();
+            return;
+        }
+        Region region = getRegion(args[1]);
+        if (acm.getOperation() == ChunkOperation.TRANSFER && acm.getSelection() == region) {
             acm.deactivate(true);
             return;
         }
-        acm.setOperation(ChunkOperation.REMOVE);
+        acm.setOperation(ChunkOperation.TRANSFER);
         acm.setSelection(region);
     }
 }

@@ -17,7 +17,8 @@ public enum FMessage implements Message {
 
     ACM_ADDED_CHUNK("acm.addedChunk"),
     ACM_ADDED_CHUNKS("acm.addedChunks"),
-    ACM_ADD_INSIDE_REGION("acm.addInsideRegion"),
+    ACM_CHUNK_ALREADY_REGION("acm.chunkAlreadyRegion"),
+    ACM_DEACTIVATED("acm.deactivated"),
     ACM_ILLEGAL_RADIUS("acm.illegalRadius"),
     ACM_PREFIX("acm.prefix"),
     ACM_NOT_SELECTED("acm.notSelected"),
@@ -27,6 +28,8 @@ public enum FMessage implements Message {
     ACM_SELECTED("acm.selected"),
     ACM_SHAPE("acm.shape"),
     ACM_UNSELECTED("acm.unselected"),
+    ACM_TRANSFERRED_CHUNK("acm.transferredChunk"),
+    ACM_TRANSFERRED_CHUNKS("acm.transferredChunks"),
 
     BUILDING_SITE_CREATED("buildingSite.created"),
 
@@ -63,6 +66,7 @@ public enum FMessage implements Message {
     CMD_REGION_INFO_PRICE("cmd.region.info.price"),
     CMD_REGION_REMOVE_CHUNK_SUCCESS("cmd.region.removeChunk.success"),
     CMD_REGION_REMOVE_NEIGHBOUR_SUCCESS("cmd.region.removeNeighbour.success"),
+    CMD_REGION_SPLIT_SUCCESS("cmd.region.split.success"),
     CMD_REGION_TYPE_SUCCESS("cmd.region.type.success"),
     CMD_RELOAD_ALL_END("cmd.reload.allEnd"),
     CMD_RELOAD_ALL_START("cmd.reload.allStart"),
@@ -100,6 +104,7 @@ public enum FMessage implements Message {
     ERROR_CANNOT_KICK_YOURSELF("error.cannotKickYourself"),
     ERROR_CANNOT_UNCLAIM_CORE_REGION("error.cannotUnclaimCoreRegion"),
     ERROR_CHUNK_ALREADY_A_REGION("error.chunkAlreadyARegion"),
+    ERROR_CHUNK_OUTSIDE_THE_REGION("error.chunkOutsideTheRegion"),
     ERROR_FACTION_HAS_NOT_ENOUGH_MONEY("error.factionHasNotEnoughMoney"),
     ERROR_FACTION_NOT_FOUND("error.factionNotFound"),
     ERROR_NAME_IN_USE("error.nameInUse"),

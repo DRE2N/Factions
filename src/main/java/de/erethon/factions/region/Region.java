@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -170,6 +171,12 @@ public class Region extends FLegalEntity {
             return true;
         }
         return false;
+    }
+
+    public void addChunks(@NotNull Collection<LazyChunk> lazyChunks) {
+        for (LazyChunk lazyChunk : lazyChunks) {
+            addChunk(lazyChunk);
+        }
     }
 
     public boolean removeChunk(@NotNull Chunk chunk) {

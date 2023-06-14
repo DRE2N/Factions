@@ -32,10 +32,10 @@ public class ChunkOperationTest {
             for (int z = center.getZ() - radius; z < maxZ; z++) {
                 LazyChunk lazyChunk = new LazyChunk(x, z);
                 if (!shape.isIncluded(center, radius, lazyChunk)) {
-                    display[x][z] = '_';
+                    display[z][x] = '_';
                     continue;
                 }
-                display[x][z] = 'x';
+                display[z][x] = 'x';
                 included++;
                 System.out.println("Included: " + lazyChunk);
             }
