@@ -390,14 +390,12 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         try {
             bannerMeta = (BannerMeta) flag.getItemMeta();
         } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Flag ItemStack must be a banner item");
+            throw new FException("Flag ItemStack must be a banner item", FMessage.ERROR_NO_BANNER_ITEM_IN_HAND);
         }
         ItemStack copy = new ItemStack(flag.getType());
         BannerMeta copyMeta = (BannerMeta) copy.getItemMeta();
-
         copyMeta.setBaseColor(bannerMeta.getBaseColor());
         copyMeta.setPatterns(bannerMeta.getPatterns());
-
         copy.setItemMeta(copyMeta);
         this.flag = copy;
     }

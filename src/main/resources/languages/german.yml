@@ -116,6 +116,7 @@ error:
   factionNotFound: "<red>Die Fraktion <gold>&v1</gold> konnte nicht gefunden werden."
   nameInUse: "<red>Der Name <gold>&v1</gold> wird bereits verwendet."
   nameIsForbidden: "<red>Dieser Fraktions-Name ist nicht erlaubt."
+  noBannerItemInHand: "<red>Du musst einen Banner in der Hand halten, um dies tun zu dürfen."
   noPermission: "<red>Du hast keine Berechtigung, um dies tun zu dürfen."
   notEnoughMoney: "<red>Du benötigst <gold>&v1</gold>, um dies tun zu dürfen."
   notParsableDouble: "&cDer angegebene Zahlenwert &6&v1 &cist ungültig"

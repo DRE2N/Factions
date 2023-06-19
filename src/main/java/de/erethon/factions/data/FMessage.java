@@ -109,6 +109,7 @@ public enum FMessage implements Message {
     ERROR_FACTION_NOT_FOUND("error.factionNotFound"),
     ERROR_NAME_IN_USE("error.nameInUse"),
     ERROR_NAME_IS_FORBIDDEN("error.nameIsForbidden"),
+    ERROR_NO_BANNER_ITEM_IN_HAND("error.noBannerItemInHand"),
     ERROR_NO_PERMISSION("error.noPermission"),
     ERROR_NOT_ENOUGH_MONEY("error.notEnoughMoney"),
     ERROR_NOT_PARSABLE_DOUBLE("error.notParsableDouble"),

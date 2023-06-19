@@ -11,6 +11,7 @@ import de.erethon.factions.command.CreateCommand;
 import de.erethon.factions.command.DeclineCommand;
 import de.erethon.factions.command.DescriptionCommand;
 import de.erethon.factions.command.DisbandCommand;
+import de.erethon.factions.command.FlagCommand;
 import de.erethon.factions.command.HelpCommand;
 import de.erethon.factions.command.InviteCommand;
 import de.erethon.factions.command.JoinCommand;
@@ -44,6 +45,7 @@ public class FCommandCache extends ECommandCache {
         addCommand(new DeclineCommand());
         addCommand(new DescriptionCommand());
         addCommand(new DisbandCommand());
+        addCommand(new FlagCommand());
         addCommand(new HelpCommand());
         addCommand(new InviteCommand());
         addCommand(new JoinCommand());

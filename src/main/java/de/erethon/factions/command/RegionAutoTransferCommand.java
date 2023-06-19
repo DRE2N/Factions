@@ -16,6 +16,7 @@ public class RegionAutoTransferCommand extends FCommand {
         setCommand("transfer");
         setAliases("t");
         setMinMaxArgs(0, 1);
+        setPermissionFromName(RegionAutoCommand.PERM_PREFIX);
         setFUsage(RegionCommand.LABEL + " " + RegionAutoCommand.LABEL + " " + getCommand() + " [region]");
         setDescription("Übergibt den Chunk an eine andere Region");
     }
