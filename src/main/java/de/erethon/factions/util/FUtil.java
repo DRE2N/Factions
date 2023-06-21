@@ -6,12 +6,18 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.function.Supplier;
 
 /**
  * @author Fyreum
  */
 public class FUtil {
+
+    private static final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
 
     public static boolean isAdjacent(@NotNull Faction faction, @NotNull Faction other) {
         for (Region region : faction.getRegions()) {
@@ -46,5 +52,17 @@ public class FUtil {
         V value = getNotNullOr(null, suppliers);
         assert value != null : "Null value not permitted";
         return value;
+    }
+
+    public static @NotNull ZonedDateTime getDateTime() {
+        return ZonedDateTime.now(ZONE_ID);
+    }
+
+    public static @NotNull ZonedDateTime getMidnightDateTime() {
+        return ZonedDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT, ZONE_ID);
+    }
+
+    public static @NotNull ZonedDateTime getNoonDateTime() {
+        return ZonedDateTime.of(LocalDate.now(), LocalTime.NOON, ZONE_ID);
     }
 }

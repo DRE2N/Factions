@@ -130,4 +130,7 @@ public class CrystalWarObjective extends TickingWarObjective {
         return this;
     }
 
+    public @Nullable EnderCrystal getCrystal() {
+        return crystal;
+    }
 }

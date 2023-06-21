@@ -14,6 +14,7 @@ import de.erethon.factions.building.BuildingManager;
 import de.erethon.factions.command.logic.FCommandCache;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.economy.TaxManager;
 import de.erethon.factions.faction.FactionCache;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
@@ -32,6 +33,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.UUID;
@@ -66,6 +68,7 @@ public final class Factions extends EPlugin {
 
     /* Instances */
     private BuildingManager buildingManager;
+    private TaxManager taxManager;
     private WarObjectiveManager warObjectiveManager;
     private WarPhaseManager warPhaseManager;
 
@@ -109,6 +112,9 @@ public final class Factions extends EPlugin {
         loadFMessages();
         initializeCaches();
         loadCaches();
+        if (hasEconomyProvider()) {
+            loadTaxManager();
+        }
         loadWarObjectiveManager();
         loadWarPhaseManager();
         runTasks();
@@ -165,6 +171,10 @@ public final class Factions extends EPlugin {
         fPlayerCache.loadAll();
     }
 
+    public void loadTaxManager() {
+        taxManager = new TaxManager();
+    }
+
     public void loadWarObjectiveManager() {
         warObjectiveManager = new WarObjectiveManager(warObjectiveManagerFile);
         warObjectiveManager.load();
@@ -177,6 +187,9 @@ public final class Factions extends EPlugin {
 
     public void runTasks() {
         factionCache.runKickTask();
+        if (taxManager != null) {
+            taxManager.runFactionTaxTask();
+        }
         warPhaseManager.updateCurrentStageTask();
     }
 
@@ -296,6 +309,10 @@ public final class Factions extends EPlugin {
 
     public @NotNull WarPhaseManager getWarPhaseManager() {
         return warPhaseManager;
+    }
+
+    public @Nullable TaxManager getTaxManager() {
+        return taxManager;
     }
 
     public @NotNull FPlayerListener getFPlayerListener() {

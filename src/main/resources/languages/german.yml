@@ -1,5 +1,6 @@
 alliance:
   info:
+    factionCannotAffordDailyTaxes: "<yellow>Die Fraktion <gold>&v1</gold> konnte ihre täglichen Steuern nicht bezahlen."
     newPoll: "<green>Eine neue Abstimmung wurde erstellt. Stimme mit <dark_green>/f vote &v1</dark_green> ab!"
     prefix: "<dark_gray>[<dark_purple>&v1</dark_purple>]<gray> "
 acm:
@@ -23,6 +24,14 @@ cmd:
     choose:
       onCooldown: "<red>Du kannst erst in <gold>&v1</gold> wieder die Alliance wechseln."
       success: "<green>Du hast die Allianz <dark_green>&v1</dark_green> ausgewählt."
+    show:
+      description: "<dark_purple>Beschreibung</dark_purple><dark_gray>:</dark_gray><gray> &v1"
+      header: "<light_purple>-===[<b><dark_purple> &v1 </dark_purple></b>]===-"
+      longName: "<dark_purple>Langer Name</dark_purple><dark_gray>:<gray> &v1"
+      members: "<dark_purple>Mitglieder (&v1)</dark_purple><dark_gray>:</dark_gray><gray> &v2"
+      money: "<dark_purple>Konto</dark_purple><dark_gray>:</dark_gray><gray> &v1</gray><red>&v2"
+      separator: ""
+      shortName: "<dark_purple>Kürzel</dark_purple><dark_gray>:<gray> &v1"
   authorised:
     added: "<green>Du hast der Fraktion <dark_green>&v1</dark_green> die Erlaubnis <dark_green>erteilt</dark_green>, auf dem Gebiet von <dark_green>&v2</dark_green> zu bauen."
     removed: "<green>Du hast der Fraktion <dark_green>&v1</dark_green> die Erlaubnis <dark_green>entzogen</dark_green>, auf dem Gebiet von <dark_green>&v2</dark_green> zu bauen."
@@ -88,9 +97,10 @@ cmd:
     coreRegion: "<dark_green>Kerngebiet</dark_green><dark_gray>:</dark_gray><gray> &v1"
     description: "<dark_green>Beschreibung</dark_green><dark_gray>:</dark_gray><gray> &v1"
     header: "<green>-===[<b><dark_green> &v1 </dark_green></b>]===-"
+    level: "<dark_green>Stufe</dark_green><dark_gray>:<gray> &v1"
     longName: "<dark_green>Langer Name</dark_green><dark_gray>:<gray> &v1"
     members: "<dark_green>Mitglieder (&v1)</dark_green><dark_gray>:</dark_gray><gray> &v2"
-    money: "<dark_green>Konto</dark_green><dark_gray>:</dark_gray><gray> &v1"
+    money: "<dark_green>Konto</dark_green><dark_gray>:</dark_gray><gray> &v1</gray><red>&v2"
     separator: ""
     shortName: "<dark_green>Kürzel</dark_green><dark_gray>:<gray> &v1"
   stats:
@@ -157,6 +167,7 @@ faction:
     nameChanged: "<gray>Die Fraktion <green>&v1</green> hat ihren Namen zu <green>&v2</green> geändert."
     newAdmin: "<gray>Der Spieler <green>&v1</green> wurde zum neuen Anführer der Fraktion <green>&v2</green> ernannt."
     newPoll: "<green>Eine neue Abstimmung wurde erstellt. Stimme mit <dark_green>/f vote &v1</dark_green> ab!"
+    payedDailyTaxes: "Die täglichen Steuern von <green>&v1</green> wurden in die Allianzkasse eingezahlt."
     playerGotKicked: "<green>&v1</green> wurde aus der Fraktion geworfen."
     playerJoined: "<green>&v1</green> ist der Fraktion beigetreten."
     playerLeft: "<red>&v1</red> hat die Fraktion verlassen."

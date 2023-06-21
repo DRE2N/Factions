@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public enum FMessage implements Message {
 
+    ALLIANCE_INFO_FACTION_CANNOT_AFFORD_DAILY_TAXES("alliance.info.factionCannotAffordDailyTaxes"),
     ALLIANCE_INFO_NEW_POLL("alliance.info.newPoll"),
     ALLIANCE_INFO_PREFIX("alliance.info.prefix"),
 
@@ -35,6 +36,13 @@ public enum FMessage implements Message {
 
     CMD_ALLIANCE_CHOOSE_ON_COOLDOWN("cmd.alliance.choose.onCooldown"),
     CMD_ALLIANCE_CHOOSE_SUCCESS("cmd.alliance.choose.success"),
+    CMD_ALLIANCE_SHOW_DESCRIPTION("cmd.show.description"),
+    CMD_ALLIANCE_SHOW_HEADER("cmd.show.header"),
+    CMD_ALLIANCE_SHOW_LONG_NAME("cmd.show.longName"),
+    CMD_ALLIANCE_SHOW_MEMBERS("cmd.show.members"),
+    CMD_ALLIANCE_SHOW_MONEY("cmd.show.money"),
+    CMD_ALLIANCE_SHOW_SEPARATOR("cmd.show.separator"),
+    CMD_ALLIANCE_SHOW_SHORT_NAME("cmd.show.shortName"),
     CMD_AUTHORISE_ADDED("cmd.authorise.added"),
     CMD_AUTHORISE_REMOVED("cmd.authorise.removed"),
     CMD_DECLINE_SUCCESS("cmd.decline.success"),
@@ -78,6 +86,7 @@ public enum FMessage implements Message {
     CMD_SHOW_CORE_REGION("cmd.show.coreRegion"),
     CMD_SHOW_DESCRIPTION("cmd.show.description"),
     CMD_SHOW_HEADER("cmd.show.header"),
+    CMD_SHOW_LEVEL("cmd.show.level"),
     CMD_SHOW_LONG_NAME("cmd.show.longName"),
     CMD_SHOW_MEMBERS("cmd.show.members"),
     CMD_SHOW_MONEY("cmd.show.money"),
@@ -150,6 +159,7 @@ public enum FMessage implements Message {
     FACTION_INFO_NAME_CHANGED("faction.info.nameChanged"),
     FACTION_INFO_NEW_ADMIN("faction.info.newAdmin"),
     FACTION_INFO_NEW_POLL("faction.info.newPoll"),
+    FACTION_INFO_PAYED_DAILY_TAXES("faction.info.payedDailyTaxes"),
     FACTION_INFO_PLAYER_GOT_KICKED("faction.info.playerGotKicked"),
     FACTION_INFO_PLAYER_JOINED("faction.info.playerJoined"),
     FACTION_INFO_PLAYER_LEFT("faction.info.playerLeft"),

@@ -43,6 +43,10 @@ public class FactionDisbandEvent extends FactionEvent {
          */
         NO_MEMBERS_LEFT,
         /**
+         * The faction exceeded its debt limit because it couldn't pay its taxes.
+         */
+        TOO_MUCH_TAX_DEBT,
+        /**
          * The reason for disbandment is unknown.
          *
          * @deprecated should not be used for clarity reasons

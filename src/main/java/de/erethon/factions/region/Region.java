@@ -27,13 +27,14 @@ public class Region extends FLegalEntity {
     private final RegionCache regionCache;
     /* Data */
     private final Set<Region> adjacentRegions = new HashSet<>();
+    private final Set<BuildSite> buildSites = new HashSet<>();
     private Alliance alliance;
     private final Set<LazyChunk> chunks = new HashSet<>();
     private boolean claimable = true;
     private double damageReduction = 0.0;
+    private double lastClaimingPrice;
     private Faction owner;
     private RegionType type = RegionType.BARREN;
-    private Set<BuildSite> buildSites = new HashSet<>();
 
     protected Region(@NotNull RegionCache regionCache, @NotNull File file, int id, @NotNull String name, @Nullable String description) {
         super(file, id, name, description);
@@ -84,6 +85,7 @@ public class Region extends FLegalEntity {
         }
         claimable = config.getBoolean("claimable", claimable);
         damageReduction = config.getDouble("damageReduction", damageReduction);
+        lastClaimingPrice = config.getDouble("lastClaimingPrice", lastClaimingPrice);
         owner = plugin.getFactionCache().getById(config.getInt("owner", -1));
         type = RegionType.getByName(config.getString("type", type.name()), type);
     }
@@ -102,6 +104,7 @@ public class Region extends FLegalEntity {
         config.set("chunks", chunks.stream().map(LazyChunk::toString).toList());
         config.set("claimable", claimable);
         config.set("damageReduction", damageReduction);
+        config.set("lastClaimingPrice", lastClaimingPrice);
         config.set("owner", owner == null ? null : owner.getId());
         config.set("type", type.name());
     }
@@ -146,6 +149,10 @@ public class Region extends FLegalEntity {
     public boolean isAdjacentRegion(@NotNull Region other) {
         assert other != this : "Region cannot be adjacent to itself";
         return adjacentRegions.contains(other);
+    }
+
+    public @NotNull Set<BuildSite> getBuildSites() {
+        return buildSites;
     }
 
     @Override
@@ -207,6 +214,14 @@ public class Region extends FLegalEntity {
         this.damageReduction = damageReduction;
     }
 
+    public double getLastClaimingPrice() {
+        return lastClaimingPrice;
+    }
+
+    public void setLastClaimingPrice(double lastClaimingPrice) {
+        this.lastClaimingPrice = lastClaimingPrice;
+    }
+
     public @Nullable Faction getOwner() {
         return owner;
     }
@@ -234,10 +249,6 @@ public class Region extends FLegalEntity {
 
     public void setType(@NotNull RegionType type) {
         this.type = type;
-    }
-
-    public @NotNull Set<BuildSite> getBuildSites() {
-        return buildSites;
     }
 
     /* Object methods */

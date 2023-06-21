@@ -58,6 +58,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private PlayerCollection members;
     private final Set<Region> regions = new HashSet<>();
     private Region coreRegion;
+    private double currentTaxDebt = 0;
     private ItemStack flag;
     private String shortName;
     private String longName;
@@ -154,7 +155,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     }
 
     public void disband(@NotNull FactionDisbandEvent.Reason reason) {
-        FLogger.FACTION.log("Disbanding faction '" + name + "'...");
+        FLogger.FACTION.log("Disbanding faction " + id + " (" + name + ") reason: " + reason.name() + "...");
         new FactionDisbandEvent(this, reason).callEvent();
         plugin.getFactionCache().getCache().remove(id);
         if (alliance != null) {
@@ -173,6 +174,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         for (Region region : regions) {
             region.setOwner(null);
         }
+        fAccount.setBalance(0);
         try {
             file.delete();
         } catch (SecurityException e) {
@@ -198,12 +200,8 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void sendMessage(@NotNull Component msg, boolean prefix) {
         Component message = prefix ? FMessage.FACTION_INFO_PREFIX.message(name).append(msg) : msg;
-        for (UUID uuid : members) {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player == null) {
-                continue;
-            }
-            player.sendMessage(message);
+        for (Player online : members.getOnlinePlayers()) {
+            online.sendMessage(message);
         }
     }
 
@@ -234,6 +232,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         if (coreRegion == null) {
             FLogger.ERROR.log("Unknown core region ID in faction '" + id + "' found: " + coreRegionId);
         }
+        this.currentTaxDebt = config.getDouble("currentTaxDebt");
         this.flag = config.getItemStack("flag");
         this.shortName = config.getString("shortName");
         this.longName = config.getString("longName");
@@ -272,6 +271,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         config.set("members", members.serialize());
         saveEntities("regions", regions);
         config.set("coreRegion", coreRegion == null ? null : coreRegion.getId());
+        config.set("currentTaxDebt", currentTaxDebt);
         config.set("flag", flag);
         config.set("shortName", shortName);
         config.set("longName", longName);
@@ -285,6 +285,8 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         saveEntities("authorisedBuilders", authorisedBuilders);
         saveEntities("adjacentFactions", adjacentFactions);
     }
+
+    /* Permission stuff */
 
     public boolean isPrivileged(@NotNull FPlayer fPlayer) {
         return isAdmin(fPlayer) || isMod(fPlayer) || fPlayer.isBypass();
@@ -375,6 +377,34 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setCoreRegion(@NotNull Region coreRegion) {
         this.coreRegion = coreRegion;
+    }
+
+    public boolean hasCurrentTaxDebt() {
+        return currentTaxDebt > 0;
+    }
+
+    public double getCurrentTaxDebt() {
+        return currentTaxDebt;
+    }
+
+    public void setCurrentTaxDebt(double currentTaxDebt) {
+        this.currentTaxDebt = Math.max(currentTaxDebt, 0);
+    }
+
+    public void addCurrentTaxDebt(double taxDebt) {
+        this.currentTaxDebt += taxDebt;
+    }
+
+    public void removeCurrentTaxDebt(double taxDebt) {
+        this.currentTaxDebt = Math.max(currentTaxDebt - taxDebt, 0);
+    }
+
+    public double calculateRegionTaxes() {
+        double amount = 0;
+        for (Region region : regions) {
+            amount += region.getLastClaimingPrice();
+        }
+        return amount * plugin.getFConfig().getRegionPriceTaxRate();
     }
 
     public @Nullable ItemStack getFlag() {

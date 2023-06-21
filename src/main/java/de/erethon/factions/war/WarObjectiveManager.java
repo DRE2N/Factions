@@ -2,6 +2,7 @@ package de.erethon.factions.war;
 
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.war.objective.CrystalWarObjective;
 import de.erethon.factions.war.objective.WarObjective;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -85,6 +86,11 @@ public class WarObjectiveManager extends EConfig {
     /* Getters and setters */
 
     public @Nullable WarObjective getByEntity(@NotNull Entity entity) {
+        for (WarObjective objective : objectives.values()) {
+            if (objective instanceof CrystalWarObjective crystal && crystal.getCrystal() == entity) {
+                return crystal;
+            }
+        }
         return null;
     }
 

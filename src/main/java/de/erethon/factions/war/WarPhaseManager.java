@@ -11,6 +11,7 @@ import de.erethon.factions.region.RegionCache;
 import de.erethon.factions.region.RegionType;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.util.FUtil;
 import de.erethon.factions.war.task.PhaseSwitchTask;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -20,10 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +51,7 @@ public class WarPhaseManager extends EConfig {
 
     public WarPhaseManager(@NotNull File file) {
         super(file, CONFIG_VERSION);
-        midnight = createMidnight();
+        midnight = FUtil.getMidnightDateTime();
         nextMidnight = midnight.plusDays(1);
         initialize();
     }
@@ -99,9 +97,19 @@ public class WarPhaseManager extends EConfig {
             plugin.getWarObjectiveManager().deactivateAll();
             onWarZoneClose();
         }
+        // Deactivate current capital objectives.
+        if (currentStage.getWarPhase().isOpenCapital()) {
+            // todo: close capital
+        }
         WarPhaseStage nextStage = currentStage.getNextStage();
-        if (nextStage != null && nextStage.getWarPhase().isOpenWarZones()) {
+        if (nextStage == null) { // if this happens, something went wrong.
+            throw new IllegalStateException("Erroneous schedule");
+        }
+        if (nextStage.getWarPhase().isOpenWarZones()) {
             plugin.getWarObjectiveManager().activateAll();
+        }
+        if (nextStage.getWarPhase().isOpenCapital()) {
+            // todo: close capital
         }
         currentStage = nextStage;
         FBroadcastUtil.broadcastWar(currentStage.getWarPhase().getAnnouncementMessage());
@@ -261,18 +269,6 @@ public class WarPhaseManager extends EConfig {
     }
 
     /* Getters and setters */
-
-    public @NotNull ZonedDateTime createMidnight() {
-        return ZonedDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT, ZoneId.of("Europe/Berlin"));
-    }
-
-    public @NotNull ZonedDateTime getMidnight() {
-        return midnight;
-    }
-
-    public @NotNull ZonedDateTime getNextMidnight() {
-        return nextMidnight;
-    }
 
     public @NotNull WarPhaseStage getCurrentWarPhaseStage() {
         return currentStage;

@@ -20,7 +20,7 @@ public class AllianceCommand extends FCommand {
         setDescription("Befehle rund um Allianzen");
         setHelpType(HelpType.LISTED);
         setListedHelpHeader("Allianzbefehle");
-        addSubCommands(new AllianceChooseCommand());
+        addSubCommands(new AllianceChooseCommand(), new AllianceShowCommand());
         setAllExecutionPrefixes();
     }
 

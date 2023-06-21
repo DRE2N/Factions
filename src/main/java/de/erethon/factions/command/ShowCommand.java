@@ -38,7 +38,9 @@ public class ShowCommand extends FCommand {
         sender.sendMessage(FMessage.CMD_SHOW_LONG_NAME.message(faction.getDisplayLongName()));
         sender.sendMessage(FMessage.CMD_SHOW_DESCRIPTION.message(faction.getDisplayDescription()));
         sender.sendMessage(FMessage.CMD_SHOW_ALLIANCE.message(faction.hasAlliance() ? faction.getAlliance().getName() : FMessage.GENERAL_NONE.getMessage()));
-        sender.sendMessage(FMessage.CMD_SHOW_MONEY.message(faction.getFAccount().getFormatted()));
+        sender.sendMessage(FMessage.CMD_SHOW_LEVEL.message(faction.getLevel().getName()));
+        sender.sendMessage(FMessage.CMD_SHOW_MONEY.message(faction.getFAccount().getFormatted(),
+                faction.hasCurrentTaxDebt() ? " (" + faction.getFAccount().getFormatted(faction.getCurrentTaxDebt()) + ")" : ""));
         sender.sendMessage(FMessage.CMD_SHOW_CORE_REGION.message(faction.getCoreRegion().getName()));
         sender.sendMessage(FMessage.CMD_SHOW_ADMIN.message(getDisplayName(faction, faction.getAdmin())));
         sender.sendMessage(FMessage.CMD_SHOW_MEMBERS.message(String.valueOf(faction.getMembers().size()), getMembersString(faction)));

@@ -1,6 +1,7 @@
 package de.erethon.factions.economy;
 
 import de.erethon.factions.Factions;
+import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.faction.Faction;
 import net.milkbowl.vault.economy.Economy;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +20,13 @@ public class FAccountImpl implements FAccount {
      */
     public FAccountImpl(@NotNull Faction faction) {
         this("faction-" + faction.getId());
+    }
+
+    /**
+     * @param alliance the alliance to create an account for
+     */
+    public FAccountImpl(@NotNull Alliance alliance) {
+        this("alliance-" + alliance.getId());
     }
 
     /**

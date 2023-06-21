@@ -1,6 +1,9 @@
 package de.erethon.factions.alliance;
 
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.economy.FAccount;
+import de.erethon.factions.economy.FAccountDummy;
+import de.erethon.factions.economy.FAccountImpl;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.entity.ShortableNamed;
 import de.erethon.factions.faction.Faction;
@@ -45,6 +48,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
     private String longName;
     private WarScores warScores;
     /* Temporary */
+    private FAccount fAccount;
     private final Map<String, Poll<?>> polls = new HashMap<>();
 
     protected Alliance(@NotNull File file, int id, @NotNull String name, @Nullable String description) {
@@ -91,6 +95,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         this.shortName = config.getString("shortName");
         this.longName = config.getString("longName");
         this.warScores = new WarScores(this, config.getConfigurationSection("warScores"));
+        this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
     }
 
     private void loadRegions(String key, Collection<Region> into) {
@@ -195,6 +200,10 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     public @NotNull WarScores getWarScores() {
         return warScores;
+    }
+
+    public @NotNull FAccount getFAccount() {
+        return fAccount;
     }
 
     @Override

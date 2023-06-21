@@ -36,6 +36,7 @@ public class ClaimCommand extends FCommand {
 
         region.setOwner(faction);
         faction.addRegion(region);
+        region.setLastClaimingPrice(price);
 
         faction.sendMessage(FMessage.FACTION_INFO_REGION_CLAIMED.message(region.getName(), fAccount.getFormatted(price)));
     }

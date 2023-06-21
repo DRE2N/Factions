@@ -51,14 +51,17 @@ public class FConfig extends EConfig {
     private long inactiveKickTimer = TickUtil.HOUR;
 
     /* Economy */
+    private Map<FactionLevel, Double> maximumFactionDebts = new HashMap<>();
     private double regionPriceBase = 250.0;
     private double regionPricePerChunk = 0.3;
     private double regionPricePerRegion = 50.0;
     private double regionPricePerRegionFactor = 0.25;
+    private double regionPriceTaxRate = 0.02;
     private double regionPriceTotalMultiplier = 1.0;
-    private HashMap<Resource, Integer> defaultResourceLimits = new HashMap<>();
-    private HashMap<FactionLevel, HashMap<PopulationLevel, Integer>> requiredPopulation = new HashMap<>();
-    private HashMap<FactionLevel, Set<Building>> requiredBuildings = new HashMap<>();
+    private Map<Resource, Integer> defaultResourceLimits = new HashMap<>();
+    private Map<FactionLevel, HashMap<PopulationLevel, Integer>> requiredPopulation = new HashMap<>();
+    private Map<FactionLevel, Set<Building>> requiredBuildings = new HashMap<>();
+    private double taxConversionRate = 0.95;
 
     /* War */
     private double warScorePerKill = 5.0;
@@ -88,7 +91,9 @@ public class FConfig extends EConfig {
         initValue("regionPrice.perChunk", regionPricePerChunk);
         initValue("regionPrice.perRegion", regionPricePerRegion);
         initValue("regionPrice.perRegionFactor", regionPricePerRegionFactor);
+        initValue("regionPrice.taxRate", regionPriceTaxRate);
         initValue("regionPrice.totalMultiplier", regionPriceTotalMultiplier);
+        initValue("taxConversionRate", taxConversionRate);
         initValue("war.scorePerKill", warScorePerKill);
         initValue("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
         for (Resource resource : Resource.values()) {
@@ -124,7 +129,9 @@ public class FConfig extends EConfig {
         regionPricePerChunk = config.getDouble("regionPrice.perChunk", regionPricePerChunk);
         regionPricePerRegion = config.getDouble("regionPrice.perRegion", regionPricePerRegion);
         regionPricePerRegionFactor = config.getDouble("regionPrice.perRegionFactor", regionPricePerRegionFactor);
+        regionPriceTaxRate = config.getDouble("regionPrice.taxRate", regionPriceTaxRate);
         regionPriceTotalMultiplier = config.getDouble("regionPrice.totalMultiplier", regionPriceTotalMultiplier);
+        taxConversionRate = config.getDouble("taxConversionRate", taxConversionRate);
         warScorePerKill = config.getDouble("war.scorePerKill", warScorePerKill);
         warCapturedRegionsPerBattle = config.getInt("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
         defaultResourceLimits = new HashMap<>();
@@ -134,6 +141,10 @@ public class FConfig extends EConfig {
     }
 
     public void lateLoad() { // Config values that depend on FConfig already being loaded
+        maximumFactionDebts = new HashMap<>();
+        for (FactionLevel factionLevel : FactionLevel.values()) {
+            maximumFactionDebts.put(factionLevel, config.getDouble("maximumFactionDebt." + factionLevel.name(), 1000));
+        }
         requiredPopulation = new HashMap<>();
         for (FactionLevel factionLevel : FactionLevel.values()) {
             HashMap<PopulationLevel, Integer> populationLevelIntegerHashMap = new HashMap<>();
@@ -232,6 +243,10 @@ public class FConfig extends EConfig {
         return inactiveKickTimer;
     }
 
+    public @NotNull Map<FactionLevel, Double> getMaximumFactionDebts() {
+        return maximumFactionDebts;
+    }
+
     public double getRegionPriceBase() {
         return regionPriceBase;
     }
@@ -248,6 +263,10 @@ public class FConfig extends EConfig {
         return regionPricePerRegionFactor;
     }
 
+    public double getRegionPriceTaxRate() {
+        return regionPriceTaxRate;
+    }
+
     public double getRegionPriceTotalMultiplier() {
         return regionPriceTotalMultiplier;
     }
@@ -258,6 +277,10 @@ public class FConfig extends EConfig {
 
     public @Nullable Map<PopulationLevel, Integer> getRequiredPopulation(@NotNull FactionLevel level) {
         return requiredPopulation.get(level);
+    }
+
+    public double getTaxConversionRate() {
+        return taxConversionRate;
     }
 
     public double getWarScorePerKill() {

@@ -39,6 +39,7 @@ public class CreateCommand extends FCommand {
             assure(economy.has(fPlayer.getPlayer(), regionPrice), FMessage.ERROR_NOT_ENOUGH_MONEY, economy.format(regionPrice));
             plugin.getFactionCache().create(fPlayer, region, args[1]);
             economy.withdrawPlayer(fPlayer.getPlayer(), regionPrice);
+            region.setLastClaimingPrice(regionPrice);
         } else {
             plugin.getFactionCache().create(fPlayer, region, args[1]);
         }
