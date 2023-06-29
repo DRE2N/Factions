@@ -5,10 +5,10 @@ import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.RegionType;
-import de.erethon.factions.war.WarObjectiveManager;
 import de.erethon.factions.war.objective.CrystalWarObjective;
 import de.erethon.factions.war.objective.OccupyWarObjective;
 import de.erethon.factions.war.objective.WarObjective;
+import de.erethon.factions.war.objective.WarObjectiveManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -28,8 +28,8 @@ public class ObjectiveCreateCommand extends FCommand {
         setCommand("create");
         setAliases("c");
         setMinMaxArgs(2, Integer.MAX_VALUE);
-        setPermissionFromName(ObjectiveCommand.LABLE);
-        setFUsage(ObjectiveCommand.LABLE + " " + getCommand() + " [type] [name] ([options...])");
+        setPermissionFromName(ObjectiveCommand.LABEL);
+        setFUsage(ObjectiveCommand.LABEL + " " + getCommand() + " [type] [name] ([options...])");
         setDescription("Erstellt ein weiteres Kriegsziel");
     }
 

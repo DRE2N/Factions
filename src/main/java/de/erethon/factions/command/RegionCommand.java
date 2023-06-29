@@ -24,7 +24,7 @@ public class RegionCommand extends FCommand {
                 new RegionAutoCommand(), new RegionCreateCommand(), new RegionDamageReductionCommand(),
                 new RegionDeleteCommand(), new RegionDescriptionCommand(), new RegionInfoCommand(),
                 new RegionRemoveCommand(), new RegionRemoveNeighbourCommand(), new RegionSplitCommand(),
-                new RegionTypeCommand());
+                new RegionStructureCommand(), new RegionTypeCommand());
         setAllExecutionPrefixes();
     }
 

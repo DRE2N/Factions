@@ -13,8 +13,9 @@ import org.jetbrains.annotations.Nullable;
  */
 public enum RegionType {
 
+    ALLIANCE_CITY(FMessage.REGION_ALLIANCE_CITY, Material.PLAYER_HEAD, NamedTextColor.LIGHT_PURPLE, false),
     BARREN(FMessage.REGION_BARREN, Material.DEAD_BUSH, NamedTextColor.GOLD),
-    CAPITAL(FMessage.REGION_CAPITAL, Material.BRICK, NamedTextColor.DARK_RED),
+    CAPITAL(FMessage.REGION_CAPITAL, Material.BRICK, NamedTextColor.DARK_RED, false),
     CITY(FMessage.REGION_CITY, Material.GLASS_PANE, NamedTextColor.WHITE),
     DESERT(FMessage.REGION_DESERT, Material.SAND, NamedTextColor.YELLOW),
     FARMLAND(FMessage.REGION_FARMLAND, Material.GRASS, NamedTextColor.GREEN),
@@ -27,11 +28,17 @@ public enum RegionType {
     private final FMessage name;
     private final Material icon;
     private final TextColor color;
+    private final boolean allowsBuilding;
 
     RegionType(FMessage name, Material icon, TextColor color) {
+        this(name, icon, color, true);
+    }
+
+    RegionType(FMessage name, Material icon, TextColor color, boolean allowsBuilding) {
         this.name = name;
         this.icon = icon;
         this.color = color;
+        this.allowsBuilding = allowsBuilding;
     }
 
     /**
@@ -53,6 +60,13 @@ public enum RegionType {
      */
     public @NotNull TextColor getColor() {
         return color;
+    }
+
+    /**
+     * @return whether allied players are allowed to build on the region's ground
+     */
+    public boolean isAllowsBuilding() {
+        return allowsBuilding;
     }
 
     /* Statics */

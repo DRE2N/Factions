@@ -2,6 +2,7 @@ package de.erethon.factions.util;
 
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.region.Region;
+import io.papermc.paper.math.Position;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -64,5 +65,15 @@ public class FUtil {
 
     public static @NotNull ZonedDateTime getNoonDateTime() {
         return ZonedDateTime.of(LocalDate.now(), LocalTime.NOON, ZONE_ID);
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static @NotNull String toString(@NotNull Position position) {
+        return toString(position, ",");
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static @NotNull String toString(@NotNull Position position, String separator) {
+        return position.x() + separator + position.y() + separator + position.z();
     }
 }

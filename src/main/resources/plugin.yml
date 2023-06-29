@@ -3,7 +3,7 @@ version: 1.0-SNAPSHOT
 main: de.erethon.factions.Factions
 api-version: 1.19
 depend: [ Aergia ]
-softdepend: [ LWC ]
+softdepend: [ LWC, WorldEdit ]
 authors: [ Fyreum, Malfrador ]
 description: A Factions plugin
 commands:

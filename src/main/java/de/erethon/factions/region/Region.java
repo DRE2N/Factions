@@ -6,15 +6,20 @@ import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.faction.Faction;
+import de.erethon.factions.region.structure.RegionStructure;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FUtil;
+import io.papermc.paper.math.Position;
 import org.bukkit.Chunk;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -34,6 +39,7 @@ public class Region extends FLegalEntity {
     private double damageReduction = 0.0;
     private double lastClaimingPrice;
     private Faction owner;
+    private final Set<RegionStructure> structures = new HashSet<>();
     private RegionType type = RegionType.BARREN;
 
     protected Region(@NotNull RegionCache regionCache, @NotNull File file, int id, @NotNull String name, @Nullable String description) {
@@ -75,23 +81,6 @@ public class Region extends FLegalEntity {
     @Override
     public void load() {
         FLogger.REGION.log("Loading region '" + id + "'...");
-        this.alliance = plugin.getAllianceCache().getById(config.getInt("alliance", -1));
-        for (String string : config.getStringList("chunks")) {
-            try {
-                addChunk(new LazyChunk(string));
-            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                FLogger.ERROR.log("Illegal chunk in region '" + file.getName() + "' found: '" + string + "'");
-            }
-        }
-        claimable = config.getBoolean("claimable", claimable);
-        damageReduction = config.getDouble("damageReduction", damageReduction);
-        lastClaimingPrice = config.getDouble("lastClaimingPrice", lastClaimingPrice);
-        owner = plugin.getFactionCache().getById(config.getInt("owner", -1));
-        type = RegionType.getByName(config.getString("type", type.name()), type);
-    }
-
-    @Override
-    protected void serializeData() {
         for (int regionId : config.getIntegerList("adjacentRegions")) {
             Region region = plugin.getRegionManager().getRegionById(regionId);
             if (region == null) {
@@ -100,12 +89,49 @@ public class Region extends FLegalEntity {
             }
             this.adjacentRegions.add(region);
         }
+        this.alliance = plugin.getAllianceCache().getById(config.getInt("alliance", -1));
+        for (String string : config.getStringList("chunks")) {
+            try {
+                addChunk(new LazyChunk(string));
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                FLogger.ERROR.log("Illegal chunk in region '" + id + "' found: '" + string + "'");
+            }
+        }
+        claimable = config.getBoolean("claimable", claimable);
+        damageReduction = config.getDouble("damageReduction", damageReduction);
+        lastClaimingPrice = config.getDouble("lastClaimingPrice", lastClaimingPrice);
+        owner = plugin.getFactionCache().getById(config.getInt("owner", -1));
+        ConfigurationSection structuresSection = config.getConfigurationSection("structures");
+        if (structuresSection != null) {
+            for (String key : structuresSection.getKeys(false)) {
+                ConfigurationSection section = config.getConfigurationSection(key);
+                if (section == null) {
+                    FLogger.ERROR.log("Unknown region structure in region '" + id + "' found: " + key);
+                    continue;
+                }
+                structures.add(RegionStructure.deserialize(section));
+            }
+            if (!structures.isEmpty()) {
+                FLogger.REGION.log("Loaded " + structures.size() + " structures in region '" + id + "'");
+            }
+        }
+        type = RegionType.getByName(config.getString("type", type.name()), type);
+    }
+
+    @Override
+    protected void serializeData() {
+        config.set("adjacentRegions", adjacentRegions.stream().map(Region::getId).toList());
         config.set("alliance", alliance == null ? null : alliance.getId());
         config.set("chunks", chunks.stream().map(LazyChunk::toString).toList());
         config.set("claimable", claimable);
         config.set("damageReduction", damageReduction);
         config.set("lastClaimingPrice", lastClaimingPrice);
         config.set("owner", owner == null ? null : owner.getId());
+        Map<String, Object> serializedStructures = new HashMap<>(structures.size());
+        for (RegionStructure structure : structures) {
+            serializedStructures.put(String.valueOf(serializedStructures.size()), structure.serialize());
+        }
+        config.set("structures", serializedStructures);
         config.set("type", type.name());
     }
 
@@ -241,6 +267,20 @@ public class Region extends FLegalEntity {
 
     public void setOwner(@Nullable Faction owner) {
         this.owner = owner;
+    }
+
+    public @NotNull Set<RegionStructure> getStructures() {
+        return structures;
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public @Nullable RegionStructure getStructureAt(@NotNull Position position) {
+        for (RegionStructure structure : structures) {
+            if (structure.containsPosition(position)) {
+                return structure;
+            }
+        }
+        return null;
     }
 
     public @NotNull RegionType getType() {

@@ -159,7 +159,7 @@ public class EntityProtectionListener implements Listener {
         }
         Relation relation = fAttacker.getRelation(region);
         boolean living = target instanceof LivingEntity && target.getType() != EntityType.ARMOR_STAND;
-        if (living ? relation.canAttack() : relation.canBuild()) {
+        if (living ? relation.canAttack() : region.getType().isAllowsBuilding() && relation.canBuild()) {
             return;
         }
         event.setCancelled(true);

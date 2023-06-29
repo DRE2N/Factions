@@ -21,7 +21,7 @@ public class AllianceShowCommand extends FCommand {
         setAliases("who", "info");
         setMinMaxArgs(0, 1);
         setConsoleCommand(true);
-        setPermissionFromName(AllianceCommand.LABLE);
+        setPermissionFromName(AllianceCommand.LABEL);
         setFUsage(getCommand() + " ([alliance|player])");
         setDescription("Zeigt Informationen der Allianz an");
     }

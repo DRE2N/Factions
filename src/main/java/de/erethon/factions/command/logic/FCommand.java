@@ -13,7 +13,6 @@ import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionCache;
-import de.erethon.factions.region.RegionType;
 import de.erethon.factions.util.FException;
 import de.erethon.factions.util.FPermissionUtil;
 import org.bukkit.Bukkit;
@@ -80,7 +79,7 @@ public abstract class FCommand extends ECommand {
         setHelp(formatDefaultHelp(getUsage(), getDescription()));
     }
 
-    public void setFUsage(String usage) {
+    public void setFUsage(@NotNull String usage) {
         setUsage("/f " + usage);
     }
 
@@ -88,8 +87,8 @@ public abstract class FCommand extends ECommand {
         setPermission(PERM_PREFIX + getCommand());
     }
 
-    public void setPermissionFromName(String between) {
-        setPermission(PERM_PREFIX + between + "." + getCommand());
+    public void setPermissionFromName(@NotNull String between) {
+        setPermission(PERM_PREFIX + between.replace(" ", ".") + "." + getCommand());
     }
 
     /* Utility methods */

@@ -1,9 +1,7 @@
-package de.erethon.factions.war;
+package de.erethon.factions.war.objective;
 
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.util.FLogger;
-import de.erethon.factions.war.objective.CrystalWarObjective;
-import de.erethon.factions.war.objective.WarObjective;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +21,7 @@ public class WarObjectiveManager extends EConfig {
 
     private final Map<String, WarObjective> objectives = new HashMap<>();
 
-    public WarObjectiveManager(File file) {
+    public WarObjectiveManager(@NotNull File file) {
         super(file, CONFIG_VERSION);
     }
 

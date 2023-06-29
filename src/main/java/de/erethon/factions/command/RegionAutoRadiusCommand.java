@@ -15,8 +15,8 @@ public class RegionAutoRadiusCommand extends FCommand {
     public RegionAutoRadiusCommand() {
         setCommand("autoradius");
         setMinMaxArgs(1, 1);
-        setPermissionFromName(RegionAutoCommand.PERM_PREFIX);
-        setFUsage(RegionCommand.LABEL + " " + RegionAutoCommand.LABEL + " " + getCommand() + " [radius]");
+        setPermissionFromName(RegionAutoCommand.CMD_PREFIX);
+        setFUsage(RegionAutoCommand.CMD_PREFIX + " " + getCommand() + " [radius]");
         setDescription("Setzt den Radius für automatische Chunkaktionen");
     }
 

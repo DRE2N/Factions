@@ -29,7 +29,7 @@ cmd:
       header: "<light_purple>-===[<b><dark_purple> &v1 </dark_purple></b>]===-"
       longName: "<dark_purple>Langer Name</dark_purple><dark_gray>:<gray> &v1"
       members: "<dark_purple>Mitglieder (&v1)</dark_purple><dark_gray>:</dark_gray><gray> &v2"
-      money: "<dark_purple>Konto</dark_purple><dark_gray>:</dark_gray><gray> &v1</gray><red>&v2"
+      money: "<dark_purple>Kontostand</dark_purple><dark_gray>:</dark_gray><gray> &v1</gray><red>&v2"
       separator: ""
       shortName: "<dark_purple>Kürzel</dark_purple><dark_gray>:<gray> &v1"
   authorised:
@@ -53,6 +53,10 @@ cmd:
   objective:
     create:
       success: "<green>Kriegsziel wurde erstellt."
+  pos1:
+    success: "<green>Die erste Position wurde zu <dark_green>&v1</dark_green> gesetzt."
+  pos2:
+    success: "<green>Die zweite Position wurde zu <dark_green>&v1</dark_green> gesetzt."
   region:
     addChunk:
       success: "<green>Der Chunk wurde der Region <dark_green>&v1</dark_green> erfolgreich hinzugefügt."
@@ -83,6 +87,14 @@ cmd:
       success: "<green>Chunk wurde aus der Region <gold>&v1</gold> entfernt."
     removeNeighbour:
       success: "<green>Die Regionen <gold>&v1</gold> und <gold>&v2</gold> sind nun nicht mehr benachbart."
+    split:
+      success: "<green>Die Region wurde in zwei geteilt. Erstellte Region: <dark_green>&v1</dark_green>."
+    structure:
+      create:
+        success: "<green>Regionsstruktur Nr. <dark_green>&v1</dark_green> wurde erstellt."
+      list:
+        empty: "<gray>Die Region <gold>&v1</gold> hat keine Regionsstrukturen."
+        type: "<gold>Typ</gold><dark_gray>:</dark_gray><gray> &v1"
     type:
       success: "<green>Der Gebietstyp von <dark_green>&v1</dark_green> wurde zu <dark_green>&v2</dark_green> gesetzt."
   reload:
@@ -100,7 +112,7 @@ cmd:
     level: "<dark_green>Stufe</dark_green><dark_gray>:<gray> &v1"
     longName: "<dark_green>Langer Name</dark_green><dark_gray>:<gray> &v1"
     members: "<dark_green>Mitglieder (&v1)</dark_green><dark_gray>:</dark_gray><gray> &v2"
-    money: "<dark_green>Konto</dark_green><dark_gray>:</dark_gray><gray> &v1</gray><red>&v2"
+    money: "<dark_green>Kontostand</dark_green><dark_gray>:</dark_gray><gray> &v1</gray><red>&v2"
     separator: ""
     shortName: "<dark_green>Kürzel</dark_green><dark_gray>:<gray> &v1"
   stats:
@@ -128,6 +140,7 @@ error:
   nameIsForbidden: "<red>Dieser Fraktions-Name ist nicht erlaubt."
   noBannerItemInHand: "<red>Du musst einen Banner in der Hand halten, um dies tun zu dürfen."
   noPermission: "<red>Du hast keine Berechtigung, um dies tun zu dürfen."
+  noSelection: "<red>Du musst eine Markierung erstellen, um dies tun zu dürfen."
   notEnoughMoney: "<red>Du benötigst <gold>&v1</gold>, um dies tun zu dürfen."
   notParsableDouble: "&cDer angegebene Zahlenwert &6&v1 &cist ungültig"
   notParsableInteger: "&cDer angegebene Zahlenwert &6&v1 &cist ungültig"
@@ -142,9 +155,11 @@ error:
   regionIsNotAWarzone: "<red>Die Region is kein Kriegsgebiet."
   regionIsNotClaimable: "<red>Die Region kann nicht beansprucht werden."
   regionNotFound: "<red>Die Region <gold>&v1</gold> konnte nicht gefunden werden."
+  regionStructureTypeNotFound: "<red>Der Reginsstrukturentyp <gold>&v1</gold> konnte nicht gefunden werden."
+  regionTypeNotFound: "<red>Der Gebietstyp <gold>&v1</gold> konnte nicht gefunden werden."
   regionsAlreadyNeighbours: "<red>Die Regionen <gold>&v1</gold> und <gold>&v2</gold> sind bereits benachbart."
   regionsAreNotNeighbours: "<red>Die Regionen <gold>&v1</gold> und <gold>&v2</gold> sind nicht benachbart."
-  regionTypeNotFound: "<red>Der Gebietstyp <gold>&v1</gold> konnte nicht gefunden werden."
+  selectionInDifferentRegions: "<red>Die Markierungen müssen sich in der selben Region befinden."
   senderIsNoPlayer: "<red>Du musst ein Spieler sein, um dies tun zu dürfen."
   targetIsAlreadyAdmin: "<red>Der Spieler <gold>&v1</gold> ist bereits Admin der Fraktion <gold>&v2</gold>."
   targetIsAlreadyInThisFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich bereits in der Fraktion <gold>&v2</gold>."
@@ -153,6 +168,7 @@ error:
   textIsTooLong: "<red>Der angegebene Text überschreitet die Maximallänge von <gold>&v1</gold> Zeichen."
   warObjectiveNotFound: "<red>Der Kriegszieltyp <gold>&v1</gold> konnte nicht gefunden werden."
   warObjectiveWrongArgFormat: "<red>Zusätzliche Einstellungen müssen wie folgt angegeben werden: <gold>NAME</gold><gold>:</gold><gold>WERT</gold>."
+  worldIsRegionless: "<red>Die Welt <gold>&v1</gold> beinhaltet keine Regionen."
   wrongDoubleValue: "<red>Der angegebene Zahlenwert muss zwischen <gold>&v1</gold> und </gold> liegen."
 faction:
   info:
@@ -228,6 +244,7 @@ protection:
   cannotUnleashFaction: "<red>Du darfst keine Tiere in dem Gebiet von <gold>&v1</gold> ableinen."
   warZoneIsClosed: "<red>Während der aktuellen Kriegsphase sind die Kriegsgebiete geschlossen."
 region:
+  allianceCity: "Allianzstadt"
   barren: "Ödland"
   capital: "Hauptstadt"
   city: "Stadt"

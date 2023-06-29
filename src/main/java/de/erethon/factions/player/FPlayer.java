@@ -27,11 +27,11 @@ import de.erethon.factions.war.objective.WarObjective;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,9 +62,10 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     private long lastFactionJoinDate;
     private WarStats warStats;
     /* Functionality */
-    private Region lastRegion;
-    private final AutomatedChunkManager automatedChunkManager = new AutomatedChunkManager(this);
     private final Set<WarObjective> activeWarObjectives = new HashSet<>();
+    private final AutomatedChunkManager automatedChunkManager = new AutomatedChunkManager(this);
+    private Region lastRegion;
+    private Location pos1, pos2;
 
     public FPlayer(@NotNull UUID uuid) {
         super(Factions.getPlayerFile(uuid), CONFIG_VERSION);
@@ -316,6 +317,14 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         return warStats;
     }
 
+    public @NotNull Set<WarObjective> getActiveWarObjectives() {
+        return activeWarObjectives;
+    }
+
+    public @NotNull AutomatedChunkManager getAutomatedChunkManager() {
+        return automatedChunkManager;
+    }
+
     public @Nullable Region getLastRegion() {
         return lastRegion;
     }
@@ -342,14 +351,6 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         return new LazyChunk(player.getLocation().getChunk());
     }
 
-    public @NotNull AutomatedChunkManager getAutomatedChunkManager() {
-        return automatedChunkManager;
-    }
-
-    public @NotNull Set<WarObjective> getActiveWarObjectives() {
-        return activeWarObjectives;
-    }
-
     public @NotNull Map<String, Poll<?>> getParticipativePolls() {
         Map<String, Poll<?>> polls = new HashMap<>();
         if (alliance != null) {
@@ -359,6 +360,22 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
             polls.putAll(faction.getPollsFor(this));
         }
         return polls;
+    }
+
+    public @Nullable Location getPos1() {
+        return pos1;
+    }
+
+    public void setPos1(@Nullable Location pos1) {
+        this.pos1 = pos1;
+    }
+
+    public @Nullable Location getPos2() {
+        return pos2;
+    }
+
+    public void setPos2(@Nullable Location pos2) {
+        this.pos2 = pos2;
     }
 
     /* Object methods */

@@ -19,7 +19,7 @@ public class AllianceChooseCommand extends FCommand {
         setAliases("c");
         setMinMaxArgs(1, 1);
         setPermissionFromName();
-        setFUsage(AllianceCommand.LABLE + " " + getCommand() + " [alliance]");
+        setFUsage(AllianceCommand.LABEL + " " + getCommand() + " [alliance]");
         setDescription("Wählt eine Allianz aus");
     }
 

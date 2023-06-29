@@ -5,7 +5,6 @@ import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.event.FactionDisbandEvent;
 import de.erethon.factions.faction.Faction;
-import de.erethon.factions.player.FPlayer;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;

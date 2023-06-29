@@ -8,10 +8,10 @@ import org.bukkit.command.CommandSender;
  */
 public class ObjectiveCommand extends FCommand {
 
-    public static final String LABLE = "objective";
+    public static final String LABEL = "objective";
 
     public ObjectiveCommand() {
-        setCommand(LABLE);
+        setCommand(LABEL);
         setAliases("o");
         setMinMaxArgs(0, Integer.MAX_VALUE);
         setPermissionFromName();

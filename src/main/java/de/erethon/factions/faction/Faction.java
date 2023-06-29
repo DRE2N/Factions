@@ -215,7 +215,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         try {
             this.admin = UUID.fromString(adminId);
         } catch (IllegalArgumentException e) {
-            FLogger.ERROR.log("Illegal UUID in faction '" + file.getName() + "' found: '" + adminId + "'");
+            FLogger.ERROR.log("Illegal UUID in faction '" + id + "' found: '" + adminId + "'");
         }
         this.mods = new PlayerCollection(config.getStringList("mods"));
         this.members = new PlayerCollection(config.getStringList("members"));

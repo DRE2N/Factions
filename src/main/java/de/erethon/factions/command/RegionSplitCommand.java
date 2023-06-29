@@ -3,7 +3,6 @@ package de.erethon.factions.command;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import org.bukkit.command.CommandSender;
 import org.bukkit.util.Vector;

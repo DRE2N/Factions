@@ -9,6 +9,7 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionType;
 import de.erethon.factions.war.objective.CrystalWarObjective;
 import de.erethon.factions.war.objective.WarObjective;
+import de.erethon.factions.war.objective.WarObjectiveManager;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

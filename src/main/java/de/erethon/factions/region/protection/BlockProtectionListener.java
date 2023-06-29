@@ -5,6 +5,8 @@ import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionType;
+import de.erethon.factions.region.structure.RegionStructure;
+import net.kyori.adventure.util.TriState;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -57,7 +59,13 @@ public class BlockProtectionListener implements Listener {
         if (region == null) {
             return;
         }
-        if (region.getType() == RegionType.WAR_ZONE && !plugin.getWarPhaseManager().getCurrentWarPhase().isOpenWarZones()) {
+        RegionStructure structure = region.getStructureAt(block.getLocation());
+        TriState structureState = structure == null ? TriState.NOT_SET : structure.canBuild(fPlayer, region);
+        if (structureState == TriState.TRUE) {
+            return;
+        }
+        if (structureState == TriState.FALSE || !region.getType().isAllowsBuilding() ||
+                (region.getType() == RegionType.WAR_ZONE && !plugin.getWarPhaseManager().getCurrentWarPhase().isOpenWarZones())) {
             event.setCancelled(true);
             return;
         }

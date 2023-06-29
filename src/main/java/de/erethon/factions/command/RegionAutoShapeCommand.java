@@ -18,8 +18,8 @@ public class RegionAutoShapeCommand extends FCommand {
         setCommand("shape");
         setAliases("s");
         setMinMaxArgs(1, 1);
-        setPermissionFromName(RegionAutoCommand.PERM_PREFIX);
-        setFUsage(RegionCommand.LABEL + " " + RegionAutoCommand.LABEL + " " + getCommand() + " [shape]");
+        setPermissionFromName(RegionAutoCommand.CMD_PREFIX);
+        setFUsage(RegionAutoCommand.CMD_PREFIX + " " + getCommand() + " [shape]");
         setDescription("Setzt die geometrische Form von automatischen Operationen");
     }
 

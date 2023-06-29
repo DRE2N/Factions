@@ -24,8 +24,8 @@ import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.ui.UIFactionsListener;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.WarListener;
-import de.erethon.factions.war.WarObjectiveManager;
 import de.erethon.factions.war.WarPhaseManager;
+import de.erethon.factions.war.objective.WarObjectiveManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -216,7 +216,7 @@ public final class Factions extends EPlugin {
                     String faction = fSender.hasFaction() ? fSender.getFaction().getDisplayShortName() : FMessage.GENERAL_LONER.getMessage();
                     return Component.text()
                             .color(fSender.hasAlliance() ? fSender.getAlliance().getColor() : NamedTextColor.WHITE)
-                            .append(MessageUtil.parse("<dark_gray>[</dark_gray>" + faction + "<dark_gray>]</dark_gray>"))
+                            .append(MessageUtil.parse("<dark_gray>[</dark_gray>" + faction + "<dark_gray>]</dark_gray> "))
                             .build();
                 })
                 .clickBuilder((s, r) -> {

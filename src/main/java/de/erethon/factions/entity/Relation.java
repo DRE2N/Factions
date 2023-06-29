@@ -23,17 +23,13 @@ public enum Relation {
      */
     FACTION(true, false),
     /**
-     * The second party is not part of any alliance or faction.
+     * One or both of the parties are not part of any alliance or faction.
      */
     NEUTRAL(true, true),
     /**
      * Both parties are part of the same alliance, but are in separate factions.
      */
     PROTECTED_ALLY(false, false),
-    /**
-     * The first party does not participate.
-     */
-    SPECTATOR(false, false)
 
     ;
 
@@ -57,10 +53,7 @@ public enum Relation {
     public static @NotNull Relation getRelation(@NotNull FEntity entity, FEntity other) {
         Alliance alliance = entity.getAlliance();
         Alliance allianceOther = other.getAlliance();
-        if (alliance == null) {
-            return allianceOther == null ? NEUTRAL : SPECTATOR;
-        }
-        if (allianceOther == null) {
+        if (alliance == null || allianceOther == null) {
             return NEUTRAL;
         }
         if (alliance != allianceOther) {

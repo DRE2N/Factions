@@ -8,10 +8,10 @@ import org.bukkit.command.CommandSender;
  */
 public class AllianceCommand extends FCommand {
 
-    public static final String LABLE = "alliance";
+    public static final String LABEL = "alliance";
 
     public AllianceCommand() {
-        setCommand(LABLE);
+        setCommand(LABEL);
         setAliases("a");
         setMinMaxArgs(0, Integer.MAX_VALUE);
         setConsoleCommand(true);

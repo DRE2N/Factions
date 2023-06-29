@@ -19,8 +19,8 @@ public class RegionAutoAddCommand extends FCommand {
         setCommand("add");
         setAliases("a");
         setMinMaxArgs(0, 1);
-        setPermissionFromName(RegionAutoCommand.PERM_PREFIX);
-        setFUsage(RegionCommand.LABEL + " " + RegionAutoCommand.LABEL + " " + getCommand() + " [region]");
+        setPermissionFromName(RegionAutoCommand.CMD_PREFIX);
+        setFUsage(RegionAutoCommand.CMD_PREFIX + getCommand() + " [region]");
         setDescription("Fügt automatisch den jeweiligen Chunk der Region hinzu");
     }
 

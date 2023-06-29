@@ -6,21 +6,21 @@ import org.bukkit.command.CommandSender;
 /**
  * @author Fyreum
  */
-public class RegionAutoCommand extends FCommand {
+public class RegionStructureCommand extends FCommand {
 
-    public static final String LABEL = "auto";
+    public static final String LABEL = "structure";
     public static final String CMD_PREFIX = RegionCommand.LABEL + " " + LABEL;
 
-    public RegionAutoCommand() {
-        setCommand(LABEL);
+    public RegionStructureCommand() {
+        setCommand("structure");
+        setAliases("s");
         setMinMaxArgs(0, Integer.MAX_VALUE);
         setPermissionFromName(RegionCommand.LABEL);
         setFUsage(CMD_PREFIX + " [...]");
-        setDescription("Befehle rund um automatische Regionsänderungen");
+        setDescription("Befehle rund um Regionsstrukturen");
         setHelpType(HelpType.LISTED);
-        setListedHelpHeader("Automatische Befehle");
-        addSubCommands(new RegionAutoAddCommand(), new RegionAutoRadiusCommand(), new RegionAutoRemoveCommand(),
-                new RegionAutoShapeCommand(), new RegionAutoTransferCommand());
+        setListedHelpHeader("Regionsstrukturenbefehle");
+        addSubCommands(new RegionStructureCreateCommand(), new RegionStructureListCommand());
         setAllExecutionPrefixes();
     }
 

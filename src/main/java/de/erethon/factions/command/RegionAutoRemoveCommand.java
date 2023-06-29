@@ -16,8 +16,8 @@ public class RegionAutoRemoveCommand extends FCommand {
         setCommand("remove");
         setAliases("r");
         setMinMaxArgs(0, 1);
-        setPermissionFromName(RegionAutoCommand.PERM_PREFIX);
-        setFUsage(RegionCommand.LABEL + " " + RegionAutoCommand.LABEL + " " + getCommand() + " ([region])");
+        setPermissionFromName(RegionAutoCommand.CMD_PREFIX);
+        setFUsage(RegionAutoCommand.CMD_PREFIX + " " + getCommand() + " ([region])");
         setDescription("Entfernt automatisch den jeweiligen Chunk aus der Region");
     }
 
