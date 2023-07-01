@@ -5,7 +5,7 @@ import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.ref.WeakReference;
-import java.util.Objects;
+import java.util.Arrays;
 
 /**
  * @author Fyreum
@@ -58,14 +58,13 @@ public class LazyChunk {
 
     @Override
     public boolean equals(Object chunk) {
-        if(chunk == null) return false;
         if(!(chunk instanceof LazyChunk other)) return false;
         return this.getX() == other.getX() && this.getZ() == other.getZ();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(x, z);
+        return Arrays.hashCode(new int[]{x, z});
     }
 
     @Override
