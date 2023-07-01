@@ -1,6 +1,7 @@
 package de.erethon.factions.util;
 
 import de.erethon.factions.faction.Faction;
+import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import io.papermc.paper.math.Position;
 import org.jetbrains.annotations.Contract;
@@ -75,5 +76,27 @@ public class FUtil {
     @SuppressWarnings("UnstableApiUsage")
     public static @NotNull String toString(@NotNull Position position, String separator) {
         return position.x() + separator + position.y() + separator + position.z();
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static boolean regionContainsAABB(@NotNull Region region, @NotNull Position pos1, @NotNull Position pos2) {
+        return regionContainsAABB(region, new LazyChunk(pos1.blockX() >> 4, pos1.blockZ() >> 4), new LazyChunk(pos2.blockX() >> 4, pos2.blockZ() >> 4));
+    }
+
+    public static boolean regionContainsAABB(@NotNull Region region, @NotNull LazyChunk pos1, @NotNull LazyChunk pos2) {
+        if (pos1.equals(pos2)) {
+            return region.getChunks().contains(pos1);
+        }
+        int maxX = Math.max(pos1.getX(), pos2.getX());
+        int maxZ = Math.max(pos1.getZ(), pos2.getZ());
+
+        for (int x = Math.min(pos1.getX(), pos2.getX()); x < maxX; x++) {
+            for (int z = Math.min(pos1.getZ(), pos2.getZ()); z < maxZ; z++) {
+                if (!region.getChunks().contains(new LazyChunk(x, z))) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
