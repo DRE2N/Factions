@@ -35,6 +35,8 @@ cmd:
   authorised:
     added: "<green>Du hast der Fraktion <dark_green>&v1</dark_green> die Erlaubnis <dark_green>erteilt</dark_green>, auf dem Gebiet von <dark_green>&v2</dark_green> zu bauen."
     removed: "<green>Du hast der Fraktion <dark_green>&v1</dark_green> die Erlaubnis <dark_green>entzogen</dark_green>, auf dem Gebiet von <dark_green>&v2</dark_green> zu bauen."
+  createWarFlag:
+    success: "<green>Eine Kriegsflagge wurde dem Kriegsobjekt <dark_green>&v1</dark_green> hinzugefügt."
   decline:
     success: "<green>Du hast die Einladung von <dark_green>&v1</dark_green> abgelehnt."
   disband:
@@ -52,7 +54,7 @@ cmd:
     success: "<green>Du hast die Fraktion <dark_green>&v1</dark_green> verlassen."
   objective:
     create:
-      success: "<green>Kriegsziel wurde erstellt."
+      success: "<green>Kriegsobjekt wurde erstellt."
   pos1:
     success: "<green>Die erste Position wurde zu <dark_green>&v1</dark_green> gesetzt."
   pos2:
@@ -166,7 +168,8 @@ error:
   targetIsNotInAFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich in keiner Fraktion."
   targetIsNotInThisFaction: "<red>Der Spieler <gold>&v1</gold> befindet sich nicht in der Fraktion <gold>&v2</gold>."
   textIsTooLong: "<red>Der angegebene Text überschreitet die Maximallänge von <gold>&v1</gold> Zeichen."
-  warObjectiveNotFound: "<red>Der Kriegszieltyp <gold>&v1</gold> konnte nicht gefunden werden."
+  warObjectiveNotFound: "<red>Das Kriegsobjekt <gold>&v1</gold> konnte nicht gefunden werden."
+  warObjectiveTypeNotFound: "<red>Der Kriegsobjekttyp <gold>&v1</gold> konnte nicht gefunden werden."
   warObjectiveWrongArgFormat: "<red>Zusätzliche Einstellungen müssen wie folgt angegeben werden: <gold>NAME</gold><gold>:</gold><gold>WERT</gold>."
   worldIsRegionless: "<red>Die Welt <gold>&v1</gold> beinhaltet keine Regionen."
   wrongDoubleValue: "<red>Der angegebene Zahlenwert muss zwischen <gold>&v1</gold> und </gold> liegen."

@@ -1,6 +1,7 @@
 package de.erethon.factions.region.protection;
 
 import de.erethon.factions.Factions;
+import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
@@ -27,30 +28,30 @@ public class BlockProtectionListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        forbidIfInProtectedTerritory(event, event.getPlayer(), event.getBlock());
+        forbidIfInProtectedTerritory(event, event.getPlayer(), event.getBlock(), FMessage.PROTECTION_CANNOT_DESTROY_FACTION);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockPlaceEvent event) {
-        forbidIfInProtectedTerritory(event, event.getPlayer(), event.getBlock());
+        forbidIfInProtectedTerritory(event, event.getPlayer(), event.getBlock(), FMessage.PROTECTION_CANNOT_BUILD_FACTION);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockIgnite(BlockIgniteEvent event) {
-        forbidIfInProtectedTerritory(event, event.getPlayer(), event.getBlock());
+        forbidIfInProtectedTerritory(event, event.getPlayer(), event.getBlock(), FMessage.PROTECTION_CANNOT_BUILD_FACTION);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(PlayerBucketFillEvent event) {
-        forbidIfInProtectedTerritory(event, event.getPlayer(), event.getBlock());
+        forbidIfInProtectedTerritory(event, event.getPlayer(), event.getBlock(), FMessage.PROTECTION_CANNOT_DESTROY_FACTION);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(PlayerBucketEmptyEvent event) {
-        forbidIfInProtectedTerritory(event, event.getPlayer(), event.getBlock());
+        forbidIfInProtectedTerritory(event, event.getPlayer(), event.getBlock(), FMessage.PROTECTION_CANNOT_BUILD_FACTION);
     }
 
-    private void forbidIfInProtectedTerritory(Cancellable event, Player player, Block block) {
+    private void forbidIfInProtectedTerritory(Cancellable event, Player player, Block block, FMessage message) {
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
         if (fPlayer.isBypassRaw()) {
             return;
@@ -60,18 +61,23 @@ public class BlockProtectionListener implements Listener {
             return;
         }
         RegionStructure structure = region.getStructureAt(block.getLocation());
-        TriState structureState = structure == null ? TriState.NOT_SET : structure.canBuild(fPlayer, region);
+        TriState structureState = structure == null ? TriState.NOT_SET : structure.canBuild(fPlayer, region, block);
         if (structureState == TriState.TRUE) {
             return;
         }
         if (structureState == TriState.FALSE || !region.getType().isAllowsBuilding() ||
                 (region.getType() == RegionType.WAR_ZONE && !plugin.getWarPhaseManager().getCurrentWarPhase().isOpenWarZones())) {
-            event.setCancelled(true);
+            cancel(event, fPlayer, region, message);
             return;
         }
         Relation relation = fPlayer.getRelation(region);
         if (!relation.canBuild()) {
-            event.setCancelled(true);
+            cancel(event, fPlayer, region, message);
         }
+    }
+
+    private void cancel(Cancellable event, FPlayer fPlayer, Region region, FMessage message) {
+        event.setCancelled(true);
+        fPlayer.sendActionBarMessage(message.message(region.getDisplayOwner()));
     }
 }

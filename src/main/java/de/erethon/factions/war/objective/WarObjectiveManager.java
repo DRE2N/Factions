@@ -96,8 +96,23 @@ public class WarObjectiveManager extends EConfig {
         return objectives;
     }
 
+    public <T extends WarObjective> @NotNull Map<String, T> getObjectives(@NotNull Class<T> type) {
+        Map<String, T> filtered = new HashMap<>();
+        objectives.forEach((name, objective) -> {
+            if (type.isInstance(objective)) {
+                filtered.put(name, (T) objective);
+            }
+        });
+        return filtered;
+    }
+
     public @Nullable WarObjective getObjective(@NotNull String name) {
         return objectives.get(name);
+    }
+
+    public <T extends WarObjective> @Nullable T getObjective(@NotNull String name, @NotNull Class<T> type) {
+        WarObjective objective = objectives.get(name);
+        return type.isInstance(objective) ? (T) objective : null;
     }
 
     public void addObjective(@NotNull WarObjective objective) {

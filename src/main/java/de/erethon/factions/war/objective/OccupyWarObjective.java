@@ -5,11 +5,14 @@ import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.region.structure.FlagStructure;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +28,7 @@ public class OccupyWarObjective extends TickingWarObjective {
     protected int warProgressDecline;
     protected int warProgressDeclineContested;
     protected int warProgressPerOccupiedInterval;
+    protected Set<FlagStructure> flagStructures = new HashSet<>();
     /* Temporary */
     protected final Set<Alliance> activeAlliances = new HashSet<>();
     protected Alliance leadingAlliance;
@@ -118,11 +122,15 @@ public class OccupyWarObjective extends TickingWarObjective {
             currentProgress -= 2;
             return;
         }
+        // A new alliance is leading.
         currentProgress = 0;
         leadingAlliance = soleAlliance;
         for (FPlayer fPlayer : activePlayers.keySet()) {
             fPlayer.getPlayer().hideBossBar(hostileBossBar);
             fPlayer.getPlayer().showBossBar(friendlyBossBar);
+        }
+        for (FlagStructure flag : flagStructures) {
+            flag.displayColor(location.getWorld(), NamedTextColor.nearestTo(leadingAlliance.getColor()));
         }
     }
 
@@ -134,7 +142,15 @@ public class OccupyWarObjective extends TickingWarObjective {
             incrementOccupiedScore();
             return;
         }
-        currentProgress = Math.max(currentProgress - warProgressDecline, 0);
+        currentProgress -= warProgressDecline;
+        if (currentProgress > 0) {
+            return;
+        }
+        // No alliance has progress anymore -> completely empty objective.
+        currentProgress = 0;
+        for (FlagStructure flag : flagStructures) {
+            flag.displayColor(location.getWorld(), NamedTextColor.WHITE);
+        }
     }
 
     private void updateScoreSole() {
@@ -218,6 +234,18 @@ public class OccupyWarObjective extends TickingWarObjective {
         warProgressDecline = config.getInt("warProgressDecline", 1);
         warProgressDeclineContested = config.getInt("warProgressDeclineContested", 2);
         warProgressPerOccupiedInterval = config.getInt("warProgressPerOccupiedInterval", 1);
+        ConfigurationSection flagsSection = config.getConfigurationSection("flagStructures");
+        if (flagsSection != null) {
+            for (String key : flagsSection.getKeys(false)) {
+                ConfigurationSection section = flagsSection.getConfigurationSection(key);
+                if (section == null) {
+                    continue;
+                }
+                FlagStructure flag = new FlagStructure(FlagStructure.deserializePosition(section.getConfigurationSection("minPosition")),
+                        FlagStructure.deserializePosition(section.getConfigurationSection("maxPosition")));
+                flagStructures.add(flag);
+            }
+        }
     }
 
     @Override
@@ -228,6 +256,10 @@ public class OccupyWarObjective extends TickingWarObjective {
         serialized.put("warProgressDecline", warProgressDecline);
         serialized.put("warProgressDeclineContested", warProgressDeclineContested);
         serialized.put("warPointsPerOccupiedInterval", warProgressPerOccupiedInterval);
+        Map<String, Object> serializedFlags = new HashMap<>(flagStructures.size());
+        for (FlagStructure flag : flagStructures) {
+            serializedFlags.put(String.valueOf(serializedFlags.size()), flag.serialize());
+        }
         return serialized;
     }
 
@@ -271,6 +303,10 @@ public class OccupyWarObjective extends TickingWarObjective {
 
     public void setWarProgressPerOccupiedInterval(int progress) {
         this.warProgressPerOccupiedInterval = progress;
+    }
+
+    public @NotNull Set<FlagStructure> getFlagStructures() {
+        return flagStructures;
     }
 
     public @NotNull Set<Alliance> getActiveAlliances() {

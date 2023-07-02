@@ -4,6 +4,7 @@ import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.util.TriState;
+import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -19,10 +20,10 @@ public class WarCastleStructure extends RegionStructure {
     }
 
     @Override
-    public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @NotNull Region region) {
-        if (plugin.getWarPhaseManager().getCurrentWarPhase().isOpenWarZones()) {
-            return TriState.NOT_SET;
+    public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @NotNull Region region, Block block) {
+        if (!plugin.getWarPhaseManager().getCurrentWarPhase().isOpenWarZones()) {
+            return fPlayer.hasAlliance() && fPlayer.getAlliance() == region.getAlliance() ? TriState.TRUE : TriState.FALSE;
         }
-        return fPlayer.hasAlliance() && fPlayer.getAlliance() == region.getAlliance() ? TriState.TRUE : TriState.FALSE;
+        return super.canBuild(fPlayer, region, block);
     }
 }

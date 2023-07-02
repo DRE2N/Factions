@@ -378,6 +378,10 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         this.pos2 = pos2;
     }
 
+    public boolean hasSelection() {
+        return pos1 != null && pos2 != null;
+    }
+
     /* Object methods */
 
     @Override

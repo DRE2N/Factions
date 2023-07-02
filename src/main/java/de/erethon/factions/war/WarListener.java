@@ -28,6 +28,10 @@ public class WarListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
+        WarPhase currentWarPhase = plugin.getWarPhaseManager().getCurrentWarPhase();
+        if (!currentWarPhase.isOpenWarZones() && !currentWarPhase.isOpenCapital()) {
+            return;
+        }
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(event.getPlayer());
         for (WarObjective objective : plugin.getWarObjectiveManager().getObjectives().values()) {
             boolean inRange = event.getTo().distance(objective.getLocation()) <= objective.getRadius();

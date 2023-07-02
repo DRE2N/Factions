@@ -7,7 +7,9 @@ import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionType;
+import de.erethon.factions.region.structure.RegionStructure;
 import de.erethon.factions.util.FLogger;
+import net.kyori.adventure.util.TriState;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -154,11 +156,21 @@ public class EntityProtectionListener implements Listener {
         if (region == null) {
             return;
         }
+        RegionStructure structure = region.getStructureAt(target.getLocation());
+        TriState structureState = structure == null ? TriState.NOT_SET : structure.canAttack(fAttacker, region, target);
+        if (structureState == TriState.TRUE) {
+            return;
+        }
+        boolean living = target instanceof LivingEntity && target.getType() != EntityType.ARMOR_STAND;
+        if (structureState == TriState.FALSE) {
+            event.setCancelled(true);
+            fAttacker.sendActionBarMessage((living && livingForbidMessage != null ? livingForbidMessage : forbidMessage).message(region.getDisplayOwner()));
+            return;
+        }
         if (region.getType() == RegionType.WAR_ZONE && plugin.getWarPhaseManager().getCurrentWarPhase().isOpenWarZones()) {
             return;
         }
         Relation relation = fAttacker.getRelation(region);
-        boolean living = target instanceof LivingEntity && target.getType() != EntityType.ARMOR_STAND;
         if (living ? relation.canAttack() : region.getType().isAllowsBuilding() && relation.canBuild()) {
             return;
         }

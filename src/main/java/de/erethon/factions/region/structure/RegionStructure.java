@@ -6,8 +6,11 @@ import de.erethon.factions.region.Region;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.util.TriState;
 import org.apache.commons.lang.math.IntRange;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,11 +34,11 @@ public class RegionStructure {
 
     /* Protection */
 
-    public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @NotNull Region region) {
+    public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @NotNull Region region, @Nullable Block block) {
         return TriState.NOT_SET;
     }
 
-    public @NotNull TriState canAttack(@NotNull FPlayer fPlayer, @NotNull Region region) {
+    public @NotNull TriState canAttack(@NotNull FPlayer fPlayer, @NotNull Region region, @Nullable Entity target) {
         return TriState.NOT_SET;
     }
 
@@ -79,7 +82,7 @@ public class RegionStructure {
 
     /* Serialization */
 
-    public @NotNull Map<String, Object> serialize() {
+    public Object serialize() {
         Map<String, Object> serialized = new HashMap<>(2);
         serialized.put("minPosition", Map.of("x", xRange.getMinimumInteger(), "y", yRange.getMinimumInteger(), "z", zRange.getMinimumInteger()));
         serialized.put("maxPosition", Map.of("x", xRange.getMaximumInteger(), "y", yRange.getMaximumInteger(), "z", zRange.getMaximumInteger()));
@@ -90,12 +93,13 @@ public class RegionStructure {
         Position minPosition = deserializePosition(config.getConfigurationSection("minPosition"));
         Position maxPosition = deserializePosition(config.getConfigurationSection("maxPosition"));
         return switch (config.getString("type")) {
-            case "WarCastle" -> new WarCastleStructure(minPosition, maxPosition);
+            case "Flag" -> new WarCastleStructure(minPosition, maxPosition);
+            case "WarCastle" -> new FlagStructure(minPosition, maxPosition);
             case null, default -> new RegionStructure(minPosition, maxPosition);
         };
     }
 
-    protected static Position deserializePosition(ConfigurationSection section) {
+    public static Position deserializePosition(ConfigurationSection section) {
         if (section == null) {
             return Position.BLOCK_ZERO;
         }
