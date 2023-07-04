@@ -1,5 +1,6 @@
 package de.erethon.factions.region.structure;
 
+import com.destroystokyo.paper.MaterialSetTag;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import io.papermc.paper.math.Position;
@@ -65,7 +66,7 @@ public class FlagStructure extends RegionStructure {
             for (int x = minPosition.blockX(); x < maxX; x++) {
                 for (int y = minPosition.blockY(); y < maxY; y++) {
                     for (int z = minPosition.blockZ(); z < maxZ; z++) {
-                        if (!world.getType(x, y, z).name().contains("WOOL")) {
+                        if (!MaterialSetTag.WOOL.isTagged(world.getType(x, y, z))) {
                             continue;
                         }
                         world.setType(x, y, z, wool);
