@@ -44,9 +44,7 @@ public class ObjectiveCreateCommand extends FCommand {
             default -> throw new CommandFailedException(FMessage.ERROR_WAR_OBJECTIVE_TYPE_NOT_FOUND, args[1]);
         };
         objective.load();
-        if (plugin.getWarPhaseManager().getCurrentWarPhase().isOpenWarZones()) {
-            objective.activate();
-        }
+        objective.activate();
         sender.sendMessage(FMessage.CMD_OBJECTIVE_CREATE_SUCCESS.message());
     }
 

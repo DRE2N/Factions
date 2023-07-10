@@ -21,7 +21,7 @@ public class WarCastleStructure extends RegionStructure {
 
     @Override
     public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @NotNull Region region, Block block) {
-        if (!plugin.getWarPhaseManager().getCurrentWarPhase().isOpenWarZones()) {
+        if (!plugin.getWarPhaseManager().getCurrentWarPhase().isAllowPvP()) {
             return fPlayer.hasAlliance() && fPlayer.getAlliance() == region.getAlliance() ? TriState.TRUE : TriState.FALSE;
         }
         return super.canBuild(fPlayer, region, block);

@@ -69,6 +69,10 @@ public enum RegionType {
         return allowsBuilding;
     }
 
+    public boolean isWarGround() {
+        return this == WAR_ZONE || this == CAPITAL;
+    }
+
     /* Statics */
 
     public static @Nullable RegionType getByName(@NotNull String name) {

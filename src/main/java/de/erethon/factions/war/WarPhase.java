@@ -8,28 +8,22 @@ import org.jetbrains.annotations.NotNull;
  */
 public enum WarPhase {
 
-    ACTIVE(true, true, false, FMessage.WAR_PHASE_ACTIVE_DISPLAY_NAME, FMessage.WAR_PHASE_ACTIVE_ANNOUNCEMENT),
-    CAPITAL(true, false, true, FMessage.WAR_PHASE_CAPITAL_DISPLAY_NAME, FMessage.WAR_PHASE_CAPITAL_ANNOUNCEMENT),
-    INACTIVE(false, false, false, FMessage.WAR_PHASE_INACTIVE_DISPLAY_NAME, FMessage.WAR_PHASE_INACTIVE_ANNOUNCEMENT),
-    PASSIVE(true, false, false, FMessage.WAR_PHASE_PASSIVE_DISPLAY_NAME, FMessage.WAR_PHASE_PASSIVE_ANNOUNCEMENT);
+    CAPITAL(true, true, FMessage.WAR_PHASE_CAPITAL_DISPLAY_NAME, FMessage.WAR_PHASE_CAPITAL_ANNOUNCEMENT),
+    REGULAR(true, false, FMessage.WAR_PHASE_REGULAR_DISPLAY_NAME, FMessage.WAR_PHASE_REGULAR_ANNOUNCEMENT),
+    PEACE(false, false, FMessage.WAR_PHASE_PEACE_DISPLAY_NAME, FMessage.WAR_PHASE_PEACE_ANNOUNCEMENT);
 
-    private final boolean allowAttacks, openWarZones, openCapital;
+    private final boolean allowPvP, openCapital;
     private final FMessage displayName, announcementMessage;
 
-    WarPhase(boolean allowAttacks, boolean openWarZones, boolean openCapital, @NotNull FMessage displayName, @NotNull FMessage announcementMessage) {
-        this.allowAttacks = allowAttacks;
-        this.openWarZones = openWarZones;
+    WarPhase(boolean allowPvP, boolean openCapital, @NotNull FMessage displayName, @NotNull FMessage announcementMessage) {
+        this.allowPvP = allowPvP;
         this.openCapital = openCapital;
         this.displayName = displayName;
         this.announcementMessage = announcementMessage;
     }
 
-    public boolean isAllowAttacks() {
-        return allowAttacks;
-    }
-
-    public boolean isOpenWarZones() {
-        return openWarZones;
+    public boolean isAllowPvP() {
+        return allowPvP;
     }
 
     public boolean isOpenCapital() {

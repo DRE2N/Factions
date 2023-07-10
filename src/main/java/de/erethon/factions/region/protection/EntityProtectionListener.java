@@ -62,7 +62,7 @@ public class EntityProtectionListener implements Listener {
         if (relation != Relation.ENEMY) {
             return;
         }
-        if (!plugin.getWarPhaseManager().getCurrentWarPhase().isAllowAttacks()) {
+        if (!plugin.getWarPhaseManager().getCurrentWarPhase().isAllowPvP()) {
             event.setCancelled(true);
             fAttacker.sendActionBarMessage(FMessage.PROTECTION_CANNOT_ATTACK_IN_CURRENT_PHASE.message(fDefender.getDisplayMembership()));
             return;
@@ -167,7 +167,7 @@ public class EntityProtectionListener implements Listener {
             fAttacker.sendActionBarMessage((living && livingForbidMessage != null ? livingForbidMessage : forbidMessage).message(region.getDisplayOwner()));
             return;
         }
-        if (region.getType() == RegionType.WAR_ZONE && plugin.getWarPhaseManager().getCurrentWarPhase().isOpenWarZones()) {
+        if (region.getType() == RegionType.WAR_ZONE && plugin.getWarPhaseManager().getCurrentWarPhase().isAllowPvP()) {
             return;
         }
         Relation relation = fAttacker.getRelation(region);

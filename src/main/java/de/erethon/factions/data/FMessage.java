@@ -254,10 +254,10 @@ public enum FMessage implements Message {
     WAR_PHASE_ANNOUNCEMENT_MINUTES("war.phase.announcement.minutes"),
     WAR_PHASE_ANNOUNCEMENT_SECOND("war.phase.announcement.second"),
     WAR_PHASE_ANNOUNCEMENT_SECONDS("war.phase.announcement.seconds"),
-    WAR_PHASE_INACTIVE_ANNOUNCEMENT("war.phase.inactive.announcement"),
-    WAR_PHASE_INACTIVE_DISPLAY_NAME("war.phase.inactive.displayName"),
-    WAR_PHASE_PASSIVE_ANNOUNCEMENT("war.phase.passive.announcement"),
-    WAR_PHASE_PASSIVE_DISPLAY_NAME("war.phase.passive.displayName"),
+    WAR_PHASE_PEACE_ANNOUNCEMENT("war.phase.inactive.announcement"),
+    WAR_PHASE_PEACE_DISPLAY_NAME("war.phase.inactive.displayName"),
+    WAR_PHASE_REGULAR_ANNOUNCEMENT("war.phase.passive.announcement"),
+    WAR_PHASE_REGULAR_DISPLAY_NAME("war.phase.passive.displayName"),
     WAR_PREFIX("war.prefix"),
     ;
 

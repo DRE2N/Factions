@@ -92,27 +92,33 @@ public class WarPhaseManager extends EConfig {
             initializeStage();
             return;
         }
-        // Deactivate current war objectives.
-        if (currentStage.getWarPhase().isOpenWarZones()) {
-            plugin.getWarObjectiveManager().deactivateAll();
-            onWarZoneClose();
-        }
-        // Deactivate current capital objectives.
-        if (currentStage.getWarPhase().isOpenCapital()) {
-            // todo: close capital
-        }
         WarPhaseStage nextStage = currentStage.getNextStage();
         if (nextStage == null) { // if this happens, something went wrong.
             throw new IllegalStateException("Erroneous schedule");
         }
-        if (nextStage.getWarPhase().isOpenWarZones()) {
-            plugin.getWarObjectiveManager().activateAll();
-        }
-        if (nextStage.getWarPhase().isOpenCapital()) {
-            // todo: close capital
+        if (currentStage.getWarPhase() != nextStage.getWarPhase()) {
+            updateWarState(nextStage);
+            FBroadcastUtil.broadcastWar(currentStage.getWarPhase().getAnnouncementMessage());
         }
         currentStage = nextStage;
-        FBroadcastUtil.broadcastWar(currentStage.getWarPhase().getAnnouncementMessage());
+    }
+
+    private void updateWarState(WarPhaseStage nextStage) {
+        if (currentStage.getWarPhase().isAllowPvP()) {
+            if (!nextStage.getWarPhase().isAllowPvP()) {
+                plugin.getWarObjectiveManager().deactivateAll();
+                onWarZoneClose();
+            }
+        } else if (nextStage.getWarPhase().isAllowPvP()) {
+            plugin.getWarObjectiveManager().activateAll();
+        }
+        if (currentStage.getWarPhase().isOpenCapital()) {
+            if (!nextStage.getWarPhase().isOpenCapital()) {
+                // todo: close capital
+            }
+        } else if (nextStage.getWarPhase().isOpenCapital()) {
+            // todo: close capital
+        }
     }
 
     private void initializeStage() {
@@ -147,7 +153,7 @@ public class WarPhaseManager extends EConfig {
             }
         }
         for (Alliance alliance : plugin.getAllianceCache()) {
-            alliance.addPoll(new CapturedRegionsPoll(alliance));
+            alliance.addPoll(new CapturedRegionsPoll(alliance), TickUtil.DAY);
         }
     }
 
@@ -212,7 +218,7 @@ public class WarPhaseManager extends EConfig {
         for (int week = 1; week < 8; week++) {
             Map<Integer, WarPhaseStage> staleStages = new HashMap<>(7);
             for (int day = 1; day < 8; day++) {
-                staleStages.put(day, new WarPhaseStage(DAY_DURATION, 0, WarPhase.INACTIVE));
+                staleStages.put(day, new WarPhaseStage(DAY_DURATION, 0, WarPhase.PEACE));
             }
             schedule.put(week, staleStages);
         }
@@ -232,10 +238,10 @@ public class WarPhaseManager extends EConfig {
 
                 if (fullDuration > DAY_DURATION) {
                     FLogger.ERROR.log("Duration of week " + week + " day " + day + " is too long. Inactive stage will be used instead...");
-                    warPhaseStage = new WarPhaseStage(DAY_DURATION, 0, WarPhase.INACTIVE);
+                    warPhaseStage = new WarPhaseStage(DAY_DURATION, 0, WarPhase.PEACE);
                 } else if (fullDuration < DAY_DURATION) {
                     FLogger.WARN.log("Duration of week " + week + " day " + day + " is too short. Inactive stage will be used additionally...");
-                    lastStage.setNextStage(new WarPhaseStage(DAY_DURATION - fullDuration, fullDuration, WarPhase.INACTIVE));
+                    lastStage.setNextStage(new WarPhaseStage(DAY_DURATION - fullDuration, fullDuration, WarPhase.PEACE));
                 }
                 schedule.get(week).put(day, warPhaseStage);
             }

@@ -10,7 +10,10 @@ import de.erethon.factions.region.RegionType;
 import de.erethon.factions.war.objective.CrystalWarObjective;
 import de.erethon.factions.war.objective.WarObjective;
 import de.erethon.factions.war.objective.WarObjectiveManager;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import org.bukkit.GameMode;
+import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,7 +32,7 @@ public class WarListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
         WarPhase currentWarPhase = plugin.getWarPhaseManager().getCurrentWarPhase();
-        if (!currentWarPhase.isOpenWarZones() && !currentWarPhase.isOpenCapital()) {
+        if (!currentWarPhase.isAllowPvP()) {
             return;
         }
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(event.getPlayer());
@@ -60,14 +63,14 @@ public class WarListener implements Listener {
 
     @EventHandler
     public void onKill(PlayerDeathEvent event) {
-        Player killed = event.getPlayer();
-        Player killer = killed.getKiller();
-        if (killer == null) {
+        ServerPlayer sKilled = ((CraftPlayer) event.getPlayer()).getHandle();
+        LivingEntity sKiller = sKilled.getCombatTracker().getKiller();
+        if (sKiller == null || !(sKiller.getBukkitLivingEntity() instanceof Player killer)) {
             return;
         }
-        FPlayer fKilled = plugin.getFPlayerCache().getByPlayer(killed);
+        FPlayer fKilled = plugin.getFPlayerCache().getByPlayer(event.getPlayer());
         FPlayer fKiller = plugin.getFPlayerCache().getByPlayer(killer);
-        if (fKilled.getRelation(fKiller) != Relation.ENEMY){
+        if (fKilled.getLastRegion() != null && fKilled.getLastRegion().getType().isWarGround() && fKilled.getRelation(fKiller) != Relation.ENEMY) {
             return;
         }
         // Update stats for the killed player
@@ -86,7 +89,7 @@ public class WarListener implements Listener {
             return;
         }
         Region region = fKilled.getLastRegion();
-        if (region == null || region.getType() != RegionType.WAR_ZONE || !plugin.getWarPhaseManager().getCurrentWarPhase().isOpenWarZones()) {
+        if (region == null || region.getType().isWarGround()) {
             return;
         }
         krAlliance.getWarScores().getOrCreate(region).addKill();
