@@ -6,21 +6,27 @@ import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
-import de.erethon.factions.region.RegionType;
 import de.erethon.factions.war.objective.CrystalWarObjective;
 import de.erethon.factions.war.objective.WarObjective;
 import de.erethon.factions.war.objective.WarObjectiveManager;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.CombatEntry;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import org.bukkit.GameMode;
-import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
+import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.List;
 
 /**
  * @author Fyreum
@@ -64,7 +70,7 @@ public class WarListener implements Listener {
     @EventHandler
     public void onKill(PlayerDeathEvent event) {
         ServerPlayer sKilled = ((CraftPlayer) event.getPlayer()).getHandle();
-        LivingEntity sKiller = sKilled.getCombatTracker().getKiller();
+        LivingEntity sKiller = sKilled.getKillCredit();
         if (sKiller == null || !(sKiller.getBukkitLivingEntity() instanceof Player killer)) {
             return;
         }
@@ -83,7 +89,22 @@ public class WarListener implements Listener {
         if (++krStats.killStreak > krStats.highestKillStreak) {
             krStats.highestKillStreak = krStats.killStreak;
         }
-        // Update war score
+        // Update stats for assisting players
+        List<CombatEntry> entries = sKilled.getCombatTracker().entries;
+        if (entries.size() > 1) {
+            for (int i = 0; i < entries.size() - 1; i++) {
+                Entity attacker = entries.get(i).source().getDirectEntity();
+                if (attacker == null || !(attacker.getBukkitEntity() instanceof Player player)) {
+                    continue;
+                }
+                FPlayer fAssist = plugin.getFPlayerCache().getByPlayer(player);
+                fAssist.getWarStats().assists++;
+            }
+        }
+        // Update war score if necessary
+        if (!plugin.getWarPhaseManager().getCurrentWarPhase().isInfluencingScoring()) {
+            return;
+        }
         Alliance krAlliance = fKiller.getAlliance();
         if (krAlliance == null) {
             return;
@@ -92,11 +113,11 @@ public class WarListener implements Listener {
         if (region == null || region.getType().isWarGround()) {
             return;
         }
-        krAlliance.getWarScores().getOrCreate(region).addKill();
+        region.getRegionalWarTracker().addKill(krAlliance);
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onEntityDamage(EntityDamageByEntityEvent event) {
+    public void onCrystalDamage(EntityDamageByEntityEvent event) {
         WarObjectiveManager objectiveManager = plugin.getWarObjectiveManager();
         WarObjective objective = objectiveManager.getByEntity(event.getEntity());
         if (!(objective instanceof CrystalWarObjective crystal)) {
@@ -117,12 +138,28 @@ public class WarListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onEntityDamage(EntityDamageByBlockEvent event) {
+    public void onCrystalDamage(EntityDamageByBlockEvent event) {
         WarObjectiveManager objectiveManager = plugin.getWarObjectiveManager();
         WarObjective objective = objectiveManager.getByEntity(event.getEntity());
         if (!(objective instanceof CrystalWarObjective)) {
             return;
         }
         event.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onCrystalInteract(PlayerInteractEntityEvent event) {
+        WarObjectiveManager objectiveManager = plugin.getWarObjectiveManager();
+        WarObjective objective = objectiveManager.getByEntity(event.getRightClicked());
+        if (!(objective instanceof CrystalWarObjective)) {
+            return;
+        }
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItem(event.getHand());
+        if (item.getType() != Material.NETHER_STAR) {
+            return;
+        }
+        item.setAmount(item.getAmount() - 1);
+        player.getInventory().setItem(event.getHand(), item.getAmount() == 0 ? null : item);
     }
 }

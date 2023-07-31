@@ -30,6 +30,9 @@ public class RegionInfoCommand extends FCommand {
         MessageUtil.sendCenteredMessage(sender, FMessage.CMD_REGION_INFO_HEADER.getMessage(region.getName()));
         sender.sendMessage(FMessage.CMD_REGION_INFO_ID.message(String.valueOf(region.getId())));
         sender.sendMessage(FMessage.CMD_REGION_INFO_TYPE.message(region.getType().getName()));
+        if (region.getType().isWarGround()) {
+            sender.sendMessage(FMessage.CMD_REGION_INFO_WAR_VALUE.message(String.valueOf(region.getRegionalWarTracker().getRegionValue())));
+        }
         sender.sendMessage(FMessage.CMD_REGION_INFO_CHUNKS.message(String.valueOf(region.getChunks().size())));
         sender.sendMessage(FMessage.CMD_REGION_INFO_ADJACENT_REGIONS.message(getAdjacentRegions(region)));
         if (region.isOwned()) {

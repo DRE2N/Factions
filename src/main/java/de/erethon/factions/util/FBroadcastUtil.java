@@ -37,6 +37,10 @@ public class FBroadcastUtil {
         }
     }
 
+    public static void broadcastWar(@NotNull Component message) {
+        broadcastWarFinal(prefixWar(message));
+    }
+
     public static void broadcastWar(@NotNull FMessage message) {
         broadcastWarFinal(prefixWar(message.message()));
     }

@@ -26,6 +26,7 @@ public abstract class WarObjective {
     protected final Factions plugin = Factions.get();
     protected ConfigurationSection config;
     /* Settings */
+    protected boolean capitalObjective;
     protected String name;
     protected Location location;
     protected double radius;
@@ -75,6 +76,7 @@ public abstract class WarObjective {
     /* Serialization */
 
     public void load() {
+        capitalObjective = config.getBoolean("capitalObjective");
         name = config.getString("name");
         location = Location.deserialize(config.getConfigurationSection("location").getValues(false));
         radius = config.getDouble("radius", 5.0);
@@ -83,6 +85,7 @@ public abstract class WarObjective {
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> serialized = new HashMap<>();
         serialized.put("type", getClass().getName());
+        serialized.put("capitalObjective", capitalObjective);
         serialized.put("name", name);
         serialized.put("location", location.serialize());
         serialized.put("radius", radius);
@@ -90,6 +93,14 @@ public abstract class WarObjective {
     }
 
     /* Getters and setters */
+
+    public boolean isCapitalObjective() {
+        return capitalObjective;
+    }
+
+    public void setCapitalObjective(boolean capitalObjective) {
+        this.capitalObjective = capitalObjective;
+    }
 
     public @NotNull String getName() {
         return name;

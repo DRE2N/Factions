@@ -5,6 +5,7 @@ import de.erethon.aergia.util.TickUtil;
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
+import de.erethon.factions.data.FMessage;
 import de.erethon.factions.poll.polls.CapturedRegionsPoll;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionCache;
@@ -12,7 +13,9 @@ import de.erethon.factions.region.RegionType;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FUtil;
+import de.erethon.factions.war.objective.WarObjective;
 import de.erethon.factions.war.task.PhaseSwitchTask;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitTask;
@@ -104,20 +107,26 @@ public class WarPhaseManager extends EConfig {
     }
 
     private void updateWarState(WarPhaseStage nextStage) {
+        if (currentStage.getWarPhase().isInfluencingScoring()) {
+            if (!nextStage.getWarPhase().isInfluencingScoring()) {
+                onScoringClose();
+            }
+        } else if (nextStage.getWarPhase().isInfluencingScoring()) {
+            plugin.getWarObjectiveManager().activateAll(obj -> !obj.isCapitalObjective());
+        }
         if (currentStage.getWarPhase().isAllowPvP()) {
             if (!nextStage.getWarPhase().isAllowPvP()) {
-                plugin.getWarObjectiveManager().deactivateAll();
-                onWarZoneClose();
+                onPvPClose();
             }
         } else if (nextStage.getWarPhase().isAllowPvP()) {
-            plugin.getWarObjectiveManager().activateAll();
+            plugin.getWarObjectiveManager().activateAll(obj -> !obj.isCapitalObjective());
         }
         if (currentStage.getWarPhase().isOpenCapital()) {
             if (!nextStage.getWarPhase().isOpenCapital()) {
-                // todo: close capital
+                onWarEnd();
             }
         } else if (nextStage.getWarPhase().isOpenCapital()) {
-            // todo: close capital
+            plugin.getWarObjectiveManager().activateAll(WarObjective::isCapitalObjective);
         }
     }
 
@@ -130,7 +139,21 @@ public class WarPhaseManager extends EConfig {
         }
     }
 
-    private void onWarZoneClose() {
+    private void onScoringClose() {
+        FLogger.WAR.log("Awarding alliances relative to their captured regions...");
+        for (Alliance alliance : plugin.getAllianceCache()) {
+            for (Region region : alliance.getUnconfirmedTemporaryRegions()) {
+                alliance.addWarScore(region.getRegionalWarTracker().getRegionValue());
+            }
+        }
+    }
+
+    private void onPvPClose() {
+        plugin.getWarObjectiveManager().deactivateAll();
+    }
+
+    private void onWarEnd() {
+        // Calculate remaining winners for each region.
         for (RegionCache cache : plugin.getRegionManager().getCaches().values()) {
             for (Region region : cache) {
                 if (region.getType() != RegionType.WAR_ZONE) {
@@ -138,23 +161,38 @@ public class WarPhaseManager extends EConfig {
                 }
                 Alliance winner = getRegionalWinner(region);
                 Alliance rAlliance = region.getAlliance();
-                if (winner == null) {
-                    if (rAlliance != null) {
-                        FLogger.WAR.log("Region '" + region.getId() + "' is no longer held by alliance '" + rAlliance + "'");
-                        region.setAlliance(null);
-                    }
+                if (winner != null) {
+                    winner.temporaryOccupy(region);
                     continue;
                 }
-                FLogger.WAR.log("Region '" + region.getId() + "' was captured by alliance '" + winner.getId() + "'");
                 if (rAlliance != null) {
-                    rAlliance.getTemporaryRegions().remove(region);
+                    FLogger.WAR.log("Region '" + region.getId() + "' is no longer held by alliance '" + rAlliance + "'");
+                    region.setAlliance(null);
                 }
-                winner.getUnconfirmedTemporaryRegions().add(region);
             }
         }
+        // Open alliance polls & store new WarHistory entry
+        Map<Integer, Double> scores = new HashMap<>(plugin.getAllianceCache().getSize());
         for (Alliance alliance : plugin.getAllianceCache()) {
+            scores.put(alliance.getId(), alliance.getWarScore());
+            alliance.setCurrentEmperor(false);
+            alliance.setWarScore(0);
             alliance.addPoll(new CapturedRegionsPoll(alliance), TickUtil.DAY);
         }
+        plugin.getWarHistory().storeEntry(System.currentTimeMillis(), scores);
+
+        // Get the overall war winning alliance.
+        List<Alliance> ranked = plugin.getAllianceCache().ranked();
+        if (ranked.isEmpty()) {
+            return;
+        }
+        Alliance winner = ranked.get(0);
+        winner.setCurrentEmperor(true);
+        for (Alliance current : ranked) {
+            FBroadcastUtil.broadcastWar(FMessage.WAR_END_RANKING, current.getColoredLongName(), Component.text(current.getWarScore()));
+        }
+        FBroadcastUtil.broadcastWar(Component.empty());
+        FBroadcastUtil.broadcastWar(FMessage.WAR_END_WINNER, winner.getColoredLongName());
     }
 
     private Alliance getRegionalWinner(Region region) {
@@ -162,11 +200,7 @@ public class WarPhaseManager extends EConfig {
         double score = -1;
         double secondScore = 0;
         for (Alliance alliance : plugin.getAllianceCache()) {
-            RegionalScore regionalScore = alliance.getWarScores().get(region);
-            if (regionalScore == null) {
-                continue;
-            }
-            double currentScore = regionalScore.getTotalScore();
+            double currentScore = region.getRegionalWarTracker().getScore(alliance);
             if (currentScore <= 0) {
                 continue;
             }

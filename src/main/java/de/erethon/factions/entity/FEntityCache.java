@@ -65,6 +65,10 @@ public abstract class FEntityCache<E extends FLegalEntity> implements Iterable<E
         return cache;
     }
 
+    public int getSize() {
+        return cache.size();
+    }
+
     public @Nullable E getById(int id) {
         return cache.get(id);
     }

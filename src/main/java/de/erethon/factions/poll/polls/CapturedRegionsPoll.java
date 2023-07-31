@@ -49,9 +49,9 @@ public class CapturedRegionsPoll extends AlliancePoll<Region> {
             if (i++ >= max) {
                 break;
             }
-            alliance.getTemporaryRegions().add(entry.getSubject());
+            alliance.persistTemporaryOccupy(entry.getSubject());
         }
-        FLogger.WAR.log("Alliance '" + alliance.getId() + "' temporarily acquired the region: " + alliance.getTemporaryRegions().stream().map(FLegalEntity::getId).toList());
+        FLogger.WAR.log("Alliance '" + alliance.getId() + "' persistently occupied the regions: " + alliance.getTemporaryRegions().stream().map(FLegalEntity::getId).toList());
         alliance.getUnconfirmedTemporaryRegions().clear();
     }
 }

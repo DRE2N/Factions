@@ -236,10 +236,9 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     }
 
     public @NotNull Component getAllianceTag() {
-        return (alliance == null ?
-                Component.text().color(NamedTextColor.GRAY).content(FMessage.GENERAL_NONE.getMessage()) :
-                Component.text().color(alliance.getColor()).content(alliance.getName()))
-                .build();
+        return alliance == null ?
+                Component.text().color(NamedTextColor.GRAY).content(FMessage.GENERAL_NONE.getMessage()).build() :
+                alliance.getColoredName();
     }
 
     @Override

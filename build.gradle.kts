@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("io.papermc.paperweight.userdev") version "1.3.4"
+    id("io.papermc.paperweight.userdev") version "1.5.3"
     id("xyz.jpenilla.run-paper") version "1.0.6" // Adds runServer and runMojangMappedServer tasks for testing
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("maven-publish")
@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    paperDevBundle("1.19.4-R0.1-SNAPSHOT")
+    paperweightDevBundle("de.erethon.papyrus","1.20.1-R0.1-SNAPSHOT") { isChanging = true }
     implementation("de.erethon:bedrock:1.2.5")
     compileOnly("de.erethon.aergia:Aergia:1.0.0-SNAPSHOT")
     implementation("org.jetbrains:annotations:23.1.0")

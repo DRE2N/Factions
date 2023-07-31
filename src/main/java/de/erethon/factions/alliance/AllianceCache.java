@@ -6,6 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Fyreum
@@ -30,5 +33,9 @@ public class AllianceCache extends FEntityCache<Alliance> {
     public void loadAll() {
         super.loadAll();
         FLogger.INFO.log("Loaded " + cache.size() + " alliances");
+    }
+
+    public @NotNull List<Alliance> ranked() {
+        return cache.values().stream().sorted(Comparator.comparingDouble(Alliance::getWarScore)).collect(Collectors.toList());
     }
 }

@@ -7,6 +7,7 @@ import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.structure.FlagStructure;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -34,8 +35,7 @@ public class OccupyWarObjective extends TickingWarObjective {
     protected Alliance leadingAlliance;
     protected int currentProgress = 0;
     protected int currentOccupiedProgress = 0;
-    protected BossBar friendlyBossBar;
-    protected BossBar hostileBossBar;
+    protected BossBar bossBar;
 
     public OccupyWarObjective(@NotNull ConfigurationSection config) {
         super(config);
@@ -44,8 +44,7 @@ public class OccupyWarObjective extends TickingWarObjective {
     @Override
     public void activate() {
         super.activate();
-        friendlyBossBar = BossBar.bossBar(FMessage.UI_WAR_OBJECTIVE_OCCUPY_NEUTRAL.message(), 0f, BossBar.Color.GREEN, BossBar.Overlay.PROGRESS);
-        hostileBossBar = BossBar.bossBar(FMessage.UI_WAR_OBJECTIVE_OCCUPY_NEUTRAL.message(), 0f, BossBar.Color.RED, BossBar.Overlay.PROGRESS);
+        bossBar = BossBar.bossBar(FMessage.UI_WAR_OBJECTIVE_OCCUPY_NEUTRAL.message(), 0f, BossBar.Color.WHITE, BossBar.Overlay.PROGRESS);
     }
 
     @Override
@@ -86,13 +85,13 @@ public class OccupyWarObjective extends TickingWarObjective {
     @Override
     public void onSpectatorEnter(@NotNull FPlayer fPlayer) {
         super.onSpectatorEnter(fPlayer);
-        fPlayer.getPlayer().showBossBar(hostileBossBar);
+        showProgressBar(fPlayer);
     }
 
     @Override
     public void onSpectatorExit(@NotNull FPlayer fPlayer) {
         super.onSpectatorExit(fPlayer);
-        fPlayer.getPlayer().showBossBar(hostileBossBar);
+        showProgressBar(fPlayer);
     }
 
     @Override
@@ -114,7 +113,11 @@ public class OccupyWarObjective extends TickingWarObjective {
         Alliance soleAlliance = activeAlliances.iterator().next();
         // Only the leading alliance is in range.
         if (soleAlliance == leadingAlliance) {
-            updateScoreSole();
+            if (isOccupied()) {
+                incrementOccupiedScore();
+                return;
+            }
+            currentProgress++;
             return;
         }
         // Only a non-leading alliance is in range.
@@ -124,10 +127,11 @@ public class OccupyWarObjective extends TickingWarObjective {
         }
         // A new alliance is leading.
         currentProgress = 0;
+        currentOccupiedProgress = 0;
         leadingAlliance = soleAlliance;
+        bossBar.color(leadingAlliance.getBossBarColor());
         for (FPlayer fPlayer : activePlayers.keySet()) {
-            fPlayer.getPlayer().hideBossBar(hostileBossBar);
-            fPlayer.getPlayer().showBossBar(friendlyBossBar);
+            fPlayer.getPlayer().hideBossBar(bossBar);
         }
         for (FlagStructure flag : flagStructures) {
             flag.displayColor(location.getWorld(), NamedTextColor.nearestTo(leadingAlliance.getColor()));
@@ -153,14 +157,6 @@ public class OccupyWarObjective extends TickingWarObjective {
         }
     }
 
-    private void updateScoreSole() {
-        if (!isOccupied()) {
-            incrementOccupiedScore();
-            return;
-        }
-        currentProgress++;
-    }
-
     private void incrementOccupiedScore() {
         if (++currentOccupiedProgress >= occupiedInterval) {
             currentOccupiedProgress = 0;
@@ -168,7 +164,7 @@ public class OccupyWarObjective extends TickingWarObjective {
             if (region == null) {
                 return;
             }
-            leadingAlliance.getWarScores().getOrCreate(region).addScore(warProgressPerOccupiedInterval);
+            region.getRegionalWarTracker().addScore(leadingAlliance, warProgressPerOccupiedInterval);
         }
     }
 
@@ -177,51 +173,25 @@ public class OccupyWarObjective extends TickingWarObjective {
             return;
         }
         if (isOccupied()) {
-            updateOccupiedProgressBars();
+            bossBar.name((activeAlliances.size() > 1 ? FMessage.UI_WAR_OBJECTIVE_OCCUPIED_CONTESTED : FMessage.UI_WAR_OBJECTIVE_OCCUPIED)
+                    .message(leadingAlliance.getColoredShortName()));
             return;
         }
         // Update the progress percentage.
         float percent = 1f / occupyDuration * currentProgress;
-        String displayPercent = String.valueOf(percent * 100);
+        Component displayPercent = Component.text(percent * 100);
 
-        friendlyBossBar.progress(percent);
-        hostileBossBar.progress(percent);
-
-        // Multiple alliances contest the objective.
-        if (activeAlliances.size() > 1) {
-            friendlyBossBar.name(FMessage.UI_WAR_OBJECTIVE_OCCUPY_CONTESTED.message(leadingAlliance.getDisplayShortName(), displayPercent));
-            hostileBossBar.name(FMessage.UI_WAR_OBJECTIVE_OCCUPY_CONTESTED_OTHER.message(leadingAlliance.getDisplayShortName(), displayPercent));
-            return;
-        }
-        // Only update the display message of the active alliance.
-        if (getSoleAllianceRaw() == leadingAlliance) {
-            friendlyBossBar.name(FMessage.UI_WAR_OBJECTIVE_OCCUPY_PROGRESS.message(leadingAlliance.getDisplayShortName(), displayPercent));
-        } else {
-            hostileBossBar.name(FMessage.UI_WAR_OBJECTIVE_OCCUPY_PROGRESS_OTHER.message(leadingAlliance.getDisplayShortName(), displayPercent));
-        }
-    }
-
-    private void updateOccupiedProgressBars() {
-        // Multiple alliances contest the objective.
-        if (activeAlliances.size() > 1) {
-            friendlyBossBar.name(FMessage.UI_WAR_OBJECTIVE_OCCUPIED_CONTESTED.message(leadingAlliance.getDisplayShortName()));
-            hostileBossBar.name(FMessage.UI_WAR_OBJECTIVE_OCCUPIED_CONTESTED_OTHER.message(leadingAlliance.getDisplayShortName()));
-            return;
-        }
-        // Only update the display message of the active alliance.
-        if (getSoleAllianceRaw() == leadingAlliance) {
-            friendlyBossBar.name(FMessage.UI_WAR_OBJECTIVE_OCCUPIED.message(leadingAlliance.getDisplayShortName()));
-        } else {
-            hostileBossBar.name(FMessage.UI_WAR_OBJECTIVE_OCCUPIED_CONTESTED_OTHER.message(leadingAlliance.getDisplayShortName()));
-        }
+        bossBar.progress(percent);
+        bossBar.name((activeAlliances.size() > 1 ? FMessage.UI_WAR_OBJECTIVE_OCCUPY_CONTESTED : FMessage.UI_WAR_OBJECTIVE_OCCUPY_PROGRESS)
+                .message(leadingAlliance.getColoredShortName(), displayPercent));
     }
 
     public void showProgressBar(@NotNull FPlayer fPlayer) {
-        fPlayer.getPlayer().showBossBar(fPlayer.getAlliance() == leadingAlliance ? friendlyBossBar : hostileBossBar);
+        fPlayer.getPlayer().showBossBar(bossBar);
     }
 
     public void hideProgressBar(@NotNull FPlayer fPlayer) {
-        fPlayer.getPlayer().hideBossBar(fPlayer.getAlliance() == leadingAlliance ? friendlyBossBar : hostileBossBar);
+        fPlayer.getPlayer().hideBossBar(bossBar);
     }
 
     /* Serialization */

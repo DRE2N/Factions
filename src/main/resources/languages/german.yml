@@ -85,6 +85,7 @@ cmd:
       owner: "<green>Besitzer<dark_gray>:<gray> &v1"
       price: "<green>Preis<dark_gray>:<gray> &v1"
       type: "<green>Typ<dark_green>:<gray> &v1"
+      warValue: "<green>Kriegswert<dark_green>:<gray> &v1"
     removeChunk:
       success: "<green>Chunk wurde aus der Region <gold>&v1</gold> entfernt."
     removeNeighbour:
@@ -271,26 +272,31 @@ ui:
     occupiedContested: "<b><dark_gray>[</b><dark_green>&v1</dark_green> <dark_gray>-</dark_gray> <green>100%</green><b><dark_gray>]</dark_gray></b> <red>  Gebiet wird angegriffen!</red>"
     occupiedContestedOther: "<b><dark_gray>[</b><dark_red>&v1</dark_red> <dark_gray>-</dark_gray> <red>100%</red><b><dark_gray>]</dark_gray></b> <red>  Gebiet wird angegriffen!</red>"
 war:
+  end:
+    ranking: " &v1 <dark_gray>(<gray>&v2</gray>)</dark_gray>"
+    winner: "&v1 hat den Allianzkrieg gewonnen und den Segen des alten Kaisers erhalten!"
   objective:
     crystal:
       destroyed: "<gray>Der Kristall von <gold>&v1</gold> in der Region <gold>&v2</gold> wurde zerstört."
       destroyedByPlayer: "<gray>Der Kristall von <gold>&v1</gold> in der Region <gold>&v2</gold> wurde von <gold>&v3</gold> zerstört."
+  region:
+    occupied: "Die Allianz &v1 hat die Region <gold>&v1</gold> eingenommen."
   phase:
-    active:
-      announcement: "<dark_red>Die Kampfphase hat begonnen. Kriegsgebiete können nun umkämpft werden."
-      displayName: "Kampfphase"
+    announcement:
+      minute: "&v1 beginnt in <gold>einer</gold> Minute."
+      minutes: "&v1 beginnt in <gold>&v2</gold> Minuten."
+      second: "&v1 beginnt in <gold>einer</gold> Sekunde."
+      seconds: "&v1 beginnt in <gold>&v2</gold> Sekunden."
     capital:
       announcement: "<dark_red>Die Hauptstadteroberung hat begonnen. Die Hauptstadt kann nun umkämpft werden."
       displayName: "Hauptstadteroberung"
-    announcement:
-      minute: "&v1-Phase beginnt in <gold>einer</gold> Minute."
-      minutes: "&v1-Phase beginnt in <gold>&v2</gold> Minuten."
-      second: "&v1-Phase beginnt in <gold>einer</gold> Sekunde."
-      seconds: "&v1-Phase beginnt in <gold>&v2</gold> Sekunden."
-    inactive:
-      announcement: "<dark_green>Die Kampfphase ist vorübergehend beendet. Kriegsgebiete können nicht mehr umkämpft werden und PvP wird temporär <red>deaktiviert</red>."
+    regular:
+      announcement: "<red>Der Normalzustand ist wieder eingekehrt. PvP ist <green>aktiviert</green>."
       displayName: "Normalzustand"
-    passive:
-      announcement: "<red>Die Vorbereitungsphase hat begonnen. PvP ist wieder <green>aktiviert</green>."
-      displayName: "Vorbereitungsphase"
+    scoring:
+      announcement: "<dark_red>Die Kampfphase hat begonnen. Kriegsgebiete beeinflussen nun in die Kriegsbewertung."
+      displayName: "Kampfphase"
+    peace:
+      announcement: "<dark_green>Der Krieg ist vorübergehend beendet. Kriegsgebiete können nicht mehr umkämpft werden und PvP ist <red>deaktiviert</red>."
+      displayName: "Frieden"
   prefix: "<dark_gray><b>[ <dark_red>KRIEG</dark_red> ]</b></dark_gray><gray> &v1"

@@ -9,6 +9,7 @@ import de.erethon.factions.faction.Faction;
 import de.erethon.factions.region.structure.RegionStructure;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FUtil;
+import de.erethon.factions.war.RegionalWarTracker;
 import io.papermc.paper.math.Position;
 import org.bukkit.Chunk;
 import org.bukkit.configuration.ConfigurationSection;
@@ -39,6 +40,7 @@ public class Region extends FLegalEntity {
     private double damageReduction = 0.0;
     private double lastClaimingPrice;
     private Faction owner;
+    private final RegionalWarTracker regionalWarTracker = new RegionalWarTracker(this);
     private final Set<RegionStructure> structures = new HashSet<>();
     private RegionType type = RegionType.BARREN;
 
@@ -101,6 +103,8 @@ public class Region extends FLegalEntity {
         damageReduction = config.getDouble("damageReduction", damageReduction);
         lastClaimingPrice = config.getDouble("lastClaimingPrice", lastClaimingPrice);
         owner = plugin.getFactionCache().getById(config.getInt("owner", -1));
+        regionalWarTracker.load(config.getConfigurationSection("warTracker"));
+
         ConfigurationSection structuresSection = config.getConfigurationSection("structures");
         if (structuresSection != null) {
             for (String key : structuresSection.getKeys(false)) {
@@ -127,6 +131,7 @@ public class Region extends FLegalEntity {
         config.set("damageReduction", damageReduction);
         config.set("lastClaimingPrice", lastClaimingPrice);
         config.set("owner", owner == null ? null : owner.getId());
+        config.set("warTracker", regionalWarTracker.serialize());
         Map<String, Object> serializedStructures = new HashMap<>(structures.size());
         for (RegionStructure structure : structures) {
             serializedStructures.put(String.valueOf(serializedStructures.size()), structure.serialize());
@@ -267,6 +272,10 @@ public class Region extends FLegalEntity {
 
     public void setOwner(@Nullable Faction owner) {
         this.owner = owner;
+    }
+
+    public @NotNull RegionalWarTracker getRegionalWarTracker() {
+        return regionalWarTracker;
     }
 
     public @NotNull Set<RegionStructure> getStructures() {

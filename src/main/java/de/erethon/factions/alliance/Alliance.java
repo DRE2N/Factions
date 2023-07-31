@@ -1,5 +1,6 @@
 package de.erethon.factions.alliance;
 
+import de.erethon.bedrock.misc.EnumUtil;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.FAccount;
 import de.erethon.factions.economy.FAccountDummy;
@@ -13,7 +14,7 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FUtil;
-import de.erethon.factions.war.WarScores;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -43,10 +44,12 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
     private final Set<Region> temporaryRegions = new HashSet<>();
     private final Set<Region> unconfirmedTemporaryRegions = new HashSet<>();
     private final Set<Faction> factions = new HashSet<>();
+    private BossBar.Color bossBarColor;
     private TextColor color;
+    private boolean currentEmperor;
     private String shortName;
     private String longName;
-    private WarScores warScores;
+    private double warScore;
     /* Temporary */
     private FAccount fAccount;
     private final Map<String, Poll<?>> polls = new HashMap<>();
@@ -57,6 +60,25 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     protected Alliance(@NotNull File file) throws NumberFormatException {
         super(file);
+    }
+
+    public void temporaryOccupy(@NotNull Region region) {
+        FLogger.WAR.log("Region '" + region.getId() + "' was temporarily occupied by alliance '" + id + "'");
+        if (region.hasAlliance()) {
+            region.getAlliance().getTemporaryRegions().remove(region);
+        }
+        unconfirmedTemporaryRegions.add(region);
+        region.getRegionalWarTracker().reset();
+        FBroadcastUtil.broadcastWar(FMessage.WAR_REGION_OCCUPIED, name, region.getName());
+    }
+
+    public void persistTemporaryOccupy(@NotNull Region region) {
+        if (!unconfirmedTemporaryRegions.contains(region)) {
+            return;
+        }
+        unconfirmedTemporaryRegions.remove(region);
+        temporaryRegions.add(region);
+        region.setAlliance(this);
     }
 
     /* Messages */
@@ -90,11 +112,12 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
             }
             this.factions.add(faction);
         }
+        this.bossBarColor = EnumUtil.getEnumIgnoreCase(BossBar.Color.class, config.getString("bossBarColor"), BossBar.Color.WHITE);
         String colorString = config.getString("color", NamedTextColor.GRAY.toString());
         this.color = FUtil.getNotNullOr(NamedTextColor.GRAY, () -> NamedTextColor.NAMES.value(colorString), () -> TextColor.fromHexString(colorString));
+        this.currentEmperor = config.getBoolean("currentEmperor");
         this.shortName = config.getString("shortName");
         this.longName = config.getString("longName");
-        this.warScores = new WarScores(this, config.getConfigurationSection("warScores"));
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
     }
 
@@ -115,10 +138,12 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         saveEntities("temporaryRegions", temporaryRegions);
         saveEntities("unconfirmedTemporaryRegions", unconfirmedTemporaryRegions);
         saveEntities("factions", factions);
+        config.set("bossBarColor", bossBarColor.name());
         config.set("color", color.toString());
+        config.set("currentEmperor", currentEmperor);
         config.set("shortName", shortName);
         config.set("longName", longName);
-        config.set("warScores", warScores.serialize());
+        config.set("warScore", warScore);
     }
 
     /* Dummy getters and setters */
@@ -145,10 +170,20 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         return coreRegions;
     }
 
+    /**
+     * Returns a Set of regions that the alliance previously captured and
+     * chose to persist during the last war cycle.
+     *
+     * @return a Set of regions that the alliance temporarily owns
+     */
     public @NotNull Set<Region> getTemporaryRegions() {
         return temporaryRegions;
     }
 
+    /**
+     * Returns a Set of regions that the alliance previously captured but
+     * <b>not yet</b> chose to persist during the last war cycle.
+     */
     public @NotNull Set<Region> getUnconfirmedTemporaryRegions() {
         return unconfirmedTemporaryRegions;
     }
@@ -165,12 +200,32 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         factions.remove(faction);
     }
 
+    public @NotNull BossBar.Color getBossBarColor() {
+        return bossBarColor;
+    }
+
+    public void setBossBarColor(@NotNull BossBar.Color bossBarColor) {
+        this.bossBarColor = bossBarColor;
+    }
+
     public @NotNull TextColor getColor() {
         return color;
     }
 
     public void setColor(@NotNull TextColor color) {
         this.color = color;
+    }
+
+    public boolean isCurrentEmperor() {
+        return currentEmperor;
+    }
+
+    public void setCurrentEmperor(boolean currentEmperor) {
+        this.currentEmperor = currentEmperor;
+    }
+
+    public @NotNull Component getColoredName() {
+        return Component.text().color(color).content(name).build();
     }
 
     @Override
@@ -183,6 +238,10 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         this.shortName = shortName;
     }
 
+    public @NotNull Component getColoredShortName() {
+        return Component.text().color(color).content(getDisplayShortName()).build();
+    }
+
     @Override
     public @Nullable String getLongName() {
         return longName;
@@ -193,13 +252,29 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         this.longName = longName;
     }
 
+    public @NotNull Component getColoredLongName() {
+        return Component.text().color(color).content(getDisplayLongName()).build();
+    }
+
     @Override
     public boolean matchingName(@NotNull String name) {
         return super.matchingName(name) || this.name.equalsIgnoreCase(shortName);
     }
 
-    public @NotNull WarScores getWarScores() {
-        return warScores;
+    public double getWarScore() {
+        return warScore;
+    }
+
+    public void setWarScore(double warScore) {
+        this.warScore = warScore;
+    }
+
+    public void addWarScore(double amount) {
+        this.warScore += amount;
+    }
+
+    public void removeWarScore(double amount) {
+        this.warScore -= amount;
     }
 
     public @NotNull FAccount getFAccount() {

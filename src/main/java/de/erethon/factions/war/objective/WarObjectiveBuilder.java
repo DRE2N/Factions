@@ -11,6 +11,11 @@ public abstract class WarObjectiveBuilder<THIS extends WarObjectiveBuilder<THIS,
 
     protected final YamlConfiguration data = new YamlConfiguration();
 
+    public @NotNull THIS capitalObjective(boolean capitalObjective) {
+        data.set("capitalObjective", capitalObjective);
+        return (THIS) this;
+    }
+
     public @NotNull THIS name(@NotNull String name) {
         data.set("name", name);
         return (THIS) this;

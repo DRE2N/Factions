@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * @author Fyreum
@@ -68,8 +69,20 @@ public class WarObjectiveManager extends EConfig {
         objectives.forEach((s, obj) -> obj.activate());
     }
 
+    public void activateAll(@NotNull Predicate<WarObjective> filter) {
+        objectives.forEach((s, obj) -> {
+            if (filter.test(obj)) obj.activate();
+        });
+    }
+
     public void deactivateAll() {
         objectives.forEach((s, obj) -> obj.deactivate());
+    }
+
+    public void deactivateAll(@NotNull Predicate<WarObjective> filter) {
+        objectives.forEach((s, obj) -> {
+            if (filter.test(obj)) obj.deactivate();
+        });
     }
 
     public void saveAll() {
