@@ -157,7 +157,7 @@ public enum FMessage implements Message {
     ERROR_TEXT_IS_TOO_LONG("error.textIsTooLong"),
     ERROR_WAR_OBJECTIVE_NOT_FOUND("error.warObjectiveNotFound"),
     ERROR_WAR_OBJECTIVE_TYPE_NOT_FOUND("error.warObjectiveTypeNotFound"),
-    ERROR_WAR_OBJECTIVE_WRONG_ARG_FORMAT("error.warObjectiveWrongArgFormat"),
+    ERROR_REGION_STRUCTURE_WRONG_ARG_FORMAT("error.regionStructureWrongArgFormat"),
     ERROR_WORLD_IS_REGIONLESS("error.worldIsRegionless"),
     ERROR_WRONG_DOUBLE_VALUE("error.wrongDoubleValue"),
 

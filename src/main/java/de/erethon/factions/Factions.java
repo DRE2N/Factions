@@ -21,12 +21,12 @@ import de.erethon.factions.player.FPlayerCache;
 import de.erethon.factions.player.FPlayerListener;
 import de.erethon.factions.region.AutomatedChunkManager;
 import de.erethon.factions.region.RegionManager;
+import de.erethon.factions.region.schematic.RegionSchematicManager;
 import de.erethon.factions.ui.UIFactionsListener;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.WarHistory;
 import de.erethon.factions.war.WarListener;
 import de.erethon.factions.war.WarPhaseManager;
-import de.erethon.factions.war.objective.WarObjectiveManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -48,6 +48,7 @@ public final class Factions extends EPlugin {
     public static File BUILDINGS;
     public static File FACTIONS;
     public static File REGIONS;
+    public static File SCHEMATICS;
     public static File PLAYERS;
     public static File WAR;
     public static File WAR_HISTORY;
@@ -55,7 +56,6 @@ public final class Factions extends EPlugin {
     /* Files */
     private File fLoggerFile;
     private File fConfigFile;
-    private File warObjectiveManagerFile;
     private File warPhaseManagerFile;
 
     /* Configs */
@@ -70,9 +70,9 @@ public final class Factions extends EPlugin {
 
     /* Instances */
     private BuildingManager buildingManager;
+    private RegionSchematicManager regionSchematicManager;
     private TaxManager taxManager;
     private WarHistory warHistory;
-    private WarObjectiveManager warObjectiveManager;
     private WarPhaseManager warPhaseManager;
 
     /* Listeners */
@@ -118,7 +118,7 @@ public final class Factions extends EPlugin {
         if (hasEconomyProvider()) {
             loadTaxManager();
         }
-        loadWarObjectiveManager();
+        loadWarHistory();
         loadWarPhaseManager();
         runTasks();
         loadCommands();
@@ -131,6 +131,7 @@ public final class Factions extends EPlugin {
         initFolder(BUILDINGS = new File(getDataFolder(), "buildings"));
         initFolder(FACTIONS = new File(getDataFolder(), "factions"));
         initFolder(REGIONS = new File(getDataFolder(), "regions"));
+        initFolder(SCHEMATICS = new File(getDataFolder(), "schematics"));
         initFolder(PLAYERS = new File(getDataFolder(), "players"));
         initFolder(WAR = new File(getDataFolder(), "war"));
         initFolder(WAR_HISTORY = new File(WAR, "history"));
@@ -139,7 +140,6 @@ public final class Factions extends EPlugin {
     public void initFiles() {
         fLoggerFile = new File(getDataFolder(), "logger.yml");
         fConfigFile = new File(getDataFolder(), "config.yml");
-        warObjectiveManagerFile = FileUtil.initFile(this, new File(getDataFolder(), "objectives.yml"), "defaults/objectives.yml");
         warPhaseManagerFile = FileUtil.initFile(this, new File(WAR, "war.yml"), "defaults/war.yml");
     }
 
@@ -163,6 +163,7 @@ public final class Factions extends EPlugin {
     public void initializeCaches() {
         allianceCache = new AllianceCache(ALLIANCES);
         buildingManager = new BuildingManager(BUILDINGS);
+        regionSchematicManager = new RegionSchematicManager(SCHEMATICS);
         factionCache = new FactionCache(FACTIONS);
         regionManager = new RegionManager(REGIONS);
         fPlayerCache = new FPlayerCache(this);
@@ -182,11 +183,6 @@ public final class Factions extends EPlugin {
     public void loadWarHistory() {
         warHistory = new WarHistory(WAR_HISTORY);
         warHistory.load();
-    }
-
-    public void loadWarObjectiveManager() {
-        warObjectiveManager = new WarObjectiveManager(warObjectiveManagerFile);
-        warObjectiveManager.load();
     }
 
     public void loadWarPhaseManager() {
@@ -276,9 +272,9 @@ public final class Factions extends EPlugin {
         allianceCache.saveAll();
         factionCache.saveAll();
         regionManager.saveAll();
+        regionSchematicManager.saveAll();
         fPlayerCache.saveAll();
         warHistory.saveAll();
-        warObjectiveManager.saveAll();
         warPhaseManager.saveData();
         FLogger.save();
     }
@@ -313,12 +309,12 @@ public final class Factions extends EPlugin {
         return buildingManager;
     }
 
-    public @NotNull WarHistory getWarHistory() {
-        return warHistory;
+    public @NotNull RegionSchematicManager getRegionSchematicManager() {
+        return regionSchematicManager;
     }
 
-    public @NotNull WarObjectiveManager getWarObjectiveManager() {
-        return warObjectiveManager;
+    public @NotNull WarHistory getWarHistory() {
+        return warHistory;
     }
 
     public @NotNull WarPhaseManager getWarPhaseManager() {

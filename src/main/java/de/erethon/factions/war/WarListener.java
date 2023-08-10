@@ -4,11 +4,11 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
+import de.erethon.factions.event.FPlayerCrossRegionEvent;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.war.objective.CrystalWarObjective;
 import de.erethon.factions.war.objective.WarObjective;
-import de.erethon.factions.war.objective.WarObjectiveManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.entity.Entity;
@@ -18,14 +18,17 @@ import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -35,15 +38,19 @@ public class WarListener implements Listener {
 
     final Factions plugin = Factions.get();
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
         WarPhase currentWarPhase = plugin.getWarPhaseManager().getCurrentWarPhase();
         if (!currentWarPhase.isAllowPvP()) {
             return;
         }
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(event.getPlayer());
-        for (WarObjective objective : plugin.getWarObjectiveManager().getObjectives().values()) {
-            boolean inRange = event.getTo().distance(objective.getLocation()) <= objective.getRadius();
+        Region region = fPlayer.getLastRegion();
+        if (region == null) {
+            return;
+        }
+        for (WarObjective objective : region.getStructures(WarObjective.class).values()) {
+            boolean inRange = objective.containsPosition(event.getTo());
             if (objective.isActive(fPlayer)) {
                 if (inRange) {
                     continue;
@@ -61,6 +68,19 @@ public class WarListener implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onCrossRegion(FPlayerCrossRegionEvent event) {
+        FPlayer fPlayer = event.getFPlayer();
+        if (!fPlayer.hasActiveWarObjectives()) {
+            return;
+        }
+        // Remove previous objectives
+        for (WarObjective objective : fPlayer.getActiveWarObjectives()) {
+            objective.onExit(fPlayer);
+        }
+        fPlayer.getActiveWarObjectives().clear();
     }
 
     private boolean isSpectator(FPlayer fPlayer) {
@@ -118,9 +138,8 @@ public class WarListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onCrystalDamage(EntityDamageByEntityEvent event) {
-        WarObjectiveManager objectiveManager = plugin.getWarObjectiveManager();
-        WarObjective objective = objectiveManager.getByEntity(event.getEntity());
-        if (!(objective instanceof CrystalWarObjective crystal)) {
+        CrystalWarObjective crystal = getCrystalObjective(event.getEntity());
+        if (crystal == null) {
             return;
         }
         event.setCancelled(true);
@@ -139,9 +158,8 @@ public class WarListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onCrystalDamage(EntityDamageByBlockEvent event) {
-        WarObjectiveManager objectiveManager = plugin.getWarObjectiveManager();
-        WarObjective objective = objectiveManager.getByEntity(event.getEntity());
-        if (!(objective instanceof CrystalWarObjective)) {
+        CrystalWarObjective crystal = getCrystalObjective(event.getEntity());
+        if (crystal == null) {
             return;
         }
         event.setCancelled(true);
@@ -149,9 +167,8 @@ public class WarListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onCrystalInteract(PlayerInteractEntityEvent event) {
-        WarObjectiveManager objectiveManager = plugin.getWarObjectiveManager();
-        WarObjective objective = objectiveManager.getByEntity(event.getRightClicked());
-        if (!(objective instanceof CrystalWarObjective)) {
+        CrystalWarObjective crystal = getCrystalObjective(event.getRightClicked());
+        if (crystal == null) {
             return;
         }
         Player player = event.getPlayer();
@@ -161,5 +178,32 @@ public class WarListener implements Listener {
         }
         item.setAmount(item.getAmount() - 1);
         player.getInventory().setItem(event.getHand(), item.getAmount() == 0 ? null : item);
+        crystal.addEnergy(20); // todo: Make energy configurable
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onCrystalExplode(ExplosionPrimeEvent event) {
+        CrystalWarObjective crystal = getCrystalObjective(event.getEntity());
+        if (crystal == null) {
+            return;
+        }
+        event.setCancelled(true);
+    }
+
+    private CrystalWarObjective getCrystalObjective(org.bukkit.entity.Entity entity) {
+        Region region = plugin.getRegionManager().getRegionByLocation(entity.getLocation());
+        if (region == null) {
+            return null;
+        }
+        Collection<CrystalWarObjective> crystals = region.getStructures(CrystalWarObjective.class).values();
+        if (crystals.isEmpty()) {
+            return null;
+        }
+        for (CrystalWarObjective current : crystals) {
+            if (entity.equals(current.getCrystal())) {
+                return current;
+            }
+        }
+        return null;
     }
 }

@@ -290,10 +290,6 @@ public abstract class FCommand extends ECommand {
         return getTabList(Bukkit.getOnlinePlayers(), Player::getName, arg);
     }
 
-    protected @NotNull List<String> getTabObjectives(@NotNull String arg) {
-        return getTabList(plugin.getWarObjectiveManager().getObjectives().keySet(), arg);
-    }
-
     protected @NotNull List<String> getTabPolls(@NotNull CommandSender sender, @NotNull String arg) {
         FPlayer fPlayer = getFPlayerRaw(sender);
         if (fPlayer == null) {

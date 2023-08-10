@@ -6,20 +6,23 @@ import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.faction.Faction;
-import de.erethon.factions.region.structure.RegionStructure;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FUtil;
 import de.erethon.factions.war.RegionalWarTracker;
 import io.papermc.paper.math.Position;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -41,7 +44,7 @@ public class Region extends FLegalEntity {
     private double lastClaimingPrice;
     private Faction owner;
     private final RegionalWarTracker regionalWarTracker = new RegionalWarTracker(this);
-    private final Set<RegionStructure> structures = new HashSet<>();
+    private final Map<String, RegionStructure> structures = new HashMap<>();
     private RegionType type = RegionType.BARREN;
 
     protected Region(@NotNull RegionCache regionCache, @NotNull File file, int id, @NotNull String name, @Nullable String description) {
@@ -113,7 +116,8 @@ public class Region extends FLegalEntity {
                     FLogger.ERROR.log("Unknown region structure in region '" + id + "' found: " + key);
                     continue;
                 }
-                structures.add(RegionStructure.deserialize(section));
+                RegionStructure structure = RegionStructure.deserialize(this, section);
+                structures.put(structure.getName(), structure);
             }
             if (!structures.isEmpty()) {
                 FLogger.REGION.log("Loaded " + structures.size() + " structures in region '" + id + "'");
@@ -133,9 +137,7 @@ public class Region extends FLegalEntity {
         config.set("owner", owner == null ? null : owner.getId());
         config.set("warTracker", regionalWarTracker.serialize());
         Map<String, Object> serializedStructures = new HashMap<>(structures.size());
-        for (RegionStructure structure : structures) {
-            serializedStructures.put(String.valueOf(serializedStructures.size()), structure.serialize());
-        }
+        structures.forEach((name, structure) -> serializedStructures.put(String.valueOf(serializedStructures.size()), structure.serialize()));
         config.set("structures", serializedStructures);
         config.set("type", type.name());
     }
@@ -148,6 +150,11 @@ public class Region extends FLegalEntity {
 
     public @NotNull UUID getWorldId() {
         return regionCache.getWorldId();
+    }
+
+    public @NotNull World getWorld() {
+        World world = Bukkit.getWorld(getWorldId());
+        return world == null ? Bukkit.getWorlds().get(0) : world;
     }
 
     public @NotNull Set<Region> getAdjacentRegions() {
@@ -278,18 +285,56 @@ public class Region extends FLegalEntity {
         return regionalWarTracker;
     }
 
-    public @NotNull Set<RegionStructure> getStructures() {
+    public @NotNull Map<String, RegionStructure> getStructures() {
         return structures;
+    }
+
+    public <T extends RegionStructure> @NotNull Map<String, T> getStructures(@NotNull Class<T> type) {
+        Map<String, T> filtered = new HashMap<>();
+        for (RegionStructure structure : structures.values()) {
+            if (type.isInstance(structure)) {
+                filtered.put(structure.getName(), (T) structure);
+            }
+        }
+        return filtered;
+    }
+
+    public @Nullable RegionStructure getStructure(@NotNull String name) {
+        return structures.get(name);
+    }
+
+    public <T extends RegionStructure> @Nullable T getStructure(@NotNull String name, @NotNull Class<T> type) {
+        RegionStructure structure = getStructure(name);
+        return type.isInstance(structure) ? (T) structure : null;
     }
 
     @SuppressWarnings("UnstableApiUsage")
     public @Nullable RegionStructure getStructureAt(@NotNull Position position) {
-        for (RegionStructure structure : structures) {
+        for (RegionStructure structure : structures.values()) {
             if (structure.containsPosition(position)) {
                 return structure;
             }
         }
         return null;
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public @NotNull List<RegionStructure> getStructuresAt(@NotNull Position position) {
+        List<RegionStructure> found = new ArrayList<>();
+        for (RegionStructure structure : structures.values()) {
+            if (structure.containsPosition(position)) {
+                found.add(structure);
+            }
+        }
+        return found;
+    }
+
+    public void addStructure(@NotNull RegionStructure structure) {
+        structures.put(structure.getName(), structure);
+    }
+
+    public void removeStructure(@NotNull RegionStructure structure) {
+        structures.remove(structure.getName());
     }
 
     public @NotNull RegionType getType() {

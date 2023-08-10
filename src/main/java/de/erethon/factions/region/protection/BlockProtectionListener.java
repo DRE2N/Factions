@@ -6,7 +6,7 @@ import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionType;
-import de.erethon.factions.region.structure.RegionStructure;
+import de.erethon.factions.region.RegionStructure;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -18,6 +18,8 @@ import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
+
+import java.util.List;
 
 /**
  * @author Fyreum
@@ -60,12 +62,19 @@ public class BlockProtectionListener implements Listener {
         if (region == null) {
             return;
         }
-        RegionStructure structure = region.getStructureAt(block.getLocation());
-        TriState structureState = structure == null ? TriState.NOT_SET : structure.canBuild(fPlayer, region, block);
-        if (structureState == TriState.TRUE) {
+        List<RegionStructure> structures = region.getStructuresAt(block.getLocation());
+        TriState state = TriState.NOT_SET;
+        // Loop until a structure dictates the following behaviour.
+        for (RegionStructure structure : structures) {
+            if (state != TriState.NOT_SET) {
+                break;
+            }
+            state = structure.canBuild(fPlayer, block);
+        }
+        if (state == TriState.TRUE) {
             return;
         }
-        if (structureState == TriState.FALSE || !region.getType().isAllowsBuilding() ||
+        if (state == TriState.FALSE || !region.getType().isAllowsBuilding() ||
                 (region.getType() == RegionType.WAR_ZONE && plugin.getWarPhaseManager().getCurrentWarPhase().isAllowPvP())) { // Can only build during peace.
             cancel(event, fPlayer, region, message);
             return;

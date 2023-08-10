@@ -6,6 +6,10 @@ import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FBroadcastUtil;
+import io.papermc.paper.math.Position;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.TextDisplay;
@@ -31,9 +35,27 @@ public class CrystalWarObjective extends TickingWarObjective {
     protected double energy;
     protected double health;
     protected TextDisplay energyDisplay, healthDisplay;
+    protected Location spawnLocation;
 
-    public CrystalWarObjective(@NotNull ConfigurationSection config) {
-        super(config);
+    public CrystalWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
+        super(region, config);
+        load(config);
+    }
+
+    public CrystalWarObjective(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+        super(region, config, a, b);
+        load(config);
+    }
+
+    private void load(@NotNull ConfigurationSection config) {
+        this.energyLossPerInterval = config.getDouble("energyLossPerInterval", 5.0);
+        this.maxEnergy = config.getDouble("maxEnergy", 100.0);
+        this.maxHealth = config.getDouble("maxHealth", 2000.0);
+        this.scorePerInterval = config.getDouble("scorePerInterval", 1.0);
+        this.energy = maxEnergy;
+        this.health = maxHealth;
+        this.spawnLocation = getCenterPosition().toLocation(region.getWorld());
+        this.spawnLocation.setY(yRange.getMinimumInteger());
     }
 
     @Override
@@ -42,10 +64,6 @@ public class CrystalWarObjective extends TickingWarObjective {
             return;
         }
         setEnergy(Math.max(energy - energyLossPerInterval, 0));
-        Region region = plugin.getRegionManager().getRegionByLocation(location);
-        if (region == null) {
-            return;
-        }
         region.getRegionalWarTracker().addScore(alliance, scorePerInterval);
     }
 
@@ -59,15 +77,13 @@ public class CrystalWarObjective extends TickingWarObjective {
     }
 
     public void destroy(@Nullable FPlayer damager) {
-        Region region = plugin.getRegionManager().getRegionByLocation(location);
-        String regionName = region != null ? region.getName() : FMessage.GENERAL_WILDERNESS.getMessage();
         if (damager != null) {
-            FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED_BY_PLAYER, alliance.getDisplayShortName(), regionName, damager.getLastName());
+            FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED_BY_PLAYER, alliance.getDisplayShortName(), region.getName(), damager.getLastName());
         } else {
-            FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED, alliance.getDisplayShortName(), regionName);
+            FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED, alliance.getDisplayShortName(), region.getName());
         }
         deactivate();
-        location.createExplosion(4f, false, false);
+        spawnLocation.createExplosion(4f, false, false);
     }
 
     /* Setup */
@@ -75,9 +91,10 @@ public class CrystalWarObjective extends TickingWarObjective {
     @Override
     public void activate() {
         super.activate();
-        crystal = location.getWorld().spawn(location, EnderCrystal.class, c -> c.getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name));
-        crystal.addPassenger(energyDisplay = location.getWorld().spawn(location, TextDisplay.class, this::displayEnergy));
-        energyDisplay.addPassenger(healthDisplay = location.getWorld().spawn(location, TextDisplay.class, this::displayHealth));
+        World world = spawnLocation.getWorld();
+        crystal = world.spawn(spawnLocation, EnderCrystal.class, c -> c.getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name));
+        crystal.addPassenger(energyDisplay = world.spawn(spawnLocation, TextDisplay.class, this::displayEnergy));
+        energyDisplay.addPassenger(healthDisplay = world.spawn(spawnLocation, TextDisplay.class, this::displayHealth));
     }
 
     @Override
@@ -110,17 +127,6 @@ public class CrystalWarObjective extends TickingWarObjective {
     }
 
     /* Serialization */
-
-    @Override
-    public void load() {
-        super.load();
-        energyLossPerInterval = config.getDouble("energyLossPerInterval", 5.0);
-        maxEnergy = config.getDouble("maxEnergy", 100.0);
-        maxHealth = config.getDouble("maxHealth", 2000.0);
-        scorePerInterval = config.getDouble("scorePerInterval", 1.0);
-        energy = maxEnergy;
-        health = maxHealth;
-    }
 
     @Override
     public @NotNull Map<String, Object> serialize() {
@@ -163,6 +169,11 @@ public class CrystalWarObjective extends TickingWarObjective {
         displayEnergy();
     }
 
+    public void addEnergy(double amount) {
+        this.energy = Math.max(energy + amount, maxEnergy);
+        displayEnergy();
+    }
+
     public double getMaxHealth() {
         return maxHealth;
     }
@@ -184,7 +195,7 @@ public class CrystalWarObjective extends TickingWarObjective {
         displayHealth();
     }
 
-    public @NotNull  Alliance getAlliance() {
+    public @NotNull Alliance getAlliance() {
         return alliance;
     }
 

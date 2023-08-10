@@ -64,8 +64,9 @@ public class FConfig extends EConfig {
     private double taxConversionRate = 0.95;
 
     /* War */
-    private double warScorePerKill = 5.0;
+    private int warCastleRestoreInterval = 2;
     private int warCapturedRegionsPerBattle = 5;
+    private double warScorePerKill = 5.0;
 
     public FConfig(File file) {
         super(file, CONFIG_VERSION);
@@ -94,8 +95,9 @@ public class FConfig extends EConfig {
         initValue("regionPrice.taxRate", regionPriceTaxRate);
         initValue("regionPrice.totalMultiplier", regionPriceTotalMultiplier);
         initValue("taxConversionRate", taxConversionRate);
-        initValue("war.scorePerKill", warScorePerKill);
+        initValue("war.castleRestoreInterval", warCastleRestoreInterval);
         initValue("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
+        initValue("war.scorePerKill", warScorePerKill);
         for (Resource resource : Resource.values()) {
             initValue("defaultResourceLimits." + resource.name(), 512);
         }
@@ -132,8 +134,9 @@ public class FConfig extends EConfig {
         regionPriceTaxRate = config.getDouble("regionPrice.taxRate", regionPriceTaxRate);
         regionPriceTotalMultiplier = config.getDouble("regionPrice.totalMultiplier", regionPriceTotalMultiplier);
         taxConversionRate = config.getDouble("taxConversionRate", taxConversionRate);
-        warScorePerKill = config.getDouble("war.scorePerKill", warScorePerKill);
+        warCastleRestoreInterval = config.getInt("war.castleRestoreInterval", warCastleRestoreInterval);
         warCapturedRegionsPerBattle = config.getInt("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
+        warScorePerKill = config.getDouble("war.scorePerKill", warScorePerKill);
         defaultResourceLimits = new HashMap<>();
         for (Resource resource : Resource.values()) {
             defaultResourceLimits.put(resource, config.getInt("defaultResourceLimits." + resource.name(), 512));
@@ -283,12 +286,16 @@ public class FConfig extends EConfig {
         return taxConversionRate;
     }
 
-    public double getWarScorePerKill() {
-        return warScorePerKill;
+    public int getWarCastleRestoreInterval() {
+        return warCastleRestoreInterval;
     }
 
     public int getWarCapturedRegionsPerBattle() {
         return warCapturedRegionsPerBattle;
+    }
+
+    public double getWarScorePerKill() {
+        return warScorePerKill;
     }
 
     public @Nullable Set<Building> getRequiredBuildings(@NotNull FactionLevel factionLevel) {

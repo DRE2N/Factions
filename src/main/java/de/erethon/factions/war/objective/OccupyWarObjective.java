@@ -5,7 +5,8 @@ import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
-import de.erethon.factions.region.structure.FlagStructure;
+import de.erethon.factions.war.structure.FlagStructure;
+import io.papermc.paper.math.Position;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -37,8 +38,33 @@ public class OccupyWarObjective extends TickingWarObjective {
     protected int currentOccupiedProgress = 0;
     protected BossBar bossBar;
 
-    public OccupyWarObjective(@NotNull ConfigurationSection config) {
-        super(config);
+    public OccupyWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
+        super(region, config);
+        load(config);
+    }
+
+    public OccupyWarObjective(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+        super(region, config, a, b);
+        load(config);
+    }
+
+    private void load(@NotNull ConfigurationSection config) {
+        this.occupyDuration = config.getLong("occupyDuration", TickUtil.MINUTE * 5) / tickInterval;
+        this.occupiedInterval = config.getLong("occupiedInterval", TickUtil.SECOND * 30);
+        this.warProgressDecline = config.getInt("warProgressDecline", 1);
+        this.warProgressDeclineContested = config.getInt("warProgressDeclineContested", 2);
+        this.warProgressPerOccupiedInterval = config.getInt("warProgressPerOccupiedInterval", 1);
+
+        ConfigurationSection flagsSection = config.getConfigurationSection("flagStructures");
+        if (flagsSection != null) {
+            for (String key : flagsSection.getKeys(false)) {
+                ConfigurationSection section = flagsSection.getConfigurationSection(key);
+                if (section == null) {
+                    continue;
+                }
+                this.flagStructures.add(new FlagStructure(region, config));
+            }
+        }
     }
 
     @Override
@@ -134,7 +160,7 @@ public class OccupyWarObjective extends TickingWarObjective {
             fPlayer.getPlayer().hideBossBar(bossBar);
         }
         for (FlagStructure flag : flagStructures) {
-            flag.displayColor(location.getWorld(), NamedTextColor.nearestTo(leadingAlliance.getColor()));
+            flag.displayColor(region.getWorld(), NamedTextColor.nearestTo(leadingAlliance.getColor()));
         }
     }
 
@@ -153,17 +179,13 @@ public class OccupyWarObjective extends TickingWarObjective {
         // No alliance has progress anymore -> completely empty objective.
         currentProgress = 0;
         for (FlagStructure flag : flagStructures) {
-            flag.displayColor(location.getWorld(), NamedTextColor.WHITE);
+            flag.displayColor(region.getWorld(), NamedTextColor.WHITE);
         }
     }
 
     private void incrementOccupiedScore() {
         if (++currentOccupiedProgress >= occupiedInterval) {
             currentOccupiedProgress = 0;
-            Region region = plugin.getRegionManager().getRegionByLocation(location);
-            if (region == null) {
-                return;
-            }
             region.getRegionalWarTracker().addScore(leadingAlliance, warProgressPerOccupiedInterval);
         }
     }
@@ -195,28 +217,6 @@ public class OccupyWarObjective extends TickingWarObjective {
     }
 
     /* Serialization */
-
-    @Override
-    public void load() {
-        super.load();
-        occupyDuration = config.getLong("occupyDuration", TickUtil.MINUTE * 5) / tickInterval;
-        occupiedInterval = config.getLong("occupiedInterval", TickUtil.SECOND * 30);
-        warProgressDecline = config.getInt("warProgressDecline", 1);
-        warProgressDeclineContested = config.getInt("warProgressDeclineContested", 2);
-        warProgressPerOccupiedInterval = config.getInt("warProgressPerOccupiedInterval", 1);
-        ConfigurationSection flagsSection = config.getConfigurationSection("flagStructures");
-        if (flagsSection != null) {
-            for (String key : flagsSection.getKeys(false)) {
-                ConfigurationSection section = flagsSection.getConfigurationSection(key);
-                if (section == null) {
-                    continue;
-                }
-                FlagStructure flag = new FlagStructure(FlagStructure.deserializePosition(section.getConfigurationSection("minPosition")),
-                        FlagStructure.deserializePosition(section.getConfigurationSection("maxPosition")));
-                flagStructures.add(flag);
-            }
-        }
-    }
 
     @Override
     public @NotNull Map<String, Object> serialize() {
@@ -358,8 +358,8 @@ public class OccupyWarObjective extends TickingWarObjective {
         }
 
         @Override
-        public @NotNull OccupyWarObjective build() {
-            return new OccupyWarObjective(data);
+        public @NotNull OccupyWarObjective build(@NotNull Region region) {
+            return new OccupyWarObjective(region, data);
         }
     }
 }

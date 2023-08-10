@@ -1,8 +1,7 @@
-package de.erethon.factions.region.structure;
+package de.erethon.factions.region;
 
 import de.erethon.factions.Factions;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.factions.region.Region;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.util.TriState;
 import org.apache.commons.lang.math.IntRange;
@@ -12,6 +11,8 @@ import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,9 +25,18 @@ import java.util.Map;
 public class RegionStructure {
 
     protected final Factions plugin = Factions.get();
+    protected final Region region;
+    protected final String name;
     protected final IntRange xRange, yRange, zRange;
 
-    public RegionStructure(@NotNull Position a, @NotNull Position b) {
+    public RegionStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
+        this(region, config, deserializePosition(config.getConfigurationSection("minPosition")),
+                deserializePosition(config.getConfigurationSection("maxPosition")));
+    }
+
+    public RegionStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+        this.region = region;
+        this.name = config.getString("name", getClass().getSimpleName() + "_" + region.getStructures(getClass()).size());
         this.xRange = new IntRange(a.x(), b.x());
         this.yRange = new IntRange(a.y(), b.y());
         this.zRange = new IntRange(a.z(), b.z());
@@ -34,11 +44,11 @@ public class RegionStructure {
 
     /* Protection */
 
-    public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @NotNull Region region, @Nullable Block block) {
+    public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @Nullable Block block) {
         return TriState.NOT_SET;
     }
 
-    public @NotNull TriState canAttack(@NotNull FPlayer fPlayer, @NotNull Region region, @Nullable Entity target) {
+    public @NotNull TriState canAttack(@NotNull FPlayer fPlayer, @Nullable Entity target) {
         return TriState.NOT_SET;
     }
 
@@ -50,6 +60,14 @@ public class RegionStructure {
 
     public boolean containsPosition(double x, double y, double z) {
         return xRange.containsDouble(x) && yRange.containsDouble(y) && zRange.containsDouble(z);
+    }
+
+    public @NotNull Region getRegion() {
+        return region;
+    }
+
+    public @NotNull String getName() {
+        return name;
     }
 
     public @NotNull IntRange getXRange() {
@@ -82,24 +100,41 @@ public class RegionStructure {
 
     /* Serialization */
 
-    public Object serialize() {
+    public Map<String, Object> serialize() {
         Map<String, Object> serialized = new HashMap<>(2);
+        serialized.put("type", getClass().getName());
         serialized.put("minPosition", Map.of("x", xRange.getMinimumInteger(), "y", yRange.getMinimumInteger(), "z", zRange.getMinimumInteger()));
         serialized.put("maxPosition", Map.of("x", xRange.getMaximumInteger(), "y", yRange.getMaximumInteger(), "z", zRange.getMaximumInteger()));
         return serialized;
     }
 
-    public static @NotNull RegionStructure deserialize(@NotNull ConfigurationSection config) {
-        Position minPosition = deserializePosition(config.getConfigurationSection("minPosition"));
-        Position maxPosition = deserializePosition(config.getConfigurationSection("maxPosition"));
-        return switch (config.getString("type")) {
-            case "Flag" -> new WarCastleStructure(minPosition, maxPosition);
-            case "WarCastle" -> new FlagStructure(minPosition, maxPosition);
-            case null, default -> new RegionStructure(minPosition, maxPosition);
-        };
+    public static @NotNull RegionStructure deserialize(@NotNull Region region, @NotNull ConfigurationSection config) {
+        String typeName = config.getString("type");
+        Class<?> type;
+        try {
+            type = Class.forName(typeName);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("Illegal region structure type for '" + config.getName() + "' found: " + typeName);
+        }
+        Constructor<?> constructor;
+        try {
+            constructor = type.getDeclaredConstructor(Region.class, ConfigurationSection.class);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException("No matching constructor for region structure type '" + typeName + "' found: " + ConfigurationSection.class.getName());
+        }
+        Object object;
+        try {
+            object = constructor.newInstance(region, config);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalArgumentException("Couldn't instantiate region structure '" + config.getName() + "'", e);
+        }
+        if (!(object instanceof RegionStructure structure)) {
+            throw new IllegalArgumentException("Illegal region structure type '" + typeName + "': Not a war objective");
+        }
+        return structure;
     }
 
-    public static Position deserializePosition(ConfigurationSection section) {
+    public static @NotNull Position deserializePosition(@Nullable ConfigurationSection section) {
         if (section == null) {
             return Position.BLOCK_ZERO;
         }

@@ -7,7 +7,7 @@ import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionType;
-import de.erethon.factions.region.structure.RegionStructure;
+import de.erethon.factions.region.RegionStructure;
 import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.entity.Entity;
@@ -157,7 +157,7 @@ public class EntityProtectionListener implements Listener {
             return;
         }
         RegionStructure structure = region.getStructureAt(target.getLocation());
-        TriState structureState = structure == null ? TriState.NOT_SET : structure.canAttack(fAttacker, region, target);
+        TriState structureState = structure == null ? TriState.NOT_SET : structure.canAttack(fAttacker, target);
         if (structureState == TriState.TRUE) {
             return;
         }

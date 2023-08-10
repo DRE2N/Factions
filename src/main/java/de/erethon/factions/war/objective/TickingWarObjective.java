@@ -2,6 +2,8 @@ package de.erethon.factions.war.objective;
 
 import de.erethon.aergia.util.TickUtil;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.Region;
+import io.papermc.paper.math.Position;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitTask;
@@ -17,14 +19,18 @@ public abstract class TickingWarObjective extends WarObjective {
     protected long tickInterval;
     protected BukkitTask task;
 
-    public TickingWarObjective(@NotNull ConfigurationSection config) {
-        super(config);
+    public TickingWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
+        super(region, config);
+        load(config);
     }
 
-    @Override
-    public void load() {
-        super.load();
-        tickInterval = config.getLong("tickInterval", TickUtil.SECOND);
+    public TickingWarObjective(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+        super(region, config, a, b);
+        load(config);
+    }
+
+    private void load(@NotNull ConfigurationSection config) {
+        this.tickInterval = config.getLong("tickInterval", TickUtil.SECOND);
     }
 
     @Override

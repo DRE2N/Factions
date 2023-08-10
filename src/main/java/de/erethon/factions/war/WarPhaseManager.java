@@ -33,6 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 /**
  * @author Fyreum
@@ -107,26 +108,48 @@ public class WarPhaseManager extends EConfig {
     }
 
     private void updateWarState(WarPhaseStage nextStage) {
-        if (currentStage.getWarPhase().isInfluencingScoring()) {
-            if (!nextStage.getWarPhase().isInfluencingScoring()) {
-                onScoringClose();
-            }
-        } else if (nextStage.getWarPhase().isInfluencingScoring()) {
-            plugin.getWarObjectiveManager().activateAll(obj -> !obj.isCapitalObjective());
+        if (currentStage.getWarPhase().isInfluencingScoring() && !nextStage.getWarPhase().isInfluencingScoring()) {
+            onScoringClose();
         }
         if (currentStage.getWarPhase().isAllowPvP()) {
             if (!nextStage.getWarPhase().isAllowPvP()) {
-                onPvPClose();
+                deactivateObjectives(obj -> true);
             }
         } else if (nextStage.getWarPhase().isAllowPvP()) {
-            plugin.getWarObjectiveManager().activateAll(obj -> !obj.isCapitalObjective());
+            activateObjectives(obj -> !obj.isCapitalObjective());
         }
         if (currentStage.getWarPhase().isOpenCapital()) {
             if (!nextStage.getWarPhase().isOpenCapital()) {
                 onWarEnd();
             }
         } else if (nextStage.getWarPhase().isOpenCapital()) {
-            plugin.getWarObjectiveManager().activateAll(WarObjective::isCapitalObjective);
+            activateObjectives(WarObjective::isCapitalObjective);
+        }
+    }
+
+    private void activateObjectives(Predicate<WarObjective> filter) {
+        for (RegionCache cache : plugin.getRegionManager().getCaches().values()) {
+            for (Region region : cache) {
+                Map<String, WarObjective> structures = region.getStructures(WarObjective.class);
+                structures.forEach((name, obj) -> {
+                    if (filter.test(obj)) {
+                        obj.activate();
+                    }
+                });
+            }
+        }
+    }
+
+    private void deactivateObjectives(Predicate<WarObjective> filter) {
+        for (RegionCache cache : plugin.getRegionManager().getCaches().values()) {
+            for (Region region : cache) {
+                Map<String, WarObjective> structures = region.getStructures(WarObjective.class);
+                structures.forEach((name, obj) -> {
+                    if (filter.test(obj)) {
+                        obj.deactivate();
+                    }
+                });
+            }
         }
     }
 
@@ -146,10 +169,6 @@ public class WarPhaseManager extends EConfig {
                 alliance.addWarScore(region.getRegionalWarTracker().getRegionValue());
             }
         }
-    }
-
-    private void onPvPClose() {
-        plugin.getWarObjectiveManager().deactivateAll();
     }
 
     private void onWarEnd() {

@@ -1,8 +1,9 @@
-package de.erethon.factions.region.structure;
+package de.erethon.factions.war.structure;
 
 import com.destroystokyo.paper.MaterialSetTag;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.region.RegionStructure;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.util.TriState;
@@ -10,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,16 +46,20 @@ public class FlagStructure extends RegionStructure {
 
     }
 
-    public FlagStructure(@NotNull Position a, @NotNull Position b) {
-        super(a, b);
+    public FlagStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
+        super(region, config);
+    }
+
+    public FlagStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+        super(region, config, a, b);
     }
 
     @Override
-    public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @NotNull Region region, @Nullable Block block) {
+    public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @Nullable Block block) {
         if (block != null && block.getType().name().contains("WOOL")) {
             return TriState.FALSE;
         }
-        return super.canBuild(fPlayer, region, block);
+        return super.canBuild(fPlayer, block);
     }
 
     public void displayColor(@NotNull World world, @NotNull NamedTextColor color) {

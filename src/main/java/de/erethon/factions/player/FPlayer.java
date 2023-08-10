@@ -320,6 +320,10 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         return activeWarObjectives;
     }
 
+    public boolean hasActiveWarObjectives() {
+        return !activeWarObjectives.isEmpty();
+    }
+
     public @NotNull AutomatedChunkManager getAutomatedChunkManager() {
         return automatedChunkManager;
     }

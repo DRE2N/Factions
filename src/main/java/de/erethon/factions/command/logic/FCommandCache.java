@@ -20,7 +20,6 @@ import de.erethon.factions.command.KickCommand;
 import de.erethon.factions.command.LeaveCommand;
 import de.erethon.factions.command.LongNameCommand;
 import de.erethon.factions.command.NameCommand;
-import de.erethon.factions.command.ObjectiveCommand;
 import de.erethon.factions.command.Pos1Command;
 import de.erethon.factions.command.Pos2Command;
 import de.erethon.factions.command.RegionCommand;
@@ -58,7 +57,6 @@ public class FCommandCache extends ECommandCache {
         addCommand(new LeaveCommand());
         addCommand(new LongNameCommand());
         addCommand(new NameCommand());
-        addCommand(new ObjectiveCommand());
         addCommand(new Pos1Command());
         addCommand(new Pos2Command());
         addCommand(new RegionCommand());

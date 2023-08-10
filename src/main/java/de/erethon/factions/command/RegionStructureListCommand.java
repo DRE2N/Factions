@@ -29,7 +29,7 @@ public class RegionStructureListCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         Region region = args.length == 2 ? getRegion(args[1]) : getRegion(getFPlayer(sender));
         assure(!region.getStructures().isEmpty(), FMessage.CMD_REGION_STRUCTURE_LIST_EMPTY, region.getName());
-        InfoUtil.sendListedInfo(sender, region.getStructures(), s -> MessageUtil.parse("<gold>" + FUtil.toString(s.getCenterPosition()))
+        InfoUtil.sendListedInfo(sender, region.getStructures().values(), s -> MessageUtil.parse("<gold>" + FUtil.toString(s.getCenterPosition()))
                 .hoverEvent(HoverEvent.showText(FMessage.CMD_REGION_STRUCTURE_LIST_TYPE.message(s.getClass().getSimpleName())))
                 .clickEvent(ClickEvent.suggestCommand("/tp " + FUtil.toString(s.getCenterPosition(), " "))));
     }

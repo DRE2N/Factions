@@ -2,6 +2,7 @@ package de.erethon.factions.player;
 
 import de.erethon.aergia.ui.UIComponent;
 import de.erethon.factions.Factions;
+import de.erethon.factions.event.FPlayerCrossRegionEvent;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionCache;
 import de.erethon.factions.ui.UIFactionsListener;
@@ -19,7 +20,7 @@ public class FPlayerListener implements Listener {
 
     final Factions plugin = Factions.get();
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayerIfCached(player);
@@ -41,6 +42,7 @@ public class FPlayerListener implements Listener {
         if (component != null) {
             component.resetDuration();
         }
+        new FPlayerCrossRegionEvent(fPlayer, fPlayer.getLastRegion(), region).callEvent();
     }
 
 }

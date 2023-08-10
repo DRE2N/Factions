@@ -1,5 +1,6 @@
 package de.erethon.factions.war.objective;
 
+import de.erethon.factions.region.Region;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +32,6 @@ public abstract class WarObjectiveBuilder<THIS extends WarObjectiveBuilder<THIS,
         return (THIS) this;
     }
 
-    public abstract @NotNull TYPE build();
+    public abstract @NotNull TYPE build(@NotNull Region region);
 
 }
