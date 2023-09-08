@@ -1,3 +1,5 @@
+/**
+ */
 plugins {
     `java-library`
     id("io.papermc.paperweight.userdev") version "1.5.3"
@@ -15,6 +17,7 @@ val correctJarName = "${project.name}-${project.version}.jar"
 val correctAllJarName = "${project.name}-${project.version}-all.jar"
 val wrongJarName = "${project.name}-${project.version}-dev.jar"
 val wrongAllJarName = "${project.name}-${project.version}-dev-all.jar"
+val papyrusVersion = "1.20.1-R0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -25,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    paperweightDevBundle("de.erethon.papyrus","1.20.1-R0.1-SNAPSHOT") { isChanging = true }
+    paperweight.devBundle("de.erethon.papyrus", papyrusVersion) { isChanging = true }
     implementation("de.erethon:bedrock:1.2.5")
     compileOnly("de.erethon.aergia:Aergia:1.0.0-SNAPSHOT")
     implementation("org.jetbrains:annotations:23.1.0")
@@ -62,8 +65,21 @@ tasks {
     jar {
         archiveFileName.set(correctJarName)
     }
+    reobfJar {
+        outputJar.set(layout.buildDirectory.file("libs/$correctJarName"))
+    }
+    runServer { // Automatically download & update Papyrus
+        if (!project.buildDir.exists()) {
+            project.buildDir.mkdir()
+        }
+        val f = File(project.buildDir, "server.jar");
+        // \/ Comment this out in case you are offline, will fail to start otherwise \/
+        uri("https://github.com/DRE2N/Papyrus/releases/download/latest/papyrus-paperclip-$papyrusVersion-reobf.jar").toURL().openStream().use { it.copyTo(f.outputStream()) }
+        serverJar(f)
+        jvmArgs("--enable-preview")
+    }
     shadowJar {
-        archiveFileName.set(correctJarName)
+        //archiveFileName.set(correctJarName)
         // Shade everything for now
         dependencies {
             include(dependency("de.erethon:bedrock:1.2.5"))
@@ -73,7 +89,7 @@ tasks {
     publishToMavenLocal {
         dependsOn(getTasksByName("deleteJarFiles", false))
     }
-    register<Delete>("deleteJarFiles") {
+    /*register<Delete>("deleteJarFiles") {
         group = "publishing-fix"
         delete("$mavenLocalPath/$correctJarName")
         delete("$mavenLocalPath/$correctAllJarName")
@@ -100,5 +116,5 @@ tasks {
         from(mavenLocalPath)
         include(correctJarName)
         into("${System.getProperties()["user.home"]}/OneDrive/Development/Server 1.19.4/plugins") // this path is individual for each user
-    }
+    }*/
 }
