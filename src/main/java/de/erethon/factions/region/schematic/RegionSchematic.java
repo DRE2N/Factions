@@ -5,16 +5,12 @@ import de.erethon.bedrock.misc.NumberUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.QuadConsumer;
-import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.Position;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,50 +32,21 @@ public class RegionSchematic extends EConfig {
 
     private final String name;
     private String[][][] blocks;
-    private BukkitTask restoreTask;
-    private RestoreProcess restoreProcess;
 
-    public RegionSchematic(@NotNull String name, int xLength, int yLength, int zLength) {
+    protected RegionSchematic(@NotNull String name) {
         super(new File(Factions.SCHEMATICS, name + ".yml"), CONFIG_VERSION);
         this.name = name;
-        this.blocks = new String[xLength][yLength][zLength];
     }
 
-    public RegionSchematic(@NotNull File file) {
+    protected RegionSchematic(@NotNull File file) {
         super(file, CONFIG_VERSION);
         this.name = file.getName().replace(".yml", "");
         load();
     }
 
-    /* Restore stuff */
-
-    public void restoreAllAt(@NotNull World world, @NotNull Position start) {
-        restoreProcess = createRestoreProcess(world, start);
-        restoreTask = Bukkit.getScheduler().runTaskAsynchronously(Factions.get(), () -> restoreProcess.proceedTillFinished());
-    }
-
-    public void restoreAt(@NotNull World world, @NotNull Position start, long intervalPerBlock) {
-        restoreProcess = createRestoreProcess(world, start);
-        restoreTask = Bukkit.getScheduler().runTaskTimerAsynchronously(Factions.get(), () -> restoreProcess.proceed(), 0, intervalPerBlock);
-    }
-
-    private RestoreProcess createRestoreProcess(@NotNull World world, @NotNull Position start) {
-        RestoreProcess process = new RestoreProcess(world, start, blocks);
-        process.setOnFinish(this::cancelRestoreProcess);
-        return process;
-    }
-
-    public void cancelRestoreProcess() {
-        if (restoreTask != null) {
-            restoreTask.cancel();
-            restoreTask = null;
-        }
-        restoreProcess = null;
-    }
-
     /* Instantiation stuff */
 
-    public void createSchematic(@NotNull World world, @NotNull Position a, @NotNull Position b) {
+    public void scanAndInsertBlocks(@NotNull World world, @NotNull Position a, @NotNull Position b) {
         int minX = Math.min(a.blockX(), b.blockX()),
                 minY = Math.min(a.blockY(), b.blockY()),
                 minZ = Math.min(a.blockZ(), b.blockZ()),
@@ -98,12 +65,12 @@ public class RegionSchematic extends EConfig {
         });
     }
 
-    public void recreateSchematic(@NotNull World world, @NotNull Position a, @NotNull Position b) {
-        createBackup();
-        createSchematic(world, a, b);
+    public void rescanAndInsertBlocks(@NotNull World world, @NotNull Position a, @NotNull Position b) {
+        saveBackup();
+        scanAndInsertBlocks(world, a, b);
     }
 
-    private void createBackup() {
+    private void saveBackup() {
         File backupFile = createBackupFile();
         FLogger.DEBUG.log("Creating region schematic backup: " + backupFile.getName() + "...");
         YamlConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupFile);
@@ -122,7 +89,7 @@ public class RegionSchematic extends EConfig {
         if (!backupFile.exists()) {
             return backupFile;
         }
-        int i = 1;
+        int i = 0;
         while ((backupFile = new File(Factions.SCHEMATICS, fileName + "-" + i + ".yml")).exists()) {
             i++;
         }
@@ -173,16 +140,18 @@ public class RegionSchematic extends EConfig {
     }
 
     public void applyData(@NotNull ConfigurationSection config) {
-        config.set("xLength", blocks.length);
-        config.set("yLength", blocks[0].length);
-        config.set("zLength", blocks[0][0].length);
+        int xLength = getXLength(), yLength = getYLength(), zLength = getZLength();
+
+        config.set("xLength", xLength);
+        config.set("yLength", yLength);
+        config.set("zLength", zLength);
 
         Map<String, Object> xMap = new HashMap<>();
-        for (int x = 0; x < blocks.length; x++) {
+        for (int x = 0; x < xLength; x++) {
             Map<String, Object> yMap = new HashMap<>();
-            for (int y = 0; y < blocks[x].length; y++) {
+            for (int y = 0; y < yLength; y++) {
                 Map<String, Object> zMap = new HashMap<>();
-                for (int z = 0; z < blocks[x][y].length; z++) {
+                for (int z = 0; z < zLength; z++) {
                     String blockData = blocks[x][y][z];
                     if (blockData == null) {
                         continue;
@@ -207,34 +176,36 @@ public class RegionSchematic extends EConfig {
         return name;
     }
 
-    public @Nullable BukkitTask getRestoreTask() {
-        return restoreTask;
+    public @NotNull String[][][] getBlocks() {
+        return blocks;
     }
 
-    public void setRestoreTask(BukkitTask restoringTask) {
-        this.restoreTask = restoringTask;
+    /**
+     * @return the blockdata at the given coordinates
+     * @throws IndexOutOfBoundsException if the coordinates are out of bounds
+     */
+    public @Nullable String getBlockAt(int x, int y, int z) throws IndexOutOfBoundsException {
+        return blocks[x][y][z];
     }
 
-    public boolean hasRestoreTask() {
-        return restoreTask != null;
+    public int getXLength() {
+        return blocks.length;
     }
 
-    public @Nullable RestoreProcess getRestoreProcess() {
-        return restoreProcess;
+    public int getYLength() {
+        return blocks[0].length;
     }
 
-    public void setRestoreProcess(RestoreProcess restoreProcess) {
-        this.restoreProcess = restoreProcess;
-    }
-
-    public boolean hasRestoreProcess() {
-        return restoreProcess != null;
+    public int getZLength() {
+        return blocks[0][0].length;
     }
 
     public void foreach(@NotNull QuadConsumer<Integer, Integer, Integer, @Nullable String> action) {
-        for (int x = 0; x < blocks.length; x++) {
-            for (int y = 0; y < blocks[x].length; y++) {
-                for (int z = 0; z < blocks[x][y].length; z++) {
+        int xLength = getXLength(), yLength = getYLength(), zLength = getZLength();
+
+        for (int x = 0; x < xLength; x++) {
+            for (int y = 0; y < yLength; y++) {
+                for (int z = 0; z < zLength; z++) {
                     action.accept(x, y, z, blocks[x][y][z]);
                 }
             }

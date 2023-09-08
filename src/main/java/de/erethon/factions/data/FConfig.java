@@ -64,7 +64,7 @@ public class FConfig extends EConfig {
     private double taxConversionRate = 0.95;
 
     /* War */
-    private int warCastleRestoreInterval = 2;
+    private long warCastleRestoreInterval = TickUtil.MINUTE;
     private int warCapturedRegionsPerBattle = 5;
     private double warScorePerKill = 5.0;
 
@@ -134,7 +134,7 @@ public class FConfig extends EConfig {
         regionPriceTaxRate = config.getDouble("regionPrice.taxRate", regionPriceTaxRate);
         regionPriceTotalMultiplier = config.getDouble("regionPrice.totalMultiplier", regionPriceTotalMultiplier);
         taxConversionRate = config.getDouble("taxConversionRate", taxConversionRate);
-        warCastleRestoreInterval = config.getInt("war.castleRestoreInterval", warCastleRestoreInterval);
+        warCastleRestoreInterval = config.getLong("war.castleRestoreInterval", warCastleRestoreInterval);
         warCapturedRegionsPerBattle = config.getInt("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
         warScorePerKill = config.getDouble("war.scorePerKill", warScorePerKill);
         defaultResourceLimits = new HashMap<>();
@@ -286,7 +286,7 @@ public class FConfig extends EConfig {
         return taxConversionRate;
     }
 
-    public int getWarCastleRestoreInterval() {
+    public long getWarCastleRestoreInterval() {
         return warCastleRestoreInterval;
     }
 

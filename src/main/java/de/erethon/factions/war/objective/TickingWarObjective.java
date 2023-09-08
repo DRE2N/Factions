@@ -21,15 +21,14 @@ public abstract class TickingWarObjective extends WarObjective {
 
     public TickingWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
-        load(config);
     }
 
     public TickingWarObjective(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
-        load(config);
     }
 
-    private void load(@NotNull ConfigurationSection config) {
+    @Override
+    protected void load(@NotNull ConfigurationSection config) {
         this.tickInterval = config.getLong("tickInterval", TickUtil.SECOND);
     }
 

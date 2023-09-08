@@ -6,6 +6,7 @@ import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.war.structure.ResourceStructure;
 import de.erethon.factions.war.structure.WarCastleStructure;
 import de.erethon.factions.util.FUtil;
 import de.erethon.factions.war.objective.CrystalWarObjective;
@@ -28,6 +29,7 @@ public class RegionStructureCreateCommand extends FCommand {
     public static final List<String> CRYSTAL_OPTIONS = List.of("damagePerTick:", "maxHealth:", "tickInterval:");
     public static final List<String> OCCUPY_OPTIONS = List.of("occupyDuration:", "occupiedInterval:", "tickInterval:",
             "warProgressDecline:", "warProgressDeclineContested:", "warProgressPerOccupiedInterval:");
+    public static final List<String> RESOURCE_OPTIONS = List.of("resourceType:");
 
     public RegionStructureCreateCommand() {
         setCommand("create");
@@ -55,6 +57,7 @@ public class RegionStructureCreateCommand extends FCommand {
             case "castle" -> new WarCastleStructure(region, config, pos1, pos2);
             case "crystal" -> new CrystalWarObjective(region, config, pos1, pos2).setAlliance(fPlayer.getAlliance());
             case "occupy" -> new OccupyWarObjective(region, config, pos1, pos2);
+            case "resource" -> new ResourceStructure(region, config, pos1, pos2);
             default -> throw new CommandFailedException(FMessage.ERROR_REGION_STRUCTURE_TYPE_NOT_FOUND, args[1]);
         };
         region.getStructures().put(structure.getName(), structure);
@@ -87,6 +90,7 @@ public class RegionStructureCreateCommand extends FCommand {
             case "castle" -> getTabList(CASTLE_OPTIONS, current);
             case "crystal" -> getTabList(CRYSTAL_OPTIONS, current);
             case "occupy" -> getTabList(OCCUPY_OPTIONS, current);
+            case "resource" -> getTabList(RESOURCE_OPTIONS, current);
             default -> null;
         };
     }

@@ -25,7 +25,6 @@ public abstract class WarObjective extends RegionStructure {
 
     /* Settings */
     protected boolean capitalObjective;
-    protected String name;
     /* Temporary */
     protected Map<FPlayer, Long> activePlayers = new HashMap<>();
     protected Set<FPlayer> activeSpectators = new HashSet<>();
@@ -33,7 +32,6 @@ public abstract class WarObjective extends RegionStructure {
     public WarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
         this.capitalObjective = config.getBoolean("capitalObjective");
-        this.name = config.getString("name");
     }
 
     public WarObjective(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
@@ -77,11 +75,11 @@ public abstract class WarObjective extends RegionStructure {
 
     /* Serialization */
 
+    @Override
     public @NotNull Map<String, Object> serialize() {
-        Map<String, Object> serialized = new HashMap<>();
+        Map<String, Object> serialized = super.serialize();
         serialized.put("type", getClass().getName());
         serialized.put("capitalObjective", capitalObjective);
-        serialized.put("name", name);
         return serialized;
     }
 
@@ -93,14 +91,6 @@ public abstract class WarObjective extends RegionStructure {
 
     public void setCapitalObjective(boolean capitalObjective) {
         this.capitalObjective = capitalObjective;
-    }
-
-    public @NotNull String getName() {
-        return name;
-    }
-
-    public void setName(@NotNull String name) {
-        this.name = name;
     }
 
     public @NotNull Map<FPlayer, Long> getActivePlayers() {

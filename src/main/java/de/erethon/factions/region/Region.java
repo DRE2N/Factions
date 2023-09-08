@@ -329,6 +329,17 @@ public class Region extends FLegalEntity {
         return found;
     }
 
+    @SuppressWarnings("UnstableApiUsage")
+    public <T extends RegionStructure> @NotNull List<T> getStructuresAt(@NotNull Position position, @NotNull Class<T> type) {
+        List<T> found = new ArrayList<>();
+        for (RegionStructure structure : structures.values()) {
+            if (structure.containsPosition(position) && type.isInstance(structure)) {
+                found.add((T) structure);
+            }
+        }
+        return found;
+    }
+
     public void addStructure(@NotNull RegionStructure structure) {
         structures.put(structure.getName(), structure);
     }

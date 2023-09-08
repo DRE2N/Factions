@@ -40,15 +40,14 @@ public class OccupyWarObjective extends TickingWarObjective {
 
     public OccupyWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
-        load(config);
     }
 
     public OccupyWarObjective(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
-        load(config);
     }
 
-    private void load(@NotNull ConfigurationSection config) {
+    @Override
+    protected void load(@NotNull ConfigurationSection config) {
         this.occupyDuration = config.getLong("occupyDuration", TickUtil.MINUTE * 5) / tickInterval;
         this.occupiedInterval = config.getLong("occupiedInterval", TickUtil.SECOND * 30);
         this.warProgressDecline = config.getInt("warProgressDecline", 1);

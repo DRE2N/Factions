@@ -39,15 +39,14 @@ public class CrystalWarObjective extends TickingWarObjective {
 
     public CrystalWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
-        load(config);
     }
 
     public CrystalWarObjective(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
-        load(config);
     }
 
-    private void load(@NotNull ConfigurationSection config) {
+    @Override
+    protected void load(@NotNull ConfigurationSection config) {
         this.energyLossPerInterval = config.getDouble("energyLossPerInterval", 5.0);
         this.maxEnergy = config.getDouble("maxEnergy", 100.0);
         this.maxHealth = config.getDouble("maxHealth", 2000.0);

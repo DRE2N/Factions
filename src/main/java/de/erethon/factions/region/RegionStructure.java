@@ -40,6 +40,11 @@ public class RegionStructure {
         this.xRange = new IntRange(a.x(), b.x());
         this.yRange = new IntRange(a.y(), b.y());
         this.zRange = new IntRange(a.z(), b.z());
+        load(config);
+    }
+
+    protected void load(@NotNull ConfigurationSection config) {
+
     }
 
     /* Protection */
@@ -103,6 +108,7 @@ public class RegionStructure {
     public Map<String, Object> serialize() {
         Map<String, Object> serialized = new HashMap<>(2);
         serialized.put("type", getClass().getName());
+        serialized.put("name", name);
         serialized.put("minPosition", Map.of("x", xRange.getMinimumInteger(), "y", yRange.getMinimumInteger(), "z", zRange.getMinimumInteger()));
         serialized.put("maxPosition", Map.of("x", xRange.getMaximumInteger(), "y", yRange.getMaximumInteger(), "z", zRange.getMaximumInteger()));
         return serialized;
