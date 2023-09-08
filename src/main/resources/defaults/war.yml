@@ -7,16 +7,7 @@ currentWeek: 1
 # The schedule of each war phase per day/week.
 schedule:
   1-4:
-    7-4:
-      duration: 72000000 # 20h
-      phase: "regular"
-      next:
-        duration: 7200000 # 2h
-        phase: "scoring"
-        next:
-          duration: 7200000 # 2h
-          phase: "regular"
-    5-6:
+    1-7:
       duration: 68400000 # 19h
       phase: "regular"
       next:
@@ -27,8 +18,14 @@ schedule:
           phase: "regular"
   5:
     7-5:
-      duration: 86400000 # 24h
+      duration: 68400000 # 19h
       phase: "regular"
+      next:
+        duration: 10800000 # 3h
+        phase: "scoring"
+        next:
+          duration: 7200000 # 2h
+          phase: "regular"
     6:
       duration: 72000000 # 20h
       phase: "regular"
