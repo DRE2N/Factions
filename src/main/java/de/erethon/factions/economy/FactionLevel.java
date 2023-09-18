@@ -4,6 +4,7 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.building.Building;
 import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.faction.Faction;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -71,5 +72,17 @@ public enum FactionLevel {
             case CITY -> METROPOLIS;
             default -> null;
         };
+    }
+
+    /* Statics */
+
+    @Contract("null, null -> null; _, !null -> !null")
+    public static @Nullable FactionLevel getByName(@Nullable String name, @Nullable FactionLevel def) {
+        for (FactionLevel level : values()) {
+            if (level.getName().equalsIgnoreCase(name)) {
+                return level;
+            }
+        }
+        return def;
     }
 }

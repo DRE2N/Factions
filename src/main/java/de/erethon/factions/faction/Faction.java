@@ -253,6 +253,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
             }
             this.adjacentFactions.add(faction);
         }
+        this.level = FactionLevel.getByName(config.getString("level"), FactionLevel.HAMLET);
         for (PopulationLevel level : PopulationLevel.values()) {
             this.population.put(level, config.getInt("population." + level.name(), 0));
         }
@@ -276,11 +277,11 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         config.set("shortName", shortName);
         config.set("longName", longName);
         config.set("open", open);
-        config.set("level", level);
+        config.set("level", level.name());
         for (PopulationLevel level : PopulationLevel.values()) {
             config.set("population." + level.name(), population.get(level));
         }
-        config.set("buildSites", buildSites);
+        config.set("buildSites", buildSites.stream().map(BuildSite::serialize).toList());
         config.set("storage", fStorage.save());
         saveEntities("authorisedBuilders", authorisedBuilders);
         saveEntities("adjacentFactions", adjacentFactions);
@@ -416,10 +417,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
             this.flag = null;
             return;
         }
-        BannerMeta bannerMeta;
-        try {
-            bannerMeta = (BannerMeta) flag.getItemMeta();
-        } catch (ClassCastException e) {
+        if (!(flag.getItemMeta() instanceof BannerMeta bannerMeta)) {
             throw new FException("Flag ItemStack must be a banner item", FMessage.ERROR_NO_BANNER_ITEM_IN_HAND);
         }
         ItemStack copy = new ItemStack(flag.getType());

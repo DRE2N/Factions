@@ -147,7 +147,7 @@ error:
   notEnoughMoney: "<red>Du benötigst <gold>&v1</gold>, um dies tun zu dürfen."
   notParsableDouble: "&cDer angegebene Zahlenwert &6&v1 &cist ungültig"
   notParsableInteger: "&cDer angegebene Zahlenwert &6&v1 &cist ungültig"
-  permitlessAlliance: "<red>Dein Allianz hat keine Befugnis dies zu tun."
+  permitlessAlliance: "<red>Deine Allianz hat keine Befugnis dies zu tun."
   playerAlreadyInAFaction: "<red>Du befindest dich bereits in einer Fraktion."
   playerIsNotInAFaction: "<red>Du befindest dich zurzeit in keiner Fraktion."
   playerIsNotInAnAlliance: "<red>Du befindest dich zurzeit in keiner Allianz."
