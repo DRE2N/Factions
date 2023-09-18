@@ -32,6 +32,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
@@ -257,8 +258,11 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         for (PopulationLevel level : PopulationLevel.values()) {
             this.population.put(level, config.getInt("population." + level.name(), 0));
         }
-        for (String key : config.getConfigurationSection("buildSites").getKeys(false)) {
-            this.buildSites.add(new BuildSite(config.getConfigurationSection("buildSites." + key)));
+        ConfigurationSection buildSitesSection = config.getConfigurationSection("buildSites");
+        if (buildSitesSection != null) {
+            for (String key : buildSitesSection.getKeys(false)) {
+                this.buildSites.add(new BuildSite(buildSitesSection.getConfigurationSection(key)));
+            }
         }
         this.fStorage = new FStorage(this, config.getConfigurationSection("storage"));
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;

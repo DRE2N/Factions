@@ -8,7 +8,10 @@ import de.erethon.aergia.util.TickUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.Region;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
@@ -25,7 +28,14 @@ public class UIFactionsListener implements Listener {
     @EventHandler
     public void onUICreate(UICreateEvent event) {
         UIUpdater uiUpdater = event.getUIUpdater();
-        uiUpdater.getBossBar().getCenter().add(UIComponent.reactivatable(p -> FMessage.UI_REGION_DISPLAY_NAME.message(getFPlayer(p).getDisplayRegion()),
+        uiUpdater.getBossBar().getCenter().add(UIComponent.reactivatable(p -> {
+                    FPlayer fPlayer = getFPlayer(p);
+                    Region region = fPlayer.getLastRegion();
+                    if (region == null) {
+                        return Component.text().color(NamedTextColor.GRAY).decorate(TextDecoration.BOLD).content(FMessage.GENERAL_WILDERNESS.getMessage()).build();
+                    }
+                    return Component.text().color(region.hasAlliance() ? region.getAlliance().getColor() : NamedTextColor.GRAY).decorate(TextDecoration.BOLD).content(fPlayer.getDisplayRegionWithOwner()).build();
+                },
                 TickUtil.SECOND*6, REGION_DISPLAY_ID));
         uiUpdater.getActionBar().getCenter().add(UIComponent.reactivatable(p -> Component.empty(), TickUtil.SECOND * 4, FACTIONS_INFO_ID));
     }
