@@ -46,17 +46,15 @@ public class WarPhaseManager extends EConfig {
 
     final Factions plugin = Factions.get();
 
-    private ZonedDateTime midnight;
-    private ZonedDateTime nextMidnight;
     private int currentWeek = 1;
     private WarPhaseStage currentStage;
+    private ZonedDateTime midnight;
     private final Map<Integer, Map<Integer, WarPhaseStage>> schedule = new HashMap<>();
     private final LinkedList<BukkitTask> runningTasks = new LinkedList<>();
 
     public WarPhaseManager(@NotNull File file) {
         super(file, CONFIG_VERSION);
         midnight = FUtil.getMidnightDateTime();
-        nextMidnight = midnight.plusDays(1);
         initialize();
     }
 
@@ -75,11 +73,10 @@ public class WarPhaseManager extends EConfig {
     void updateCurrentStage() {
         DayOfWeek dayOfWeek = LocalDateTime.now().getDayOfWeek();
         if (dayOfWeek != midnight.getDayOfWeek()) {
-            midnight = nextMidnight;
-            nextMidnight = midnight.plusDays(1);
+            midnight = FUtil.getMidnightDateTime();
             // Increase week count on each monday & reset week count if no scheduled weeks left.
             if (dayOfWeek == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
-                currentWeek -= schedule.size();
+                currentWeek = 1;
             }
             currentStage = schedule.get(currentWeek).get(dayOfWeek.getValue());
         }
@@ -337,12 +334,25 @@ public class WarPhaseManager extends EConfig {
         return currentStage.getWarPhase();
     }
 
-    public @Nullable WarPhaseStage getNextWarPhaseStage() {
-        return currentStage.getNextStage() == null ? null : currentStage.getNextStage();
+    public @NotNull WarPhaseStage getNextWarPhaseStage() {
+        return currentStage.getNextStage() == null ? getNextDayWarPhaseStage() : currentStage.getNextStage();
     }
 
-    public @Nullable WarPhase getNextWarPhase() {
-        return currentStage.getNextStage() == null ? null : currentStage.getNextStage().getWarPhase();
+    public @NotNull WarPhase getNextWarPhase() {
+        return getNextWarPhaseStage().getWarPhase();
+    }
+
+    public @NotNull WarPhaseStage getNextDayWarPhaseStage() {
+        int week = currentWeek;
+        ZonedDateTime nextDay = midnight.plusDays(1);
+        if (nextDay.getDayOfWeek() == DayOfWeek.MONDAY && ++week > schedule.size()) {
+            week = 1;
+        }
+        return schedule.get(week).get(nextDay.getDayOfWeek().getValue());
+    }
+
+    public @NotNull WarPhase getNextDayWarPhase() {
+        return getNextDayWarPhaseStage().getWarPhase();
     }
 
     public @NotNull LinkedList<BukkitTask> getRunningTasks() {
