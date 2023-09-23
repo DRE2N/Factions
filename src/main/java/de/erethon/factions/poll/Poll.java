@@ -5,10 +5,12 @@ import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -48,18 +50,18 @@ public abstract class Poll<V> implements Listener {
     protected final Factions plugin = Factions.get();
     protected final String name;
     protected final PollScope scope;
-    protected final TreeSet<PollEntry> subjects;
+    protected final TreeSet<PollEntry> entries;
     protected final Function<V, ItemStack> subjectConverter;
     protected final Map<Integer, Inventory> inventories = new HashMap<>();
     protected boolean open = false;
     protected long closeTime;
     protected BukkitTask closeTask = null;
 
-    public Poll(@NotNull String name, @NotNull PollScope scope, @NotNull Collection<@NotNull V> subjects, @NotNull Function<V, ItemStack> subjectConverter) {
-        this(name, scope, subjects, subjectConverter, null);
+    public Poll(@NotNull String name, @NotNull PollScope scope, @NotNull Collection<@NotNull V> entries, @NotNull Function<V, ItemStack> subjectConverter) {
+        this(name, scope, entries, subjectConverter, null);
     }
 
-    public Poll(@NotNull String name, @NotNull PollScope scope, @NotNull Collection<@NotNull V> subjects, @NotNull Function<V, ItemStack> subjectConverter, @Nullable Comparator<V> comparator) {
+    public Poll(@NotNull String name, @NotNull PollScope scope, @NotNull Collection<@NotNull V> entries, @NotNull Function<V, ItemStack> subjectConverter, @Nullable Comparator<V> comparator) {
         assert !name.contains(" ") : "Illegal name found: whitespaces are not allowed";
         this.name = name;
         this.scope = scope;
@@ -67,11 +69,41 @@ public abstract class Poll<V> implements Listener {
             int weightCompare = Integer.compare(o1.getTotalWeight(), o2.getTotalWeight());
             return weightCompare == 0 ? comparator.compare(o1.getSubject(), o2.getSubject()) : weightCompare;
         };
-        this.subjects = new TreeSet<>(comp);
-        for (V subject : subjects) {
-            this.subjects.add(new PollEntry(subject));
-        }
+        this.entries = new TreeSet<>(comp);
         this.subjectConverter = subjectConverter;
+        for (V subject : entries) {
+            this.entries.add(new PollEntry(subject));
+        }
+    }
+
+    public Poll(@NotNull ConfigurationSection config, @NotNull Function<V, ItemStack> subjectConverter) throws IllegalArgumentException {
+        this.name = config.getString("name");
+        this.scope = PollScope.valueOf(config.getString("scope"));
+        this.open = config.getBoolean("open");
+        this.closeTime = config.getLong("closeTime");
+        this.entries = new TreeSet<>();
+        this.subjectConverter = subjectConverter;
+
+        ConfigurationSection entriesSection = config.getConfigurationSection("entries");
+        if (entriesSection != null) {
+            for (String key : entriesSection.getKeys(false)) {
+                V subject = idToSubject(key);
+                if (subject == null) {
+                    FLogger.ERROR.log("Unknown subject in poll '" + name + "' found: " + key);
+                    continue;
+                }
+                PollEntry entry = new PollEntry(subject);
+                ConfigurationSection votesSection = entriesSection.getConfigurationSection(key);
+                if (votesSection != null) {
+                    for (String uuidString : votesSection.getKeys(false)) {
+                        UUID uuid = UUID.fromString(uuidString);
+                        int weight = votesSection.getInt(uuidString);
+                        entry.addVote(uuid, weight);
+                    }
+                }
+                entries.add(entry);
+            }
+        }
     }
 
     public void openPoll() {
@@ -96,6 +128,7 @@ public abstract class Poll<V> implements Listener {
             closeTask.cancel();
             closeTask = null;
         }
+        onResult(entries);
         buildInventories();
     }
 
@@ -113,18 +146,18 @@ public abstract class Poll<V> implements Listener {
 
     private void buildInventories() {
         int page = 0;
-        while (page * ITEMS_PER_PAGE <= subjects.size()) {
+        while (page * ITEMS_PER_PAGE <= entries.size()) {
             buildInventory(page++);
         }
     }
 
     private void buildInventory(int page) {
-        List<PollEntry> subjectsCopy = new ArrayList<>(subjects).subList(page * ITEMS_PER_PAGE, Math.min((page + 1) * ITEMS_PER_PAGE, subjects.size()));
+        List<PollEntry> entriesCopy = new ArrayList<>(entries).subList(page * ITEMS_PER_PAGE, Math.min((page + 1) * ITEMS_PER_PAGE, entries.size()));
         Inventory inventory = Bukkit.createInventory(null, 54, open ? FMessage.GUI_POLL_TITLE.message(name) : FMessage.GUI_POLL_TITLE_CLOSED.message(name));
         ItemStack[] contents = new ItemStack[54];
 
-        for (int i = 0; i < subjectsCopy.size(); i++) {
-            PollEntry entry = subjectsCopy.get(i);
+        for (int i = 0; i < entriesCopy.size(); i++) {
+            PollEntry entry = entriesCopy.get(i);
             contents[i] = entry.itemStack;
         }
         contents[47] = PREVIOUS_PAGE_BUTTON;
@@ -201,9 +234,9 @@ public abstract class Poll<V> implements Listener {
         if (itemId == null) {
             return null;
         }
-        for (PollEntry subject : subjects) {
-            if (getItemId(subject.itemStack).equals(itemId)) {
-                return subject;
+        for (PollEntry entry : entries) {
+            if (getItemId(entry.itemStack).equals(itemId)) {
+                return entry;
             }
         }
         return null;
@@ -213,7 +246,32 @@ public abstract class Poll<V> implements Listener {
         return itemStack.getItemMeta().getPersistentDataContainer().get(POLL_ITEM_ID_KEY, PersistentDataType.STRING);
     }
 
+    /* Serialization */
+
+    public @NotNull Map<String, Object> serialize() {
+        Map<String, Object> serialized = new HashMap<>();
+        serialized.put("type", getClass().getSimpleName());
+        serialized.put("name", name);
+        serialized.put("scope", scope.name());
+        serialized.put("open", open);
+        serialized.put("closeTime", closeTime);
+        Map<String, Object> serializedEntries = new HashMap<>(entries.size());
+        for (PollEntry entry : entries) {
+            Map<String, Object> serializedVotes = new HashMap<>(entry.votes.size());
+            for (UUID uuid : entry.votes.keySet()) {
+                serializedVotes.put(uuid.toString(), entry.votes.get(uuid));
+            }
+            serializedEntries.put(String.valueOf(subjectToId(entry.getSubject())), serializedVotes);
+        }
+        serialized.put("entries", serializedEntries);
+        return serialized;
+    }
+
     /* Abstracts */
+
+    protected abstract @NotNull Object subjectToId(@NotNull V subject);
+
+    protected abstract @Nullable V idToSubject(@NotNull Object id);
 
     protected abstract void onResult(@NotNull TreeSet<PollEntry> results);
 
@@ -222,7 +280,7 @@ public abstract class Poll<V> implements Listener {
     /* Getters */
 
     public boolean hasParticipated(@NotNull FPlayer fPlayer) {
-        for (PollEntry entry : subjects) {
+        for (PollEntry entry : entries) {
             if (entry.containsVote(fPlayer.getUniqueId())) {
                 return true;
             }
@@ -242,8 +300,8 @@ public abstract class Poll<V> implements Listener {
         return scope;
     }
 
-    public @NotNull TreeSet<PollEntry> getSubjects() {
-        return subjects;
+    public @NotNull TreeSet<PollEntry> getEntries() {
+        return entries;
     }
 
     public boolean isOpen() {

@@ -20,7 +20,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.time.DayOfWeek;
@@ -175,7 +174,7 @@ public class WarPhaseManager extends EConfig {
                 if (region.getType() != RegionType.WAR_ZONE) {
                     continue;
                 }
-                Alliance winner = getRegionalWinner(region);
+                Alliance winner = region.getRegionalWarTracker().getLeader();
                 Alliance rAlliance = region.getAlliance();
                 if (winner != null) {
                     winner.temporaryOccupy(region);
@@ -209,25 +208,6 @@ public class WarPhaseManager extends EConfig {
         }
         FBroadcastUtil.broadcastWar(Component.empty());
         FBroadcastUtil.broadcastWar(FMessage.WAR_END_WINNER, winner.getColoredLongName());
-    }
-
-    private Alliance getRegionalWinner(Region region) {
-        Alliance winner = null;
-        double score = -1;
-        double secondScore = 0;
-        for (Alliance alliance : plugin.getAllianceCache()) {
-            double currentScore = region.getRegionalWarTracker().getScore(alliance);
-            if (currentScore <= 0) {
-                continue;
-            }
-            if (currentScore > score) {
-                winner = alliance;
-                score = currentScore;
-            } else if (currentScore > secondScore) {
-                secondScore = currentScore;
-            }
-        }
-        return score > secondScore ? winner : null;
     }
 
     /* Serialization */

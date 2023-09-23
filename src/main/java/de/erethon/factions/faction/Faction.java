@@ -67,6 +67,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private final Set<Faction> authorisedBuilders = new HashSet<>();
     private final Set<Faction> adjacentFactions = new HashSet<>();
     private final Set<BuildSite> buildSites = new HashSet<>();
+    private final Map<String, Poll<?>> polls = new HashMap<>();
     private final Map<PopulationLevel, Integer> population = new HashMap<>();
     private FStorage fStorage;
     private FactionLevel level = FactionLevel.HAMLET;
@@ -74,7 +75,6 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private final Set<ActiveBuildingEffect> buildingEffects = new HashSet<>();
     private FAccount fAccount;
     private final Set<FPlayer> invitedPlayers = new HashSet<>();
-    private final Map<String, Poll<?>> polls = new HashMap<>();
 
     protected Faction(@NotNull FPlayer admin, @NotNull Region coreRegion, int id, String name, String description) {
         super(new File(Factions.FACTIONS, id + ".yml"), id, name, description);
@@ -254,6 +254,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
             }
             this.adjacentFactions.add(faction);
         }
+        this.polls.putAll(loadPolls(config.getConfigurationSection("polls")));
         this.level = FactionLevel.getByName(config.getString("level"), FactionLevel.HAMLET);
         for (PopulationLevel level : PopulationLevel.values()) {
             this.population.put(level, config.getInt("population." + level.name(), 0));
@@ -282,6 +283,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         config.set("longName", longName);
         config.set("open", open);
         config.set("level", level.name());
+        config.set("polls", serializePolls());
         for (PopulationLevel level : PopulationLevel.values()) {
             config.set("population." + level.name(), population.get(level));
         }

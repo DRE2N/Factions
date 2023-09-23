@@ -10,9 +10,12 @@ import de.erethon.factions.poll.PollScope;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.TreeSet;
@@ -23,7 +26,7 @@ import java.util.function.Function;
  */
 public class CapturedRegionsPoll extends AlliancePoll<Region> {
 
-    private static final Function<Region, ItemStack> CONVERTER = region -> {
+    public static final Function<Region, ItemStack> REGION_CONVERTER = region -> {
         ItemStack itemStack = new ItemStack(region.getType().getIcon());
         ItemMeta meta = itemStack.getItemMeta();
         meta.displayName(Component.text().color(region.getType().getColor()).append(region.name()).build());
@@ -33,12 +36,26 @@ public class CapturedRegionsPoll extends AlliancePoll<Region> {
     };
 
     public CapturedRegionsPoll(@NotNull Alliance alliance) {
-        super(FMessage.GENERAL_WAR_ZONES.getMessage(), alliance, PollScope.ADMIN, alliance.getUnconfirmedTemporaryRegions(), CONVERTER);
+        super(FMessage.GENERAL_WAR_ZONES.getMessage(), alliance, PollScope.ADMIN, alliance.getUnconfirmedTemporaryRegions(), REGION_CONVERTER);
+    }
+
+    public CapturedRegionsPoll(@NotNull ConfigurationSection config) throws IllegalArgumentException {
+        super(config, REGION_CONVERTER);
     }
 
     @Override
     public int getVotingWeight(@NotNull FPlayer fPlayer) {
         return fPlayer.getFaction().getMembers().size();
+    }
+
+    @Override
+    protected @NotNull Object subjectToId(@NotNull Region subject) {
+        return subject.getId();
+    }
+
+    @Override
+    protected @Nullable Region idToSubject(@NotNull Object id) {
+        return plugin.getRegionManager().getRegionById(NumberConversions.toInt(id));
     }
 
     @Override

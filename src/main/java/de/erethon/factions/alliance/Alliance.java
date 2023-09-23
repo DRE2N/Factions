@@ -44,6 +44,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
     private final Set<Region> temporaryRegions = new HashSet<>();
     private final Set<Region> unconfirmedTemporaryRegions = new HashSet<>();
     private final Set<Faction> factions = new HashSet<>();
+    private final Map<String, Poll<?>> polls = new HashMap<>();
     private BossBar.Color bossBarColor;
     private TextColor color;
     private boolean currentEmperor;
@@ -52,7 +53,6 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
     private double warScore;
     /* Temporary */
     private FAccount fAccount;
-    private final Map<String, Poll<?>> polls = new HashMap<>();
 
     protected Alliance(@NotNull File file, int id, @NotNull String name, @Nullable String description) {
         super(file, id, name, description);
@@ -112,6 +112,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
             }
             this.factions.add(faction);
         }
+        this.polls.putAll(loadPolls(config.getConfigurationSection("polls")));
         this.bossBarColor = EnumUtil.getEnumIgnoreCase(BossBar.Color.class, config.getString("bossBarColor"), BossBar.Color.WHITE);
         String colorString = config.getString("color", NamedTextColor.GRAY.toString());
         this.color = FUtil.getNotNullOr(NamedTextColor.GRAY, () -> NamedTextColor.NAMES.value(colorString), () -> TextColor.fromHexString(colorString));
@@ -138,6 +139,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         saveEntities("temporaryRegions", temporaryRegions);
         saveEntities("unconfirmedTemporaryRegions", unconfirmedTemporaryRegions);
         saveEntities("factions", factions);
+        config.set("polls", serializePolls());
         config.set("bossBarColor", bossBarColor.name());
         config.set("color", color.toString());
         config.set("currentEmperor", currentEmperor);

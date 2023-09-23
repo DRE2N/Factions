@@ -127,6 +127,25 @@ public class RegionalWarTracker {
         }
     }
 
+    public @Nullable Alliance getLeader() {
+        Alliance winner = null;
+        double score = -1;
+        double secondScore = 0;
+        for (Alliance alliance : plugin.getAllianceCache()) {
+            double currentScore = getScore(alliance);
+            if (currentScore <= 0) {
+                continue;
+            }
+            if (currentScore > score) {
+                winner = alliance;
+                score = currentScore;
+            } else if (currentScore > secondScore) {
+                secondScore = currentScore;
+            }
+        }
+        return score > secondScore ? winner : null;
+    }
+
     public double getCaptureCap() {
         return captureCap;
     }

@@ -7,6 +7,7 @@ import de.erethon.aergia.placeholder.HoverInfo;
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.compatibility.Internals;
 import de.erethon.bedrock.misc.FileUtil;
+import de.erethon.bedrock.misc.Registry;
 import de.erethon.bedrock.plugin.EPlugin;
 import de.erethon.bedrock.plugin.EPluginSettings;
 import de.erethon.factions.alliance.AllianceCache;
@@ -19,6 +20,8 @@ import de.erethon.factions.faction.FactionCache;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
 import de.erethon.factions.player.FPlayerListener;
+import de.erethon.factions.poll.Poll;
+import de.erethon.factions.poll.polls.CapturedRegionsPoll;
 import de.erethon.factions.region.AutomatedChunkManager;
 import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.region.schematic.RegionSchematicManager;
@@ -31,6 +34,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +42,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.UUID;
+import java.util.function.Function;
 
 public final class Factions extends EPlugin {
 
@@ -57,6 +62,9 @@ public final class Factions extends EPlugin {
     private File fLoggerFile;
     private File fConfigFile;
     private File warPhaseManagerFile;
+
+    /* Registries */
+    private Registry<String, Function<ConfigurationSection, Poll<?>>> pollDeserializerRegistry;
 
     /* Configs */
     private FConfig fConfig;
@@ -86,6 +94,12 @@ public final class Factions extends EPlugin {
                 .forcePaper(true)
                 .economy(true)
                 .build();
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        loadRegistries();
     }
 
     @Override
@@ -145,6 +159,11 @@ public final class Factions extends EPlugin {
 
     public void loadFLogger() {
         FLogger.load(fLoggerFile);
+    }
+
+    public void loadRegistries() {
+        pollDeserializerRegistry = new Registry<>();
+        pollDeserializerRegistry.add(CapturedRegionsPoll.class.getSimpleName(), CapturedRegionsPoll::new);
     }
 
     public void loadConfigs() {
@@ -280,6 +299,10 @@ public final class Factions extends EPlugin {
     }
 
     /* Getters and setters */
+
+    public @NotNull Registry<String, Function<ConfigurationSection, Poll<?>>> getPollDeserializerRegistry() {
+        return pollDeserializerRegistry;
+    }
 
     public @NotNull FConfig getFConfig() {
         return fConfig;
