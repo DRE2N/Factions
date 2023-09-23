@@ -3,6 +3,7 @@ package de.erethon.factions.poll;
 import de.erethon.factions.player.FPlayer;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -24,6 +25,8 @@ public class PollBuilder<V> {
     private Function<FPlayer, Integer> votingWeight;
     private Predicate<FPlayer> canParticipate;
     private Consumer<TreeSet<Poll<V>.PollEntry>> onResult;
+    private Function<V, Object> subjectToId;
+    private Function<Object, V> idToSubject;
 
     public @NotNull PollBuilder<V> name(@NotNull String name) {
         this.name = name;
@@ -65,6 +68,16 @@ public class PollBuilder<V> {
         return this;
     }
 
+    public @NotNull PollBuilder<V> subjectToId(@NotNull Function<V, Object> subjectToId) {
+        this.subjectToId = subjectToId;
+        return this;
+    }
+
+    public @NotNull PollBuilder<V> idToSubject(@NotNull Function<Object, V> idToSubject) {
+        this.idToSubject = idToSubject;
+        return this;
+    }
+
     public @NotNull Poll<V> build() {
         return new Poll<>(name, scope, subjects, subjectConverter, comparator) {
             @Override
@@ -75,6 +88,16 @@ public class PollBuilder<V> {
             @Override
             public boolean canParticipate(@NotNull FPlayer fPlayer) {
                 return canParticipate == null || canParticipate.test(fPlayer);
+            }
+
+            @Override
+            protected @NotNull Object subjectToId(@NotNull V subject) {
+                return subjectToId.apply(subject);
+            }
+
+            @Override
+            protected @Nullable V idToSubject(@NotNull Object id) {
+                return idToSubject.apply(id);
             }
 
             @Override
