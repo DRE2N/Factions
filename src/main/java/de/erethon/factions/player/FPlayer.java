@@ -26,6 +26,7 @@ import de.erethon.factions.war.WarStats;
 import de.erethon.factions.war.objective.WarObjective;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -239,6 +240,10 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         return alliance == null ?
                 Component.text().color(NamedTextColor.GRAY).content(FMessage.GENERAL_NONE.getMessage()).build() :
                 alliance.getColoredName();
+    }
+
+    public @NotNull TextColor getAllianceColor() {
+        return alliance == null ? NamedTextColor.WHITE : alliance.getColor();
     }
 
     @Override

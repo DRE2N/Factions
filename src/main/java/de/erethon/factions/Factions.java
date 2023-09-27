@@ -32,7 +32,6 @@ import de.erethon.factions.war.WarListener;
 import de.erethon.factions.war.WarPhaseManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
@@ -47,6 +46,8 @@ import java.util.function.Function;
 public final class Factions extends EPlugin {
 
     private static Factions instance;
+
+    public static final int AERGIA_PLACEHOLDER_WEIGHT = 2;
 
     /* Folders */
     public static File ALLIANCES;
@@ -107,17 +108,13 @@ public final class Factions extends EPlugin {
         super.onEnable();
         instance = this;
         loadCore();
-        registerAergiaPlaceholders();
     }
 
     @Override
     public void onDisable() {
         HandlerList.unregisterAll(this);
         Bukkit.getScheduler().cancelTasks(this);
-        for (FPlayer fPlayer : fPlayerCache.getCachedUsers()) {
-            fPlayer.getUIBossBar().getCenter().remove(UIFactionsListener.REGION_DISPLAY_ID);
-            fPlayer.getUIActionBar().getCenter().remove(AutomatedChunkManager.ACTION_BAR_ID);
-        }
+        unregisterAergiaPlaceholders();
         saveData();
     }
 
@@ -137,6 +134,7 @@ public final class Factions extends EPlugin {
         runTasks();
         loadCommands();
         registerListeners();
+        registerAergiaPlaceholders();
     }
 
     public void initFolders() {
@@ -233,15 +231,21 @@ public final class Factions extends EPlugin {
     }
 
     public void registerAergiaPlaceholders() {
+        // Add UI components.
+        for (FPlayer fPlayer : fPlayerCache.getCachedUsers()) {
+            uiFactionsListener.applyToUIUpdater(fPlayer.getUIUpdater());
+        }
+        // Register faction placeholders.
         ChatPlaceholders.register(ChatPlaceholder.builder()
                 .placeHolder("faction")
                 .baseBuilder((s, r) -> {
                     FPlayer fSender = fPlayerCache.getByPlayer(s.getPlayer());
                     String faction = fSender.hasFaction() ? fSender.getFaction().getDisplayShortName() : FMessage.GENERAL_LONER.getMessage();
-                    return Component.text()
-                            .color(fSender.hasAlliance() ? fSender.getAlliance().getColor() : NamedTextColor.WHITE)
-                            .append(MessageUtil.parse("<dark_gray>[</dark_gray>" + faction + "<dark_gray>]</dark_gray> "))
-                            .build();
+                    return Component.text(fSender.hasAlliance() && fSender.getAlliance().hasIcon() ? fSender.getAlliance().getIcon() + " " : "")
+                            .append(Component.text()
+                                    .color(fSender.getAllianceColor())
+                                    .append(MessageUtil.parse("<dark_gray>[</dark_gray>" + faction + "<dark_gray>]</dark_gray> "))
+                                    .build());
                 })
                 .clickBuilder((s, r) -> {
                     FPlayer fPlayer = fPlayerCache.getByPlayer(s.getPlayer());
@@ -259,7 +263,17 @@ public final class Factions extends EPlugin {
                     if (!fPlayer.hasFaction()) {
                         return "";
                     }
-                    return fPlayer.isAdminRaw() ? "<dark_gray>**" : fPlayer.isMod() ? "<green>*" : "";
+                    return fPlayer.isAdminRaw() ? fConfig.getFactionChatAdminIcon() : fPlayer.isMod() ? fConfig.getFactionChatModIcon() : "";
+                })
+                .build());
+        ChatPlaceholders.register(ChatPlaceholder.builder()
+                .placeHolder("faction-title")
+                .baseStringBuilder((s, r) -> {
+                    FPlayer fPlayer = fPlayerCache.getByPlayer(s.getPlayer());
+                    if (!fPlayer.hasFaction()) {
+                        return "";
+                    }
+                    return fPlayer.getTitle();
                 })
                 .build());
         HoverInfo info = (sender, recipient) -> {
@@ -267,8 +281,18 @@ public final class Factions extends EPlugin {
             return FMessage.PLACEHOLDER_ALLIANCE_DISPLAY.message(fSender.getAllianceTag())
                     .appendNewline()
                     .append(FMessage.PLACEHOLDER_FACTION_DISPLAY.message(fSender.getFactionTag()))
+                    .appendNewline()
                     .appendNewline();
         };
+        // Replace default display name placeholder.
+        ChatPlaceholder displayNamePlaceholder = ChatPlaceholders.get("player-display-name");
+        if (displayNamePlaceholder != null) {
+            displayNamePlaceholder.setBaseTextBuilder((s, r) -> Component.text()
+                    .color(fPlayerCache.getByPlayer(s.getPlayer()).getAllianceColor())
+                    .content(s.getLastName())
+                    .build());
+        }
+        // Add hover info to default placeholders.
         registerPlaceholderInfo("player-name", info);
         registerPlaceholderInfo("player-display-name", info);
         registerPlaceholderInfo("recipient-name", info);
@@ -284,7 +308,33 @@ public final class Factions extends EPlugin {
         if (hoverBuilder == null) {
             return;
         }
-        hoverBuilder.addHoverInfo(2, info);
+        hoverBuilder.addHoverInfo(AERGIA_PLACEHOLDER_WEIGHT, info);
+    }
+
+    public void unregisterAergiaPlaceholders() {
+        // Remove added UI components.
+        for (FPlayer fPlayer : fPlayerCache.getCachedUsers()) {
+            fPlayer.getUIBossBar().getCenter().remove(UIFactionsListener.FACTIONS_INFO_ID);
+            fPlayer.getUIBossBar().getCenter().remove(UIFactionsListener.REGION_DISPLAY_ID);
+            fPlayer.getUIActionBar().getCenter().remove(AutomatedChunkManager.ACTION_BAR_ID);
+        }
+        // Remove faction placeholders.
+        ChatPlaceholders.unregister("faction");
+        ChatPlaceholders.unregister("faction-rank");
+        ChatPlaceholders.unregister("faction-title");
+        // Remove hover info of default placeholders.
+        unregisterPlaceholderInfo("player-name");
+        unregisterPlaceholderInfo("player-display-name");
+        unregisterPlaceholderInfo("recipient-name");
+        unregisterPlaceholderInfo("recipient-display-name");
+    }
+
+    private void unregisterPlaceholderInfo(String placeholder) {
+        ChatPlaceholder chatPlaceholder = ChatPlaceholders.get(placeholder);
+        if (chatPlaceholder == null || chatPlaceholder.getHoverEventBuilder() == null) {
+            return;
+        }
+        chatPlaceholder.getHoverEventBuilder().removeHoverInfo(AERGIA_PLACEHOLDER_WEIGHT);
     }
 
     public void saveData() {

@@ -14,6 +14,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Fyreum
@@ -27,7 +28,10 @@ public class UIFactionsListener implements Listener {
 
     @EventHandler
     public void onUICreate(UICreateEvent event) {
-        UIUpdater uiUpdater = event.getUIUpdater();
+        applyToUIUpdater(event.getUIUpdater());
+    }
+
+    public void applyToUIUpdater(@NotNull UIUpdater uiUpdater) {
         uiUpdater.getBossBar().getCenter().add(UIComponent.reactivatable(p -> {
                     FPlayer fPlayer = getFPlayer(p);
                     Region region = fPlayer.getLastRegion();

@@ -44,6 +44,8 @@ public class FConfig extends EConfig {
     private long allianceJoinCooldown = TimeUnit.DAYS.toMillis(30);
 
     /* Faction */
+    private String factionChatAdminIcon = "<dark_gray>**";
+    private String factionChatModIcon = "<dark_gray>*";
     private long factionJoinCooldown = TimeUnit.HOURS.toMillis(1);
     private List<String> forbiddenNames = new ArrayList<>();
     private long inactiveAdminKickDuration = TimeUnit.DAYS.toMicros(40);
@@ -83,6 +85,8 @@ public class FConfig extends EConfig {
         initValue("maximumNameChars", maximumNameChars);
         initValue("maximumShortNameChars", maximumShortNameChars);
         initValue("allianceJoinCooldown", allianceJoinCooldown);
+        initValue("factionChatAdminIcon", factionChatAdminIcon);
+        initValue("factionChatModIcon", factionChatModIcon);
         initValue("factionJoinCooldown", factionJoinCooldown);
         initValue("forbiddenNames", forbiddenNames);
         initValue("inactiveAdminKickDuration", inactiveAdminKickDuration);
@@ -122,6 +126,8 @@ public class FConfig extends EConfig {
         maximumNameChars = config.getInt("maximumNameChars", maximumNameChars);
         maximumShortNameChars = config.getInt("maximumShortNameChars", maximumShortNameChars);
         allianceJoinCooldown = config.getLong("allianceJoinCooldown", allianceJoinCooldown);
+        factionChatAdminIcon = config.getString("factionChatAdminIcon", factionChatAdminIcon);
+        factionChatModIcon = config.getString("factionChatModIcon", factionChatModIcon);
         factionJoinCooldown = config.getLong("factionJoinCooldown", factionJoinCooldown);
         forbiddenNames = getStringList("forbiddenNames", forbiddenNames);
         inactiveAdminKickDuration = config.getLong("inactiveAdminKickDuration", inactiveAdminKickDuration);
@@ -208,6 +214,14 @@ public class FConfig extends EConfig {
 
     public long getAllianceJoinCooldown() {
         return allianceJoinCooldown;
+    }
+
+    public @NotNull String getFactionChatAdminIcon() {
+        return factionChatAdminIcon;
+    }
+
+    public @NotNull String getFactionChatModIcon() {
+        return factionChatModIcon;
     }
 
     public long getFactionJoinCooldown() {

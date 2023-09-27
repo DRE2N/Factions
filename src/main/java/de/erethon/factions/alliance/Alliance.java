@@ -48,6 +48,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
     private BossBar.Color bossBarColor;
     private TextColor color;
     private boolean currentEmperor;
+    private String icon;
     private String shortName;
     private String longName;
     private double warScore;
@@ -117,6 +118,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         String colorString = config.getString("color", NamedTextColor.GRAY.toString());
         this.color = FUtil.getNotNullOr(NamedTextColor.GRAY, () -> NamedTextColor.NAMES.value(colorString), () -> TextColor.fromHexString(colorString));
         this.currentEmperor = config.getBoolean("currentEmperor");
+        this.icon = config.getString("icon", "");
         this.shortName = config.getString("shortName");
         this.longName = config.getString("longName");
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
@@ -143,6 +145,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         config.set("bossBarColor", bossBarColor.name());
         config.set("color", color.toString());
         config.set("currentEmperor", currentEmperor);
+        config.set("icon", icon);
         config.set("shortName", shortName);
         config.set("longName", longName);
         config.set("warScore", warScore);
@@ -224,6 +227,18 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     public void setCurrentEmperor(boolean currentEmperor) {
         this.currentEmperor = currentEmperor;
+    }
+
+    public @NotNull String getIcon() {
+        return icon;
+    }
+
+    public boolean hasIcon() {
+        return !icon.isEmpty();
+    }
+
+    public void setIcon(@NotNull String icon) {
+        this.icon = icon;
     }
 
     public @NotNull Component getColoredName() {

@@ -128,7 +128,7 @@ public abstract class Poll<V> implements Listener {
             closeTask.cancel();
             closeTask = null;
         }
-        onResult(entries);
+        onResult(new TreeSet<>(entries));
         buildInventories();
     }
 
