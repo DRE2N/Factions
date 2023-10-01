@@ -1,6 +1,5 @@
 package de.erethon.factions.building;
 
-import de.erethon.bedrock.config.ConfigUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
@@ -12,29 +11,34 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class BuildSite implements ConfigurationSerializable {
+public class BuildSite extends YamlConfiguration {
 
     Factions plugin = Factions.get();
     BuildingManager buildingManager = plugin.getBuildingManager();
 
-    private final Building building;
-    private final Region region;
-    private final Location corner;
-    private final Location otherCorner;
-    private final Location interactive;
+    private UUID uuid;
+
+    private Building building;
+    private Region region;
+    private Location corner;
+    private Location otherCorner;
+    private Location interactive;
     private String problemMessage = null;
     private Map<Material, Integer> placedBlocks = new HashMap<>();
     private boolean finished;
@@ -51,47 +55,16 @@ public class BuildSite implements ConfigurationSerializable {
         interactive = center;
         FLogger.BUILDING.log("Created new building site in " + this.region.getName() + ". Building type: " + building.getName());
         region.getBuildSites().add(this);
+        uuid = UUID.randomUUID();
+        plugin.getBuildSiteCache().add(this, center.getChunk());
         //setupHolo();
     }
 
-    public BuildSite(@NotNull Map<String, Object> args) {
-        building = buildingManager.getById((String) args.get("building"));
-        region = plugin.getRegionManager().getRegionById((int) args.get("region"));
-        corner = Location.deserialize(ConfigUtil.getMap(args.get("location.corner")));
-        otherCorner = Location.deserialize(ConfigUtil.getMap(args.get("location.otherCorner")));
-        FLogger.BUILDING.log((String) args.get("location.interactable"));
-        interactive = Location.deserialize(ConfigUtil.getMap(args.get("location.interactable")));
-        finished = (boolean) args.get("finished");
-        hasTicket = (boolean) args.get("hasTicket");
-        problemMessage = (String) args.get("problemMessage");
-        region.getBuildSites().add(this);
-        if (hasTicket) {
-            buildingManager.getBuildingTickets().add(getSite());
-        }
-        //setupHolo();
-    }
-
-    public BuildSite(@NotNull ConfigurationSection config) {
-        building = buildingManager.getById(config.getString("building"));
-        region = plugin.getRegionManager().getRegionById(config.getInt("region"));
-        corner =  Location.deserialize(config.getConfigurationSection("location.corner").getValues(false));
-        otherCorner = Location.deserialize(config.getConfigurationSection("location.otherCorner").getValues(false));
-        interactive = Location.deserialize(config.getConfigurationSection("location.interactable").getValues(false));
-        FLogger.BUILDING.log(corner.toString());
-        finished = config.getBoolean("finished");
-        hasTicket = config.getBoolean("hasTicket");
-        problemMessage = config.getString("problemMessage");
-        region.getBuildSites().add(this);
-        scheduleProgressUpdate();
-        BukkitRunnable delayedSetup = new BukkitRunnable() {
-            @Override
-            public void run() {
-                //setupHolo();
-            }
-        };
-        delayedSetup.runTaskLater(plugin, 60);
-        if (hasTicket) {
-            buildingManager.getBuildingTickets().add(getSite());
+    public BuildSite(File file) {
+        try {
+            load(file);
+        } catch (IOException | InvalidConfigurationException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -148,7 +121,7 @@ public class BuildSite implements ConfigurationSerializable {
 
     public void finishBuilding() {
         for (BuildingEffect effect : building.getEffects()) {
-            getRegion().getOwner().getBuildingEffects().add(new ActiveBuildingEffect(effect, this, effect.getDuration()));
+            getRegion().getOwner().getBuildingEffects().add(new ActiveBuildingEffect(effect, this));
         }
         finished = true;
         problemMessage = null;
@@ -158,8 +131,8 @@ public class BuildSite implements ConfigurationSerializable {
 
     public void removeEffects() {
         for (ActiveBuildingEffect effect : getRegion().getOwner().getBuildingEffects()) {
-            if (effect.site() == this) {
-                effect.effect().remove(getRegion().getOwner());
+            if (effect.getSite() == this) {
+                effect.getEffect().remove(getRegion().getOwner());
             }
         }
     }
@@ -203,15 +176,15 @@ public class BuildSite implements ConfigurationSerializable {
                 }
                 if (finished && !fini) {
                     finished = false;
-                    //getRegion().getOwner().sendMessage("&aEin(e) &6" + getBuilding().getName() + " &ain " + getRegion().getName() + " &awurde zerstört!");
+                    getRegion().getOwner().sendMessage("<green>Ein(e) &6" + getBuilding().getName() + " <green>in " + getRegion().getName() + " <green>wurde zerstört!");
                     removeEffects();
                     return;
                 }
                 if (fini && !isFinished() && !hasTicket) {
                     buildingManager.getBuildingTickets().add(getSite());
                     hasTicket = true;
-                    //getRegion().getOwner().sendMessage("&aEin(e) &6" + getBuilding().getName() + " &ain " + getRegion().getName() + " &awurde fertiggestellt");
-                    //getRegion().getOwner().sendMessage("&7&oEin Ticket wurde automatisch erstellt und das Gebäude wird zeitnah überprüft.");
+                    getRegion().getOwner().sendMessage("<green>Ein(e) <gold>" + getBuilding().getName() + " <green>in " + getRegion().getName() + " <green>wurde fertiggestellt");
+                    getRegion().getOwner().sendMessage("<gray>Ein Ticket wurde automatisch erstellt und das Gebäude wird zeitnah überprüft.");
                     FLogger.BUILDING.log("A new BuildSite ticket for " + getBuilding().getName() + " in " + getRegion().getName() + " was created.");
                 }
             }
@@ -346,17 +319,39 @@ public class BuildSite implements ConfigurationSerializable {
         return isBusy;
     }
 
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        Map<String, Object> args = new HashMap<>();
-        args.put("building", building.getId());
-        args.put("region", region.getId());
-        args.put("location.corner", corner.serialize());
-        args.put("location.otherCorner", otherCorner.serialize());
-        args.put("location.interactable", interactive.serialize());
-        args.put("finished", finished);
-        args.put("hasTicket", hasTicket);
-        args.put("problemMessage", problemMessage);
-        return args;
+    public UUID getUuid() {
+        return uuid;
     }
+
+    @Override
+    public void load(@NotNull File file) throws IOException, InvalidConfigurationException {
+        uuid = UUID.fromString(file.getName().replace(".yml", ""));
+        building = buildingManager.getById(getString("building"));
+        region = plugin.getRegionManager().getRegionById(getInt("region"));
+        otherCorner = Location.deserialize(getConfigurationSection("location.otherCorner").getValues(false));
+        interactive = Location.deserialize(getConfigurationSection("location.interactable").getValues(false));
+        FLogger.BUILDING.log(corner.toString());
+        finished = getBoolean("finished");
+        hasTicket = getBoolean("hasTicket");
+        problemMessage = getString("problemMessage");
+        region.getBuildSites().add(this);
+        scheduleProgressUpdate();
+        for (BuildingEffect effect : building.getEffects()) {
+            getRegion().getOwner().getBuildingEffects().add(new ActiveBuildingEffect(effect, this));
+        }
+    }
+
+    @Override
+    public void save(@NotNull File file) throws IOException {
+        set("building", building.getId());
+        set("region", region.getId());
+        set("location.corner", corner.serialize());
+        set("location.otherCorner", otherCorner.serialize());
+        set("location.interactable", interactive.serialize());
+        set("finished", finished);
+        set("hasTicket", hasTicket);
+        set("problemMessage", problemMessage);
+        super.save(file);
+    }
+
 }

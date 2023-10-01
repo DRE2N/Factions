@@ -24,13 +24,13 @@ public class FStorage {
     public FStorage(@NotNull Faction faction, @NotNull ConfigurationSection section) {
         this.faction = faction;
         resourceLimits = Factions.get().getFConfig().getDefaultResourceLimits();
-        for (String key : section.getKeys(false)) {
+        /*for (String key : section.getKeys(false)) {
             Resource resource = Resource.getById(key);
             if (resource == null) {
                 continue;
             }
             resources.put(resource, section.getInt(key));
-        }
+        } Doesn't work */
     }
 
     public boolean addResource(@NotNull Resource resource, int amount) {

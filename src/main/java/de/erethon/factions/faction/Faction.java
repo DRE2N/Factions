@@ -30,6 +30,7 @@ import de.erethon.factions.util.FUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -206,6 +207,10 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         }
     }
 
+    public void sendMessage(String msg) {
+        sendMessage(MiniMessage.miniMessage().deserialize(msg));
+    }
+
     /* Serialization */
 
     @Override
@@ -259,12 +264,6 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         for (PopulationLevel level : PopulationLevel.values()) {
             this.population.put(level, config.getInt("population." + level.name(), 0));
         }
-        ConfigurationSection buildSitesSection = config.getConfigurationSection("buildSites");
-        if (buildSitesSection != null) {
-            for (String key : buildSitesSection.getKeys(false)) {
-                this.buildSites.add(new BuildSite(buildSitesSection.getConfigurationSection(key)));
-            }
-        }
         this.fStorage = new FStorage(this, config.getConfigurationSection("storage"));
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
     }
@@ -287,7 +286,6 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         for (PopulationLevel level : PopulationLevel.values()) {
             config.set("population." + level.name(), population.get(level));
         }
-        config.set("buildSites", buildSites.stream().map(BuildSite::serialize).toList());
         config.set("storage", fStorage.save());
         saveEntities("authorisedBuilders", authorisedBuilders);
         saveEntities("adjacentFactions", adjacentFactions);

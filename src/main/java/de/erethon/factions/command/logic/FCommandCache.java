@@ -6,6 +6,8 @@ import de.erethon.bedrock.plugin.EPlugin;
 import de.erethon.factions.command.AdminCommand;
 import de.erethon.factions.command.AllianceCommand;
 import de.erethon.factions.command.AuthoriseCommand;
+import de.erethon.factions.command.BuildingCommand;
+import de.erethon.factions.command.BuildingTicketCommand;
 import de.erethon.factions.command.ClaimCommand;
 import de.erethon.factions.command.CreateCommand;
 import de.erethon.factions.command.CreateWarFlagCommand;
@@ -67,6 +69,8 @@ public class FCommandCache extends ECommandCache {
         addCommand(new UnclaimCommand());
         addCommand(new VersionCommand());
         addCommand(new VoteCommand());
+        addCommand(new BuildingCommand());
+        addCommand(new BuildingTicketCommand());
     }
 
     @Override

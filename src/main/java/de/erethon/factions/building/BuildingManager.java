@@ -5,9 +5,15 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class BuildingManager {
+public class BuildingManager implements Listener {
 
     Factions plugin = Factions.get();
 
@@ -26,6 +32,7 @@ public class BuildingManager {
 
     public BuildingManager(@NotNull File dir) {
         load(dir);
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     public @Nullable Building getById(@NotNull String id) {
@@ -96,5 +103,27 @@ public class BuildingManager {
 
     public List<BuildSite> getBuildingTickets() {
         return buildingTickets;
+    }
+
+    @EventHandler
+    public void onChunkLoad(ChunkLoadEvent event) {
+        BukkitRunnable loadTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                plugin.getBuildSiteCache().loadForChunk(event.getChunk());
+            }
+        };
+        loadTask.runTaskAsynchronously(plugin);
+    }
+
+    @EventHandler
+    public void onChunkUnload(ChunkUnloadEvent event) {
+        BukkitRunnable saveTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                plugin.getBuildSiteCache().saveForChunk(event.getChunk());
+            }
+        };
+        saveTask.runTaskAsynchronously(plugin);
     }
 }

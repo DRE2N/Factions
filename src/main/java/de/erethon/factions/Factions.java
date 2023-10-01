@@ -11,6 +11,7 @@ import de.erethon.bedrock.misc.Registry;
 import de.erethon.bedrock.plugin.EPlugin;
 import de.erethon.bedrock.plugin.EPluginSettings;
 import de.erethon.factions.alliance.AllianceCache;
+import de.erethon.factions.building.BuildSiteCache;
 import de.erethon.factions.building.BuildingManager;
 import de.erethon.factions.command.logic.FCommandCache;
 import de.erethon.factions.data.FConfig;
@@ -52,6 +53,7 @@ public final class Factions extends EPlugin {
     /* Folders */
     public static File ALLIANCES;
     public static File BUILDINGS;
+    public static File BUILD_SITES;
     public static File FACTIONS;
     public static File REGIONS;
     public static File SCHEMATICS;
@@ -76,6 +78,7 @@ public final class Factions extends EPlugin {
     private RegionManager regionManager;
     private FPlayerCache fPlayerCache;
     private FCommandCache fCommandCache;
+    private BuildSiteCache buildSiteCache;
 
     /* Instances */
     private BuildingManager buildingManager;
@@ -141,6 +144,7 @@ public final class Factions extends EPlugin {
         initFolder(getDataFolder());
         initFolder(ALLIANCES = new File(getDataFolder(), "alliances"));
         initFolder(BUILDINGS = new File(getDataFolder(), "buildings"));
+        initFolder(BUILD_SITES = new File(getDataFolder(), "sites"));
         initFolder(FACTIONS = new File(getDataFolder(), "factions"));
         initFolder(REGIONS = new File(getDataFolder(), "regions"));
         initFolder(SCHEMATICS = new File(getDataFolder(), "schematics"));
@@ -184,6 +188,7 @@ public final class Factions extends EPlugin {
         factionCache = new FactionCache(FACTIONS);
         regionManager = new RegionManager(REGIONS);
         fPlayerCache = new FPlayerCache(this);
+        buildSiteCache = new BuildSiteCache(BUILD_SITES);
     }
 
     public void loadCaches() {
@@ -345,6 +350,7 @@ public final class Factions extends EPlugin {
         fPlayerCache.saveAll();
         warHistory.saveAll();
         warPhaseManager.saveData();
+        buildSiteCache.shutdown();
         FLogger.save();
     }
 
@@ -380,6 +386,10 @@ public final class Factions extends EPlugin {
 
     public @NotNull BuildingManager getBuildingManager() {
         return buildingManager;
+    }
+
+    public @NotNull BuildSiteCache getBuildSiteCache() {
+        return buildSiteCache;
     }
 
     public @NotNull RegionSchematicManager getRegionSchematicManager() {

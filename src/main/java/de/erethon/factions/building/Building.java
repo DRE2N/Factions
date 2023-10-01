@@ -31,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,7 +51,7 @@ public class Building {
 
     private String id;
     private Component name;
-    private List<Component> description;
+    private final List<Component> description = new ArrayList<>();
     private boolean isCoreRequired;
     private boolean isWarBuilding;
     private int size;
@@ -441,8 +442,11 @@ public class Building {
         if (config.contains("effects")) {
             for (String key : config.getConfigurationSection("effects").getKeys(false)) {
                 try {
-                    effects.add(new BuildingEffect().fromConfigSection(config.getConfigurationSection("effects." + key)));
-                } catch (NullPointerException ex) {
+                    String className = config.getString("effects." + key + ".class");
+                    Class<? extends BuildingEffect> effectClass = (Class<? extends BuildingEffect>) Class.forName("de.erethon.factions.building.effects." + className, true, Factions.get().getClass().getClassLoader());
+                    BuildingEffect effect = effectClass.getDeclaredConstructor(Building.class, ConfigurationSection.class).newInstance(this, config.getConfigurationSection("effects." + key));
+                    effects.add(effect);
+                } catch (NullPointerException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | ClassNotFoundException ex) {
                     FLogger.ERROR.log("There was an error loading effect " + key + " (Building: " + name + ")");
                     FLogger.ERROR.log(ex.toString());
                 }
