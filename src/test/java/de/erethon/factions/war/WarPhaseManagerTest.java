@@ -16,7 +16,7 @@ public class WarPhaseManagerTest {
 
     @BeforeAll
     void beforeClass() {
-        warPhaseManager = new WarPhaseManager(new File("test", "war.yml"));
+        warPhaseManager = new WarPhaseManager(new File("test", "schedule.yml"));
     }
 
     @Test

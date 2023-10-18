@@ -4,6 +4,7 @@ import de.erethon.aergia.placeholder.ChatPlaceholder;
 import de.erethon.aergia.placeholder.ChatPlaceholders;
 import de.erethon.aergia.placeholder.HoverEventBuilder;
 import de.erethon.aergia.placeholder.HoverInfo;
+import de.erethon.aergia.util.TickUtil;
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.compatibility.Internals;
 import de.erethon.bedrock.misc.FileUtil;
@@ -37,10 +38,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -52,6 +57,7 @@ public final class Factions extends EPlugin {
 
     /* Folders */
     public static File ALLIANCES;
+    public static File BACKUPS;
     public static File BUILDINGS;
     public static File BUILD_SITES;
     public static File FACTIONS;
@@ -86,6 +92,10 @@ public final class Factions extends EPlugin {
     private TaxManager taxManager;
     private WarHistory warHistory;
     private WarPhaseManager warPhaseManager;
+
+    /* Tasks */
+    private BukkitTask backupTask;
+    private BukkitTask saveDataTask;
 
     /* Listeners */
     private FPlayerListener fPlayerListener;
@@ -143,6 +153,7 @@ public final class Factions extends EPlugin {
     public void initFolders() {
         initFolder(getDataFolder());
         initFolder(ALLIANCES = new File(getDataFolder(), "alliances"));
+        initFolder(BACKUPS = new File(getDataFolder(), "backups"));
         initFolder(BUILDINGS = new File(getDataFolder(), "buildings"));
         initFolder(BUILD_SITES = new File(getDataFolder(), "sites"));
         initFolder(FACTIONS = new File(getDataFolder(), "factions"));
@@ -156,7 +167,7 @@ public final class Factions extends EPlugin {
     public void initFiles() {
         fLoggerFile = new File(getDataFolder(), "logger.yml");
         fConfigFile = new File(getDataFolder(), "config.yml");
-        warPhaseManagerFile = FileUtil.initFile(this, new File(WAR, "war.yml"), "defaults/war.yml");
+        warPhaseManagerFile = FileUtil.initFile(this, new File(WAR, "schedule.yml"), "defaults/schedule.yml");
     }
 
     public void loadFLogger() {
@@ -218,6 +229,8 @@ public final class Factions extends EPlugin {
             taxManager.runFactionTaxTask();
         }
         warPhaseManager.updateCurrentStageTask();
+        runBackupTask();
+        runSaveDataTask();
     }
 
     public void loadCommands() {
@@ -342,7 +355,48 @@ public final class Factions extends EPlugin {
         chatPlaceholder.getHoverEventBuilder().removeHoverInfo(AERGIA_PLACEHOLDER_WEIGHT);
     }
 
+    /* Tasks */
+
+    public void runBackupTask() {
+        if (backupTask != null) {
+            backupTask.cancel();
+        }
+        long interval = fConfig.getBackupInterval() * TickUtil.MINUTE;
+        backupTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::createBackup, interval, interval);
+    }
+
+    public void runSaveDataTask() {
+        if (saveDataTask != null) {
+            saveDataTask.cancel();
+        }
+        long interval = fConfig.getAutoSaveInterval() * TickUtil.MINUTE;
+        saveDataTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::saveData, interval, interval);
+    }
+
+    /* Data storing */
+
+    public void createBackup() {
+        FLogger.DEBUG.log("Creating backup...");
+        File backupDir = new File(BACKUPS, String.valueOf(System.currentTimeMillis()));
+        FileUtil.copyDir(getDataFolder(), backupDir, "config.yml", "logger.yml");
+
+        List<File> backupList = FileUtil.getFilesForFolder(backupDir);
+        if (backupList.size() <= fConfig.getBackupsBeforeDeletion()) {
+            return;
+        }
+        backupList.sort(Comparator.comparingLong(File::lastModified));
+        Iterator<File> iterator = backupList.iterator();
+
+        while (backupList.size() > fConfig.getBackupsBeforeDeletion() && iterator.hasNext()) {
+            File current = iterator.next();
+            FLogger.DEBUG.log("Deleting old backup: " + current.getName());
+            current.delete();
+            iterator.remove();
+        }
+    }
+
     public void saveData() {
+        FLogger.DEBUG.log("Saving data...");
         allianceCache.saveAll();
         factionCache.saveAll();
         regionManager.saveAll();
@@ -412,7 +466,7 @@ public final class Factions extends EPlugin {
         return fPlayerListener;
     }
 
-    public @NotNull UIFactionsListener getUiFactionsListener() {
+    public @NotNull UIFactionsListener getUIFactionsListener() {
         return uiFactionsListener;
     }
 

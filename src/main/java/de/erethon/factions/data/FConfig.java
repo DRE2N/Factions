@@ -32,6 +32,9 @@ public class FConfig extends EConfig {
     private final Factions plugin = Factions.get();
 
     /* General */
+    private long autoSaveInterval = 15; // minutes
+    private long backupInterval = 60; // minutes
+    private int backupsBeforeDeletion = 12;
     private List<String> excludedWorlds = new ArrayList<>();
     private String language = "german";
     private int maximumAutomatedChunkManagerRadius = 5;
@@ -78,6 +81,9 @@ public class FConfig extends EConfig {
 
     @Override
     public void initialize() {
+        initValue("autoSaveInterval", autoSaveInterval);
+        initValue("backupInterval", backupInterval);
+        initValue("backupsBeforeDeletion", backupsBeforeDeletion);
         initValue("excludedWorlds", excludedWorlds);
         initValue("language", language);
         initValue("maximumAutomatedChunkManagerRadius", maximumAutomatedChunkManagerRadius);
@@ -118,6 +124,9 @@ public class FConfig extends EConfig {
 
     @Override
     public void load() {
+        autoSaveInterval = config.getLong("autoSaveInterval", autoSaveInterval);
+        backupInterval = config.getLong("backupInterval", backupInterval);
+        backupsBeforeDeletion = config.getInt("backupsBeforeDeletion", backupsBeforeDeletion);
         excludedWorlds = getStringList("excludedWorlds", excludedWorlds);
         language = config.getString("language", language);
         maximumAutomatedChunkManagerRadius = Math.max(config.getInt("maximumAutomatedChunkManagerRadius", maximumAutomatedChunkManagerRadius), 1);
@@ -174,6 +183,18 @@ public class FConfig extends EConfig {
     }
 
     /* Getters */
+
+    public long getAutoSaveInterval() {
+        return autoSaveInterval;
+    }
+
+    public long getBackupInterval() {
+        return backupInterval;
+    }
+
+    public int getBackupsBeforeDeletion() {
+        return backupsBeforeDeletion;
+    }
 
     public @NotNull List<String> getExcludedWorlds() {
         return excludedWorlds;
