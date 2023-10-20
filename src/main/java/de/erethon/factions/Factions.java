@@ -390,7 +390,7 @@ public final class Factions extends EPlugin {
         while (backupList.size() > fConfig.getBackupsBeforeDeletion() && iterator.hasNext()) {
             File current = iterator.next();
             FLogger.DEBUG.log("Deleting old backup: " + current.getName());
-            current.delete();
+            FileUtil.removeDir(current);
             iterator.remove();
         }
     }
