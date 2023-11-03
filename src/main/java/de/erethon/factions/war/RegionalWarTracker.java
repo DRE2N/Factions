@@ -105,6 +105,19 @@ public class RegionalWarTracker {
         return kills.getOrDefault(alliance, 0);
     }
 
+    public double getKillsAsScore(@NotNull Alliance alliance) {
+        int kills = getKills(alliance);
+        if (kills == 0) {
+            return 0;
+        }
+        double score = 0;
+        while (kills > 0) {
+            score += WarMath.scoreForKills(kills);
+            kills--;
+        }
+        return score;
+    }
+
     public void addKill(@NotNull Alliance alliance) {
         int newKills = getKills(alliance) + 1;
         kills.put(alliance, newKills);
@@ -117,6 +130,15 @@ public class RegionalWarTracker {
 
     public double getScore(@NotNull Alliance alliance) {
         return scores.getOrDefault(alliance, 0.0);
+    }
+
+    // Returns a percentage [0 - 100]%, not a factor [0 - 1]
+    public double getScoreAsPercentage(@NotNull Alliance alliance) {
+        double score = getScore(alliance);
+        if (score == 0) {
+            return 0;
+        }
+        return de.erethon.aergia.util.NumberUtil.round(100 / captureCap * score);
     }
 
     public void addScore(@NotNull Alliance alliance, double score) {

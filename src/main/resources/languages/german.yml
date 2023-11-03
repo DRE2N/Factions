@@ -92,6 +92,12 @@ cmd:
       success: "<green>Die Regionen <gold>&v1</gold> und <gold>&v2</gold> sind nun nicht mehr benachbart."
     split:
       success: "<green>Die Region wurde in zwei geteilt. Erstellte Region: <dark_green>&v1</dark_green>."
+    status:
+      allianceHeader: "&v1<dark_gray>:"
+      header: "<dark_red><b>[</b><red> &v1 </red><b>]</b>"
+      kills: "  » <red>Kills<dark_gray>:</dark_gray> <gray>&v1 <dark_gray>-></dark_gray> &v2 Punkte"
+      leader: "<red>Führende Allianz<dark_gray>:</dark_gray> &v1"
+      score: "  » <red>Punktzahl<dark_gray>:</dark_gray> <gray>&v1 <dark_gray>-></dark_gray> &v2%"
     structure:
       create:
         success: "<green>Regionsstruktur Nr. <dark_green>&v1</dark_green> wurde erstellt."
