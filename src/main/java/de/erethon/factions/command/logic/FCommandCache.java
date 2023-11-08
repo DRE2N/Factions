@@ -45,6 +45,8 @@ public class FCommandCache extends ECommandCache {
         addCommand(new AdminCommand());
         addCommand(new AllianceCommand());
         addCommand(new AuthoriseCommand());
+        addCommand(new BuildingCommand());
+        addCommand(new BuildingTicketCommand());
         addCommand(new ClaimCommand());
         addCommand(new CreateCommand());
         addCommand(new CreateWarFlagCommand());
@@ -69,8 +71,6 @@ public class FCommandCache extends ECommandCache {
         addCommand(new UnclaimCommand());
         addCommand(new VersionCommand());
         addCommand(new VoteCommand());
-        addCommand(new BuildingCommand());
-        addCommand(new BuildingTicketCommand());
     }
 
     @Override
