@@ -53,7 +53,7 @@ public class WarHistory {
 
     /* Classes */
 
-    class Entry extends EConfig implements Comparable<Entry> {
+    public class Entry extends EConfig implements Comparable<Entry> {
 
         public static int CONFIG_VERSION = 1;
 
@@ -71,6 +71,8 @@ public class WarHistory {
             load();
         }
 
+        /* Serialization */
+
         @Override
         public void load() {
             this.endDate = config.getLong("endDate");
@@ -85,6 +87,28 @@ public class WarHistory {
             config.set("endDate", endDate);
             config.set("allianceScores", allianceScores);
             save();
+        }
+
+        /* Getters */
+
+        public long getEndDate() {
+            return endDate;
+        }
+
+        public @NotNull Map<Integer, Double> getAllianceScores() {
+            return allianceScores;
+        }
+
+        public int getWinner() {
+            int winner = -1;
+            double highestScore = -1;
+            for (Map.Entry<Integer, Double> entry : allianceScores.entrySet()) {
+                if (entry.getValue() > highestScore) {
+                    winner = entry.getKey();
+                    highestScore = entry.getValue();
+                }
+            }
+            return winner;
         }
 
         @Override

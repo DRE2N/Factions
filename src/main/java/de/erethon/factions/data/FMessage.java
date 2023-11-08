@@ -114,6 +114,9 @@ public enum FMessage implements Message {
     CMD_VERSION_AUTHORS("cmd.version.authors"),
     CMD_VERSION_HEADER("cmd.version.header"),
     CMD_VERSION_STATUS("cmd.version.status"),
+    CMD_WAR_HISTORY_ENDE_DATE("cmd.warHistory.endDate"),
+    CMD_WAR_HISTORY_ENTRY("cmd.warHistory.entry"),
+    CMD_WAR_HISTORY_WINNER("cmd.warHistory.winner"),
 
     ERROR_ACM_SHAPE_NOT_FOUND("error.acmShapeNotFound"),
     ERROR_BUILDING_BLOCKED("error.buildingBlocked"),
@@ -199,6 +202,7 @@ public enum FMessage implements Message {
     GENERAL_NONE("general.none"),
     GENERAL_REGION_DEFAULT_NAME_PREFIX("general.regionDefaultNamePrefix"),
     GENERAL_SPECTATOR("general.spectator"),
+    GENERAL_UNKNOWN("general.unknown"),
     GENERAL_WAR_ZONES("general.warZones"),
     GENERAL_WILDERNESS("general.wilderness"),
 

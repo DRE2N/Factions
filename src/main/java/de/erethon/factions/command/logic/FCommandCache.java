@@ -3,35 +3,7 @@ package de.erethon.factions.command.logic;
 import de.erethon.bedrock.command.ECommand;
 import de.erethon.bedrock.command.ECommandCache;
 import de.erethon.bedrock.plugin.EPlugin;
-import de.erethon.factions.command.AdminCommand;
-import de.erethon.factions.command.AllianceCommand;
-import de.erethon.factions.command.AuthoriseCommand;
-import de.erethon.factions.command.BuildingCommand;
-import de.erethon.factions.command.BuildingTicketCommand;
-import de.erethon.factions.command.ClaimCommand;
-import de.erethon.factions.command.CreateCommand;
-import de.erethon.factions.command.CreateWarFlagCommand;
-import de.erethon.factions.command.DeclineCommand;
-import de.erethon.factions.command.DescriptionCommand;
-import de.erethon.factions.command.DisbandCommand;
-import de.erethon.factions.command.FlagCommand;
-import de.erethon.factions.command.HelpCommand;
-import de.erethon.factions.command.InviteCommand;
-import de.erethon.factions.command.JoinCommand;
-import de.erethon.factions.command.KickCommand;
-import de.erethon.factions.command.LeaveCommand;
-import de.erethon.factions.command.LongNameCommand;
-import de.erethon.factions.command.NameCommand;
-import de.erethon.factions.command.Pos1Command;
-import de.erethon.factions.command.Pos2Command;
-import de.erethon.factions.command.RegionCommand;
-import de.erethon.factions.command.ReloadCommand;
-import de.erethon.factions.command.ShortNameCommand;
-import de.erethon.factions.command.ShowCommand;
-import de.erethon.factions.command.StatsCommand;
-import de.erethon.factions.command.UnclaimCommand;
-import de.erethon.factions.command.VersionCommand;
-import de.erethon.factions.command.VoteCommand;
+import de.erethon.factions.command.*;
 
 /**
  * @author Fyreum
@@ -71,6 +43,7 @@ public class FCommandCache extends ECommandCache {
         addCommand(new UnclaimCommand());
         addCommand(new VersionCommand());
         addCommand(new VoteCommand());
+        addCommand(new WarHistoryCommand());
     }
 
     @Override

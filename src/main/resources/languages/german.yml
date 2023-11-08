@@ -135,6 +135,10 @@ cmd:
     authors: "<dark_green>Autoren<dark_gray>:</dark_gray><gray> &v1"
     header: "<dark_green><b>&v1</b> <dark_gray>-</dark_gray> &v2"
     status: "<gray><dark_green>&v1</dark_green> Spieler <dark_gray>/</dark_gray> <dark_green>&v2</dark_green> Regionen <dark_gray>/</dark_gray> <dark_green>&v3</dark_green> Fraktionen <dark_gray>/</dark_gray> <dark_green>&v4</dark_green> Allianzen"
+  warHistory:
+    endDate: "<gold>Kriegsende</gold><dark_gray>: <gray>&v1"
+    entry: "&v1 <dark_gray>-</dark_gray><gray> &v2"
+    winner: "<gold>Gewinner</gold><dark_gray>:</dark_gray><gray> &v1"
 error:
   acmShapeNotFound: "<red>Die Form <gold>&v1</gold> konnte nicht gefunden werden."
   cannotAuthoriseSameFaction: "<red>Du kannst eine Fraktion nicht für sich selbst autorisieren."
@@ -215,6 +219,7 @@ general:
   none: "keine"
   regionDefaultNamePrefix: "PROV_"
   spectator: "Zuschauer"
+  unknown: "unbekannt"
   warZones: "Kriegsgebiete"
   wilderness: "Wildnis"
 gui:
