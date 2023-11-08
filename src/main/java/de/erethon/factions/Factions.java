@@ -378,7 +378,7 @@ public final class Factions extends EPlugin {
     public void createBackup() {
         FLogger.DEBUG.log("Creating backup...");
         File backupDir = new File(BACKUPS, String.valueOf(System.currentTimeMillis()));
-        FileUtil.copyDir(getDataFolder(), backupDir, "config.yml", "logger.yml");
+        FileUtil.copyDir(getDataFolder(), backupDir, BACKUPS.getName(), "config.yml", "logger.yml");
 
         List<File> backupList = FileUtil.getFilesForFolder(backupDir);
         if (backupList.size() <= fConfig.getBackupsBeforeDeletion()) {
