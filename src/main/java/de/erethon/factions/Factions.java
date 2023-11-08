@@ -229,8 +229,8 @@ public final class Factions extends EPlugin {
             taxManager.runFactionTaxTask();
         }
         warPhaseManager.updateCurrentStageTask();
-        runBackupTask();
         runSaveDataTask();
+        runBackupTask();
     }
 
     public void loadCommands() {
@@ -357,20 +357,20 @@ public final class Factions extends EPlugin {
 
     /* Tasks */
 
-    public void runBackupTask() {
-        if (backupTask != null) {
-            backupTask.cancel();
-        }
-        long interval = fConfig.getBackupInterval() * TickUtil.MINUTE;
-        backupTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::createBackup, interval, interval);
-    }
-
     public void runSaveDataTask() {
         if (saveDataTask != null) {
             saveDataTask.cancel();
         }
         long interval = fConfig.getAutoSaveInterval() * TickUtil.MINUTE;
         saveDataTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::saveData, interval, interval);
+    }
+
+    public void runBackupTask() {
+        if (backupTask != null) {
+            backupTask.cancel();
+        }
+        long interval = fConfig.getBackupInterval() * TickUtil.MINUTE;
+        backupTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::createBackup, interval, interval);
     }
 
     /* Data storing */
