@@ -186,6 +186,12 @@ public class WarPhaseManager extends EConfig {
                 }
             }
         }
+        // Get the overall war winning alliance.
+        List<Alliance> ranked = plugin.getAllianceCache().ranked();
+        if (ranked.isEmpty()) {
+            return;
+        }
+        Alliance winner = ranked.get(0);
         // Open alliance polls & store new WarHistory entry
         Map<Integer, Double> scores = new HashMap<>(plugin.getAllianceCache().getSize());
         for (Alliance alliance : plugin.getAllianceCache()) {
@@ -196,12 +202,6 @@ public class WarPhaseManager extends EConfig {
         }
         plugin.getWarHistory().storeEntry(System.currentTimeMillis(), scores);
 
-        // Get the overall war winning alliance.
-        List<Alliance> ranked = plugin.getAllianceCache().ranked();
-        if (ranked.isEmpty()) {
-            return;
-        }
-        Alliance winner = ranked.get(0);
         winner.setCurrentEmperor(true);
         for (Alliance current : ranked) {
             FBroadcastUtil.broadcastWar(FMessage.WAR_END_RANKING, current.getColoredLongName(), Component.text(current.getWarScore()));
