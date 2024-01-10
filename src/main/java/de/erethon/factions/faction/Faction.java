@@ -71,6 +71,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private final Set<BuildSite> buildSites = new HashSet<>();
     private final Map<String, Poll<?>> polls = new HashMap<>();
     private final Map<PopulationLevel, Integer> population = new HashMap<>();
+    private final Map<PopulationLevel, Double> populationHappiness = new HashMap<>();
     private FStorage fStorage;
     private FactionLevel level = FactionLevel.HAMLET;
     /* Temporary */
@@ -104,6 +105,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void addDefaultAttributes() {
         attributes.put("max_players", new FactionStatAttribute(5));
+        addPopulation(PopulationLevel.PEASANT, 5); // Let's start with something at least
     }
 
     public void invitePlayer(@NotNull FPlayer fPlayer) {
@@ -580,6 +582,18 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         return population.getOrDefault(level, 0);
     }
 
+    public void addPopulation(@NotNull PopulationLevel level, int amount) {
+        population.put(level, population.getOrDefault(level, 0) + amount);
+    }
+
+    public double getHappiness(@NotNull PopulationLevel level) {
+        return populationHappiness.getOrDefault(level, 0.0);
+    }
+
+    public void addHappiness(@NotNull PopulationLevel level, double happiness) {
+        populationHappiness.put(level, populationHappiness.getOrDefault(level, 0.0) + happiness);
+    }
+
     public @NotNull FStorage getStorage() {
         return fStorage;
     }
@@ -598,6 +612,10 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public @NotNull Set<BuildingEffect> getTickingBuildingEffects() {
         return tickingBuildingEffects;
+    }
+
+    public @NotNull Map<String, FactionAttribute> getAttributes() {
+        return attributes;
     }
 
     public FactionAttribute getAttribute(@NotNull String name) {

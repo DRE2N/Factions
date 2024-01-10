@@ -41,4 +41,8 @@ public class FactionResourceAttribute implements FactionAttribute {
         return this;
     }
 
+    public Resource getResource() {
+        return resource;
+    }
+
 }

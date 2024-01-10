@@ -1,6 +1,7 @@
 package de.erethon.factions.economy;
 
 import de.erethon.factions.Factions;
+import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.economy.resource.Resource;
 import de.erethon.factions.faction.Faction;
 import org.bukkit.configuration.ConfigurationSection;
