@@ -4,9 +4,11 @@ import de.erethon.aergia.util.BroadcastUtil;
 import de.erethon.bedrock.player.PlayerCollection;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
-import de.erethon.factions.building.ActiveBuildingEffect;
+import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.Building;
+import de.erethon.factions.building.attributes.FactionAttribute;
+import de.erethon.factions.building.attributes.FactionStatAttribute;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.FAccount;
 import de.erethon.factions.economy.FAccountDummy;
@@ -33,7 +35,6 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
@@ -73,7 +74,9 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private FStorage fStorage;
     private FactionLevel level = FactionLevel.HAMLET;
     /* Temporary */
-    private final Set<ActiveBuildingEffect> buildingEffects = new HashSet<>();
+    private final Set<BuildingEffect> buildingEffects = new HashSet<>();
+    private final Set<BuildingEffect> tickingBuildingEffects = new HashSet<>();
+    private final Map<String, FactionAttribute> attributes = new HashMap<>();
     private FAccount fAccount;
     private final Set<FPlayer> invitedPlayers = new HashSet<>();
 
@@ -97,6 +100,10 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     protected Faction(@NotNull File file) throws NumberFormatException {
         super(file);
+    }
+
+    public void addDefaultAttributes() {
+        attributes.put("max_players", new FactionStatAttribute(5));
     }
 
     public void invitePlayer(@NotNull FPlayer fPlayer) {
@@ -585,8 +592,22 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.level = level;
     }
 
-    public @NotNull Set<ActiveBuildingEffect> getBuildingEffects() {
+    public @NotNull Set<BuildingEffect> getBuildingEffects() {
         return buildingEffects;
+    }
+
+    public @NotNull Set<BuildingEffect> getTickingBuildingEffects() {
+        return tickingBuildingEffects;
+    }
+
+    public FactionAttribute getAttribute(@NotNull String name) {
+        FactionAttribute attribute = attributes.get(name);
+        return attribute == null ? null : attribute.apply();
+    }
+
+    public double getAttributeValue(@NotNull String name) {
+        FactionAttribute attribute = attributes.get(name);
+        return attribute == null ? 0 : attribute.apply().getValue();
     }
 
     public @NotNull FAccount getFAccount() {

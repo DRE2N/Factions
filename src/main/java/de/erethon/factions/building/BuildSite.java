@@ -1,10 +1,13 @@
 package de.erethon.factions.building;
 
 import de.erethon.factions.Factions;
+import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
+import net.kyori.adventure.text.Component;
 import org.apache.commons.lang.math.IntRange;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -14,6 +17,16 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,7 +40,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class BuildSite extends YamlConfiguration {
+public class BuildSite extends YamlConfiguration implements InventoryHolder, Listener {
 
     Factions plugin = Factions.get();
     BuildingManager buildingManager = plugin.getBuildingManager();
@@ -38,13 +51,16 @@ public class BuildSite extends YamlConfiguration {
     private Region region;
     private Location corner;
     private Location otherCorner;
+    private long chunkKey;
     private Location interactive;
     private String problemMessage = null;
     private Map<Material, Integer> placedBlocks = new HashMap<>();
     private boolean finished;
     private boolean hasTicket = false;
     private boolean isBusy = false;
-    private final Set<ActiveBuildingEffect> activeBuildingEffects = new HashSet<>();
+    private Inventory inventory;
+    private final Set<BuildingEffect> activeBuildingEffects = new HashSet<>();
+    private final Set<ItemStack> buildingStorage = new HashSet<>();
 
     public BuildSite(@NotNull Building building, @NotNull Region region, @NotNull Location loc1, @NotNull Location loc2, @NotNull Location center) {
         this.building = building;
@@ -53,6 +69,7 @@ public class BuildSite extends YamlConfiguration {
         corner = loc1;
         otherCorner = loc2;
         interactive = center;
+        chunkKey = center.getChunk().getChunkKey();
         FLogger.BUILDING.log("Created new building site in " + this.region.getName() + ". Building type: " + building.getName());
         region.getBuildSites().add(this);
         uuid = UUID.randomUUID();
@@ -120,8 +137,8 @@ public class BuildSite extends YamlConfiguration {
     }*/
 
     public void finishBuilding() {
-        for (BuildingEffect effect : building.getEffects()) {
-            getRegion().getOwner().getBuildingEffects().add(new ActiveBuildingEffect(effect, this));
+        for (BuildingEffectData effect : building.getEffects()) {
+            getRegion().getOwner().getBuildingEffects().add(new BuildingEffect(effect, this));
         }
         finished = true;
         problemMessage = null;
@@ -130,9 +147,9 @@ public class BuildSite extends YamlConfiguration {
     }
 
     public void removeEffects() {
-        for (ActiveBuildingEffect effect : getRegion().getOwner().getBuildingEffects()) {
+        for (BuildingEffect effect : getRegion().getOwner().getBuildingEffects()) {
             if (effect.getSite() == this) {
-                effect.getEffect().remove(getRegion().getOwner());
+                effect.remove();
             }
         }
     }
@@ -276,6 +293,74 @@ public class BuildSite extends YamlConfiguration {
         return blockList;
     }
 
+    public @Nullable Inventory createInventoryFromStorage() {
+        if (interactive.getBlock().getType() != Material.CHEST) {
+            return null;
+        }
+        inventory = Bukkit.createInventory(this, 54, Component.text("Building Storage"));
+        for (ItemStack item : buildingStorage) {
+            inventory.addItem(item);
+        }
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+        return inventory;
+    }
+
+    @EventHandler
+    private void onInventoryClick(InventoryClickEvent event) {
+        if (event.getInventory().getHolder(false) != this) {
+            return;
+        }
+        // Do we need this if we reload the storage after closing the inventory? I don't trust the bukkit inventory api lol.
+        if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY || event.getAction() == InventoryAction.COLLECT_TO_CURSOR || event.getAction() == InventoryAction.PICKUP_ALL || event.getAction() == InventoryAction.PICKUP_HALF || event.getAction() == InventoryAction.PICKUP_ONE || event.getAction() == InventoryAction.PICKUP_SOME) {
+            buildingStorage.remove(event.getCurrentItem());
+            return;
+        }
+        if (event.getClickedInventory() == inventory) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    private void onInventoryDrag(InventoryDragEvent event) {
+        if (event.getInventory().getHolder(false) != this) {
+            return;
+        }
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    private void onInventoryClose(InventoryCloseEvent event) {
+        if (event.getInventory().getHolder(false) != this) {
+            return;
+        }
+        buildingStorage.clear();
+        for (ItemStack item : inventory.getContents()) {
+            if (item == null) {
+                continue;
+            }
+            buildingStorage.add(item);
+        }
+        HandlerList.unregisterAll(this);
+    }
+
+    public boolean addItemToStorage(@NotNull ItemStack item) {
+        for (ItemStack itemStack : buildingStorage) {
+            if (itemStack.isSimilar(item)) {
+                int newAmount = itemStack.getAmount() + item.getAmount();
+                if (newAmount > itemStack.getMaxStackSize()) {
+                    return false;
+                }
+                itemStack.setAmount(newAmount);
+                return true;
+            }
+        }
+        if (buildingStorage.size() >= 54) {
+            return false;
+        }
+        buildingStorage.add(item);
+        return true;
+    }
+
     public @NotNull BuildSite getSite(){
         return this;
     }
@@ -288,12 +373,20 @@ public class BuildSite extends YamlConfiguration {
         return region;
     }
 
+    public @Nullable Faction getFaction() {
+        return region.getFaction();
+    }
+
     public @NotNull Location getCorner() {
         return corner;
     }
 
     public @NotNull Location getOtherCorner() {
         return otherCorner;
+    }
+
+    public @NotNull long getChunkKey() {
+        return chunkKey;
     }
 
     public @NotNull Location getInteractive() {
@@ -323,6 +416,10 @@ public class BuildSite extends YamlConfiguration {
         return uuid;
     }
 
+    public Set<ItemStack> getBuildingStorage() {
+        return buildingStorage;
+    }
+
     @Override
     public void load(@NotNull File file) throws IOException, InvalidConfigurationException {
         uuid = UUID.fromString(file.getName().replace(".yml", ""));
@@ -336,8 +433,8 @@ public class BuildSite extends YamlConfiguration {
         problemMessage = getString("problemMessage");
         region.getBuildSites().add(this);
         scheduleProgressUpdate();
-        for (BuildingEffect effect : building.getEffects()) {
-            getRegion().getOwner().getBuildingEffects().add(new ActiveBuildingEffect(effect, this));
+        for (BuildingEffectData data : building.getEffects()) {
+            data.newEffect(this);
         }
     }
 
@@ -354,4 +451,8 @@ public class BuildSite extends YamlConfiguration {
         super.save(file);
     }
 
+    @Override
+    public @NotNull Inventory getInventory() {
+        return inventory;
+    }
 }

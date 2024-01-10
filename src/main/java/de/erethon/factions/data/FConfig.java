@@ -67,6 +67,8 @@ public class FConfig extends EConfig {
     private Map<FactionLevel, HashMap<PopulationLevel, Integer>> requiredPopulation = new HashMap<>();
     private Map<FactionLevel, Set<Building>> requiredBuildings = new HashMap<>();
     private double taxConversionRate = 0.95;
+    private int ticksPerBuildingTick = 100;
+    private int effectsPerTick = 5;
 
     /* War */
     private long warCastleRestoreInterval = TickUtil.MINUTE;
@@ -105,6 +107,8 @@ public class FConfig extends EConfig {
         initValue("regionPrice.taxRate", regionPriceTaxRate);
         initValue("regionPrice.totalMultiplier", regionPriceTotalMultiplier);
         initValue("taxConversionRate", taxConversionRate);
+        initValue("ticksPerBuildingTick", ticksPerBuildingTick);
+        initValue("effectsPerTick", effectsPerTick);
         initValue("war.castleRestoreInterval", warCastleRestoreInterval);
         initValue("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
         initValue("war.scorePerKill", warScorePerKill);
@@ -149,6 +153,8 @@ public class FConfig extends EConfig {
         regionPriceTaxRate = config.getDouble("regionPrice.taxRate", regionPriceTaxRate);
         regionPriceTotalMultiplier = config.getDouble("regionPrice.totalMultiplier", regionPriceTotalMultiplier);
         taxConversionRate = config.getDouble("taxConversionRate", taxConversionRate);
+        ticksPerBuildingTick = config.getInt("ticksPerBuildingTick", ticksPerBuildingTick);
+        effectsPerTick = config.getInt("effectsPerTick", effectsPerTick);
         warCastleRestoreInterval = config.getLong("war.castleRestoreInterval", warCastleRestoreInterval);
         warCapturedRegionsPerBattle = config.getInt("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
         warScorePerKill = config.getDouble("war.scorePerKill", warScorePerKill);
@@ -319,6 +325,13 @@ public class FConfig extends EConfig {
 
     public double getTaxConversionRate() {
         return taxConversionRate;
+    }
+
+    public int getTicksPerBuildingTick() {
+        return ticksPerBuildingTick;
+    }
+    public int getEffectsPerTick() {
+        return effectsPerTick;
     }
 
     public long getWarCastleRestoreInterval() {

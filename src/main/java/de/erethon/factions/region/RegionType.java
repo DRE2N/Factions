@@ -18,7 +18,7 @@ public enum RegionType {
     CAPITAL(FMessage.REGION_CAPITAL, Material.BRICK, NamedTextColor.DARK_RED, false),
     CITY(FMessage.REGION_CITY, Material.GLASS_PANE, NamedTextColor.WHITE),
     DESERT(FMessage.REGION_DESERT, Material.SAND, NamedTextColor.YELLOW),
-    FARMLAND(FMessage.REGION_FARMLAND, Material.GRASS, NamedTextColor.GREEN),
+    FARMLAND(FMessage.REGION_FARMLAND, Material.SHORT_GRASS, NamedTextColor.GREEN),
     FOREST(FMessage.REGION_FOREST, Material.OAK_LOG, NamedTextColor.DARK_GREEN),
     MAGIC(FMessage.REGION_MAGIC, Material.PURPLE_DYE, NamedTextColor.DARK_PURPLE),
     MOUNTAINOUS(FMessage.REGION_MOUNTAINOUS, Material.STONE, NamedTextColor.GRAY),

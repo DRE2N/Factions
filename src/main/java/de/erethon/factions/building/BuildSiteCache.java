@@ -50,6 +50,10 @@ public class BuildSiteCache {
         }
     }
 
+    public boolean isLoaded(BuildSite site) {
+        return loaded.containsKey(site.getChunkKey());
+    }
+
     public void saveForChunk(Chunk chunk) {
         Set<BuildSite> sites = loaded.get(chunk.getChunkKey());
         if (sites == null) {

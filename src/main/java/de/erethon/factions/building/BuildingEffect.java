@@ -1,34 +1,39 @@
 package de.erethon.factions.building;
 
-import de.erethon.factions.economy.population.PopulationLevel;
-import de.erethon.factions.economy.resource.Resource;
+import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.faction.Faction;
-import de.erethon.factions.region.RegionType;
-import org.bukkit.Effect;
-import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+public class BuildingEffect {
+    protected final BuildingEffectData effect;
+    protected final BuildSite site;
+    protected Faction faction;
 
-public abstract class BuildingEffect {
-
-    private String displayName = "";
-
-    public BuildingEffect(Building building, ConfigurationSection section) {
-        load(section);
+    public BuildingEffect(@NotNull BuildingEffectData effect, BuildSite site) {
+        this.effect = effect;
+        this.site = site;
+        this.faction = site.getRegion().getFaction();
     }
 
-    public abstract void apply(@NotNull Faction faction);
-
-    public abstract void remove(@NotNull Faction faction);
-
-    public void load(ConfigurationSection section) {
-        displayName = (String) section.get("displayName");
+    public void tick() {
     }
+
+    public void apply() {
+    }
+
+    public void remove() {
+    }
+
+    public @NotNull BuildingEffectData getEffect() {
+        return effect;
+    }
+
+    public @NotNull BuildSite getSite() {
+        return site;
+    }
+
+    public @NotNull Faction getFaction() {
+        return faction;
+    }
+
 }

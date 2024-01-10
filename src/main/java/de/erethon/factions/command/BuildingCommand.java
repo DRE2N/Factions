@@ -29,6 +29,10 @@ public class BuildingCommand extends FCommand {
         if (faction == null) {
             return;
         }
+        if (args.length == 1) {
+            fPlayer.sendMessage("Usage: /f building <list|add|remove> <id>");
+            return;
+        }
         BuildSiteCache cache = Factions.get().getBuildSiteCache();
         if (args[1].equalsIgnoreCase("list")) {
             if (cache.get(fPlayer.getPlayer().getChunk().getChunkKey()) == null) {

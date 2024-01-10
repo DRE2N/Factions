@@ -62,7 +62,7 @@ public class Building {
     private final Set<RegionType> requiredRegionTypes = new HashSet<>();
     private Biome requiredBiome;
     private List<String> requiredBuildings = new ArrayList<>(); // String with ids because the other buildings might not be loaded yet.
-    private final Set<BuildingEffect> effects = new HashSet<>();
+    private final Set<BuildingEffectData> effects = new HashSet<>();
     Material icon;
 
     public Building(@NotNull File file) {
@@ -360,7 +360,7 @@ public class Building {
         return name;
     }
 
-    public @NotNull Set<BuildingEffect> getEffects() {
+    public @NotNull Set<BuildingEffectData> getEffects() {
         return effects;
     }
 
@@ -440,17 +440,14 @@ public class Building {
             }
         }
         if (config.contains("effects")) {
-            for (String key : config.getConfigurationSection("effects").getKeys(false)) {
-                try {
-                    String className = config.getString("effects." + key + ".class");
-                    Class<? extends BuildingEffect> effectClass = (Class<? extends BuildingEffect>) Class.forName("de.erethon.factions.building.effects." + className, true, Factions.get().getClass().getClassLoader());
-                    BuildingEffect effect = effectClass.getDeclaredConstructor(Building.class, ConfigurationSection.class).newInstance(this, config.getConfigurationSection("effects." + key));
-                    effects.add(effect);
-                } catch (NullPointerException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | ClassNotFoundException ex) {
-                    FLogger.ERROR.log("There was an error loading effect " + key + " (Building: " + name + ")");
-                    FLogger.ERROR.log(ex.toString());
-                }
-            }
+           for (String id : config.getStringList("effects")) {
+               BuildingEffectData effect = manager.getEffect(id);
+               if (effect == null) {
+                   FLogger.BUILDING.log("Effect " + id + " not found.");
+                   continue;
+               }
+               effects.add(effect);
+           }
         }
         FLogger.BUILDING.log("Loaded building with size " + size);
         FLogger.BUILDING.log("Blocks: " + requiredBlocks.toString());

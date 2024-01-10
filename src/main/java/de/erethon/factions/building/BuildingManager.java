@@ -20,7 +20,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BuildingManager implements Listener {
@@ -30,9 +34,16 @@ public class BuildingManager implements Listener {
     private final List<Building> buildings = new CopyOnWriteArrayList<>();
     private final List<BuildSite> buildingTickets = new ArrayList<>();
 
+    private final Set<BuildingEffectData> loadedEffects = new HashSet<>();
+
+    private Queue<BuildingEffect> tickingEffects = new PriorityQueue<>();
+    private int effectsPerTick = 5;
+
     public BuildingManager(@NotNull File dir) {
         load(dir);
+        effectsPerTick = plugin.getFConfig().getEffectsPerTick();
         Bukkit.getPluginManager().registerEvents(this, plugin);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::tickBuildingEffects, 0, plugin.getFConfig().getTicksPerBuildingTick());
     }
 
     public @Nullable Building getById(@NotNull String id) {
@@ -48,6 +59,19 @@ public class BuildingManager implements Listener {
         return buildings;
     }
 
+    public @NotNull Set<BuildingEffectData> getLoadedEffects() {
+        return loadedEffects;
+    }
+
+    public @Nullable BuildingEffectData getEffect(@NotNull String id) {
+        for (BuildingEffectData effect : loadedEffects) {
+            if (effect.getId().equals(id)) {
+                return effect;
+            }
+        }
+        return null;
+    }
+
     public void load(@NotNull File dir) {
         if (dir.listFiles() == null) {
             FLogger.INFO.log("No buildings found. Please create some.");
@@ -55,6 +79,22 @@ public class BuildingManager implements Listener {
         }
         for (File file : dir.listFiles()) {
             buildings.add(new Building(file));
+        }
+        File file = new File(dir, "effects");
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        if (file.listFiles() == null) {
+            FLogger.INFO.log("No building effects found. Please create some.");
+            return;
+        }
+        for (File effectFile : file.listFiles()) {
+            BuildingEffectData effect = new BuildingEffectData(effectFile);
+            if (loadedEffects.contains(effect)) {
+                FLogger.INFO.log("Duplicate effect found: " + effectFile.getName());
+                continue;
+            }
+            loadedEffects.add(effect);
         }
         FLogger.INFO.log("Loaded " + buildings.size() + " Buildings.");
     }
@@ -99,6 +139,20 @@ public class BuildingManager implements Listener {
             }
         }
         return null;
+    }
+
+    private void tickBuildingEffects() {
+        for (int i = 0; i < effectsPerTick; i++) {
+            if (tickingEffects.isEmpty()) {
+                return;
+            }
+            BuildingEffect effect = tickingEffects.poll();
+            if (effect == null) {
+                return;
+            }
+            effect.tick();
+            tickingEffects.add(effect); // Add it back to the queue for the next run
+        }
     }
 
     public List<BuildSite> getBuildingTickets() {
