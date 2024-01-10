@@ -17,7 +17,7 @@ val correctJarName = "${project.name}-${project.version}.jar"
 val correctAllJarName = "${project.name}-${project.version}-all.jar"
 val wrongJarName = "${project.name}-${project.version}-dev.jar"
 val wrongAllJarName = "${project.name}-${project.version}-dev-all.jar"
-val papyrusVersion = "1.20.1-R0.1-SNAPSHOT"
+val papyrusVersion = "1.20.4-R0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
