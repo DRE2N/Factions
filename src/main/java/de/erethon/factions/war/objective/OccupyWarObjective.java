@@ -215,6 +215,13 @@ public class OccupyWarObjective extends TickingWarObjective {
         fPlayer.getPlayer().hideBossBar(bossBar);
     }
 
+    @Override
+    public void onTemporaryOccupy(@NotNull Alliance alliance) {
+        currentProgress = 0;
+        currentOccupiedProgress = 0;
+        leadingAlliance = alliance;
+    }
+
     /* Serialization */
 
     @Override

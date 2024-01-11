@@ -11,6 +11,7 @@ import de.erethon.factions.faction.Faction;
 import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.PollContainer;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.region.RegionStructure;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FUtil;
@@ -70,6 +71,9 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         }
         unconfirmedTemporaryRegions.add(region);
         region.getRegionalWarTracker().reset();
+        for (RegionStructure structure : region.getStructures().values()) {
+            structure.onTemporaryOccupy(this);
+        }
         FBroadcastUtil.broadcastWar(FMessage.WAR_REGION_OCCUPIED, name, region.getName());
     }
 

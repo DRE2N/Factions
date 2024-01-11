@@ -1,6 +1,7 @@
 package de.erethon.factions.region;
 
 import de.erethon.factions.Factions;
+import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.player.FPlayer;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.util.TriState;
@@ -44,6 +45,10 @@ public class RegionStructure {
     }
 
     protected void load(@NotNull ConfigurationSection config) {
+
+    }
+
+    public void onTemporaryOccupy(@NotNull Alliance alliance) {
 
     }
 
