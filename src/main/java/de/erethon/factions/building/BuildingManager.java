@@ -1,6 +1,7 @@
 package de.erethon.factions.building;
 
 import de.erethon.bedrock.chat.MessageUtil;
+import de.erethon.bedrock.misc.FileUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.region.Region;
@@ -73,12 +74,12 @@ public class BuildingManager implements Listener {
     }
 
     public void load(@NotNull File dir) {
-        if (dir.listFiles() == null) {
+        for (File file : FileUtil.getFilesForFolder(dir)) {
+            buildings.add(new Building(file));
+        }
+        if (buildings.isEmpty()) {
             FLogger.INFO.log("No buildings found. Please create some.");
             return;
-        }
-        for (File file : dir.listFiles()) {
-            buildings.add(new Building(file));
         }
         File file = new File(dir, "effects");
         if (!file.exists()) {
