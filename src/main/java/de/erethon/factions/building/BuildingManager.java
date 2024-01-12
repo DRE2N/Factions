@@ -81,21 +81,21 @@ public class BuildingManager implements Listener {
             FLogger.INFO.log("No buildings found. Please create some.");
             return;
         }
-        File file = new File(dir, "effects");
-        if (!file.exists()) {
-            file.mkdirs();
+        File effectsFolder = new File(dir, "effects");
+        if (!effectsFolder.exists()) {
+            effectsFolder.mkdirs();
         }
-        if (file.listFiles() == null) {
-            FLogger.INFO.log("No building effects found. Please create some.");
-            return;
-        }
-        for (File effectFile : file.listFiles()) {
+        for (File effectFile : FileUtil.getFilesForFolder(effectsFolder)) {
             BuildingEffectData effect = new BuildingEffectData(effectFile);
             if (loadedEffects.contains(effect)) {
                 FLogger.INFO.log("Duplicate effect found: " + effectFile.getName());
                 continue;
             }
             loadedEffects.add(effect);
+        }
+        if (loadedEffects.isEmpty()) {
+            FLogger.INFO.log("No building effects found. Please create some.");
+            return;
         }
         FLogger.INFO.log("Loaded " + buildings.size() + " Buildings.");
     }
