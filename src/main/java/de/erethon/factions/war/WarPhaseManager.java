@@ -23,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.time.DayOfWeek;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,15 +69,6 @@ public class WarPhaseManager extends EConfig {
     }
 
     void updateCurrentStage() {
-        DayOfWeek dayOfWeek = LocalDateTime.now().getDayOfWeek();
-        if (dayOfWeek != midnight.getDayOfWeek()) {
-            midnight = FUtil.getMidnightDateTime();
-            // Increase week count on each monday & reset week count if no scheduled weeks left.
-            if (dayOfWeek == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
-                currentWeek = 1;
-            }
-            currentStage = schedule.get(currentWeek).get(dayOfWeek.getValue());
-        }
         // Cancel previous tasks.
         if (!runningTasks.isEmpty()) {
             Iterator<BukkitTask> iterator = runningTasks.iterator();
@@ -93,14 +83,32 @@ public class WarPhaseManager extends EConfig {
             return;
         }
         WarPhaseStage nextStage = currentStage.getNextStage();
-        if (nextStage == null) { // if this happens, something went wrong.
-            throw new IllegalStateException("Erroneous schedule");
+        if (nextStage == null) { // the current day schedule appears to have ended.
+            incrementCurrentDay();
         }
         if (currentStage.getWarPhase() != nextStage.getWarPhase()) {
             updateWarState(nextStage);
             FBroadcastUtil.broadcastWar(currentStage.getWarPhase().getAnnouncementMessage());
         }
         currentStage = nextStage;
+    }
+
+    private void initializeStage() {
+        currentStage = schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
+        long currentProgress = System.currentTimeMillis() - midnight.toInstant().toEpochMilli();
+
+        while (currentStage != null && currentStage.getFullDuration() < currentProgress) {
+            currentStage = currentStage.getNextStage();
+        }
+    }
+
+    void incrementCurrentDay() {
+        midnight = midnight.plusDays(1);
+        // Increase week count on each monday & reset week count if no scheduled weeks left.
+        if (midnight.getDayOfWeek() == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
+            currentWeek = 1;
+        }
+        currentStage = schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
     }
 
     private void updateWarState(WarPhaseStage nextStage) {
@@ -146,15 +154,6 @@ public class WarPhaseManager extends EConfig {
                     }
                 });
             }
-        }
-    }
-
-    private void initializeStage() {
-        currentStage = schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
-        long currentProgress = System.currentTimeMillis() - midnight.toInstant().toEpochMilli();
-
-        while (currentStage != null && currentStage.getFullDuration() < currentProgress) {
-            currentStage = currentStage.getNextStage();
         }
     }
 
