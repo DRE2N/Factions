@@ -2,6 +2,7 @@ package de.erethon.factions.building;
 
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
+import de.erethon.factions.util.FLogger;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.NamespacedKey;
@@ -64,7 +65,7 @@ public class BuildSiteCache {
             try {
                 site.save(new File(cacheFolder, site.getUuid().toString() + ".yml"));
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                FLogger.BUILDING.log("Failed to save build site " + site.getUuid() + " for chunk " + chunk + ": " + e.getMessage());
             }
             builder.append(site.getUuid().toString()).append(";");
             i++;

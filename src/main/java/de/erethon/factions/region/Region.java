@@ -147,7 +147,7 @@ public class Region extends FLegalEntity {
             try {
                 buildSite.save();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                FLogger.REGION.log("Failed to save build site " + buildSite.getUuid() + " for region " + id + ": " + e.getMessage());
             }
         }
     }

@@ -133,7 +133,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         finished = true;
         problemMessage = null;
         hasTicket = false;
-        //getRegion().getOwner().sendMessage("&aEin(e) &6" + getBuilding().getName() + " &ain " + getRegion().getName() + " &awurde akzeptiert und die Effekte sind nun aktiv.");
+        getRegion().getOwner().sendMessage("&aEin(e) &6" + getBuilding().getId() + " &ain " + getRegion().getName() + " &awurde akzeptiert und die Effekte sind nun aktiv.");
     }
 
     public void removeEffects() {
@@ -144,7 +144,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         }
     }
 
-    public void blockPlaced() { // Only schedule a new update after x amount of blocks have been changed.
+    public void blockPlaced() { // Only schedule a new update after x number of blocks have been changed.
         blockPlaceCounter++;
         if (blockPlaceCounter >= 5) {
             blockPlaceCounter = 0;

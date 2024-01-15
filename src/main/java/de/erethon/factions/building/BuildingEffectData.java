@@ -1,5 +1,6 @@
 package de.erethon.factions.building;
 
+import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -19,7 +20,7 @@ public class BuildingEffectData extends YamlConfiguration {
         try {
             super.load(configFile);
         } catch (IOException | InvalidConfigurationException e) {
-            throw new RuntimeException(e);
+            FLogger.BUILDING.log("Could not load building effect " + configFile.getName() + ": " + e.getMessage());
         }
         id = configFile.getName().replace(".yml", "");
         load();
