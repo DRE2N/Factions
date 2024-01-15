@@ -1,5 +1,6 @@
 package de.erethon.factions.region.protection;
 
+import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
@@ -8,6 +9,7 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionType;
 import de.erethon.factions.region.RegionStructure;
 import net.kyori.adventure.util.TriState;
+import org.bukkit.Chunk;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -56,6 +58,7 @@ public class BlockProtectionListener implements Listener {
     private void forbidIfInProtectedTerritory(Cancellable event, Player player, Block block, FMessage message) {
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
         if (fPlayer.isBypassRaw()) {
+            doBuildingChecks(player, block);
             return;
         }
         Region region = plugin.getRegionManager().getRegionByChunk(block.getChunk());
@@ -72,6 +75,7 @@ public class BlockProtectionListener implements Listener {
             state = structure.canBuild(fPlayer, block);
         }
         if (state == TriState.TRUE) {
+            doBuildingChecks(player, block);
             return;
         }
         if (state == TriState.FALSE || !region.getType().isAllowsBuilding() ||
@@ -82,11 +86,22 @@ public class BlockProtectionListener implements Listener {
         Relation relation = fPlayer.getRelation(region);
         if (!relation.canBuild()) {
             cancel(event, fPlayer, region, message);
+        } else {
+            doBuildingChecks(player, block);
         }
     }
 
     private void cancel(Cancellable event, FPlayer fPlayer, Region region, FMessage message) {
         event.setCancelled(true);
         fPlayer.sendActionBarMessage(message.message(region.getDisplayOwner()));
+    }
+
+    private void doBuildingChecks(Player player, Block block) {
+        Chunk chunk = block.getChunk();
+        plugin.getBuildSiteCache().get(chunk.getChunkKey()).forEach(building -> {
+            if (building.isInBuildSite(block.getLocation())) {
+                building.blockPlaced();
+            }
+        });
     }
 }

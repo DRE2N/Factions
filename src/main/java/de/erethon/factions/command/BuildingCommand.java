@@ -40,7 +40,7 @@ public class BuildingCommand extends FCommand {
                 return;
             }
             cache.get(fPlayer.getPlayer().getChunk().getChunkKey()).forEach(b ->
-                    fPlayer.sendMessage(b.getName()));
+                    fPlayer.sendMessage(b.getBuilding().getId()));
             return;
         }
         if (args[1].equalsIgnoreCase("add")) {

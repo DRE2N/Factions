@@ -388,7 +388,7 @@ public class Building {
 
     public void load() {
         ConfigurationSection config = this.config;
-        name = MiniMessage.miniMessage().deserialize(config.getString("name"));
+        name = MiniMessage.miniMessage().deserialize(config.getString("name", "<none>"));
         FLogger.BUILDING.log("Loading building " + name + "...");
         isCoreRequired = config.getBoolean("coreRequired");
         size = config.getInt("size");
@@ -411,7 +411,7 @@ public class Building {
         if (config.contains("requiredBlocks")) {
             Set<String> cfgList = config.getConfigurationSection("requiredBlocks").getKeys(false);
             for (String s : cfgList) {
-                Material material = Material.getMaterial(s);
+                Material material = Material.getMaterial(s.toUpperCase());
                 int amount = config.getInt("requiredBlocks." + s);
                 requiredBlocks.put(material, amount);
             }

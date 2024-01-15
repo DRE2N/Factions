@@ -6,17 +6,21 @@ import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.translation.GlobalTranslator;
 import org.apache.commons.lang.math.IntRange;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -33,8 +37,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -62,6 +68,10 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     private final Set<BuildingEffect> activeBuildingEffects = new HashSet<>();
     private final Set<ItemStack> buildingStorage = new HashSet<>();
 
+    private UUID progressHoloUUID = null;
+
+    private int blockPlaceCounter = 0;
+
     public BuildSite(@NotNull Building building, @NotNull Region region, @NotNull Location loc1, @NotNull Location loc2, @NotNull Location center) {
         this.building = building;
         this.region = region;
@@ -74,7 +84,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         region.getBuildSites().add(this);
         uuid = UUID.randomUUID();
         plugin.getBuildSiteCache().add(this, center.getChunk());
-        //setupHolo();
+        updateHolo();
     }
 
     public BuildSite(File file) {
@@ -85,56 +95,25 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         }
     }
 
-    /*public void setupHolo() {
-        if (!fConfig.areHologramsEnabled()) {
-            return;
+    public void updateHolo() {
+        TextDisplay progressHolo;
+        if (progressHoloUUID != null) {
+            progressHolo = (TextDisplay) Bukkit.getEntity(progressHoloUUID);
+        } else {
+            progressHolo = interactive.getWorld().spawn(interactive, TextDisplay.class);
+            progressHoloUUID = progressHolo.getUniqueId();
         }
-        if (progressHolo != null) {
-            progressHolo.delete();
-        }
-        MessageUtil.log("Setting up holo");
-        MessageUtil.log(interactive.toString());
-        MessageUtil.log(interactive.getBlock().toString());
-        progressHolo = HologramsAPI.createHologram(plugin, interactive.getBlock().getRelative(0, 2, 0).getLocation());
-        progressHolo.appendTextLine(ChatColor.GOLD + building.getName()).setTouchHandler(fTouchHandler);
-        progressHolo.appendTextLine(" ").setTouchHandler(fTouchHandler);
-        String bar = "----------";
-        progressHolo.appendTextLine(bar).setTouchHandler(fTouchHandler); // Placeholder
-        Location newLoc = progressHolo.getLocation();
+        progressHolo.setBillboard(Display.Billboard.CENTER);
+        progressHolo.setDefaultBackground(false);
+        progressHolo.setBackgroundColor(Color.fromARGB(0,0,0,0));
+        Component content = building.getName();
+        content = content.append(Component.newline());
         for (Material material : building.getRequiredBlocks().keySet()) {
-            String output = plugin.getFTranslation().getTranslatedName(material);
-            progressHolo.appendTextLine(ChatColor.GRAY + output + ChatColor.DARK_GRAY + ": " + (getProgressString(material))).setTouchHandler(fTouchHandler);
-            newLoc.add(0, 0.2,0); // Holo needs to be moved to not get stuck in the floor
+            content = content.append(Component.translatable(material.translationKey(), NamedTextColor.GOLD).append(Component.text(": ", NamedTextColor.DARK_GRAY)).append(getProgressComponent(material))).append(Component.newline());
         }
-        progressHolo.teleport(newLoc);
-        progressHolo.appendTextLine(FMessage.BUILDING_SITE_HINT.getMessage()).setTouchHandler(fTouchHandler);
+        progressHolo.text(content);
     }
 
-    public void updateHolo() {
-        if (!fConfig.areHologramsEnabled()) {
-            return;
-        }
-        if (progressHolo == null) {
-            setupHolo();
-        }
-        MessageUtil.log("Update holo");
-        progressHolo.clearLines();
-        progressHolo.appendTextLine(ChatColor.GOLD + building.getName()).setTouchHandler(fTouchHandler);
-        progressHolo.appendTextLine(" ").setTouchHandler(fTouchHandler);
-        if (!isFinished() || !buildingManager.getBuildingTickets().contains(getSite())) {
-            for (Material material : building.getRequiredBlocks().keySet()) {
-                String output = plugin.getFTranslation().getTranslatedName(material);
-                progressHolo.appendTextLine(ChatColor.GRAY + output + ChatColor.DARK_GRAY + ": " + (getProgressString(material))).setTouchHandler(fTouchHandler);
-            }
-        }
-        if (buildingManager.getBuildingTickets().contains(getSite())) {
-            progressHolo.appendTextLine(FMessage.BUILDING_SITE_WAITING.getMessage());
-            if (problemMessage != null) {
-                progressHolo.appendTextLine(ChatColor.RED + problemMessage);
-            }
-        }
-        progressHolo.appendTextLine(FMessage.BUILDING_SITE_HINT.getMessage()).setTouchHandler(fTouchHandler);
-    }*/
 
     public void finishBuilding() {
         for (BuildingEffectData effect : building.getEffects()) {
@@ -151,6 +130,14 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
             if (effect.getSite() == this) {
                 effect.remove();
             }
+        }
+    }
+
+    public void blockPlaced() { // Only schedule a new update after x amount of blocks have been changed.
+        blockPlaceCounter++;
+        if (blockPlaceCounter >= 5) {
+            blockPlaceCounter = 0;
+            scheduleProgressUpdate();
         }
     }
 
@@ -186,6 +173,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
             public void run() {
                 isBusy = false;
                 boolean fini = true;
+                updateHolo();
                 for (Material material : building.getRequiredBlocks().keySet()) {
                     if (getPlacedBlocks().get(material) < building.getRequiredBlocks().get(material)) {
                         fini = false;
@@ -232,7 +220,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         runAsync.runTaskAsynchronously(plugin);
     }
 
-    public @NotNull String getProgressString(@Nullable Material block) {
+    public @NotNull Component getProgressComponent(@Nullable Material block) {
         int total = 0;
         if (building.getRequiredBlocks().get(block) != null) {
             total = building.getRequiredBlocks().get(block);
@@ -242,9 +230,9 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
             placed = getPlacedBlocks().get(block);
         }
         if (placed >= total) {
-            return ChatColor.translateAlternateColorCodes('&', "&a&m" + placed + "&a&m/" + total + "&a ✔");
+            return Component.text(placed, NamedTextColor.GREEN).append(Component.text("/" + total, NamedTextColor.DARK_GRAY).append(Component.text(" ✔", NamedTextColor.GREEN)));
         }
-        return ChatColor.translateAlternateColorCodes('&', "&a" + placed + "&8/&7" + total);
+        return Component.text(placed, NamedTextColor.RED).append(Component.text("/" + total, NamedTextColor.DARK_GRAY).append(Component.text(" ✘", NamedTextColor.RED)));
     }
 
     public boolean isInBuildSite(@NotNull Location location) {
@@ -423,6 +411,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     @Override
     public void load(@NotNull File file) throws IOException, InvalidConfigurationException {
         uuid = UUID.fromString(file.getName().replace(".yml", ""));
+        progressHoloUUID = UUID.fromString(getString("progressHoloUUID", "00000000-0000-0000-0000-000000000000"));
         building = buildingManager.getById(getString("building"));
         region = plugin.getRegionManager().getRegionById(getInt("region"));
         otherCorner = Location.deserialize(getConfigurationSection("location.otherCorner").getValues(false));
@@ -433,6 +422,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         problemMessage = getString("problemMessage");
         region.getBuildSites().add(this);
         scheduleProgressUpdate();
+        plugin.getBuildSiteCache().add(this, interactive.getChunk());
         for (BuildingEffectData data : building.getEffects()) {
             data.newEffect(this);
         }
@@ -440,6 +430,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     @Override
     public void save(@NotNull File file) throws IOException {
+        set("progressHoloUUID", progressHoloUUID.toString());
         set("building", building.getId());
         set("region", region.getId());
         set("location.corner", corner.serialize());

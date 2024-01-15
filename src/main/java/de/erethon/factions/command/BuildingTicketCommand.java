@@ -26,6 +26,7 @@ public class BuildingTicketCommand extends FCommand {
         setPermissionFromName();
         setPlayerCommand(true);
         setConsoleCommand(false);
+        setUsage("/f buildingticket");
     }
 
     @Override
