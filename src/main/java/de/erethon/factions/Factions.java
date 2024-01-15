@@ -394,7 +394,8 @@ public final class Factions extends EPlugin {
         backupList.sort(Comparator.comparingLong(File::lastModified));
         Iterator<File> iterator = backupList.iterator();
 
-        while (backupList.size() > fConfig.getBackupsBeforeDeletion() && iterator.hasNext()) {
+        int size = backupList.size();
+        while (fConfig.getBackupsBeforeDeletion() < size-- && iterator.hasNext()) {
             File current = iterator.next();
             FLogger.DEBUG.log("Deleting old backup: " + current.getName());
             FileUtil.removeDir(current);
@@ -411,7 +412,7 @@ public final class Factions extends EPlugin {
         fPlayerCache.saveAll();
         warHistory.saveAll();
         warPhaseManager.saveData();
-        buildSiteCache.shutdown();
+        buildSiteCache.saveAllPendingChunks();
         FLogger.save();
     }
 
