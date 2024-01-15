@@ -129,6 +129,7 @@ public class Region extends FLegalEntity {
 
     @Override
     protected void serializeData() {
+        FLogger.REGION.log("Saving region '" + id + "'...");
         config.set("adjacentRegions", adjacentRegions.stream().map(Region::getId).toList());
         config.set("alliance", alliance == null ? null : alliance.getId());
         config.set("chunks", chunks.stream().map(LazyChunk::toString).toList());

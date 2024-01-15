@@ -336,6 +336,9 @@ public final class Factions extends EPlugin {
     public void unregisterAergiaPlaceholders() {
         // Remove added UI components.
         for (FPlayer fPlayer : fPlayerCache.getCachedUsers()) {
+            if (fPlayer.getUIUpdater() == null) {
+                continue;
+            }
             fPlayer.getUIBossBar().getCenter().remove(UIFactionsListener.FACTIONS_INFO_ID);
             fPlayer.getUIBossBar().getCenter().remove(UIFactionsListener.REGION_DISPLAY_ID);
             fPlayer.getUIActionBar().getCenter().remove(AutomatedChunkManager.ACTION_BAR_ID);
