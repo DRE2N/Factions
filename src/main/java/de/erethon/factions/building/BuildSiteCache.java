@@ -98,6 +98,7 @@ public class BuildSiteCache {
         }
         MessageUtil.log("Loaded " + i + " build sites for " + chunk);
         loaded.put(chunk.getChunkKey(), sites);
+        Factions.get().getRegionManager().getRegionByChunk(chunk).getBuildSites().addAll(sites);
     }
 
 

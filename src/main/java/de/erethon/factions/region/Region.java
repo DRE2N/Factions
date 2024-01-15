@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -140,6 +141,14 @@ public class Region extends FLegalEntity {
         structures.forEach((name, structure) -> serializedStructures.put(String.valueOf(serializedStructures.size()), structure.serialize()));
         config.set("structures", serializedStructures);
         config.set("type", type.name());
+        config.set("buildsites", buildSites.stream().map(BuildSite::getUuid).toList());
+        for (BuildSite buildSite : buildSites) {
+            try {
+                buildSite.save();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     /* Getters and setters */

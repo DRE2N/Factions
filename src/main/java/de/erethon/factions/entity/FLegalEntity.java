@@ -2,6 +2,7 @@ package de.erethon.factions.entity;
 
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.Factions;
+import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.data.FMessage;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;

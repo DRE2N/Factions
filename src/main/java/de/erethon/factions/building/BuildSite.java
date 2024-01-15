@@ -428,8 +428,8 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         }
     }
 
-    @Override
-    public void save(@NotNull File file) throws IOException {
+    public void save() throws IOException {
+        File file = new File(Factions.BUILD_SITES, uuid + ".yml");
         set("progressHoloUUID", progressHoloUUID.toString());
         set("building", building.getId());
         set("region", region.getId());
