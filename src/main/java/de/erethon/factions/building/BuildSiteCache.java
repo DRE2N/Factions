@@ -10,7 +10,6 @@ import org.bukkit.persistence.PersistentDataType;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,7 +43,7 @@ public class BuildSiteCache {
         loaded.get(chunk.getChunkKey()).remove(site);
     }
 
-    public void shutdown() {
+    public void saveAllPendingChunks() {
         for (Long key : loaded.keySet()) {
             saveForChunk(Bukkit.getWorlds().get(0).getChunkAt(key));
         }
@@ -88,7 +87,7 @@ public class BuildSiteCache {
         Set<BuildSite> sites = new HashSet<>();
         int i = 0;
         for (String s : split) {
-            File file = new File(cacheFolder, s);
+            File file = new File(cacheFolder, s + ".yml");
             if (!file.exists()) {
                 continue;
             }

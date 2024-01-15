@@ -21,8 +21,8 @@ public class BuildingTicketCommand extends FCommand {
     public BuildingTicketCommand() {
         setCommand("buildingticket");
         setAliases("ticket", "tickets");
-        setMinArgs(-1);
-        setMaxArgs(-1);
+        setMinArgs(0);
+        setMaxArgs(3);
         setPermissionFromName();
         setPlayerCommand(true);
         setConsoleCommand(false);
@@ -36,13 +36,13 @@ public class BuildingTicketCommand extends FCommand {
         Region region = fPlayer.getLastRegion();
         List<String> tickets = new ArrayList<>();
         List<BuildSite> buildSites = plugin.getBuildingManager().getBuildingTickets();
-
+        MessageUtil.log("Args: " + args.length);
         if (args.length == 1) {
             int i = 0;
             for (BuildSite site : buildSites) {
-                String message = "<gray>" + i + ") <green><click:run_command:/fxl buildingticket tp " + i + "><hover:show_text:'<green>Region: " + site.getRegion().getName() +
+                String message = "<gray>" + i + ") <green><click:run_command:/f buildingticket tp " + i + "><hover:show_text:'<green>Region: " + site.getRegion().getName() +
                         "\n<green>Faction: " + site.getRegion().getOwner().getName() +
-                        "'>" + site.getBuilding().getName() + "</click><reset>";
+                        "'>" + site.getBuilding().getId() + "</click><reset>";
                 tickets.add(message);
                 i++;
             }

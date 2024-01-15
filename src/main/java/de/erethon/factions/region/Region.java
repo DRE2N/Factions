@@ -142,7 +142,7 @@ public class Region extends FLegalEntity {
         structures.forEach((name, structure) -> serializedStructures.put(String.valueOf(serializedStructures.size()), structure.serialize()));
         config.set("structures", serializedStructures);
         config.set("type", type.name());
-        config.set("buildsites", buildSites.stream().map(BuildSite::getUuid).toList());
+        config.set("buildsites", buildSites.stream().map(BuildSite::getUUIDString).toList());
         for (BuildSite buildSite : buildSites) {
             try {
                 buildSite.save();

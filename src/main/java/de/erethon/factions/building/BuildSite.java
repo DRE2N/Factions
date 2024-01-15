@@ -1,5 +1,6 @@
 package de.erethon.factions.building;
 
+import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
@@ -90,8 +91,8 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     public BuildSite(File file) {
         try {
             load(file);
-        } catch (IOException | InvalidConfigurationException e) {
-            throw new RuntimeException(e);
+        } catch (IOException | InvalidConfigurationException | NullPointerException e) {
+            FLogger.BUILDING.log("Failed to load build site from file " + file.getName() + ". Error: " + e.getMessage());
         }
     }
 
@@ -106,10 +107,20 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         progressHolo.setBillboard(Display.Billboard.CENTER);
         progressHolo.setDefaultBackground(false);
         progressHolo.setBackgroundColor(Color.fromARGB(0,0,0,0));
-        Component content = building.getName();
+        Component content = building.getName().color(NamedTextColor.GOLD);
         content = content.append(Component.newline());
-        for (Material material : building.getRequiredBlocks().keySet()) {
-            content = content.append(Component.translatable(material.translationKey(), NamedTextColor.GOLD).append(Component.text(": ", NamedTextColor.DARK_GRAY)).append(getProgressComponent(material))).append(Component.newline());
+        if (!finished) {
+            for (Material material : building.getRequiredBlocks().keySet()) {
+                content = content.append(Component.translatable(material.translationKey(), NamedTextColor.GOLD).append(Component.text(": ", NamedTextColor.DARK_GRAY)).append(getProgressComponent(material))).append(Component.newline());
+            }
+            progressHolo.text(content);
+            return;
+        }
+        if (problemMessage != null && hasTicket) {
+            content = content.append(Component.text("Problem: ", NamedTextColor.DARK_RED));
+            content = content.append(Component.text(problemMessage, NamedTextColor.RED));
+            progressHolo.text(content);
+            return;
         }
         progressHolo.text(content);
     }
@@ -181,16 +192,16 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                 }
                 if (finished && !fini) {
                     finished = false;
-                    getRegion().getOwner().sendMessage("<green>Ein(e) &6" + getBuilding().getName() + " <green>in " + getRegion().getName() + " <green>wurde zerstört!");
+                    getRegion().getOwner().sendMessage("<green>Ein(e) &6" + getBuilding().getId() + " <green>in " + getRegion().getName() + " <green>wurde zerstört!");
                     removeEffects();
                     return;
                 }
                 if (fini && !isFinished() && !hasTicket) {
                     buildingManager.getBuildingTickets().add(getSite());
                     hasTicket = true;
-                    getRegion().getOwner().sendMessage("<green>Ein(e) <gold>" + getBuilding().getName() + " <green>in " + getRegion().getName() + " <green>wurde fertiggestellt");
+                    getRegion().getOwner().sendMessage("<green>Ein(e) <gold>" + getBuilding().getId() + " <green>in " + getRegion().getName() + " <green>wurde fertiggestellt");
                     getRegion().getOwner().sendMessage("<gray>Ein Ticket wurde automatisch erstellt und das Gebäude wird zeitnah überprüft.");
-                    FLogger.BUILDING.log("A new BuildSite ticket for " + getBuilding().getName() + " in " + getRegion().getName() + " was created.");
+                    FLogger.BUILDING.log("A new BuildSite ticket for " + getBuilding().getId() + " in " + getRegion().getName() + " was created.");
                 }
             }
         };
@@ -404,28 +415,37 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         return uuid;
     }
 
+    public String getUUIDString() {
+        return uuid.toString();
+    }
+
     public Set<ItemStack> getBuildingStorage() {
         return buildingStorage;
     }
 
     @Override
     public void load(@NotNull File file) throws IOException, InvalidConfigurationException {
+        super.load(file);
         uuid = UUID.fromString(file.getName().replace(".yml", ""));
         progressHoloUUID = UUID.fromString(getString("progressHoloUUID", "00000000-0000-0000-0000-000000000000"));
         building = buildingManager.getById(getString("building"));
-        region = plugin.getRegionManager().getRegionById(getInt("region"));
-        otherCorner = Location.deserialize(getConfigurationSection("location.otherCorner").getValues(false));
-        interactive = Location.deserialize(getConfigurationSection("location.interactable").getValues(false));
-        FLogger.BUILDING.log(corner.toString());
         finished = getBoolean("finished");
         hasTicket = getBoolean("hasTicket");
         problemMessage = getString("problemMessage");
+        region = plugin.getRegionManager().getRegionById(getInt("region"));
+        corner = Location.deserialize(getConfigurationSection("location.corner").getValues(false));
+        otherCorner = Location.deserialize(getConfigurationSection("location.otherCorner").getValues(false));
+        interactive = Location.deserialize(getConfigurationSection("location.interactable").getValues(false));
         region.getBuildSites().add(this);
-        scheduleProgressUpdate();
+        if (!finished) {
+            scheduleProgressUpdate();
+        }
         plugin.getBuildSiteCache().add(this, interactive.getChunk());
         for (BuildingEffectData data : building.getEffects()) {
             data.newEffect(this);
         }
+        updateHolo();
+        FLogger.BUILDING.log("Loaded build site " + uuid + " for " + building.getId() + " in " + region.getName());
     }
 
     public void save() throws IOException {
