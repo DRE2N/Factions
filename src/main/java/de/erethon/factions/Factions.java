@@ -26,6 +26,8 @@ import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.polls.CapturedRegionsPoll;
 import de.erethon.factions.region.AutomatedChunkManager;
 import de.erethon.factions.region.RegionManager;
+import de.erethon.factions.region.protection.BlockProtectionListener;
+import de.erethon.factions.region.protection.EntityProtectionListener;
 import de.erethon.factions.region.schematic.RegionSchematicManager;
 import de.erethon.factions.ui.UIFactionsListener;
 import de.erethon.factions.util.FLogger;
@@ -246,6 +248,8 @@ public final class Factions extends EPlugin {
 
     private void register(Listener listener) {
         Bukkit.getPluginManager().registerEvents(listener, this);
+        Bukkit.getPluginManager().registerEvents(new BlockProtectionListener(), this);
+        Bukkit.getPluginManager().registerEvents(new EntityProtectionListener(), this);
     }
 
     public void registerAergiaPlaceholders() {
