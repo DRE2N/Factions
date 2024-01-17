@@ -387,15 +387,14 @@ public final class Factions extends EPlugin {
         File backupDir = new File(BACKUPS, String.valueOf(System.currentTimeMillis()));
         FileUtil.copyDir(getDataFolder(), backupDir, BACKUPS.getName(), "config.yml", "logger.yml");
 
-        List<File> backupList = FileUtil.getFilesForFolder(backupDir);
+        List<File> backupList = FileUtil.getFilesForFolder(BACKUPS);
         if (backupList.size() <= fConfig.getBackupsBeforeDeletion()) {
             return;
         }
         backupList.sort(Comparator.comparingLong(File::lastModified));
         Iterator<File> iterator = backupList.iterator();
 
-        int size = backupList.size();
-        while (fConfig.getBackupsBeforeDeletion() < size-- && iterator.hasNext()) {
+        while (backupList.size() > fConfig.getBackupsBeforeDeletion() && iterator.hasNext()) {
             File current = iterator.next();
             FLogger.DEBUG.log("Deleting old backup: " + current.getName());
             FileUtil.removeDir(current);
