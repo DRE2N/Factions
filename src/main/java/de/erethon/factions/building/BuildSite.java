@@ -72,6 +72,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     private UUID progressHoloUUID = null;
 
     private int blockPlaceCounter = 0;
+    private TextDisplay progressHolo;
 
     public BuildSite(@NotNull Building building, @NotNull Region region, @NotNull Location loc1, @NotNull Location loc2, @NotNull Location center) {
         this.building = building;
@@ -97,9 +98,14 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     }
 
     public void updateHolo() {
-        TextDisplay progressHolo;
         if (progressHoloUUID != null) {
-            progressHolo = (TextDisplay) Bukkit.getEntity(progressHoloUUID);
+            BukkitRunnable run = new BukkitRunnable() {
+                @Override
+                public void run() {
+                    progressHolo = (TextDisplay) Bukkit.getEntity(progressHoloUUID);
+                }
+            };
+            run.runTask(plugin); // This is otherwise called on the chunk loading thread and throws an exception.
         } else {
             progressHolo = interactive.getWorld().spawn(interactive, TextDisplay.class);
             progressHoloUUID = progressHolo.getUniqueId();

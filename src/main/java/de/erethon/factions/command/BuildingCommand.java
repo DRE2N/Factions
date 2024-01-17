@@ -3,10 +3,12 @@ package de.erethon.factions.command;
 import de.erethon.factions.Factions;
 import de.erethon.factions.building.BuildSiteCache;
 import de.erethon.factions.building.Building;
+import de.erethon.factions.building.BuildingManager;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.inventory.ItemStack;
 
 public class BuildingCommand extends FCommand {
 
@@ -49,7 +51,8 @@ public class BuildingCommand extends FCommand {
                 fPlayer.sendMessage("Building not found.");
                 return;
             }
-            building.build(fPlayer.getPlayer(), fPlayer.getFaction(), fPlayer.getCurrentRegion(), fPlayer.getPlayer().getLocation());
+            ItemStack item = BuildingManager.getBuildingItemStack(building);
+            fPlayer.getPlayer().getInventory().addItem(item);
             fPlayer.sendMessage("Building " + building.getId() + " added.");
         }
         if (args[1].equalsIgnoreCase("remove")) {

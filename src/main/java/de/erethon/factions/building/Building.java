@@ -9,6 +9,7 @@ import de.erethon.factions.economy.resource.Resource;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
+import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.region.RegionType;
@@ -106,18 +107,23 @@ public class Building {
             MessageUtil.sendMessage(player, FMessage.ERROR_REGION_NOT_FOUND.getMessage());
             return false;
         }
-        /*boolean isBorder = false;
+        boolean isBorder = false;
         LazyChunk chunk = new LazyChunk(player.getChunk());
-        for (Chunk c : chunk.getFastChunksAround(player.getWorld())) {
-            if (board.getRegionByChunk(c, rg) != rg) {
-                isBorder = true;
+        int x = chunk.getX();
+        int z = chunk.getZ();
+        for (int i = x - 1; i <= x + 1; i++) {
+            for (int j = z - 1; j <= z + 1; j++) {
+                LazyChunk c = new LazyChunk(i, j);
+                if (board.getRegionByChunk(c.asBukkitChunk(player.getWorld())) != rg) {
+                    isBorder = true;
+                }
             }
         }
         // If the building area overlaps with another region
         if (isBorder) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_TOO_CLOSE_BORDER.getMessage());
+            //MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_TOO_CLOSE_BORDER.getMessage());
             return false;
-        }*/
+        }
         boolean isInOtherBuilding = false;
         for (BuildSite site : rg.getBuildSites()) {
             if (manager.hasOverlap(getCorner1(loc), getCorner2(loc), site)) {
@@ -234,7 +240,7 @@ public class Building {
                 int cy = center.getBlockY() + (radius * 2);
                 int cz = center.getBlockZ() + radius;
                 int cx2 = center.getBlockX() - radius;
-                int cy2 = center.getBlockY() - (radius / 2); // don't go underground  too much.
+                int cy2 = center.getBlockY() - (radius / 2); // don't go underground too much.
                 int cz2 = center.getBlockZ() - radius;
                 Location corner1 = new Location(world, cx, cy, cz);
                 Location corner2 = new Location(world, cx2, cy2, cz2);
@@ -390,7 +396,7 @@ public class Building {
         ConfigurationSection config = this.config;
         name = MiniMessage.miniMessage().deserialize(config.getString("name", "<none>"));
         FLogger.BUILDING.log("Loading building " + name + "...");
-        isCoreRequired = config.getBoolean("coreRequired");
+        isCoreRequired = config.getBoolean("coreRequired", false);
         size = config.getInt("size");
         for (String s : config.getStringList("description")) {
             description.add(MiniMessage.miniMessage().deserialize(s));

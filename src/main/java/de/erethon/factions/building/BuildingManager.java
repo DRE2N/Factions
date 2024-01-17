@@ -6,14 +6,21 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
+import de.erethon.hephaestus.HItem;
+import de.erethon.hephaestus.ItemLibrary;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -30,6 +37,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BuildingManager implements Listener {
 
+    private final static ResourceLocation ITEM_ID = new ResourceLocation("factions", "building_item");
+
     Factions plugin = Factions.get();
 
     private final List<Building> buildings = new CopyOnWriteArrayList<>();
@@ -45,6 +54,14 @@ public class BuildingManager implements Listener {
         effectsPerTick = plugin.getFConfig().getEffectsPerTick();
         Bukkit.getPluginManager().registerEvents(this, plugin);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::tickBuildingEffects, 0, plugin.getFConfig().getTicksPerBuildingTick());
+        // Register the building item if it doesn't exist
+        ItemLibrary lib = Main.itemLibrary;
+        if (!lib.has(ITEM_ID)) {
+            HItem item = new HItem.Builder(plugin, ITEM_ID).baseItem(Material.CHEST).register();
+            item.setPlugin(plugin);
+            item.setBehaviour(new FBuildingItemBehaviour(item));
+            lib.enableHandler(plugin);
+        }
     }
 
     public @Nullable Building getById(@NotNull String id) {
@@ -180,5 +197,15 @@ public class BuildingManager implements Listener {
             }
         };
         saveTask.runTaskAsynchronously(plugin);
+    }
+
+    public static ItemStack getBuildingItemStack(Building building) {
+        HItem item = Main.itemLibrary.get(ITEM_ID);
+        ItemStack stack = item.getItem().getBukkitStack();
+        stack.editMeta(meta -> {
+            meta.getPersistentDataContainer().set(FBuildingItemBehaviour.KEY, PersistentDataType.STRING, building.getId());
+            meta.displayName(building.getName());
+        });
+        return stack;
     }
 }

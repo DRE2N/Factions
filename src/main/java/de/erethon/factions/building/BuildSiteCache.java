@@ -70,7 +70,7 @@ public class BuildSiteCache {
             builder.append(site.getUuid().toString()).append(";");
             i++;
         }
-        MessageUtil.log("Saved " + i + " build sites for " + chunk);
+        FLogger.BUILDING.log("Saved " + i + " build sites for " + chunk);
         chunk.getPersistentDataContainer().set(KEY, PersistentDataType.STRING, builder.toString());
         loaded.remove(chunk.getChunkKey());
     }
