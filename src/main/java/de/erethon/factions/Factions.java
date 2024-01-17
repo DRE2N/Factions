@@ -108,6 +108,7 @@ public final class Factions extends EPlugin {
         settings = EPluginSettings.builder()
                 .internals(Internals.v1_20_R1.andHigher())
                 .forcePaper(true)
+                .permissions(true)
                 .economy(true)
                 .build();
     }

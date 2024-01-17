@@ -18,11 +18,14 @@ public abstract class AlliancePoll<V> extends Poll<V> {
 
     protected final Alliance alliance;
 
-    public AlliancePoll(@NotNull String name, @NotNull Alliance alliance, @NotNull PollScope scope, @NotNull Collection<@NotNull V> subjects, @NotNull Function<V, ItemStack> subjectConverter) {
+    public AlliancePoll(@NotNull String name, @NotNull Alliance alliance, @NotNull PollScope scope,
+                        @NotNull Collection<@NotNull V> subjects, @NotNull Function<V, ItemStack> subjectConverter) {
         this(name, alliance, scope, subjects, subjectConverter, null);
     }
 
-    public AlliancePoll(@NotNull String name, @NotNull Alliance alliance, @NotNull PollScope scope, @NotNull Collection<@NotNull V> subjects, @NotNull Function<V, ItemStack> subjectConverter, @Nullable Comparator<V> comparator) {
+    public AlliancePoll(@NotNull String name, @NotNull Alliance alliance, @NotNull PollScope scope,
+                        @NotNull Collection<@NotNull V> subjects, @NotNull Function<V, ItemStack> subjectConverter,
+                        @Nullable Comparator<V> comparator) {
         super(name, scope, subjects, subjectConverter, comparator);
         this.alliance = alliance;
     }
