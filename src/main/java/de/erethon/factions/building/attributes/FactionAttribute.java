@@ -19,5 +19,7 @@ public interface FactionAttribute {
      */
     FactionAttribute apply();
 
+    double getBaseValue();
+
     double getValue();
 }
