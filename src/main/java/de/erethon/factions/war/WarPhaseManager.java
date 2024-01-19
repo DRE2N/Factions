@@ -85,6 +85,7 @@ public class WarPhaseManager extends EConfig {
         WarPhaseStage nextStage = currentStage.getNextStage();
         if (nextStage == null) { // the current day schedule appears to have ended.
             incrementCurrentDay();
+            nextStage = currentStage.getNextStage();
         }
         if (currentStage.getWarPhase() != nextStage.getWarPhase()) {
             updateWarState(nextStage);
