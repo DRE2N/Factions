@@ -10,6 +10,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
+/**
+ * @author Malfrador
+ */
 public class IncreaseMaxPlayers extends BuildingEffect {
 
     private FactionAttributeModifier modifier;

@@ -7,6 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Malfrador
+ */
 public class BuildingRespawnableBlockEntry {
 
     private final Material material;

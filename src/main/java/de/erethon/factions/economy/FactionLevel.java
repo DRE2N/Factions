@@ -11,6 +11,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @author Malfrador
+ */
 public enum FactionLevel {
     HAMLET("Weiler"),
     VILLAGE("Dorf"),

@@ -7,6 +7,8 @@ import java.util.Set;
  * @see FactionAttributeType
  *
  * Note that apply() should be called after all modifiers have been added to update the value.
+ *
+ * @author Malfrador
  */
 public interface FactionAttribute {
     FactionAttributeType getType();

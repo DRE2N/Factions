@@ -8,6 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * @author Malfrador
+ */
 public enum PopulationLevel {
 
     BEGGAR(0),

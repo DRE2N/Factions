@@ -14,6 +14,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * @author Malfrador
+ */
 public class BuildSiteCache {
 
     public static final NamespacedKey KEY = new NamespacedKey(Factions.get(), "build_sites");

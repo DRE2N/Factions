@@ -1,6 +1,5 @@
 package de.erethon.factions.building;
 
-import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
@@ -8,7 +7,6 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.translation.GlobalTranslator;
 import org.apache.commons.lang.math.IntRange;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -38,15 +36,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author Malfrador
+ */
 public class BuildSite extends YamlConfiguration implements InventoryHolder, Listener {
 
     Factions plugin = Factions.get();

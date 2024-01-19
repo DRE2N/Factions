@@ -1,9 +1,11 @@
 package de.erethon.factions.building;
 
-import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.faction.Faction;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Malfrador
+ */
 public class BuildingEffect {
     protected final BuildingEffectData effect;
     protected final BuildSite site;

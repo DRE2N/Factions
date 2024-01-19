@@ -2,6 +2,9 @@ package de.erethon.factions.economy.resource;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Malfrador
+ */
 public enum Resource {
 
     // Food - base resources

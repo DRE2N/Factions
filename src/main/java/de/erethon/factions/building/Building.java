@@ -40,6 +40,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @author Malfrador
+ */
 public class Building {
 
     Factions plugin = Factions.get();

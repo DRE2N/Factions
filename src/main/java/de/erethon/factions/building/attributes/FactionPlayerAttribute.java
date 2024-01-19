@@ -7,6 +7,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * @author Malfrador
+ */
 public class FactionPlayerAttribute implements FactionAttribute {
 
     private  final Set<FactionAttributeModifier> modifiers = new HashSet<>();

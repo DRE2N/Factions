@@ -4,6 +4,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
+/**
+ * @author Malfrador
+ */
 public enum ResourceCategory {
 
     FOOD("Food", Resource.FISH, Resource.GRAIN, Resource.MEAT, Resource.SPICES, Resource.WINE, Resource.BREAD, Resource.CHEESE, Resource.BEER, Resource.FRUIT, Resource.VEGETABLES),

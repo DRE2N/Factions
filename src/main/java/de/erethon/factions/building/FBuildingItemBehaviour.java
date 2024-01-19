@@ -1,7 +1,6 @@
 package de.erethon.factions.building;
 
 import de.erethon.factions.Factions;
-import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.hephaestus.HItem;
 import de.erethon.hephaestus.HItemBehaviour;
@@ -10,12 +9,13 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Malfrador
+ */
 public class FBuildingItemBehaviour extends HItemBehaviour {
 
     public static final NamespacedKey KEY = new NamespacedKey(Factions.get(), "building_item");

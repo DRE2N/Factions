@@ -243,7 +243,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     }
 
     public @NotNull TextColor getAllianceColor() {
-        return alliance == null ? NamedTextColor.WHITE : alliance.getColor();
+        return alliance == null ? NamedTextColor.GRAY : alliance.getColor();
     }
 
     @Override
@@ -282,8 +282,8 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         }
         Component displayName = Component.text()
                 .content("[" + getDisplayMembership() + "] ")
-                .color(hasAlliance() ? alliance.getColor() : NamedTextColor.WHITE)
-                .append(Component.text(lastName).color(NamedTextColor.WHITE))
+                .color(hasAlliance() ? alliance.getColor() : NamedTextColor.GRAY)
+                .append(Component.text(lastName).color(NamedTextColor.GRAY))
                 .build();
         player.displayName(displayName);
         player.playerListName(displayName);

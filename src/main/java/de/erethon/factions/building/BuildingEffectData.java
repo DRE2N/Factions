@@ -10,6 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * @author Malfrador
+ */
 public class BuildingEffectData extends YamlConfiguration {
 
     private final String id;

@@ -35,6 +35,9 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * @author Malfrador
+ */
 public class BuildingManager implements Listener {
 
     private final static ResourceLocation ITEM_ID = new ResourceLocation("factions", "building_item");

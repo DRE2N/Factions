@@ -4,6 +4,9 @@ import org.bukkit.attribute.AttributeModifier;
 
 import java.util.UUID;
 
+/**
+ * @author Malfrador
+ */
 public record FactionAttributeModifier(UUID uuid, FactionAttribute attribute, double modifier, AttributeModifier.Operation operation) {
     public FactionAttributeType getType() {
         return attribute.getType();

@@ -5,6 +5,9 @@ import de.erethon.factions.economy.resource.Resource;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Malfrador
+ */
 public class FactionResourceAttribute implements FactionAttribute {
 
     private final Set<FactionAttributeModifier> modifiers = new HashSet<>();

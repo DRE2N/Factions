@@ -8,6 +8,9 @@ import de.erethon.factions.faction.Faction;
 
 import java.util.Map;
 
+/**
+ * @author Malfrador
+ */
 public class FEconomy {
 
     private final Faction faction;

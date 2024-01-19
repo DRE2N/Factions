@@ -3,6 +3,9 @@ package de.erethon.factions.building.attributes;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Malfrador
+ */
 public class FactionStatAttribute implements FactionAttribute {
     private final Set<FactionAttributeModifier> modifiers = new HashSet<>();
     private double value;

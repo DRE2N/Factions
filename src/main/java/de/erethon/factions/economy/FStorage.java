@@ -11,6 +11,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Malfrador
+ */
 public class FStorage {
 
     private Faction faction;
