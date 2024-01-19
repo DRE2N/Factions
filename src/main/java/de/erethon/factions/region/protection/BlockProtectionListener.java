@@ -1,6 +1,5 @@
 package de.erethon.factions.region.protection;
 
-import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;

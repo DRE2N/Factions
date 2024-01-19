@@ -100,6 +100,8 @@ public final class Factions extends EPlugin {
     private BukkitTask saveDataTask;
 
     /* Listeners */
+    private BlockProtectionListener blockProtectionListener;
+    private EntityProtectionListener entityProtectionListener;
     private FPlayerListener fPlayerListener;
     private UIFactionsListener uiFactionsListener;
     private WarListener warListener;
@@ -242,6 +244,8 @@ public final class Factions extends EPlugin {
     }
 
     public void registerListeners() {
+        register(blockProtectionListener = new BlockProtectionListener());
+        register(entityProtectionListener = new EntityProtectionListener());
         register(fPlayerListener = new FPlayerListener());
         register(uiFactionsListener = new UIFactionsListener());
         register(warListener = new WarListener());
@@ -249,8 +253,6 @@ public final class Factions extends EPlugin {
 
     private void register(Listener listener) {
         Bukkit.getPluginManager().registerEvents(listener, this);
-        Bukkit.getPluginManager().registerEvents(new BlockProtectionListener(), this);
-        Bukkit.getPluginManager().registerEvents(new EntityProtectionListener(), this);
     }
 
     public void registerAergiaPlaceholders() {
@@ -468,6 +470,14 @@ public final class Factions extends EPlugin {
 
     public @Nullable TaxManager getTaxManager() {
         return taxManager;
+    }
+
+    public @NotNull BlockProtectionListener getBlockProtectionListener() {
+        return blockProtectionListener;
+    }
+
+    public @NotNull EntityProtectionListener getEntityProtectionListener() {
+        return entityProtectionListener;
     }
 
     public @NotNull FPlayerListener getFPlayerListener() {
