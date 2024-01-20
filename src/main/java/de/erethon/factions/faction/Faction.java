@@ -103,7 +103,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         super(file);
     }
 
-    public void addDefaultAttributes() {
+    protected void addDefaultAttributes() {
         attributes.put("max_players", new FactionStatAttribute(5));
         addPopulation(PopulationLevel.PEASANT, 5); // Let's start with something at least
     }
@@ -618,7 +618,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         return attributes;
     }
 
-    public FactionAttribute getAttribute(@NotNull String name) {
+    public @Nullable FactionAttribute getAttribute(@NotNull String name) {
         FactionAttribute attribute = attributes.get(name);
         return attribute == null ? null : attribute.apply();
     }

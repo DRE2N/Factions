@@ -47,6 +47,7 @@ public class FactionCache extends FEntityCache<Faction> {
         FException.throwIf(plugin.getFConfig().isNameForbidden(name), "Couldn't create faction: forbidden name", FMessage.ERROR_NAME_IS_FORBIDDEN, name);
         FException.throwIf(getByName(name) != null, "Couldn't create faction: name already in use", FMessage.ERROR_NAME_IN_USE, name);
         Faction faction = new Faction(fPlayer, coreRegion, generateId(), name, null);
+        faction.addDefaultAttributes(); // Initialize default attributes
         cache.put(faction.getId(), faction);
         fPlayer.setFaction(faction);
         new FactionCreateEvent(faction, fPlayer).callEvent();
