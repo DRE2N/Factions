@@ -675,4 +675,16 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         }
         HandlerList.unregisterAll(poll);
     }
+
+    /* Object methods */
+
+    @Override
+    public int hashCode() {
+        return id; // IDs are unique
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Faction other && id == other.id;
+    }
 }

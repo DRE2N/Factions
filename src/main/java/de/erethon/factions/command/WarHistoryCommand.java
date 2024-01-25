@@ -36,7 +36,7 @@ public class WarHistoryCommand extends FCommand {
             Date endDate = new Date(entry.getEndDate());
             Component hover = FMessage.CMD_WAR_HISTORY_WINNER.message(getAllianceComponent(entry.getWinner()))
                     .appendNewline()
-                    .append(FMessage.CMD_WAR_HISTORY_ENDE_DATE.message(SimpleDateUtil.ddMMMMyyyyhhmmss(endDate)))
+                    .append(FMessage.CMD_WAR_HISTORY_END_DATE.message(SimpleDateUtil.ddMMMMyyyyhhmmss(endDate)))
                     .appendNewline();
 
             for (int id : entry.getAllianceScores().keySet()) {

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * @author Fyreum
@@ -64,7 +65,7 @@ public class LazyChunk {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(new int[]{x, z});
+        return Objects.hash(x, z);
     }
 
     @Override

@@ -375,9 +375,8 @@ public class Region extends FLegalEntity {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) return false;
         if (!(obj instanceof Region other)) return false;
-        return id == other.getId();
+        return id == other.getId() && getWorldId().equals(other.getWorldId());
     }
 
     @Override

@@ -114,7 +114,7 @@ public enum FMessage implements Message {
     CMD_VERSION_AUTHORS("cmd.version.authors"),
     CMD_VERSION_HEADER("cmd.version.header"),
     CMD_VERSION_STATUS("cmd.version.status"),
-    CMD_WAR_HISTORY_ENDE_DATE("cmd.warHistory.endDate"),
+    CMD_WAR_HISTORY_END_DATE("cmd.warHistory.endDate"),
     CMD_WAR_HISTORY_ENTRY("cmd.warHistory.entry"),
     CMD_WAR_HISTORY_WINNER("cmd.warHistory.winner"),
 

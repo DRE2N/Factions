@@ -329,4 +329,16 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         }
         HandlerList.unregisterAll(poll);
     }
+
+    /* Object methods */
+
+    @Override
+    public int hashCode() {
+        return id; // IDs are unique
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Alliance other && id == other.id;
+    }
 }

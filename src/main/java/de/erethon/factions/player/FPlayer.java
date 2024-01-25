@@ -404,9 +404,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof FPlayer fPlayer)) {
-            return false;
-        }
-        return uuid.equals(fPlayer.getUniqueId());
+        if (!(obj instanceof FPlayer other)) return false;
+        return uuid.equals(other.getUniqueId());
     }
 }
