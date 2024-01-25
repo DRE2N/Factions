@@ -32,8 +32,7 @@ public class FPlayerListener implements Listener {
     }
 
     private void updateLastRegion(FPlayer fPlayer, Location to) {
-        RegionCache regionCache = plugin.getRegionManager().getCache(to.getWorld());
-        Region region = regionCache == null ? null : regionCache.getByLocation(to);
+        Region region = plugin.getRegionManager().getRegionByLocation(to);
         if (region == fPlayer.getLastRegion()) {
             return;
         }

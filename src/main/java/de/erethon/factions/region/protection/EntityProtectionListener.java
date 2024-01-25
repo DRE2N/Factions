@@ -30,6 +30,8 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.player.PlayerUnleashEntityEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 
+import java.util.List;
+
 /**
  * @author Fyreum
  */
@@ -156,8 +158,15 @@ public class EntityProtectionListener implements Listener {
         if (region == null) {
             return;
         }
-        RegionStructure structure = region.getStructureAt(target.getLocation());
-        TriState structureState = structure == null ? TriState.NOT_SET : structure.canAttack(fAttacker, target);
+        List<RegionStructure> structures = region.getStructuresAt(target.getLocation());
+        TriState structureState = TriState.NOT_SET;
+        // First structure that returns a state other than NOT_SET will be used.
+        for (RegionStructure structure : structures) {
+            structureState = structure.canAttack(fAttacker, target);
+            if (structureState != TriState.NOT_SET) {
+                break;
+            }
+        }
         if (structureState == TriState.TRUE) {
             return;
         }
