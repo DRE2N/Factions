@@ -50,6 +50,7 @@ public class FactionCache extends FEntityCache<Faction> {
         faction.addDefaultAttributes(); // Initialize default attributes
         cache.put(faction.getId(), faction);
         fPlayer.setFaction(faction);
+        fPlayer.setLastFactionJoinDate(System.currentTimeMillis());
         new FactionCreateEvent(faction, fPlayer).callEvent();
         BroadcastUtil.broadcast(FMessage.FACTION_INFO_CREATED.message(fPlayer.getLastName(), faction.getName()));
         return faction;
@@ -93,6 +94,10 @@ public class FactionCache extends FEntityCache<Faction> {
                 FPlayer fPlayer = plugin.getFPlayerCache().getByUniqueId(uuid);
                 if (fPlayer == null) {
                     FLogger.ERROR.log("Couldn't kick inactive player '" + uuid + "': FPlayer is null");
+                    continue;
+                }
+                if (fPlayer.isBypass()) {
+                    FLogger.FACTION.log("Ignoring inactive player '" + fPlayer.getLastName() + "': Bypass permission");
                     continue;
                 }
                 faction.playerLeave(fPlayer, FPlayerFactionLeaveEvent.Reason.INACTIVE);

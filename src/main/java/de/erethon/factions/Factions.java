@@ -70,6 +70,7 @@ public final class Factions extends EPlugin {
     public static File WAR_HISTORY;
 
     /* Files */
+    private File debugFile;
     private File fLoggerFile;
     private File fConfigFile;
     private File warPhaseManagerFile;
@@ -134,6 +135,7 @@ public final class Factions extends EPlugin {
         Bukkit.getScheduler().cancelTasks(this);
         unregisterAergiaPlaceholders();
         saveData();
+        FLogger.closeWriter();
     }
 
     public void loadCore() {
@@ -170,13 +172,14 @@ public final class Factions extends EPlugin {
     }
 
     public void initFiles() {
+        debugFile = new File(getDataFolder(), "debug.txt");
         fLoggerFile = new File(getDataFolder(), "logger.yml");
         fConfigFile = new File(getDataFolder(), "config.yml");
         warPhaseManagerFile = FileUtil.initFile(this, new File(WAR, "schedule.yml"), "defaults/schedule.yml");
     }
 
     public void loadFLogger() {
-        FLogger.load(fLoggerFile);
+        FLogger.load(fLoggerFile, debugFile);
     }
 
     public void loadRegistries() {

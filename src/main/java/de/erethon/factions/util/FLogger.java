@@ -6,9 +6,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.function.Supplier;
 
 /**
@@ -28,7 +31,8 @@ public enum FLogger {
     WARN(true, NamedTextColor.GOLD),
     ERROR(true, NamedTextColor.RED);
 
-    private static File file;
+    private static File configFile;
+    private static PrintWriter debugWriter;
     private static YamlConfiguration config;
 
     private final boolean defaultEnabled;
@@ -63,13 +67,16 @@ public enum FLogger {
     }
 
     public void log(Supplier<Component> msg) {
+        Component comp = msg.get();
+        debugWriter.println("[" + name() + "] " + MessageUtil.serializePlain(comp));
+
         if (!isEnabled()) {
             return;
         }
         if (color != null) {
-            MessageUtil.log(Factions.get(), Component.text().color(color).content("[" + name() + "] ").append(msg.get()).build());
+            MessageUtil.log(Factions.get(), Component.text().color(color).content("[" + name() + "] ").append(comp).build());
         } else {
-            MessageUtil.log(Factions.get(), Component.text("[" + name() + "] ").append(msg.get()));
+            MessageUtil.log(Factions.get(), Component.text("[" + name() + "] ").append(comp));
         }
     }
 
@@ -87,21 +94,26 @@ public enum FLogger {
         this.enabled = enabled;
     }
 
-    public TextColor getColor() {
+    public @Nullable TextColor getColor() {
         return color;
     }
 
-    public void setColor(TextColor color) {
+    public void setColor(@Nullable TextColor color) {
         this.color = color;
     }
 
     /* Statics */
 
-    public static void load(File file) {
-        FLogger.file = file;
-        FLogger.config = YamlConfiguration.loadConfiguration(file);
+    public static void load(@NotNull File configFile, @NotNull File debugFile) {
+        FLogger.configFile = configFile;
+        FLogger.config = YamlConfiguration.loadConfiguration(configFile);
         for (FLogger logger : FLogger.values()) {
             logger.setEnabled(config.getBoolean(logger.name(), logger.isEnabled()));
+        }
+        try {
+            FLogger.debugWriter = new PrintWriter(debugFile);
+        } catch (IOException e) {
+            FLogger.ERROR.log("Couldn't create debug file: " + e.getMessage());
         }
     }
 
@@ -111,11 +123,15 @@ public enum FLogger {
             config.set(logger.name(), logger.isEnabled());
         }
         try {
-            config.save(file);
+            config.save(configFile);
         } catch (IOException e) {
             ERROR.log("Couldn't save logger settings: ");
             e.printStackTrace();
         }
         DEBUG.log("Saved logger settings.");
+    }
+
+    public static void closeWriter() {
+        debugWriter.close();
     }
 }
