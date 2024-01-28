@@ -177,7 +177,7 @@ public class RegionManager {
      */
     public synchronized int generateId(boolean updatePrediction) {
         int id = presumableUnusedId;
-        while (getRegionById(id) != null) {
+        while (getRegionById(id) != null || unloadedRegionIds.contains(id)) {
             id++;
         }
         if (updatePrediction) {
@@ -246,7 +246,7 @@ public class RegionManager {
         return null;
     }
 
-    public Set<Integer> getUnloadedRegionIds() {
+    public @NotNull Set<Integer> getUnloadedRegionIds() {
         return unloadedRegionIds;
     }
 }
