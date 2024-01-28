@@ -80,7 +80,7 @@ public class WarPhaseManager extends EConfig {
         }
         if (currentStage.getWarPhase() != nextStage.getWarPhase()) {
             currentStage.getWarPhase().onChangeTo(nextStage);
-            FBroadcastUtil.broadcastWar(currentStage.getWarPhase().getAnnouncementMessage());
+            FBroadcastUtil.broadcastWar(nextStage.getWarPhase().getAnnouncementMessage());
         }
         currentStage = nextStage;
     }
