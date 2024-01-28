@@ -4,18 +4,10 @@ import de.erethon.aergia.util.DateUtil;
 import de.erethon.aergia.util.TickUtil;
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.Factions;
-import de.erethon.factions.alliance.Alliance;
-import de.erethon.factions.data.FMessage;
-import de.erethon.factions.poll.polls.CapturedRegionsPoll;
-import de.erethon.factions.region.Region;
-import de.erethon.factions.region.RegionCache;
-import de.erethon.factions.region.RegionType;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FUtil;
-import de.erethon.factions.war.objective.WarObjective;
 import de.erethon.factions.war.task.PhaseSwitchTask;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitTask;
@@ -31,7 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
 /**
  * @author Fyreum
@@ -85,17 +76,17 @@ public class WarPhaseManager extends EConfig {
         WarPhaseStage nextStage = currentStage.getNextStage();
         if (nextStage == null) { // the current day schedule appears to have ended.
             incrementCurrentDay();
-            nextStage = currentStage.getNextStage();
+            nextStage = getFirstStageOfTheDay();
         }
         if (currentStage.getWarPhase() != nextStage.getWarPhase()) {
-            updateWarState(nextStage);
+            currentStage.getWarPhase().onChangeTo(nextStage);
             FBroadcastUtil.broadcastWar(currentStage.getWarPhase().getAnnouncementMessage());
         }
         currentStage = nextStage;
     }
 
-    private void initializeStage() {
-        currentStage = schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
+    void initializeStage() {
+        currentStage = getFirstStageOfTheDay();
         long currentProgress = System.currentTimeMillis() - midnight.toInstant().toEpochMilli();
 
         while (currentStage != null && currentStage.getFullDuration() < currentProgress) {
@@ -109,105 +100,10 @@ public class WarPhaseManager extends EConfig {
         if (midnight.getDayOfWeek() == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
             currentWeek = 1;
         }
-        currentStage = schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
     }
 
-    private void updateWarState(WarPhaseStage nextStage) {
-        if (currentStage.getWarPhase().isInfluencingScoring() && !nextStage.getWarPhase().isInfluencingScoring()) {
-            onScoringClose();
-        }
-        if (currentStage.getWarPhase().isAllowPvP()) {
-            if (!nextStage.getWarPhase().isAllowPvP()) {
-                deactivateObjectives(obj -> true);
-            }
-        } else if (nextStage.getWarPhase().isAllowPvP()) {
-            activateObjectives(obj -> !obj.isCapitalObjective());
-        }
-        if (currentStage.getWarPhase().isOpenCapital()) {
-            if (!nextStage.getWarPhase().isOpenCapital()) {
-                onWarEnd();
-            }
-        } else if (nextStage.getWarPhase().isOpenCapital()) {
-            activateObjectives(WarObjective::isCapitalObjective);
-        }
-    }
-
-    private void activateObjectives(Predicate<WarObjective> filter) {
-        for (RegionCache cache : plugin.getRegionManager().getCaches().values()) {
-            for (Region region : cache) {
-                Map<String, WarObjective> structures = region.getStructures(WarObjective.class);
-                structures.forEach((name, obj) -> {
-                    if (filter.test(obj)) {
-                        obj.activate();
-                    }
-                });
-            }
-        }
-    }
-
-    private void deactivateObjectives(Predicate<WarObjective> filter) {
-        for (RegionCache cache : plugin.getRegionManager().getCaches().values()) {
-            for (Region region : cache) {
-                Map<String, WarObjective> structures = region.getStructures(WarObjective.class);
-                structures.forEach((name, obj) -> {
-                    if (filter.test(obj)) {
-                        obj.deactivate();
-                    }
-                });
-            }
-        }
-    }
-
-    private void onScoringClose() {
-        FLogger.WAR.log("Awarding alliances relative to their captured regions...");
-        for (Alliance alliance : plugin.getAllianceCache()) {
-            for (Region region : alliance.getUnconfirmedTemporaryRegions()) {
-                alliance.addWarScore(region.getRegionalWarTracker().getRegionValue());
-            }
-        }
-    }
-
-    private void onWarEnd() {
-        // Calculate remaining winners for each region.
-        for (RegionCache cache : plugin.getRegionManager().getCaches().values()) {
-            for (Region region : cache) {
-                if (region.getType() != RegionType.WAR_ZONE) {
-                    continue;
-                }
-                Alliance winner = region.getRegionalWarTracker().getLeader();
-                Alliance rAlliance = region.getAlliance();
-                if (winner != null) {
-                    winner.temporaryOccupy(region);
-                    continue;
-                }
-                if (rAlliance != null) {
-                    FLogger.WAR.log("Region '" + region.getId() + "' is no longer held by alliance '" + rAlliance + "'");
-                    region.setAlliance(null);
-                }
-            }
-        }
-        // Get the overall war winning alliance.
-        List<Alliance> ranked = plugin.getAllianceCache().ranked();
-        if (ranked.isEmpty()) {
-            return;
-        }
-        Alliance winner = ranked.get(0);
-        // Open alliance polls & store new WarHistory entry
-        Map<Integer, Double> scores = new HashMap<>(plugin.getAllianceCache().getSize());
-        for (Alliance alliance : plugin.getAllianceCache()) {
-            scores.put(alliance.getId(), alliance.getWarScore());
-            alliance.setCurrentEmperor(false);
-            alliance.setWarScore(0);
-            alliance.addPoll(new CapturedRegionsPoll(alliance), TickUtil.DAY);
-        }
-        plugin.getWarHistory().storeEntry(System.currentTimeMillis(), scores);
-
-        winner.setCurrentEmperor(true);
-        for (Alliance current : ranked) {
-            FBroadcastUtil.broadcastWar(FMessage.WAR_END_RANKING, current.getColoredLongName(), Component.text(current.getWarScore()));
-        }
-        FBroadcastUtil.broadcastWar(Component.empty());
-        FBroadcastUtil.broadcastWar(FMessage.WAR_END_WINNER, winner.getColoredLongName());
+    WarPhaseStage getFirstStageOfTheDay() {
+        return schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
     }
 
     /* Serialization */

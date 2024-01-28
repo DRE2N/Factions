@@ -29,7 +29,7 @@ public class PhaseSwitchTask extends BukkitRunnable {
         this.warPhaseManager = warPhaseManager;
         this.m = minutes;
         this.m2 = minutes;
-        this.s = minutes*60;
+        this.s = minutes * 60;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class PhaseSwitchTask extends BukkitRunnable {
         if (s <= 0) {
             warPhaseManager.updateCurrentStageTask();
         }
-        m = (int) Math.ceil((double) --s/60);
+        m = (int) Math.ceil((double) --s / 60);
     }
 
     public @NotNull BukkitTask start() {

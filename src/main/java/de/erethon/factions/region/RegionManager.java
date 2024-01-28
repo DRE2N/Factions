@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * @author Fyreum
  */
-public class RegionManager {
+public class RegionManager implements Iterable<RegionCache> {
 
     private final File folder;
     private final Map<UUID, RegionCache> caches = new HashMap<>();
@@ -248,5 +248,12 @@ public class RegionManager {
 
     public @NotNull Set<Integer> getUnloadedRegionIds() {
         return unloadedRegionIds;
+    }
+
+    /* Iterable */
+
+    @Override
+    public @NotNull Iterator<RegionCache> iterator() {
+        return caches.values().iterator();
     }
 }

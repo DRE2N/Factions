@@ -273,8 +273,8 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         for (PopulationLevel level : PopulationLevel.values()) {
             this.population.put(level, config.getInt("population." + level.name(), 0));
         }
-        this.fStorage = new FStorage(this, config.getConfigurationSection("storage"));
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
+        this.fStorage = new FStorage(this, config.getConfigurationSection("storage"));
     }
 
     @Override

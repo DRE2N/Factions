@@ -104,6 +104,11 @@ public class CrystalWarObjective extends TickingWarObjective {
         crystal.remove();
     }
 
+    @Override
+    public void onTemporaryOccupy(@NotNull Alliance alliance) {
+        deactivate();
+    }
+
     private void displayEnergy() {
         displayEnergy(energyDisplay);
     }
