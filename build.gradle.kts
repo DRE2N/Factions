@@ -29,7 +29,7 @@ repositories {
 
 dependencies {
     paperweight.devBundle("de.erethon.papyrus", papyrusVersion) { isChanging = true }
-    implementation("de.erethon:bedrock:1.2.5")
+    implementation("de.erethon:bedrock:1.3.0")
     compileOnly("de.erethon.aergia:Aergia:1.0.0-SNAPSHOT")
     implementation("org.jetbrains:annotations:23.1.0")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") { isTransitive = false }
@@ -82,7 +82,7 @@ tasks {
         //archiveFileName.set(correctJarName)
         // Shade everything for now
         dependencies {
-            include(dependency("de.erethon:bedrock:1.2.5"))
+            include(dependency("de.erethon:bedrock:1.3.0"))
         }
         relocate("de.erethon.bedrock", "de.erethon.factions.bedrock")
     }
