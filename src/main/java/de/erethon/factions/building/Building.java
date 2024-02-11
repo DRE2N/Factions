@@ -93,21 +93,21 @@ public class Building {
         RegionManager board = plugin.getRegionManager();
         FPlayer fPlayer = playerCache.getByPlayer(player);
         if (faction == null) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_PLAYER_IS_NOT_IN_A_FACTION.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_PLAYER_IS_NOT_IN_A_FACTION.message());
             return false;
         }
         if (!faction.isPrivileged(fPlayer)) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_NO_PERMISSION.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_NO_PERMISSION.message());
             return false;
         }
         Region rg = fPlayer.getLastRegion();
         if (rg == null) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_REGION_NOT_FOUND.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
             return false;
         }
         // If the faction does not own the region and the building is not a war building
         if (rg.getOwner() != faction && !isWarBuilding()) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_REGION_NOT_FOUND.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
             return false;
         }
         boolean isBorder = false;
@@ -135,27 +135,27 @@ public class Building {
         }
         // If the building overlaps with an existing building
         if (isInOtherBuilding) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_BLOCKED.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_BLOCKED.message());
             return false;
         }
         // If the region is not of the correct RegionType
         if (!hasRequiredType(rg)) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_REQUIRED_TYPE.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_REQUIRED_TYPE.message());
             return false;
         }
         // If the building requires other buildings to be built first in this faction
         if (!hasRequiredBuilding(faction)) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_REQUIRED_FACTION.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_REQUIRED_FACTION.message());
             return false;
         }
         // If the building requires a certain amount of population at a specific level
         if (!hasRequiredPopulation(rg)) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_POPULATION.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_POPULATION.message());
             return false;
         }
         // If the faction can not afford the unlock costs.
         if (!canPay(faction)) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_NOT_ENOUGH_RESOURCES.getMessage());
+            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_NOT_ENOUGH_RESOURCES.message());
             return false;
         }
         return true;

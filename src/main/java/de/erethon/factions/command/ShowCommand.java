@@ -32,8 +32,8 @@ public class ShowCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         Faction faction = args.length == 2 ? getFaction(args[1]) : getFaction(getFPlayer(sender));
         sender.sendMessage(Component.empty());
-        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_HEADER.getMessage(faction.getName()));
-        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_SEPARATOR.getMessage());
+        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_HEADER.message(faction.getName()));
+        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_SEPARATOR.message());
         sender.sendMessage(FMessage.CMD_SHOW_SHORT_NAME.message(faction.getDisplayShortName()));
         sender.sendMessage(FMessage.CMD_SHOW_LONG_NAME.message(faction.getDisplayLongName()));
         sender.sendMessage(FMessage.CMD_SHOW_DESCRIPTION.message(faction.getDisplayDescription()));

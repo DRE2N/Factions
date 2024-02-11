@@ -4,11 +4,15 @@ import de.erethon.bedrock.config.Message;
 import de.erethon.bedrock.config.MessageHandler;
 import de.erethon.factions.Factions;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 
+@Deprecated
 /**
  * @author Fyreum
+ * @deprecated Use translatable components instead
  */
 public enum FMessage implements Message {
 
@@ -306,4 +310,25 @@ public enum FMessage implements Message {
     public MessageHandler getMessageHandler() {
         return Factions.get().getMessageHandler();
     }
+
+    @Override
+    public Component message() {
+        return Component.translatable("factions." + getPath());
+    }
+
+    @Override
+    public Component message(String... args) {
+        TextComponent[] components = new TextComponent[args.length];
+        for (int i = 0; i < args.length; i++) {
+            components[i] = Component.text(args[i]);
+        }
+        return Component.translatable("factions." + getPath(), components);
+    }
+
+    @Override
+    public Component message(ComponentLike... args) {
+        return Component.translatable("factions." + getPath(), args);
+    }
+
+
 }

@@ -28,7 +28,7 @@ public class RegionStatusCommand extends FCommand {
         assure(region.getType().isWarGround(), FMessage.ERROR_REGION_IS_NOT_A_WARZONE);
         RegionalWarTracker tracker = region.getRegionalWarTracker();
 
-        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_REGION_STATUS_HEADER.getMessage(region.getName()));
+        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_REGION_STATUS_HEADER.message(region.getName()));
         Alliance leader = tracker.getLeader();
         sender.sendMessage(FMessage.CMD_REGION_STATUS_CAPTURE_CAP.message(String.valueOf(tracker.getCaptureCap())));
         sender.sendMessage(FMessage.CMD_REGION_STATUS_LEADER.message(leader == null ? FMessage.GENERAL_NONE.message() : leader.getColoredName()));

@@ -27,7 +27,7 @@ public class RegionInfoCommand extends FCommand {
     @Override
     public void onExecute(CommandSender sender, String[] args) {
         Region region = args.length == 2 ? getRegion(args[1]) : getRegion(getFPlayer(sender));
-        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_REGION_INFO_HEADER.getMessage(region.getName()));
+        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_REGION_INFO_HEADER.message(region.getName()));
         sender.sendMessage(FMessage.CMD_REGION_INFO_ID.message(String.valueOf(region.getId())));
         sender.sendMessage(FMessage.CMD_REGION_INFO_TYPE.message(region.getType().getName()));
         if (region.getType().isWarGround()) {

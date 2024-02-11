@@ -30,8 +30,8 @@ public class AllianceShowCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         Alliance alliance = args.length == 2 ? getAlliance(args[1]) : getAlliance(getFPlayer(sender));
         sender.sendMessage(Component.empty());
-        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_ALLIANCE_SHOW_HEADER.getMessage(alliance.getName()));
-        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_ALLIANCE_SHOW_SEPARATOR.getMessage());
+        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_ALLIANCE_SHOW_HEADER.message(alliance.getName()));
+        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_ALLIANCE_SHOW_SEPARATOR.message());
         sender.sendMessage(FMessage.CMD_ALLIANCE_SHOW_SHORT_NAME.message(alliance.getDisplayShortName()));
         sender.sendMessage(FMessage.CMD_ALLIANCE_SHOW_LONG_NAME.message(alliance.getDisplayLongName()));
         sender.sendMessage(FMessage.CMD_ALLIANCE_SHOW_DESCRIPTION.message(alliance.getDisplayDescription()));
