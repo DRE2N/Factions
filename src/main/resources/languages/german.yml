@@ -1,4 +1,4 @@
-locale: "en_US"
+locale: "de_DE"
 alliance:
   info:
     factionCannotAffordDailyTaxes: "<yellow>Die Fraktion <gold>&v1</gold> konnte ihre täglichen Steuern nicht bezahlen."
