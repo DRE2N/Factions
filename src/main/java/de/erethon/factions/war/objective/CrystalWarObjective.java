@@ -82,6 +82,7 @@ public class CrystalWarObjective extends TickingWarObjective {
             FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED, alliance.getDisplayShortName(), region.getName());
         }
         deactivate();
+        // todo: Delete objective after determination
         spawnLocation.createExplosion(4f, false, false);
     }
 
