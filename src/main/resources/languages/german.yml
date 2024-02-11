@@ -31,7 +31,7 @@ cmd:
       longName: "<dark_purple>Langer Name</dark_purple><dark_gray>:<gray> <arg:0>"
       members: "<dark_purple>Mitglieder (<arg:0>)</dark_purple><dark_gray>:</dark_gray><gray> <arg:1>"
       money: "<dark_purple>Kontostand</dark_purple><dark_gray>:</dark_gray><gray> <arg:0></gray><red><arg:1>"
-      separator: ""
+      separator: " "
       shortName: "<dark_purple>Kürzel</dark_purple><dark_gray>:<gray> <arg:0>"
   authorised:
     added: "<green>Du hast der Fraktion <dark_green><arg:0></dark_green> die Erlaubnis <dark_green>erteilt</dark_green>, auf dem Gebiet von <dark_green><arg:1></dark_green> zu bauen."
@@ -123,7 +123,7 @@ cmd:
     longName: "<dark_green>Langer Name</dark_green><dark_gray>:<gray> <arg:0>"
     members: "<dark_green>Mitglieder (<arg:0>)</dark_green><dark_gray>:</dark_gray><gray> <arg:1>"
     money: "<dark_green>Kontostand</dark_green><dark_gray>:</dark_gray><gray> <arg:0></gray><red><arg:1>"
-    separator: ""
+    separator: " "
     shortName: "<dark_green>Kürzel</dark_green><dark_gray>:<gray> <arg:0>"
   stats:
     capturingTime: "<dark_green>Eroberungszeit</dark_green><dark_gray>:</dark_gray><gray> <arg:0>"
@@ -131,7 +131,7 @@ cmd:
     highestKillStreak: "<dark_green>Höchste Killstreak</dark_green><dark_gray>:</dark_gray><gray> <arg:0>"
     kd: "<dark_green>Kills/Tode</dark_green><dark_gray>:</dark_gray><gray> <arg:0> <dark_gray>/</dark_gray> <arg:1> <dark_gray>-</dark_gray> <arg:2>"
     killStreak: "<dark_green>Killstreak</dark_green><dark_gray>:</dark_gray><gray> <arg:0>"
-    separator: ""
+    separator: " "
   version:
     authors: "<dark_green>Autoren<dark_gray>:</dark_gray><gray> <arg:0>"
     header: "<dark_green><b><arg:0></b> <dark_gray>-</dark_gray> <arg:1>"

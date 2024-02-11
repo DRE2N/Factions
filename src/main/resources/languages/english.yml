@@ -31,7 +31,7 @@ cmd:
       longName: "<dark_purple>Long Name</dark_purple><dark_gray>:<gray> <arg:0>"
       members: "<dark_purple>Members (<arg:0>)</dark_purple><dark_gray>:</dark_gray><gray> <arg:1>"
       money: "<dark_purple>Money</dark_purple><dark_gray>:</dark_gray><gray> <arg:0></gray><red><arg:1>"
-      separator: ""
+      separator: " "
       shortName: "<dark_purple>Short Name</dark_purple><dark_gray>:<gray> <arg:0>"
   authorised:
     added: "<green>You have granted permission to faction <dark_green><arg:0></dark_green> to build on the territory of <dark_green><arg:1></dark_green>."
@@ -123,7 +123,7 @@ cmd:
     longName: "<dark_green>Long Name</dark_green><dark_gray>:<gray> <arg:0>"
     members: "<dark_green>Members (<arg:0>)</dark_green><dark_gray>:</dark_gray><gray> <arg:1>"
     money: "<dark_green>Money</dark_green><dark_gray>:</dark_gray><gray> <arg:0></gray><red><arg:1></red>"
-    separator: ""
+    separator: " "
     shortName: "<dark_green>Short Name</dark_green><dark_gray>:<gray> <arg:0>"
   stats:
     capturingTime: "<dark_green>Capturing Time</dark_green><dark_gray>:</dark_gray><gray> <arg:0>"
@@ -131,7 +131,7 @@ cmd:
     highestKillStreak: "<dark_green>Highest Killstreak</dark_green><dark_gray>:</dark_gray><gray> <arg:0>"
     kd: "<dark_green>Kills/Deaths</dark_green><dark_gray>:</dark_gray><gray> <arg:0> <dark_gray>/</dark_gray> <arg:1> <dark_gray>-</dark_gray> <arg:2>"
     killStreak: "<dark_green>Killstreak</dark_green><dark_gray>:</dark_gray><gray> <arg:0>"
-    separator: ""
+    separator: " "
   version:
     authors: "<dark_green>Authors<dark_gray>:</dark_gray><gray> <arg:0>"
     header: "<dark_green><b><arg:0></b> <dark_gray>-</dark_gray> <arg:1>"
