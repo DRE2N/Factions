@@ -30,6 +30,8 @@ import de.erethon.factions.util.FException;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FPermissionUtil;
 import de.erethon.factions.util.FUtil;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -53,7 +55,7 @@ import java.util.UUID;
 /**
  * @author Fyreum
  */
-public class Faction extends FLegalEntity implements ShortableNamed, PollContainer {
+public class Faction extends FLegalEntity implements ShortableNamed, PollContainer, ForwardingAudience {
 
     /* Persistent */
     private Alliance alliance;
@@ -209,6 +211,11 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     /* Messages */
 
+    @Override
+    public @NotNull Iterable<? extends Audience> audiences() {
+        return members.getOnlinePlayers();
+    }
+
     public void sendMessage(@NotNull Component msg) {
         sendMessage(msg, true);
     }
@@ -231,9 +238,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     }
 
     public void sendTranslatable(String key, Component... args) {
-        for (Player online : members.getOnlinePlayers()) {
-            MessageUtil.sendTranslatable(online, key, args);
-        }
+        sendMessage(Component.translatable().key(key).args(args));
     }
 
     /* Serialization */
