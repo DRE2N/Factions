@@ -227,18 +227,20 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         }
     }
 
-    public void sendMessage(String msg) {
-        sendMessage(MiniMessage.miniMessage().deserialize(msg));
+    public void sendTranslatable(String key) {
+        sendMessage(Component.translatable(key, key));
     }
 
-    public void sendTranslatable(String key) {
-        for (Player online : members.getOnlinePlayers()) {
-            MessageUtil.sendTranslatable(online, key);
-        }
+    public void sendTranslatable(String key, boolean prefix) {
+        sendMessage(Component.translatable(key, key), prefix);
     }
 
     public void sendTranslatable(String key, Component... args) {
-        sendMessage(Component.translatable().key(key).args(args));
+        sendMessage(Component.translatable(key, key, args));
+    }
+
+    public void sendTranslatable(String key, boolean prefix, Component... args) {
+        sendMessage(Component.translatable(key, key, args), prefix);
     }
 
     /* Serialization */
