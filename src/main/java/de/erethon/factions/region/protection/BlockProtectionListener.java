@@ -12,6 +12,7 @@ import org.bukkit.Chunk;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -57,7 +58,7 @@ public class BlockProtectionListener implements Listener {
     private void forbidIfInProtectedTerritory(Cancellable event, Player player, Block block, FMessage message) {
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
         if (fPlayer.isBypassRaw()) {
-            doBuildingChecks(player, block);
+            doBuildingChecks(player, block, event);
             return;
         }
         Region region = plugin.getRegionManager().getRegionByChunk(block.getChunk());
@@ -74,7 +75,7 @@ public class BlockProtectionListener implements Listener {
             state = structure.canBuild(fPlayer, block);
         }
         if (state == TriState.TRUE) {
-            doBuildingChecks(player, block);
+            doBuildingChecks(player, block, event);
             return;
         }
         if (state == TriState.FALSE || !region.getType().isAllowsBuilding() ||
@@ -86,7 +87,7 @@ public class BlockProtectionListener implements Listener {
         if (!relation.canBuild()) {
             cancel(event, fPlayer, region, message);
         } else {
-            doBuildingChecks(player, block);
+            doBuildingChecks(player, block, event);
         }
     }
 
@@ -95,11 +96,15 @@ public class BlockProtectionListener implements Listener {
         fPlayer.sendActionBarMessage(message.message(region.getDisplayOwner()));
     }
 
-    private void doBuildingChecks(Player player, Block block) {
+    private void doBuildingChecks(Player player, Block block, Cancellable event) {
         Chunk chunk = block.getChunk();
         plugin.getBuildSiteCache().get(chunk.getChunkKey()).forEach(building -> {
             if (building.isInBuildSite(block.getLocation())) {
-                building.blockPlaced();
+                if (event instanceof BlockPlaceEvent) {
+                    building.blockPlaced(player, event);
+                } else if (event instanceof BlockBreakEvent) {
+                    building.blockBroken(player, event);
+                }
             }
         });
     }

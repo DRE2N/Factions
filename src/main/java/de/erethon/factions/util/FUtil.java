@@ -3,6 +3,7 @@ package de.erethon.factions.util;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
+import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.Position;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -98,5 +99,16 @@ public class FUtil {
             }
         }
         return true;
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static BlockPosition parsePosition(String string) {
+        String[] split = string.split(";");
+        return Position.block(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static String positionToString(Position position) {
+        return position.x() + ";" + position.y() + ";" + position.z();
     }
 }

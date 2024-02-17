@@ -130,6 +130,9 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         fPlayer.setFaction(this);
         fPlayer.setLastFactionJoinDate(System.currentTimeMillis());
         sendMessage(FMessage.FACTION_INFO_PLAYER_JOINED.message(fPlayer.getLastName()));
+        for (BuildSite buildSite : buildSites) {
+            buildSite.onFactionJoin(fPlayer);
+        }
     }
 
     public void playerLeave(@NotNull FPlayer fPlayer, @NotNull FPlayerFactionLeaveEvent.Reason reason) {

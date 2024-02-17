@@ -5,6 +5,8 @@ import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.util.FUtil;
+import io.papermc.paper.math.Position;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang.math.IntRange;
@@ -15,11 +17,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -57,6 +61,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     private Region region;
     private Location corner;
     private Location otherCorner;
+    private final Set<BuildSiteSection> sections = new HashSet<>();
     private long chunkKey;
     private Location interactive;
     private String problemMessage = null;
@@ -70,7 +75,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     private UUID progressHoloUUID = null;
 
-    private int blockPlaceCounter = 0;
+    private int blockChangeCounter = 0;
     private TextDisplay progressHolo;
 
     public BuildSite(@NotNull Building building, @NotNull Region region, @NotNull Location loc1, @NotNull Location loc2, @NotNull Location center) {
@@ -149,11 +154,27 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         }
     }
 
-    public void blockPlaced() { // Only schedule a new update after x number of blocks have been changed.
-        blockPlaceCounter++;
-        if (blockPlaceCounter >= 5) {
-            blockPlaceCounter = 0;
+    public void blockPlaced(Player player, Cancellable event) { // Only schedule a new update after x number of blocks have been changed.
+        blockChangeCounter++;
+        if (blockChangeCounter >= 5) {
+            blockChangeCounter = 0;
             scheduleProgressUpdate();
+        }
+        FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
+        for (BuildingEffect effect : activeBuildingEffects) {
+            effect.onPlaceBlock(fPlayer, player.getLocation().getBlock(), getSectionsForLocation(player.getLocation()), event);
+        }
+    }
+
+    public void blockBroken(Player player, Cancellable event) {
+        blockChangeCounter++;
+        if (blockChangeCounter >= 5) {
+            blockChangeCounter = 0;
+            scheduleProgressUpdate();
+        }
+        FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
+        for (BuildingEffect effect : activeBuildingEffects) {
+            effect.onBreakBlock(fPlayer, player.getLocation().getBlock(), getSectionsForLocation(player.getLocation()), event);
         }
     }
 
@@ -265,6 +286,20 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         return new IntRange(x1, x2).containsDouble(xp) && new IntRange(y1, y2).containsDouble(yp) && new IntRange(z1, z2).containsDouble(zp);
     }
 
+    /**
+     * @param location The location to check for sections.
+     * @return A set of sections that contain the given location. Can be empty.
+     */
+    public Set<BuildSiteSection> getSectionsForLocation(Location location) {
+        Set<BuildSiteSection> result = new HashSet<>();
+        for (BuildSiteSection section : sections) {
+            if (section.contains(location)) {
+                result.add(section);
+            }
+        }
+        return result;
+    }
+
     public boolean isInBuildSite(@NotNull Player player) {
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
         Region rg = fPlayer.getLastRegion();
@@ -309,6 +344,27 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         return inventory;
     }
 
+    public boolean addItemToStorage(@NotNull ItemStack item) {
+        for (ItemStack itemStack : buildingStorage) {
+            if (itemStack.isSimilar(item)) {
+                int newAmount = itemStack.getAmount() + item.getAmount();
+                if (newAmount > itemStack.getMaxStackSize()) {
+                    return false;
+                }
+                itemStack.setAmount(newAmount);
+                return true;
+            }
+        }
+        if (buildingStorage.size() >= 54) {
+            return false;
+        }
+        buildingStorage.add(item);
+        return true;
+    }
+
+    //
+    // Event handlers
+    //
     @EventHandler
     private void onInventoryClick(InventoryClickEvent event) {
         if (event.getInventory().getHolder(false) != this) {
@@ -347,24 +403,9 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         HandlerList.unregisterAll(this);
     }
 
-    public boolean addItemToStorage(@NotNull ItemStack item) {
-        for (ItemStack itemStack : buildingStorage) {
-            if (itemStack.isSimilar(item)) {
-                int newAmount = itemStack.getAmount() + item.getAmount();
-                if (newAmount > itemStack.getMaxStackSize()) {
-                    return false;
-                }
-                itemStack.setAmount(newAmount);
-                return true;
-            }
-        }
-        if (buildingStorage.size() >= 54) {
-            return false;
-        }
-        buildingStorage.add(item);
-        return true;
-    }
-
+    //
+    // Getters and setters
+    //
     public @NotNull BuildSite getSite(){
         return this;
     }
@@ -387,6 +428,10 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     public @NotNull Location getOtherCorner() {
         return otherCorner;
+    }
+
+    public @NotNull Set<BuildSiteSection> getSections() {
+        return sections;
     }
 
     public @NotNull long getChunkKey() {
@@ -429,6 +474,41 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     }
 
     @Override
+    public @NotNull Inventory getInventory() {
+        return inventory;
+    }
+
+    //
+    // Effect triggers
+    //
+    public void onEnter(FPlayer player) {
+        for (BuildingEffect effect : activeBuildingEffects) {
+            effect.onEnter(player);
+        }
+    }
+
+    public void onLeave(FPlayer player) {
+        for (BuildingEffect effect : activeBuildingEffects) {
+            effect.onLeave(player);
+        }
+    }
+
+    public void onFactionJoin(FPlayer player) {
+        for (BuildingEffect effect : activeBuildingEffects) {
+            effect.onFactionJoin(player);
+        }
+    }
+
+    public void onFactionLeave(FPlayer player) {
+        for (BuildingEffect effect : activeBuildingEffects) {
+            effect.onFactionLeave(player);
+        }
+    }
+
+    //
+    // Serialization
+    //
+    @Override
     public void load(@NotNull File file) throws IOException, InvalidConfigurationException {
         super.load(file);
         uuid = UUID.fromString(file.getName().replace(".yml", ""));
@@ -441,6 +521,16 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         corner = Location.deserialize(getConfigurationSection("location.corner").getValues(false));
         otherCorner = Location.deserialize(getConfigurationSection("location.otherCorner").getValues(false));
         interactive = Location.deserialize(getConfigurationSection("location.interactable").getValues(false));
+        if (contains("sections")) {
+            for (String id : getConfigurationSection("sections").getKeys(false)) {
+                ConfigurationSection section = getConfigurationSection("sections." + id);
+                Position corner1 = FUtil.parsePosition(section.getString("corner1"));
+                Position corner2 = FUtil.parsePosition(section.getString("corner2"));
+                boolean protectedSection = section.getBoolean("protectedSection", false);
+                BuildSiteSection buildSiteSection = new BuildSiteSection(id, corner1, corner2, protectedSection);
+                sections.add(buildSiteSection);
+            }
+        }
         region.getBuildSites().add(this);
         if (!finished) {
             scheduleProgressUpdate();
@@ -464,11 +554,11 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         set("finished", finished);
         set("hasTicket", hasTicket);
         set("problemMessage", problemMessage);
+        for (BuildSiteSection section : sections) {
+            set("sections." + section.name() + ".corner1", FUtil.positionToString(section.corner1()));
+            set("sections." + section.name() + ".corner2", FUtil.positionToString(section.corner2()));
+            set("sections." + section.name() + ".protectedSection", section.protectedSection());
+        }
         super.save(file);
-    }
-
-    @Override
-    public @NotNull Inventory getInventory() {
-        return inventory;
     }
 }
