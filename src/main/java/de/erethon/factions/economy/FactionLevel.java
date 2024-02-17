@@ -4,6 +4,8 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.building.Building;
 import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.faction.Faction;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,24 +17,24 @@ import java.util.Set;
  * @author Malfrador
  */
 public enum FactionLevel {
-    HAMLET("Weiler"),
-    VILLAGE("Dorf"),
-    TOWN("Stadt"),
-    CITY("Großstadt"),
-    METROPOLIS("Metropole");
+    HAMLET(Component.translatable("factions.economy.population.level.hamlet")),
+    VILLAGE(Component.translatable("factions.economy.population.level.village")),
+    TOWN(Component.translatable("factions.economy.population.level.town")),
+    CITY(Component.translatable("factions.economy.population.level.city")),
+    METROPOLIS(Component.translatable("factions.economy.population.level.metropolis"));
 
-    private final String name;
+    private final Component name;
     private final Map<PopulationLevel, Integer> requiredPopulation;
     private final Set<Building> requiredBuildings;
 
-    FactionLevel(@NotNull String name) {
+    FactionLevel(@NotNull Component name) {
         this.name = name;
         this.requiredPopulation = Factions.get().getFConfig().getRequiredPopulation(this);
         this.requiredBuildings = Factions.get().getFConfig().getRequiredBuildings(this);
     }
 
     public @NotNull String getName() {
-        return name;
+        return PlainTextComponentSerializer.plainText().serialize(name);
     }
 
     public @NotNull Map<PopulationLevel, Integer> getRequiredPopulation() {

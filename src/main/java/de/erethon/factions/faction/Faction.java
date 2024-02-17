@@ -1,6 +1,7 @@
 package de.erethon.factions.faction;
 
 import de.erethon.aergia.util.BroadcastUtil;
+import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.player.PlayerCollection;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
@@ -221,6 +222,18 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void sendMessage(String msg) {
         sendMessage(MiniMessage.miniMessage().deserialize(msg));
+    }
+
+    public void sendTranslatable(String key) {
+        for (Player online : members.getOnlinePlayers()) {
+            MessageUtil.sendTranslatable(online, key);
+        }
+    }
+
+    public void sendTranslatable(String key, Component... args) {
+        for (Player online : members.getOnlinePlayers()) {
+            MessageUtil.sendTranslatable(online, key, args);
+        }
     }
 
     /* Serialization */

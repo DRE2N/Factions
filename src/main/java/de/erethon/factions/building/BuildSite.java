@@ -91,6 +91,9 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         uuid = UUID.randomUUID();
         plugin.getBuildSiteCache().add(this, center.getChunk());
         updateHolo();
+        if (region.getOwner() == null) {
+            FLogger.BUILDING.log("Region owner is null for " + region.getName());
+        }
     }
 
     public BuildSite(File file) {
@@ -127,7 +130,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
             return;
         }
         if (problemMessage != null && hasTicket) {
-            content = content.append(Component.text("Problem: ", NamedTextColor.DARK_RED));
+            content = content.append(Component.translatable("factions.building.status.problem", NamedTextColor.DARK_RED));
             content = content.append(Component.text(problemMessage, NamedTextColor.RED));
             progressHolo.text(content);
             return;
@@ -143,7 +146,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         finished = true;
         problemMessage = null;
         hasTicket = false;
-        getRegion().getOwner().sendMessage("&aEin(e) &6" + getBuilding().getId() + " &ain " + getRegion().getName() + " &awurde akzeptiert und die Effekte sind nun aktiv.");
+        getRegion().getOwner().sendTranslatable("factions.building.status.accepted", Component.text(getBuilding().getId()), Component.text(getRegion().getName()));
     }
 
     public void removeEffects() {
@@ -218,15 +221,15 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                 }
                 if (finished && !fini) {
                     finished = false;
-                    getRegion().getOwner().sendMessage("<green>Ein(e) &6" + getBuilding().getId() + " <green>in " + getRegion().getName() + " <green>wurde zerstört!");
+                    getRegion().getOwner().sendTranslatable("factions.building.status.destroyed", Component.text(getBuilding().getId()), Component.text(getRegion().getName()));
                     removeEffects();
                     return;
                 }
                 if (fini && !isFinished() && !hasTicket) {
                     buildingManager.getBuildingTickets().add(getSite());
                     hasTicket = true;
-                    getRegion().getOwner().sendMessage("<green>Ein(e) <gold>" + getBuilding().getId() + " <green>in " + getRegion().getName() + " <green>wurde fertiggestellt");
-                    getRegion().getOwner().sendMessage("<gray>Ein Ticket wurde automatisch erstellt und das Gebäude wird zeitnah überprüft.");
+                    getRegion().getOwner().sendTranslatable("factions.building.status.completed.info", Component.text(getBuilding().getId()), Component.text(getRegion().getName()));
+                    getRegion().getOwner().sendTranslatable("factions.building.status.completed.ticketHint");
                     FLogger.BUILDING.log("A new BuildSite ticket for " + getBuilding().getId() + " in " + getRegion().getName() + " was created.");
                 }
             }
@@ -336,7 +339,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         if (interactive.getBlock().getType() != Material.CHEST) {
             return null;
         }
-        inventory = Bukkit.createInventory(this, 54, Component.text("Building Storage"));
+        inventory = Bukkit.createInventory(this, 54, Component.translatable("factions.building.storage.title"));
         for (ItemStack item : buildingStorage) {
             inventory.addItem(item);
         }
