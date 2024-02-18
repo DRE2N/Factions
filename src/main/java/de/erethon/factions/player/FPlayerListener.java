@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 /**
@@ -22,6 +23,9 @@ public class FPlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
+        if (!event.hasChangedBlock()) {
+            return;
+        }
         Player player = event.getPlayer();
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayerIfCached(player);
         if (fPlayer == null) {
