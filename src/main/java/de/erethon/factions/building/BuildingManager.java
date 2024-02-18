@@ -14,6 +14,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -47,8 +48,6 @@ public class BuildingManager implements Listener {
     private final List<Building> buildings = new CopyOnWriteArrayList<>();
     private final List<BuildSite> buildingTickets = new ArrayList<>();
 
-    private final Set<BuildingEffectData> loadedEffects = new HashSet<>();
-
     private Queue<BuildingEffect> tickingEffects = new PriorityQueue<>();
     private int effectsPerTick = 5;
 
@@ -80,19 +79,6 @@ public class BuildingManager implements Listener {
         return buildings;
     }
 
-    public @NotNull Set<BuildingEffectData> getLoadedEffects() {
-        return loadedEffects;
-    }
-
-    public @Nullable BuildingEffectData getEffect(@NotNull String id) {
-        for (BuildingEffectData effect : loadedEffects) {
-            if (effect.getId().equals(id)) {
-                return effect;
-            }
-        }
-        return null;
-    }
-
     public void load(@NotNull File dir) {
         for (File file : FileUtil.getFilesForFolder(dir)) {
             buildings.add(new Building(file));
@@ -104,18 +90,6 @@ public class BuildingManager implements Listener {
         File effectsFolder = new File(dir, "effects");
         if (!effectsFolder.exists()) {
             effectsFolder.mkdirs();
-        }
-        for (File effectFile : FileUtil.getFilesForFolder(effectsFolder)) {
-            BuildingEffectData effect = new BuildingEffectData(effectFile);
-            if (loadedEffects.contains(effect)) {
-                FLogger.INFO.log("Duplicate effect found: " + effectFile.getName());
-                continue;
-            }
-            loadedEffects.add(effect);
-        }
-        if (loadedEffects.isEmpty()) {
-            FLogger.INFO.log("No building effects found. Please create some.");
-            return;
         }
         FLogger.INFO.log("Loaded " + buildings.size() + " Buildings.");
     }

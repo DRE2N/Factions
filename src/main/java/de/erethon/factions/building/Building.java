@@ -398,7 +398,7 @@ public class Building {
     public void load() {
         ConfigurationSection config = this.config;
         name = MiniMessage.miniMessage().deserialize(config.getString("name", "<none>"));
-        FLogger.BUILDING.log("Loading building " + name + "...");
+        FLogger.BUILDING.log("Loading building " + id + "...");
         isCoreRequired = config.getBoolean("coreRequired", false);
         size = config.getInt("size");
         for (String s : config.getStringList("description")) {
@@ -449,12 +449,8 @@ public class Building {
             }
         }
         if (config.contains("effects")) {
-           for (String id : config.getStringList("effects")) {
-               BuildingEffectData effect = manager.getEffect(id);
-               if (effect == null) {
-                   FLogger.BUILDING.log("Effect " + id + " not found.");
-                   continue;
-               }
+           for (String id : config.getConfigurationSection("effects").getKeys(false)) {
+               BuildingEffectData effect = new BuildingEffectData(config.getConfigurationSection("effects." + id), id);
                effects.add(effect);
            }
         }

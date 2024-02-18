@@ -69,15 +69,15 @@ public class RegeneratingMine extends BuildingEffect {
     }
 
     private void loadEntriesFromConfig() {
-        if (!effect.contains("ores")) {
+        if (!data.contains("ores")) {
             FLogger.ERROR.log("No ores defined for regenerating mine effect on " + site.getBuilding().getId() + " at " + site.getRegion().getName());
             return;
         }
-        for (String id : effect.getConfigurationSection("ores").getKeys(false)) {
-            String matID = effect.getString("ores." + id + ".material");
-            int size = effect.getInt("ores." + id + ".size");
-            int frequency = effect.getInt("ores." + id + ".frequency");
-            int rarity = effect.getInt("ores." + id + ".rarity");
+        for (String id : data.getConfigurationSection("ores").getKeys(false)) {
+            String matID = data.getString("ores." + id + ".material");
+            int size = data.getInt("ores." + id + ".size");
+            int frequency = data.getInt("ores." + id + ".frequency");
+            int rarity = data.getInt("ores." + id + ".rarity");
             Material material = Material.getMaterial(matID);
             regenEntries.add(new RegenEntry(BukkitAdapter.adapt(material.createBlockData()), size, frequency, rarity));
         }

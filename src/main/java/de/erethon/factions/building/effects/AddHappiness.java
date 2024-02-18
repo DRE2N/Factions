@@ -9,11 +9,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 
-public class AddHappinessEffect extends BuildingEffect {
+public class AddHappiness extends BuildingEffect {
 
     private HappinessModifier modifier;
 
-    public AddHappinessEffect(@NotNull BuildingEffectData data, BuildSite site) {
+    public AddHappiness(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
         HashMap<PopulationLevel, Double> levels = new HashMap<>();
         for (String level : data.getConfigurationSection("levels").getKeys(false)) {
