@@ -4,6 +4,8 @@ alliance:
     factionCannotAffordDailyTaxes: "<yellow>The faction <gold><arg:0></gold> could not afford its daily taxes."
     newPoll: "<green>A new poll has been created. Vote with <dark_green>/f vote <arg:0></dark_green>!"
     prefix: "<dark_gray>[<dark_purple><arg:0></dark_purple>]<gray> "
+    members: "<gray>Members<dark_gray>:<gray> <arg:0>"
+    regions: "<gray>Regions<dark_gray>:<gray> <arg:0>"
 acm:
   addedChunk: "Chunk <gold><arg:0></gold> has been added."
   addedChunks: "<gold><arg:0></gold> chunks have been added."
@@ -89,6 +91,7 @@ cmd:
       success: "<green>The description of <dark_green><arg:0></dark_green> has been changed to <dark_green>\"<arg:1>\"</dark_green>."
     info:
       adjacentRegions: "<green>Adjacent regions<dark_gray>:<gray> <arg:0>"
+      buildings: "<green>Buildings<dark_gray>:<gray> <arg:0>"
       chunks: "<green>Chunks<dark_gray>:<gray> <arg:0>"
       description: "<green>Description<dark_gray>:<gray> <arg:0>"
       header: "<dark_green><b>[</b><green> <arg:0> </green><b>]</b>"
@@ -279,6 +282,11 @@ faction:
     declineHover: "<gray>Decline invitation."
     message: "<green>Faction <dark_green><arg:0></dark_green> has invited you."
 general:
+  clickHints:
+    alliance: "<gray>Click to view alliance information."
+    faction: "<gray>Click to view faction information."
+    region: "<gray>Click to view region information."
+    player: "<gray>Click to view player information."
   defaultDescription: "Default Description :("
   faction: "Faction"
   loner: "unaffiliated"
@@ -336,6 +344,11 @@ region:
   mountainous: "Mountainous"
   sea: "Sea"
   warZone: "War Zone"
+  info:
+    type: "<gray>Type<dark_gray>:<gray> <arg:0>"
+    owner: "<gray>Owner<dark_gray>:<gray> <arg:0>"
+    description: "<gray>Description<dark_gray>:<gray> <arg:0>"
+    buildings: "<gray>Buildings<dark_gray>:<gray> <arg:0>"
 ui:
   region:
     displayName: "<gold><arg:0></gold>"

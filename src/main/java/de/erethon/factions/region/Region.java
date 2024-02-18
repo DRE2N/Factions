@@ -4,16 +4,23 @@ import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FUtil;
 import de.erethon.factions.war.RegionalWarTracker;
 import io.papermc.paper.math.Position;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -364,6 +371,31 @@ public class Region extends FLegalEntity {
 
     public void setType(@NotNull RegionType type) {
         this.type = type;
+    }
+
+    @Override
+    public Component asComponent(FEntity viewer) {
+        Component component = Component.text(getName());
+        Component hoverMessage = Component.translatable("factions.region.info.header", getName());
+        hoverMessage = hoverMessage.append(Component.newline());
+        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.type", getType().getName())).appendNewline();
+        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.owner", getDisplayOwner())).appendNewline();
+        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.buildings", Component.text(buildSites.size()))).appendNewline();
+        hoverMessage = hoverMessage.append(Component.translatable("factions.general.clickHints.region"));
+        component = component.hoverEvent(HoverEvent.showText(hoverMessage));
+        component = component.clickEvent(ClickEvent.runCommand("/f region info " + getId()));
+        return component;
+    }
+
+    @Override
+    public @NotNull Iterable<? extends Audience> audiences() {
+        Set<Player> players = new HashSet<>();
+        plugin.getFPlayerCache().forEach(player -> {
+            if (player.getLastRegion() == this) {
+                players.add(player.getPlayer());
+            }
+        });
+        return players;
     }
 
     /* Object methods */

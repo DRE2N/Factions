@@ -36,7 +36,7 @@ public class RegionInfoCommand extends FCommand {
         sender.sendMessage(FMessage.CMD_REGION_INFO_CHUNKS.message(String.valueOf(region.getChunks().size())));
         sender.sendMessage(FMessage.CMD_REGION_INFO_ADJACENT_REGIONS.message(getAdjacentRegions(region)));
         if (region.isOwned()) {
-            sender.sendMessage(FMessage.CMD_REGION_INFO_OWNER.message(region.getDisplayOwner()));
+            sender.sendMessage(FMessage.CMD_REGION_INFO_OWNER.message(region.getOwner().asComponent(getFPlayer(sender))));
         } else {
             sender.sendMessage(FMessage.CMD_REGION_INFO_PRICE.message(String.valueOf(region.calculatePriceFor(getFactionRaw(sender)))));
         }

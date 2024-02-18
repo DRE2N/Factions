@@ -5,6 +5,7 @@ import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.FAccount;
 import de.erethon.factions.economy.FAccountDummy;
 import de.erethon.factions.economy.FAccountImpl;
+import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.entity.ShortableNamed;
 import de.erethon.factions.faction.Faction;
@@ -15,8 +16,11 @@ import de.erethon.factions.region.RegionStructure;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FUtil;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
@@ -88,6 +92,11 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     /* Messages */
 
+    @Override
+    public @NotNull Iterable<? extends Audience> audiences() {
+        return factions;
+    }
+
     public void sendMessage(@NotNull Component msg) {
         sendMessage(msg, true);
     }
@@ -100,6 +109,18 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
             }
             player.sendMessage(message);
         }
+    }
+
+    @Override
+    public Component asComponent(FEntity viewer) {
+        Component component = getColoredName();
+        Component hoverMessage = Component.empty();
+        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.alliance.info.members", Component.text(factions.size())));
+        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.alliance.info.regions", Component.text(coreRegions.size())));
+        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.general.clickHints.alliance"));
+        component = component.hoverEvent(HoverEvent.showText(hoverMessage));
+        component = component.clickEvent(ClickEvent.runCommand("/f alliance show " + name));
+        return component;
     }
 
     /* Serialization */

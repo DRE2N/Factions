@@ -2,6 +2,8 @@ package de.erethon.factions.entity;
 
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.faction.Faction;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -13,31 +15,33 @@ public enum Relation {
      * Both parties are part of the same alliance, but are either in separate factions or none.
      * If both parties are in separate factions, they've authorised each other to build on the opposing territories.
      */
-    ALLY(true, false),
+    ALLY(true, false, NamedTextColor.DARK_PURPLE),
     /**
      * Both parties are in separate alliances and factions.
      */
-    ENEMY(false, true),
+    ENEMY(false, true, NamedTextColor.RED),
     /**
      * Both parties are in the same faction.
      */
-    FACTION(true, false),
+    FACTION(true, false, NamedTextColor.GREEN),
     /**
      * One or both of the parties are not part of any alliance or faction.
      */
-    NEUTRAL(true, true),
+    NEUTRAL(true, true, NamedTextColor.WHITE),
     /**
      * Both parties are part of the same alliance, but are in separate factions.
      */
-    PROTECTED_ALLY(false, false),
+    PROTECTED_ALLY(false, false, NamedTextColor.DARK_PURPLE),
 
     ;
 
     private final boolean build, attack;
+    private final TextColor color;
 
-    Relation(boolean build, boolean attack) {
+    Relation(boolean build, boolean attack, TextColor color) {
         this.build = build;
         this.attack = attack;
+        this.color = color;
     }
 
     public boolean canBuild() {
@@ -46,6 +50,10 @@ public enum Relation {
 
     public boolean canAttack() {
         return attack;
+    }
+
+    public @NotNull TextColor getColor() {
+        return color;
     }
 
     /* Statics */

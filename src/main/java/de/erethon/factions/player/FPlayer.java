@@ -24,7 +24,9 @@ import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FPermissionUtil;
 import de.erethon.factions.war.WarStats;
 import de.erethon.factions.war.objective.WarObjective;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
@@ -37,6 +39,7 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -152,6 +155,22 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         if (isOnline()) {
             player.sendMessage(msg);
         }
+    }
+
+    @Override
+    public Component asComponent(FEntity viewer) {
+        Component component = Component.text(getDisplayName());
+        Component hoverMessage = getAllianceTag();
+        hoverMessage = hoverMessage.appendNewline().append(Component.text(getDisplayMembership(), getRelation(viewer).getColor()));
+        // TODO: Aergia RP char name
+        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.general.clickHints.player"));
+        component = component.hoverEvent(HoverEvent.showText(hoverMessage));
+        return component;
+    }
+
+    @Override
+    public @NotNull Iterable<? extends Audience> audiences() {
+        return Collections.singleton(player);
     }
 
     /* Aergia */

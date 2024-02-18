@@ -19,6 +19,7 @@ import de.erethon.factions.economy.FEconomy;
 import de.erethon.factions.economy.FStorage;
 import de.erethon.factions.economy.FactionLevel;
 import de.erethon.factions.economy.population.PopulationLevel;
+import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.entity.ShortableNamed;
 import de.erethon.factions.event.FPlayerFactionLeaveEvent;
@@ -57,7 +58,7 @@ import java.util.UUID;
 /**
  * @author Fyreum
  */
-public class Faction extends FLegalEntity implements ShortableNamed, PollContainer, ForwardingAudience {
+public class Faction extends FLegalEntity implements ShortableNamed, PollContainer {
 
     /* Persistent */
     private Alliance alliance;
@@ -226,7 +227,6 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     }
 
     /* Messages */
-
     @Override
     public @NotNull Iterable<? extends Audience> audiences() {
         return members.getOnlinePlayers();
@@ -257,6 +257,21 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void sendTranslatable(String key, boolean prefix, Component... args) {
         sendMessage(Component.translatable(key, key, args), prefix);
+    }
+
+    @Override
+    public Component asComponent(FEntity viewer) {
+        Component component = Component.text(getName());
+        Component hoverMessage = Component.empty();
+        if (alliance != null) {
+            hoverMessage = hoverMessage.append(Component.space()).append(alliance.asComponent(viewer));
+        }
+        hoverMessage = hoverMessage.appendNewline().append(Component.text(getDisplayMembership(), getRelation(viewer).getColor()));
+        hoverMessage = hoverMessage.appendNewline().append(Component.text(getDisplayMembership(), getRelation(viewer).getColor()));
+        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.general.clickHints.faction"));
+        component = component.hoverEvent(HoverEvent.showText(hoverMessage));
+        component = component.clickEvent(ClickEvent.runCommand("/f show " + id));
+        return component;
     }
 
     /* Serialization */
