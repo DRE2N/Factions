@@ -33,6 +33,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.permissions.PermissionAttachment;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,6 +68,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     private final AutomatedChunkManager automatedChunkManager = new AutomatedChunkManager(this);
     private Region lastRegion;
     private Location pos1, pos2;
+    private PermissionAttachment permissionAttachment;
 
     public FPlayer(@NotNull UUID uuid) {
         super(Factions.getPlayerFile(uuid), CONFIG_VERSION);
@@ -103,11 +105,20 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     public void onJoin(PlayerJoinEvent event) {
         lastName = event.getPlayer().getName();
         updateDisplayNames();
+        if (hasFaction()) {
+            PermissionAttachment attachment = player.addAttachment(plugin);
+            for (String perm : faction.getAdditionalMemberPermissions()) {
+                attachment.setPermission(perm, true);
+            }
+        }
     }
 
     @Override
     public void onQuit(PlayerQuitEvent event) {
         bypass = isBypassRaw();
+        if (hasFaction()) {
+            player.removeAttachment(permissionAttachment);
+        }
     }
 
     @Override
@@ -393,6 +404,20 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
 
     public boolean hasSelection() {
         return pos1 != null && pos2 != null;
+    }
+
+    public @NotNull PermissionAttachment getPermissionAttachment() {
+        if (permissionAttachment == null) {
+            permissionAttachment = player.addAttachment(plugin);
+        }
+        return permissionAttachment;
+    }
+
+    public void removePermissionAttachment() {
+        if (permissionAttachment != null) {
+            player.removeAttachment(permissionAttachment);
+            permissionAttachment = null;
+        }
     }
 
     /* Object methods */

@@ -83,6 +83,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private final Set<BuildingEffect> buildingEffects = new HashSet<>();
     private final Set<BuildingEffect> tickingBuildingEffects = new HashSet<>();
     private final Map<String, FactionAttribute> attributes = new HashMap<>();
+    private final Set<String> additionalMemberPermissions = new HashSet<>();
     private FAccount fAccount;
     private FEconomy fEconomy;
     private final Set<FPlayer> invitedPlayers = new HashSet<>();
@@ -147,6 +148,9 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         for (BuildSite buildSite : buildSites) {
             buildSite.onFactionJoin(fPlayer);
         }
+        for (String perm : additionalMemberPermissions) {
+            fPlayer.getPermissionAttachment().setPermission(perm, true);
+        }
     }
 
     public void playerLeave(@NotNull FPlayer fPlayer, @NotNull FPlayerFactionLeaveEvent.Reason reason) {
@@ -159,6 +163,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         FPlayerFactionLeaveEvent event = new FPlayerFactionLeaveEvent(this, fPlayer, reason);
         event.callEvent();
         sendMessage(event.getMessage());
+        fPlayer.removePermissionAttachment();
 
         if (isAdmin(fPlayer)) {
             if (members.isEmpty()) {
@@ -654,6 +659,10 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public @NotNull Set<BuildingEffect> getTickingBuildingEffects() {
         return tickingBuildingEffects;
+    }
+
+    public @NotNull Set<String> getAdditionalMemberPermissions() {
+        return additionalMemberPermissions;
     }
 
     public @NotNull Map<String, FactionAttribute> getAttributes() {
