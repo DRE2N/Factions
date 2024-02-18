@@ -14,6 +14,7 @@ import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.FAccount;
 import de.erethon.factions.economy.FAccountDummy;
 import de.erethon.factions.economy.FAccountImpl;
+import de.erethon.factions.economy.FEconomy;
 import de.erethon.factions.economy.FStorage;
 import de.erethon.factions.economy.FactionLevel;
 import de.erethon.factions.economy.population.PopulationLevel;
@@ -82,6 +83,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private final Set<BuildingEffect> tickingBuildingEffects = new HashSet<>();
     private final Map<String, FactionAttribute> attributes = new HashMap<>();
     private FAccount fAccount;
+    private FEconomy fEconomy;
     private final Set<FPlayer> invitedPlayers = new HashSet<>();
 
     protected Faction(@NotNull FPlayer admin, @NotNull Region coreRegion, int id, String name, String description) {
@@ -95,6 +97,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.coreRegion.setOwner(this);
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
         this.fStorage = new FStorage(this);
+        this.fEconomy = new FEconomy(this, fStorage);
         if (admin.hasAlliance()) {
             alliance = admin.getAlliance();
             alliance.addFaction(this);
@@ -108,6 +111,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     protected void addDefaultAttributes() {
         attributes.put("max_players", new FactionStatAttribute(5));
+        attributes.put("housing_peasant", new FactionStatAttribute(10));
         addPopulation(PopulationLevel.PEASANT, 5); // Let's start with something at least
     }
 
@@ -597,6 +601,10 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         return buildSites.stream().anyMatch(buildSite -> buildSite.getBuilding() == building && buildSite.isFinished() && !buildSite.isDestroyed());
     }
 
+    public boolean hasBuilding(@NotNull String buildingId) {
+        return buildSites.stream().anyMatch(buildSite -> buildSite.getBuilding().getId().equals(buildingId) && buildSite.isFinished() && !buildSite.isDestroyed());
+    }
+
     public @NotNull Map<PopulationLevel, Integer> getPopulation() {
         return population;
     }
@@ -613,12 +621,16 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         return populationHappiness.getOrDefault(level, 0.0);
     }
 
-    public void addHappiness(@NotNull PopulationLevel level, double happiness) {
+    public void setHappiness(@NotNull PopulationLevel level, double happiness) {
         populationHappiness.put(level, populationHappiness.getOrDefault(level, 0.0) + happiness);
     }
 
     public @NotNull FStorage getStorage() {
         return fStorage;
+    }
+
+    public @NotNull FEconomy getEconomy() {
+        return fEconomy;
     }
 
     public @NotNull FactionLevel getLevel() {
