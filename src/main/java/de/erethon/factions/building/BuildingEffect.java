@@ -5,6 +5,7 @@ import de.erethon.factions.player.FPlayer;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
@@ -13,12 +14,12 @@ import java.util.Set;
  * @author Malfrador
  */
 public class BuildingEffect {
-    protected final BuildingEffectData effect;
+    protected final BuildingEffectData data;
     protected final BuildSite site;
     protected Faction faction;
 
-    public BuildingEffect(@NotNull BuildingEffectData effect, BuildSite site) {
-        this.effect = effect;
+    public BuildingEffect(@NotNull BuildingEffectData data, BuildSite site) {
+        this.data = data;
         this.site = site;
         this.faction = site.getRegion().getFaction();
     }
@@ -50,8 +51,7 @@ public class BuildingEffect {
     public void onFactionLeave(FPlayer player) {
     }
 
-    public @NotNull BuildingEffectData getEffect() {
-        return effect;
+    public void onInteract(FPlayer player) {
     }
 
     public @NotNull BuildSite getSite() {

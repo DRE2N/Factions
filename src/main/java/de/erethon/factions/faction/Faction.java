@@ -9,6 +9,7 @@ import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.Building;
 import de.erethon.factions.building.attributes.FactionAttribute;
+import de.erethon.factions.building.attributes.FactionAttributeModifier;
 import de.erethon.factions.building.attributes.FactionStatAttribute;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.FAccount;
@@ -113,6 +114,12 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         attributes.put("max_players", new FactionStatAttribute(5));
         attributes.put("housing_peasant", new FactionStatAttribute(10));
         addPopulation(PopulationLevel.PEASANT, 5); // Let's start with something at least
+    }
+
+    public void applyModifiers() {
+        for (FactionAttribute attribute : attributes.values()) {
+            attribute.apply();
+        }
     }
 
     public void invitePlayer(@NotNull FPlayer fPlayer) {
@@ -653,9 +660,31 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         return attributes;
     }
 
+    public void addModifier(FactionAttribute attribute, FactionAttributeModifier modifier) {
+        attribute.addModifier(modifier);
+        applyModifiers();
+    }
+
+    public void removeModifier(FactionAttribute attribute, FactionAttributeModifier modifier) {
+        attribute.getModifiers().remove(modifier);
+        applyModifiers();
+    }
+
+    public void removeModifier(FactionAttributeModifier modifier) {
+        for (FactionAttribute attribute : attributes.values()) {
+            attribute.getModifiers().remove(modifier);
+        }
+        applyModifiers();
+    }
+
     public @Nullable FactionAttribute getAttribute(@NotNull String name) {
         FactionAttribute attribute = attributes.get(name);
         return attribute == null ? null : attribute.apply();
+    }
+
+    public FactionAttribute getOrCreateStatAttribute(@NotNull String name) {
+        attributes.putIfAbsent(name, new FactionStatAttribute(0));
+        return attributes.get(name);
     }
 
     public double getAttributeValue(@NotNull String name) {

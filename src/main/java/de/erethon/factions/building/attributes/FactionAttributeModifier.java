@@ -7,10 +7,7 @@ import java.util.UUID;
 /**
  * @author Malfrador
  */
-public record FactionAttributeModifier(UUID uuid, FactionAttribute attribute, double modifier, AttributeModifier.Operation operation) {
-    public FactionAttributeType getType() {
-        return attribute.getType();
-    }
+public record FactionAttributeModifier(UUID uuid, double modifier, AttributeModifier.Operation operation) {
 
     public double apply(double value) {
         double newValue = value;

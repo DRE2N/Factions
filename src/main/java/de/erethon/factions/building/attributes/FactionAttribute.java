@@ -22,4 +22,8 @@ public interface FactionAttribute {
     double getBaseValue();
 
     double getValue();
+
+    default void addModifier(FactionAttributeModifier modifier) {
+        getModifiers().add(modifier);
+    }
 }
