@@ -1,5 +1,6 @@
 package de.erethon.factions.economy.resource;
 
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -59,6 +60,10 @@ public enum Resource {
 
     public @NotNull String getId() {
         return name().toLowerCase();
+    }
+
+    public Component displayName() {
+        return Component.translatable("factions.economy.resource." + getId());
     }
 
 }

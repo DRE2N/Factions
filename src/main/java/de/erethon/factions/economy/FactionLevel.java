@@ -17,25 +17,20 @@ import java.util.Set;
  * @author Malfrador
  */
 public enum FactionLevel {
-    HAMLET(Component.translatable("factions.economy.population.level.hamlet")),
-    VILLAGE(Component.translatable("factions.economy.population.level.village")),
-    TOWN(Component.translatable("factions.economy.population.level.town")),
-    CITY(Component.translatable("factions.economy.population.level.city")),
-    METROPOLIS(Component.translatable("factions.economy.population.level.metropolis"));
+    HAMLET,
+    VILLAGE,
+    TOWN,
+    CITY,
+    METROPOLIS;
 
-    private final Component name;
     private final Map<PopulationLevel, Integer> requiredPopulation;
     private final Set<Building> requiredBuildings;
 
-    FactionLevel(@NotNull Component name) {
-        this.name = name;
+    FactionLevel() {
         this.requiredPopulation = Factions.get().getFConfig().getRequiredPopulation(this);
         this.requiredBuildings = Factions.get().getFConfig().getRequiredBuildings(this);
     }
 
-    public @NotNull String getName() {
-        return PlainTextComponentSerializer.plainText().serialize(name);
-    }
 
     public @NotNull Map<PopulationLevel, Integer> getRequiredPopulation() {
         return requiredPopulation;
@@ -79,12 +74,16 @@ public enum FactionLevel {
         };
     }
 
+    public Component displayName() {
+        return Component.translatable("factions.economy.faction.level." + name().toLowerCase());
+    }
+
     /* Statics */
 
     @Contract("null, null -> null; _, !null -> !null")
     public static @Nullable FactionLevel getByName(@Nullable String name, @Nullable FactionLevel def) {
         for (FactionLevel level : values()) {
-            if (level.getName().equalsIgnoreCase(name)) {
+            if (level.name().equalsIgnoreCase(name)) {
                 return level;
             }
         }
