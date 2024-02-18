@@ -51,7 +51,7 @@ public class Building {
     public static final String YAML = ".yml";
 
     private final File file;
-    private final FileConfiguration config;
+    protected final FileConfiguration config;
 
     private String id;
     private Component name;
@@ -404,7 +404,9 @@ public class Building {
         for (String s : config.getStringList("description")) {
             description.add(MiniMessage.miniMessage().deserialize(s));
         }
-        requiredBuildings = config.getStringList("requiredBuildings");
+        if (config.contains("requiredBuildings")) {
+            requiredBuildings = config.getStringList("requiredBuildings");
+        }
         if (config.contains("icon")) {
             Material material = Material.getMaterial(config.getString("icon"));
             icon = material == null ? Material.BARRIER : material;

@@ -1,5 +1,6 @@
 package de.erethon.factions.building;
 
+import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.hephaestus.HItem;
@@ -41,7 +42,11 @@ public class FBuildingItemBehaviour extends HItemBehaviour {
         if (stack.getBukkitStack().getItemMeta().getPersistentDataContainer().has(KEY, PersistentDataType.STRING)) {
             Building building = plugin.getBuildingManager().getById(stack.getBukkitStack().getItemMeta().getPersistentDataContainer().get(KEY, PersistentDataType.STRING));
             if (building == null) {
-                // Message
+                MessageUtil.sendTranslatable(player, "factions.error.generic");
+                return;
+            }
+            if (building instanceof PloppableBuilding ploppableBuilding) {
+                ploppableBuilding.paste(player);
                 return;
             }
             boolean canBuild = building.checkRequirements(player, fPlayer.getFaction(), player.getLocation());

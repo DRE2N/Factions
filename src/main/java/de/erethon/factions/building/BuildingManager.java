@@ -81,7 +81,11 @@ public class BuildingManager implements Listener {
 
     public void load(@NotNull File dir) {
         for (File file : FileUtil.getFilesForFolder(dir)) {
-            buildings.add(new Building(file));
+            if (file.getName().toLowerCase().contains("ploppable")) {
+                buildings.add(new PloppableBuilding(file));
+            } else {
+                buildings.add(new Building(file));
+            }
         }
         if (buildings.isEmpty()) {
             FLogger.INFO.log("No buildings found. Please create some.");
