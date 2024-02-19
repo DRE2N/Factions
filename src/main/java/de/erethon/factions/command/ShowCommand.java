@@ -47,6 +47,8 @@ public class ShowCommand extends FCommand {
         sender.sendMessage(FMessage.CMD_SHOW_ADMIN.message(getDisplayName(faction, faction.getAdmin())));
         sender.sendMessage(FMessage.CMD_SHOW_MEMBERS.message(String.valueOf(faction.getMembers().size()), getMembersString(faction)));
         sender.sendMessage(Component.empty());
+        sender.sendMessage(Component.translatable("factions.cmd.show.coreRegion", faction.asComponent(fPlayer))); // Test for translation issues
+        sender.sendMessage(faction.asComponent(fPlayer));
     }
 
     private String getMembersString(Faction faction) {

@@ -23,6 +23,11 @@ acm:
   transferredChunk: "Chunk <gold><arg:0></gold> has been transferred to <gold><arg:1></gold>."
   transferredChunks: "<gold><arg:0></gold> chunks have been transferred to <gold><arg:1></gold>."
 building:
+  placement:
+    startHint: "<gray>Right click to place the building, left click to cancel."
+    clickAgain: "<gray>Click again to confirm the placement."
+    success: "<green>The building has been placed."
+    cancelled: "<red>The building placement has been cancelled."
   status:
     accepted: "<green>A <gold><arg:0> <green>in <gold><arg:1> <green>has been accepted. The effects will now be applied."
     completed:
@@ -283,6 +288,14 @@ faction:
     decline: "<dark_green>[Decline]</dark_green>"
     declineHover: "<gray>Decline invitation."
     message: "<green>Faction <dark_green><arg:0></dark_green> has invited you."
+  hover:
+    header: "<dark_gray>[<dark_green><arg:0></dark_green>]</dark_gray><gray> <arg:1>"
+    admin: "<gray>Admin<dark_gray>:</dark_gray> <gold><arg:0>"
+    alliance: "<gray>Alliance<dark_gray>:</dark_gray> <gold><arg:0>"
+    description: "<gray>Description<dark_gray>:</dark_gray> <gold><arg:0>"
+    level: "<gray>Level<dark_gray>:</dark_gray> <gold><arg:0></gold>"
+    members: "<gray>Members<dark_gray>:</dark_gray> <gold><arg:0></gold>"
+    coreRegion: "<gray>Core Region<dark_gray>:</dark_gray> <gold><arg:0></gold>"
 general:
   clickHints:
     alliance: "<gray>Click to view alliance information."
@@ -347,6 +360,7 @@ region:
   sea: "Sea"
   warZone: "War Zone"
   info:
+    header: "<dark_green><b>[</b><green> <arg:0> </green><b>]</b>"
     type: "<gray>Type<dark_gray>:<gray> <arg:0>"
     owner: "<gray>Owner<dark_gray>:<gray> <arg:0>"
     description: "<gray>Description<dark_gray>:<gray> <arg:0>"
@@ -372,7 +386,7 @@ war:
       destroyed: "<gray>The crystal of <gold><arg:0></gold> in the region <gold><arg:1></gold> has been destroyed."
       destroyedByPlayer: "<gray>The crystal of <gold><arg:0></gold> in the region <gold><arg:1></gold> has been destroyed by <gold><arg:2></gold>."
   region:
-    occupied: "The alliance <arg:0> has taken control of the region <gold><arg:0></gold>."
+    occupied: "The alliance <arg:0> has taken control of the region <gold><arg:1></gold>."
   phase:
     announcement:
       minute: "<arg:0> starts in <gold>one</gold> minute."

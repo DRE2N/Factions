@@ -262,13 +262,15 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     @Override
     public Component asComponent(FEntity viewer) {
         Component component = Component.text(getName());
-        Component hoverMessage = Component.empty();
+        Component hoverMessage = Component.translatable("factions.faction.hover.header", Component.text(getDisplayMembership(), getRelation(viewer).getColor()));
         if (alliance != null) {
-            hoverMessage = hoverMessage.append(Component.space()).append(alliance.asComponent(viewer));
+            hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.alliance", alliance.getName()));
         }
-        hoverMessage = hoverMessage.appendNewline().append(Component.text(getDisplayMembership(), getRelation(viewer).getColor()));
-        hoverMessage = hoverMessage.appendNewline().append(Component.text(getDisplayMembership(), getRelation(viewer).getColor()));
-        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.general.clickHints.faction"));
+        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.admin", "factions.faction.hover.admin", Component.text(Bukkit.getOfflinePlayer(admin).getName())));
+        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.coreRegion", "factions.faction.hover.coreRegion", coreRegion.asComponent(viewer)));
+        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.level", "factions.faction.hover.level", level.displayName()));
+        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.members", "factions.faction.hover.members", Component.text(String.valueOf(members.size()))));
+        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.general.clickHints.faction", "factions..clickHints.faction"));
         component = component.hoverEvent(HoverEvent.showText(hoverMessage));
         component = component.clickEvent(ClickEvent.runCommand("/f show " + id));
         return component;

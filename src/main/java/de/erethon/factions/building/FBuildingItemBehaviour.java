@@ -31,6 +31,7 @@ public class FBuildingItemBehaviour extends HItemBehaviour {
     @Override
     public void onRightClick(ItemStack stack, Player player, PlayerInteractEvent event) {
         event.setCancelled(true);
+        MessageUtil.log("Right click");
         if (event.getClickedBlock() == null) {
             return;
         }
