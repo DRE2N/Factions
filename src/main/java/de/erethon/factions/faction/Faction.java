@@ -168,6 +168,10 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
         if (isAdmin(fPlayer)) {
             if (members.isEmpty()) {
+                if (FPermissionUtil.isBypass(fPlayer.getPlayer())) {
+                    FLogger.FACTION.log("Admin '" + fPlayer.getUniqueId() + "' left the faction '" + name + "' but has bypass permission. Faction will not be disbanded.");
+                    return;
+                }
                 disband(FactionDisbandEvent.Reason.NO_MEMBERS_LEFT);
                 return;
             }
@@ -263,14 +267,14 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     public Component asComponent(FEntity viewer) {
         Component component = Component.text(getName());
         Component hoverMessage = Component.translatable("factions.faction.hover.header", Component.text(getDisplayMembership(), getRelation(viewer).getColor()));
-        if (alliance != null) {
+        /*if (alliance != null) {
             hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.alliance", alliance.getName()));
         }
         hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.admin", "factions.faction.hover.admin", Component.text(Bukkit.getOfflinePlayer(admin).getName())));
         hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.coreRegion", "factions.faction.hover.coreRegion", coreRegion.asComponent(viewer)));
         hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.level", "factions.faction.hover.level", level.displayName()));
         hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.members", "factions.faction.hover.members", Component.text(String.valueOf(members.size()))));
-        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.general.clickHints.faction", "factions..clickHints.faction"));
+        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.general.clickHints.faction", "factions..clickHints.faction"));'*/
         component = component.hoverEvent(HoverEvent.showText(hoverMessage));
         component = component.clickEvent(ClickEvent.runCommand("/f show " + id));
         return component;
