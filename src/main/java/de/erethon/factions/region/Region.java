@@ -377,10 +377,10 @@ public class Region extends FLegalEntity {
     public Component asComponent(FEntity viewer) {
         Component component = Component.text(getName());
         Component hoverMessage = Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName()));
-        hoverMessage = hoverMessage.append(Component.newline());
-        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.type","factions.region.info.type", Component.text(getType().getName()))).appendNewline();
-        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.owner", "factions.region.info.owner", Component.text(getDisplayOwner()))).appendNewline();
-        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.buildings", "factions.region.info.buildings", Component.text(buildSites.size()))).appendNewline();
+        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName())));
+        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.type","factions.region.info.type", Component.text(getType().getName())));
+        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.owner", "factions.region.info.owner", Component.text(getDisplayOwner())));
+        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.buildings", "factions.region.info.buildings", Component.text(buildSites.size())));
         hoverMessage = hoverMessage.append(Component.translatable("factions.general.clickHints.region"));
         component = component.hoverEvent(HoverEvent.showText(hoverMessage));
         component = component.clickEvent(ClickEvent.runCommand("/f region info " + getId()));

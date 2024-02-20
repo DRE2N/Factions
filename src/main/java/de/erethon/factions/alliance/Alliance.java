@@ -19,6 +19,7 @@ import de.erethon.factions.util.FUtil;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -113,11 +114,12 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     @Override
     public Component asComponent(FEntity viewer) {
-        Component component = getColoredName();
-        Component hoverMessage = Component.empty();
-        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.alliance.info.members", Component.text(factions.size())));
-        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.alliance.info.regions", Component.text(coreRegions.size())));
-        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.general.clickHints.alliance"));
+        Component component = Component.text(getName());
+        Component hoverMessage = Component.translatable("factions.alliance.info.header", getColoredName());
+        hoverMessage = hoverMessage.append(Component.translatable("factions.alliance.info.header", getColoredName()));
+        hoverMessage = hoverMessage.append(Component.translatable("factions.alliance.info.members", Component.text(factions.size())));
+        hoverMessage = hoverMessage.append(Component.translatable("factions.alliance.info.regions", Component.text(coreRegions.size())));
+        hoverMessage = hoverMessage.append(Component.translatable("factions.general.clickHints.alliance"));
         component = component.hoverEvent(HoverEvent.showText(hoverMessage));
         component = component.clickEvent(ClickEvent.runCommand("/f alliance show " + name));
         return component;
