@@ -148,6 +148,7 @@ error:
   cannotUnclaimCoreRegion: "<red>Kerngebiete einer Fraktion können nicht entclaimt werden."
   chunkAlreadyARegion: "<red>Der Chunk ist bereits Teil einer Region."
   chunkOutsideTheRegion: "<red>Der Chunk befindet sich nicht in der Region."
+  debugModeNotEnabled: "<red>Der Debug-Modus ist nicht aktiviert."
   factionHasNotEnoughMoney: "<red>Die Fraktion benötigt <gold><arg:0></gold>, um dies tun zu dürfen."
   factionNotFound: "<red>Die Fraktion <gold><arg:0></gold> konnte nicht gefunden werden."
   nameInUse: "<red>Der Name <gold><arg:0></gold> wird bereits verwendet."
@@ -184,6 +185,7 @@ error:
   warObjectiveNotFound: "<red>Das Kriegsobjekt <gold><arg:0></gold> konnte nicht gefunden werden."
   warObjectiveTypeNotFound: "<red>Der Kriegsobjekttyp <gold><arg:0></gold> konnte nicht gefunden werden."
   warObjectiveWrongArgFormat: "<red>Zusätzliche Einstellungen müssen wie folgt angegeben werden: <gold>NAME</gold><gold>:</gold><gold>WERT</gold>."
+  warPhaseNotFound: "<red>Die Kriegsphase <gold><arg:0></gold> konnte nicht gefunden werden."
   worldIsRegionless: "<red>Die Welt <gold><arg:0></gold> beinhaltet keine Regionen."
   wrongDoubleValue: "<red>Der angegebene Zahlenwert muss zwischen <gold><arg:0></gold> und </gold> liegen."
 faction:

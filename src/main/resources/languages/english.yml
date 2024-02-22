@@ -228,6 +228,7 @@ error:
   cannotUnclaimCoreRegion: "<red>Core regions of a faction cannot be unclaimed."
   chunkAlreadyARegion: "<red>The chunk is already part of a region."
   chunkOutsideTheRegion: "<red>The chunk is not within the region."
+  debugModeNotEnabled: "<red>Debug mode is not enabled."
   factionHasNotEnoughMoney: "<red>The faction needs <gold><arg:0></gold> to perform this action."
   factionNotFound: "<red>The faction <gold><arg:0></gold> could not be found."
   generic: "<red>An error occurred while performing this action."
@@ -266,6 +267,7 @@ error:
   warObjectiveNotFound: "<red>The war objective <gold><arg:0></gold> could not be found."
   warObjectiveTypeNotFound: "<red>The war objective type <gold><arg:0></gold> could not be found."
   warObjectiveWrongArgFormat: "<red>Additional settings must be specified as follows: <gold>NAME</gold><gold>:</gold><gold>VALUE</gold>."
+  warPhaseNotFound: "<red>The war phase <gold><arg:0></gold> could not be found."
   worldIsRegionless: "<red>The world <gold><arg:0></gold> does not contain any regions."
   wrongDoubleValue: "<red>The specified numerical value must be between <gold><arg:0></gold> and </gold>."
 faction:

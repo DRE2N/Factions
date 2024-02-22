@@ -22,6 +22,7 @@ public class FCommandCache extends ECommandCache {
         addCommand(new ClaimCommand());
         addCommand(new CreateCommand());
         addCommand(new CreateWarFlagCommand());
+        addCommand(new DebugCommand());
         addCommand(new DeclineCommand());
         addCommand(new DescriptionCommand());
         addCommand(new DisbandCommand());

@@ -40,6 +40,7 @@ public class WarPhaseManager extends EConfig {
     private ZonedDateTime midnight;
     private final Map<Integer, Map<Integer, WarPhaseStage>> schedule = new HashMap<>();
     private final LinkedList<BukkitTask> runningTasks = new LinkedList<>();
+    private boolean debugMode = false;
 
     public WarPhaseManager(@NotNull File file) {
         super(file, CONFIG_VERSION);
@@ -61,13 +62,7 @@ public class WarPhaseManager extends EConfig {
 
     void updateCurrentStage() {
         // Cancel previous tasks.
-        if (!runningTasks.isEmpty()) {
-            Iterator<BukkitTask> iterator = runningTasks.iterator();
-            while (iterator.hasNext()) {
-                iterator.next().cancel();
-                iterator.remove();
-            }
-        }
+        cancelTasks();
         // Initialize or progress the current stage.
         if (currentStage == null) {
             initializeStage();
@@ -79,7 +74,7 @@ public class WarPhaseManager extends EConfig {
             nextStage = getFirstStageOfTheDay();
         }
         if (currentStage.getWarPhase() != nextStage.getWarPhase()) {
-            currentStage.getWarPhase().onChangeTo(nextStage);
+            currentStage.getWarPhase().onChangeTo(nextStage.getWarPhase());
             FBroadcastUtil.broadcastWar(nextStage.getWarPhase().getAnnouncementMessage());
         }
         currentStage = nextStage;
@@ -92,6 +87,7 @@ public class WarPhaseManager extends EConfig {
         while (currentStage != null && currentStage.getFullDuration() < currentProgress) {
             currentStage = currentStage.getNextStage();
         }
+        currentStage.getWarPhase().initialize();
     }
 
     void incrementCurrentDay() {
@@ -104,6 +100,16 @@ public class WarPhaseManager extends EConfig {
 
     WarPhaseStage getFirstStageOfTheDay() {
         return schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
+    }
+
+    void cancelTasks()  {
+        if (!runningTasks.isEmpty()) {
+            Iterator<BukkitTask> iterator = runningTasks.iterator();
+            while (iterator.hasNext()) {
+                iterator.next().cancel();
+                iterator.remove();
+            }
+        }
     }
 
     /* Serialization */
@@ -233,5 +239,24 @@ public class WarPhaseManager extends EConfig {
 
     public @NotNull LinkedList<BukkitTask> getRunningTasks() {
         return runningTasks;
+    }
+
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+
+    public void debugWarPhase(@NotNull WarPhase warPhase) {
+        this.debugMode = true;
+        cancelTasks();
+        WarPhase oldPhase = currentStage.getWarPhase();
+        oldPhase.onChangeTo(warPhase);
+        this.currentStage = new WarPhaseStage(DAY_DURATION, 0, warPhase);
+        this.currentStage.setNextStage(currentStage);
+    }
+
+    public void disableDebugMode() {
+        this.debugMode = false;
+        this.currentStage = null;
+        updateCurrentStageTask();
     }
 }

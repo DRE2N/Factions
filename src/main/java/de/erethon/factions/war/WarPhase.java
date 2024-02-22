@@ -38,9 +38,7 @@ public enum WarPhase {
         this.announcementMessage = announcementMessage;
     }
 
-    public void onChangeTo(WarPhaseStage nextStage) {
-        WarPhase nextPhase = nextStage.getWarPhase();
-
+    public void onChangeTo(WarPhase nextPhase) {
         if (isInfluencingScoring() && !nextPhase.isInfluencingScoring()) {
             // scoring: true -> false
             onScoringClose();
@@ -62,6 +60,15 @@ public enum WarPhase {
                 // openCapital: false -> true
                 foreachWarObjective(obj -> obj.getRegion().getType() != RegionType.CAPITAL, WarObjective::activate);
             }
+        }
+    }
+
+    public void initialize() {
+        if (isAllowPvP()) {
+            foreachWarObjective(obj -> obj.getRegion().getType() != RegionType.CAPITAL, WarObjective::activate);
+        }
+        if (isOpenCapital()) {
+            foreachWarObjective(obj -> obj.getRegion().getType() != RegionType.CAPITAL, WarObjective::activate);
         }
     }
 
