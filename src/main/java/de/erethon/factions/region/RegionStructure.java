@@ -52,6 +52,10 @@ public class RegionStructure {
 
     }
 
+    public void deleteStructure() {
+        region.removeStructure(this);
+    }
+
     /* Protection */
 
     public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @Nullable Block block) {

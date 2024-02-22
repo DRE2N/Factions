@@ -1,13 +1,13 @@
 package de.erethon.factions.war.objective;
 
-import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FBroadcastUtil;
 import io.papermc.paper.math.Position;
-import org.bukkit.Bukkit;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
@@ -25,17 +25,15 @@ import java.util.Map;
 public class CrystalWarObjective extends TickingWarObjective {
 
     /* Settings */
+    protected double energyLossOnDamage;
     protected double energyLossPerInterval;
     protected double maxEnergy;
-    protected double maxHealth;
-    protected double scorePerInterval;
     /* Temporary */
     protected Alliance alliance;
     protected EnderCrystal crystal;
     protected double energy;
-    protected double health;
-    protected TextDisplay energyDisplay, healthDisplay;
-    protected Location spawnLocation;
+    protected TextDisplay energyDisplay;
+    protected Location crystalLocation;
 
     public CrystalWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
@@ -47,32 +45,31 @@ public class CrystalWarObjective extends TickingWarObjective {
 
     @Override
     protected void load(@NotNull ConfigurationSection config) {
-        this.energyLossPerInterval = config.getDouble("energyLossPerInterval", 5.0);
-        this.maxEnergy = config.getDouble("maxEnergy", 100.0);
-        this.maxHealth = config.getDouble("maxHealth", 2000.0);
-        this.scorePerInterval = config.getDouble("scorePerInterval", 1.0);
+        this.energyLossOnDamage = config.getDouble("energyLossOnDamage", 10.0);
+        this.energyLossPerInterval = config.getDouble("energyLossPerInterval", 1.0);
+        this.maxEnergy = config.getDouble("maxEnergy", 600.0);
         this.energy = maxEnergy;
-        this.health = maxHealth;
-        this.spawnLocation = getCenterPosition().toLocation(region.getWorld());
-        this.spawnLocation.setY(yRange.getMinimumInteger());
+
+        World world = region.getWorld();
+        int x = (getXRange().getMaximumInteger() + getXRange().getMinimumInteger()) / 2,
+                y = getYRange().getMaximumInteger(),
+                z = (getZRange().getMaximumInteger() + getZRange().getMinimumInteger()) / 2;
+
+        while (world.getType(x, y, z).isEmpty()) {
+            if (--y < yRange.getMinimumInteger()) {
+                break;
+            }
+        }
+        crystalLocation = new Location(world, x, y + 1, z);
     }
 
     @Override
     public void tick() {
-        if (energy <= 0) {
-            return;
-        }
-        setEnergy(Math.max(energy - energyLossPerInterval, 0));
-        region.getRegionalWarTracker().addScore(alliance, scorePerInterval);
+        removeEnergy(energyLossPerInterval, null);
     }
 
     public void damage(double damage, @Nullable FPlayer damager) {
-        health = Math.max(health - damage, 0);
-        displayHealth();
-        if (health > 0) {
-            return;
-        }
-        destroy(damager);
+        removeEnergy(energyLossOnDamage, damager);
     }
 
     public void destroy(@Nullable FPlayer damager) {
@@ -82,8 +79,8 @@ public class CrystalWarObjective extends TickingWarObjective {
             FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED, alliance.getDisplayShortName(), region.getName());
         }
         deactivate();
-        // todo: Delete objective after determination
-        spawnLocation.createExplosion(4f, false, false);
+        deleteStructure();
+        crystalLocation.createExplosion(4f, false, false);
     }
 
     /* Setup */
@@ -91,16 +88,14 @@ public class CrystalWarObjective extends TickingWarObjective {
     @Override
     public void activate() {
         super.activate();
-        World world = spawnLocation.getWorld();
-        crystal = world.spawn(spawnLocation, EnderCrystal.class, c -> c.getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name));
-        crystal.addPassenger(energyDisplay = world.spawn(spawnLocation, TextDisplay.class, this::displayEnergy));
-        energyDisplay.addPassenger(healthDisplay = world.spawn(spawnLocation, TextDisplay.class, this::displayHealth));
+        World world = crystalLocation.getWorld();
+        crystal = world.spawn(crystalLocation, EnderCrystal.class, c -> c.getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name));
+        crystal.addPassenger(energyDisplay = world.spawn(crystalLocation, TextDisplay.class, this::displayEnergy));
     }
 
     @Override
     public void deactivate() {
         super.deactivate();
-        healthDisplay.remove();
         energyDisplay.remove();
         crystal.remove();
     }
@@ -115,20 +110,13 @@ public class CrystalWarObjective extends TickingWarObjective {
     }
 
     private void displayEnergy(TextDisplay display) {
-        displayPercentage(display, maxEnergy, energy, "blue");
+        displayPercentage(display, maxEnergy, energy);
     }
 
-    private void displayHealth() {
-        displayHealth(healthDisplay);
-    }
-
-    private void displayHealth(TextDisplay display) {
-        displayPercentage(display, maxHealth, health, "red");
-    }
-
-    private void displayPercentage(TextDisplay display, double max, double current, String color) {
-        int red = (int) (20 * (1 / max * current));
-        display.text(MessageUtil.parse("<" + color + ">" + "█".repeat(red) + "<gray>" + "█".repeat(20 - red)));
+    private void displayPercentage(TextDisplay display, double max, double current) {
+        int colored = (int) (20 * (1 / max * current));
+        display.text(Component.text().color(NamedTextColor.BLUE).content("█".repeat(colored))
+                .append(Component.text().color(NamedTextColor.GRAY).content("█".repeat(20 - colored))).build());
     }
 
     /* Serialization */
@@ -136,14 +124,21 @@ public class CrystalWarObjective extends TickingWarObjective {
     @Override
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> serialized = super.serialize();
+        serialized.put("energyLossOnDamage", energyLossOnDamage);
         serialized.put("energyLossPerInterval", energyLossPerInterval);
         serialized.put("maxEnergy", maxEnergy);
-        serialized.put("maxHealth", maxHealth);
-        serialized.put("scorePerInterval", scorePerInterval);
         return serialized;
     }
 
     /* Getters and setters */
+
+    public double getEnergyLossOnDamage() {
+        return energyLossOnDamage;
+    }
+
+    public void setEnergyLossOnDamage(double energyLossOnDamage) {
+        this.energyLossOnDamage = energyLossOnDamage;
+    }
 
     public double getEnergyLossPerInterval() {
         return energyLossPerInterval;
@@ -169,35 +164,22 @@ public class CrystalWarObjective extends TickingWarObjective {
     }
 
     public void setEnergy(double energy) {
-        assert energy > 0 && energy < maxEnergy : "The energy number must lie between 0 and " + energy;
+        assert energy > 0 && energy <= maxEnergy : "The energy number must be greater than 0 and less or equal to " + maxEnergy;
         this.energy = energy;
         displayEnergy();
     }
 
     public void addEnergy(double amount) {
-        this.energy = Math.max(energy + amount, maxEnergy);
+        this.energy = Math.min(energy + amount, maxEnergy);
         displayEnergy();
     }
 
-    public double getMaxHealth() {
-        return maxHealth;
-    }
-
-    public void setMaxHealth(double maxHealth) {
-        this.maxHealth = maxHealth;
-        if (maxHealth < health) {
-            setHealth(maxHealth);
+    public void removeEnergy(double amount, @Nullable FPlayer causingPlayer) {
+        energy -= amount;
+        displayEnergy();
+        if (energy <= 0) {
+            destroy(causingPlayer);
         }
-    }
-
-    public double getHealth() {
-        return health;
-    }
-
-    public void setHealth(double health) {
-        assert health > 0 && health < maxHealth : "The health number must lie between 0 and " + maxHealth;
-        this.health = health;
-        displayHealth();
     }
 
     public @NotNull Alliance getAlliance() {
