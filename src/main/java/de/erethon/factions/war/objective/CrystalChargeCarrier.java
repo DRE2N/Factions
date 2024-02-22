@@ -31,6 +31,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class CrystalChargeCarrier extends IronGolem {
 
+    public static NamespacedKey CARRIER_KEY = new NamespacedKey(Factions.get(), "crystal-charge-carrier");
     public static NamespacedKey CARRIER_PLAYER_KEY = new NamespacedKey(Factions.get(), "crystal-charge-carrier");
     public static final AttributeModifier CARRIER_DEBUFF = new AttributeModifier("factions-carrier-damage-debuff", -1000, AttributeModifier.Operation.ADD_NUMBER);
     public static final AttributeModifier CARRIER_BUFF = new AttributeModifier("factions-carrier-speed-buff", Factions.get().getFConfig().getCrystalCarrierSpeedBuff(), AttributeModifier.Operation.ADD_NUMBER);
@@ -49,8 +50,8 @@ public class CrystalChargeCarrier extends IronGolem {
         this.region = region;
         this.alliance = alliance;
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(plugin.getFConfig().getDefaultCrystalCarrierHealth());
-        setPersistenceRequired(false); // Don't save custom entities
         world.addFreshEntity(this);
+        getBukkitEntity().getPersistentDataContainer().set(CARRIER_KEY, PersistentDataType.BYTE, (byte) 1);
     }
 
     @Override

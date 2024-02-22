@@ -391,6 +391,7 @@ war:
     noFaction: "<red>You cannot attack the carrier when you are not in a faction."
     killed: "<red>You killed the crystal charge carrier!"
     killedHint: "<gray>Deliver the crystal charge to your crystal to recharge it."
+    spawn: "<green>A crystal charge carrier has spawned."
   end:
     ranking: " <arg:0> <dark_gray>(<gray><arg:1></gray>)</dark_gray>"
     winner: "<arg:0> has won the alliance war and received the blessing of the ancient emperor!"

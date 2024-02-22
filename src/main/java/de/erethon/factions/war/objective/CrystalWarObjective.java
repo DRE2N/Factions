@@ -1,5 +1,6 @@
 package de.erethon.factions.war.objective;
 
+import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
@@ -14,6 +15,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import net.minecraft.world.entity.Entity;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
@@ -25,6 +27,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -34,6 +37,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Fyreum, Malfrador
@@ -54,6 +58,7 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
     protected TextDisplay energyDisplay;
     protected Location crystalLocation;
     protected Set<CrystalChargeCarrier> carriers = new HashSet<>();
+    protected Set<Chunk> carrierChunks = new HashSet<>();
 
     public CrystalWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
@@ -131,22 +136,33 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
     public void spawnCrystalCarrier() {
         double locationX = 0, locationZ = 0;
         Random random = new Random();
+        Chunk chunk = null;
         int chunkIndex = random.nextInt(region.getChunks().size());
         int i = 0;
-        for (LazyChunk chunk : region.getChunks()) {
+        for (LazyChunk lc : region.getChunks()) {
             if (i++ == chunkIndex) {
-                locationX = chunk.getX() * 16 + random.nextDouble(16);
-                locationZ = chunk.getZ() * 16 + random.nextDouble(16);
+                locationX = lc.getX() * 16 + random.nextDouble(16);
+                locationZ = lc.getZ() * 16 + random.nextDouble(16);
+                chunk = lc.asBukkitChunk(region.getWorld());
                 break;
             }
         }
+        if (chunk == null) {
+            return;
+        }
         World world = region.getWorld();
-        double y = world.getHighestBlockYAt((int) locationX, (int) locationZ);
-        CrystalChargeCarrier carrier = new CrystalChargeCarrier(world, new Location(world, locationX, y, locationZ), region, alliance);
-        carriers.add(carrier);
-        region.playSound((Sound.sound(org.bukkit.Sound.ENTITY_ENDER_DRAGON_GROWL, Sound.Source.RECORD, 0.8f, 1)));
-        Title title = Title.title(Component.empty(), Component.translatable("factions.war.carrier.spawned"));
-        region.showTitle(title);
+        double finalLocationX = locationX;
+        double finalLocationZ = locationZ;
+        CompletableFuture<Chunk> chunkLoad = world.getChunkAtAsync(chunk.getX(), chunk.getZ());
+        chunkLoad.thenAccept(c -> {
+            c.addPluginChunkTicket(plugin);
+            carrierChunks.add(c);
+            CrystalChargeCarrier carrier = new CrystalChargeCarrier(world, new Location(world, finalLocationX, world.getHighestBlockYAt((int) finalLocationX, (int) finalLocationZ), finalLocationZ), region, alliance);
+            carriers.add(carrier);
+            Title title = Title.title(Component.empty(), Component.translatable("factions.war.carrier.spawn"));
+            region.showTitle(title);
+        });
+
     }
 
     private void handleCarrierDeposit(Player player) {
@@ -195,6 +211,7 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
         for (CrystalChargeCarrier carrier : carriers) {
             carrier.remove(Entity.RemovalReason.DISCARDED);
         }
+        carrierChunks.forEach(c -> c.removePluginChunkTicket(plugin));
     }
 
     @Override
