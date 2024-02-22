@@ -386,6 +386,11 @@ ui:
     occupiedContested: "<b><dark_gray>[</dark_gray><dark_green><arg:0></dark_green><dark_gray>-</dark_gray><green>100%</green><b><dark_gray>]</dark_gray></b> <red>  Area is under attack!</red>"
     occupiedContestedOther: "<b><dark_gray>[</dark_gray><dark_red><arg:0></dark_red><dark_gray>-</dark_gray><red>100%</red><b><dark_gray>]</dark_gray></b> <red>  Area is under attack!</red>"
 war:
+  carrier:
+    deposit: "<green>Crystal charging..."
+    noFaction: "<red>You cannot attack the carrier when you are not in a faction."
+    killed: "<red>You killed the crystal charge carrier!"
+    killedHint: "<gray>Deliver the crystal charge to your crystal to recharge it."
   end:
     ranking: " <arg:0> <dark_gray>(<gray><arg:1></gray>)</dark_gray>"
     winner: "<arg:0> has won the alliance war and received the blessing of the ancient emperor!"

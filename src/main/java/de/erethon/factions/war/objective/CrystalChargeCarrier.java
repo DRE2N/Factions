@@ -85,10 +85,6 @@ public class CrystalChargeCarrier extends IronGolem {
                 bukkitPlayer.sendMessage(Component.translatable("factions.war.carrier.noFaction"));
                 return false;
             }
-            if (fPlayer.getFaction().getRelation(alliance) != Relation.ENEMY) {
-                bukkitPlayer.sendMessage(Component.translatable("factions.war.carrier.friendlyFire"));
-                return false;
-            }
             return true;
         } else {
             return false;
