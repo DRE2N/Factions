@@ -27,6 +27,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -131,6 +132,15 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
         if (region.getRegionalWarTracker().isCrystalCarrier(event.getPlayer())) {
             region.getRegionalWarTracker().removeCrystalCarrier(event.getPlayer());
         }
+    }
+
+    @EventHandler
+    private void onQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        region.getRegionalWarTracker().removeCrystalCarrier(player);
+        player.getPersistentDataContainer().remove(CrystalChargeCarrier.CARRIER_PLAYER_KEY);
+        player.setGlowing(false);
+        // The rest of the buffs/debuffs doesn't get saved anyway.
     }
 
     public void spawnCrystalCarrier() {
