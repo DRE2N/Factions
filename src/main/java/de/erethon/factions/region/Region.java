@@ -398,6 +398,21 @@ public class Region extends FLegalEntity {
         return players;
     }
 
+    public @NotNull Iterable<? extends Audience> friendlyAudiences() {
+        Set<Player> players = new HashSet<>();
+        plugin.getFPlayerCache().forEach(player -> {
+            if (player.getLastRegion() == this) {
+                if (player.getFaction() == null) {
+                    return;
+                }
+                if (player.getFaction() == owner || player.getFaction().getAlliance() == alliance) {
+                    players.add(player.getPlayer());
+                }
+            }
+        });
+        return players;
+    }
+
     /* Object methods */
 
     @Override

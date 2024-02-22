@@ -143,11 +143,14 @@ public class BuildingManager implements Listener {
     private void tickBuildingEffects() {
         for (int i = 0; i < effectsPerTick; i++) {
             if (tickingEffects.isEmpty()) {
-                return;
+                continue;
             }
             BuildingEffect effect = tickingEffects.poll();
             if (effect == null) {
-                return;
+                continue;
+            }
+            if (!effect.getSite().isActive()) {
+                continue;
             }
             effect.tick();
             tickingEffects.add(effect); // Add it back to the queue for the next run

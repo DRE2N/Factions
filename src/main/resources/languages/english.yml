@@ -24,6 +24,10 @@ acm:
   transferredChunk: "Chunk <gold><arg:0></gold> has been transferred to <gold><arg:1></gold>."
   transferredChunks: "<gold><arg:0></gold> chunks have been transferred to <gold><arg:1></gold>."
 building:
+  effects:
+    radar:
+      enemiesDetected: "<dark_red>Enemies detected!"
+      enemiesInfo: "<red>Detected <gold><arg:0> <red>enemies near <gold><arg:1>"
   placement:
     startHint: "<gray>Right click to place the building, left click to cancel."
     clickAgain: "<gray>Click again to confirm the placement."

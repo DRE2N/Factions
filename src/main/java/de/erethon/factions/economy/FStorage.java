@@ -73,6 +73,11 @@ public class FStorage {
         resourceLimits.put(resource, current + amount);
     }
 
+    public void decreaseResourceLimit(@NotNull Resource resource, int amount) {
+        int current = resourceLimits.getOrDefault(resource, 0);
+        resourceLimits.put(resource, current - amount);
+    }
+
     public boolean isFull(@NotNull Resource resource) {
         return resources.getOrDefault(resource, 0) >= resourceLimits.getOrDefault(resource, 0);
     }

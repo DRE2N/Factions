@@ -62,15 +62,17 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     private Location corner;
     private Location otherCorner;
     private final Set<BuildSiteSection> sections = new HashSet<>();
+    private final HashMap<String, Position> namedPositions = new HashMap<>();
     private long chunkKey;
     private Location interactive;
     private String problemMessage = null;
     private Map<Material, Integer> placedBlocks = new HashMap<>();
     private boolean finished;
+    private boolean active;
     private boolean hasTicket = false;
     private boolean isBusy = false;
     private Inventory inventory;
-    private final Set<BuildingEffect> activeBuildingEffects = new HashSet<>();
+    private final Set<BuildingEffect> buildingEffects = new HashSet<>();
     private final Set<ItemStack> buildingStorage = new HashSet<>();
 
     private UUID progressHoloUUID = null;
@@ -163,8 +165,11 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
             blockChangeCounter = 0;
             scheduleProgressUpdate();
         }
+        if (!active) {
+            return;
+        }
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
-        for (BuildingEffect effect : activeBuildingEffects) {
+        for (BuildingEffect effect : buildingEffects) {
             effect.onPlaceBlock(fPlayer, player.getLocation().getBlock(), getSectionsForLocation(player.getLocation()), event);
         }
     }
@@ -175,8 +180,11 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
             blockChangeCounter = 0;
             scheduleProgressUpdate();
         }
+        if (!active) {
+            return;
+        }
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
-        for (BuildingEffect effect : activeBuildingEffects) {
+        for (BuildingEffect effect : buildingEffects) {
             effect.onBreakBlock(fPlayer, player.getLocation().getBlock(), getSectionsForLocation(player.getLocation()), event);
         }
     }
@@ -437,6 +445,10 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         return sections;
     }
 
+    public @NotNull Map<String, Position> getNamedPositions() {
+        return namedPositions;
+    }
+
     public @NotNull long getChunkKey() {
         return chunkKey;
     }
@@ -481,30 +493,90 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         return inventory;
     }
 
+    public Set<BuildingEffect> getEffects() {
+        return buildingEffects;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+        if (!active) {
+            for (BuildingEffect effect : buildingEffects) {
+                effect.remove();
+            }
+        } else {
+            for (BuildingEffect effect : buildingEffects) {
+                effect.apply();
+            }
+        }
+    }
+
     //
     // Effect triggers
     //
     public void onEnter(FPlayer player) {
-        for (BuildingEffect effect : activeBuildingEffects) {
+        if (!active) {
+            return;
+        }
+        for (BuildingEffect effect : buildingEffects) {
             effect.onEnter(player);
         }
     }
 
     public void onLeave(FPlayer player) {
-        for (BuildingEffect effect : activeBuildingEffects) {
+        if (!active) {
+            return;
+        }
+        for (BuildingEffect effect : buildingEffects) {
             effect.onLeave(player);
         }
     }
 
     public void onFactionJoin(FPlayer player) {
-        for (BuildingEffect effect : activeBuildingEffects) {
+        if (!active) {
+            return;
+        }
+        for (BuildingEffect effect : buildingEffects) {
             effect.onFactionJoin(player);
         }
     }
 
     public void onFactionLeave(FPlayer player) {
-        for (BuildingEffect effect : activeBuildingEffects) {
+        if (!active) {
+            return;
+        }
+        for (BuildingEffect effect : buildingEffects) {
             effect.onFactionLeave(player);
+        }
+    }
+
+    public void onPayday() {
+        if (!active) {
+            return;
+        }
+        for (BuildingEffect effect : buildingEffects) {
+            effect.onPayday();
+        }
+    }
+
+    public void onBlockBreakInRegion(FPlayer player, Block block, Cancellable event) {
+        if (!active) {
+            return;
+        }
+        for (BuildingEffect effect : buildingEffects) {
+            effect.onBreakBlockRegion(player, block, event);
+        }
+    }
+
+    public void onBlockPlaceInRegion(FPlayer player, Block block, Cancellable event) {
+        if (!active) {
+            return;
+        }
+        for (BuildingEffect effect : buildingEffects) {
+            effect.onPlaceBlockRegion(player, block, event);
         }
     }
 
@@ -534,6 +606,11 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                 sections.add(buildSiteSection);
             }
         }
+        if (contains("namedPositions")) {
+            for (String id : getConfigurationSection("namedPositions").getKeys(false)) {
+                namedPositions.put(id, FUtil.parsePosition(getString("namedPositions." + id)));
+            }
+        }
         region.getBuildSites().add(this);
         if (!finished) {
             scheduleProgressUpdate();
@@ -541,6 +618,9 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         plugin.getBuildSiteCache().add(this, interactive.getChunk());
         for (BuildingEffectData data : building.getEffects()) {
             data.newEffect(this);
+        }
+        if (finished && !isDestroyed()) {
+            setActive(true);
         }
         updateHolo();
         FLogger.BUILDING.log("Loaded build site " + uuid + " for " + building.getId() + " in " + region.getName());
@@ -561,6 +641,9 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
             set("sections." + section.name() + ".corner1", FUtil.positionToString(section.corner1()));
             set("sections." + section.name() + ".corner2", FUtil.positionToString(section.corner2()));
             set("sections." + section.name() + ".protectedSection", section.protectedSection());
+        }
+        for (Map.Entry<String, Position> entry : namedPositions.entrySet()) {
+            set("namedPositions." + entry.getKey(), FUtil.positionToString(entry.getValue()));
         }
         super.save(file);
     }

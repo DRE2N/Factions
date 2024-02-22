@@ -36,7 +36,13 @@ public class BuildingEffect {
     public void onBreakBlock(FPlayer player, Block block, Set<BuildSiteSection> sections, Cancellable event) {
     }
 
+    public void onBreakBlockRegion(FPlayer player, Block block, Cancellable event) {
+    }
+
     public void onPlaceBlock(FPlayer player, Block block, Set<BuildSiteSection> sections, Cancellable event) {
+    }
+
+    public void onPlaceBlockRegion(FPlayer player, Block block, Cancellable event) {
     }
 
     public void onEnter(FPlayer player) {
@@ -54,6 +60,9 @@ public class BuildingEffect {
     public void onInteract(FPlayer player) {
     }
 
+    public void onPayday() {
+    }
+
     public @NotNull BuildSite getSite() {
         return site;
     }
@@ -62,4 +71,19 @@ public class BuildingEffect {
         return faction;
     }
 
+    protected void disableOtherEffects() {
+        site.getEffects().forEach(effect -> {
+            if (effect != this) {
+                effect.remove();
+            }
+        });
+    }
+
+    protected void enableOtherEffects() {
+        site.getEffects().forEach(effect -> {
+            if (effect != this) {
+                effect.apply();
+            }
+        });
+    }
 }

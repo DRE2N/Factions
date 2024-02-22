@@ -1,6 +1,7 @@
 package de.erethon.factions.region.protection;
 
 import de.erethon.factions.Factions;
+import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
@@ -65,6 +66,7 @@ public class BlockProtectionListener implements Listener {
         if (region == null) {
             return;
         }
+        callEventForAllBuildingsInRegion(region, fPlayer, event);
         List<RegionStructure> structures = region.getStructuresAt(block.getLocation());
         TriState state = TriState.NOT_SET;
         // Loop until a structure dictates the following behaviour.
@@ -107,5 +109,18 @@ public class BlockProtectionListener implements Listener {
                 }
             }
         });
+    }
+
+    private void callEventForAllBuildingsInRegion(Region region, FPlayer player, Cancellable cancellable) {
+        // Idk about the performance of this, guess we're going to have to see. Not really another way if an effect wants to add/remove drops or something though.
+        for (BuildSite site : region.getBuildSites()) {
+            if (site.isInBuildSite(player.getPlayer().getLocation())) {
+                if (cancellable instanceof BlockPlaceEvent place) {
+                    site.onBlockPlaceInRegion(player, place.getBlock(), cancellable);
+                } else if (cancellable instanceof BlockBreakEvent breakEvent) {
+                    site.onBlockBreakInRegion(player, breakEvent.getBlock(), cancellable);
+                }
+            }
+        }
     }
 }
