@@ -23,15 +23,12 @@ public abstract class WarObjective extends RegionStructure {
 
     public static final NamespacedKey NAME_KEY = new NamespacedKey(Factions.get(), "warObjectiveName");
 
-    /* Settings */
-    protected boolean capitalObjective;
     /* Temporary */
     protected Map<FPlayer, Long> activePlayers = new HashMap<>();
     protected Set<FPlayer> activeSpectators = new HashSet<>();
 
     public WarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
-        this.capitalObjective = config.getBoolean("capitalObjective");
     }
 
     public WarObjective(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
@@ -79,19 +76,10 @@ public abstract class WarObjective extends RegionStructure {
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> serialized = super.serialize();
         serialized.put("type", getClass().getName());
-        serialized.put("capitalObjective", capitalObjective);
         return serialized;
     }
 
     /* Getters and setters */
-
-    public boolean isCapitalObjective() {
-        return capitalObjective;
-    }
-
-    public void setCapitalObjective(boolean capitalObjective) {
-        this.capitalObjective = capitalObjective;
-    }
 
     public @NotNull Map<FPlayer, Long> getActivePlayers() {
         return activePlayers;

@@ -51,7 +51,7 @@ public enum WarPhase {
                 foreachWarObjective(obj -> true, WarObjective::deactivate);
             } else {
                 // PvP: false -> true
-                foreachWarObjective(obj -> !obj.isCapitalObjective(), WarObjective::activate);
+                foreachWarObjective(obj -> obj.getRegion().getType() != RegionType.CAPITAL, WarObjective::activate);
             }
         }
         if (isOpenCapital() != nextPhase.isOpenCapital()) {
@@ -60,7 +60,7 @@ public enum WarPhase {
                 onWarEnd();
             } else {
                 // openCapital: false -> true
-                foreachWarObjective(WarObjective::isCapitalObjective, WarObjective::activate);
+                foreachWarObjective(obj -> obj.getRegion().getType() != RegionType.CAPITAL, WarObjective::activate);
             }
         }
     }
