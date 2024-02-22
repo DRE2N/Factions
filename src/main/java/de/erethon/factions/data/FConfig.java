@@ -74,6 +74,8 @@ public class FConfig extends EConfig {
     private long warCastleRestoreInterval = TickUtil.MINUTE;
     private int warCapturedRegionsPerBattle = 5;
     private double warScorePerKill = 5.0;
+    private double defaultCrystalCarrierHealth = 2000;
+    private double crystalCarrierSpeedBuff = 0.3;
 
     public FConfig(File file) {
         super(file, CONFIG_VERSION);
@@ -112,6 +114,8 @@ public class FConfig extends EConfig {
         initValue("war.castleRestoreInterval", warCastleRestoreInterval);
         initValue("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
         initValue("war.scorePerKill", warScorePerKill);
+        initValue("war.defaultCrystalCarrierHealth", defaultCrystalCarrierHealth);
+        initValue("war.crystalCarrierSpeedBuff", crystalCarrierSpeedBuff);
         for (Resource resource : Resource.values()) {
             initValue("defaultResourceLimits." + resource.name(), 512);
         }
@@ -158,6 +162,8 @@ public class FConfig extends EConfig {
         warCastleRestoreInterval = config.getLong("war.castleRestoreInterval", warCastleRestoreInterval);
         warCapturedRegionsPerBattle = config.getInt("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
         warScorePerKill = config.getDouble("war.scorePerKill", warScorePerKill);
+        defaultCrystalCarrierHealth = config.getDouble("war.defaultCrystalCarrierHealth", defaultCrystalCarrierHealth);
+        crystalCarrierSpeedBuff = config.getDouble("war.crystalCarrierSpeedBuff", crystalCarrierSpeedBuff);
         defaultResourceLimits = new HashMap<>();
         for (Resource resource : Resource.values()) {
             defaultResourceLimits.put(resource, config.getInt("defaultResourceLimits." + resource.name(), 512));
@@ -344,6 +350,14 @@ public class FConfig extends EConfig {
 
     public double getWarScorePerKill() {
         return warScorePerKill;
+    }
+
+    public double getDefaultCrystalCarrierHealth() {
+        return defaultCrystalCarrierHealth;
+    }
+
+    public double getCrystalCarrierSpeedBuff() {
+        return crystalCarrierSpeedBuff;
     }
 
     public @Nullable Set<Building> getRequiredBuildings(@NotNull FactionLevel factionLevel) {

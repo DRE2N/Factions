@@ -7,11 +7,14 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.WarMath;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Fyreum
@@ -26,6 +29,7 @@ public class RegionalWarTracker {
     private final Region region;
     private final Map<Alliance, Integer> kills = new HashMap<>();
     private final Map<Alliance, Double> scores = new HashMap<>();
+    private final Set<Player> crystalCarriers = new HashSet<>();
     private double captureCap = DEFAULT_CAPTURE_CAP;
     private int regionValue = DEFAULT_REGION_VALUE;
 
@@ -182,5 +186,17 @@ public class RegionalWarTracker {
 
     public void setRegionValue(int regionValue) {
         this.regionValue = regionValue;
+    }
+
+    public boolean isCrystalCarrier(@NotNull Player player) {
+        return crystalCarriers.contains(player);
+    }
+
+    public void addCrystalCarrier(@NotNull Player player) {
+        crystalCarriers.add(player);
+    }
+
+    public void removeCrystalCarrier(@NotNull Player player) {
+        crystalCarriers.remove(player);
     }
 }

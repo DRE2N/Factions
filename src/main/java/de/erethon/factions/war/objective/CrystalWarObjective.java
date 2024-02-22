@@ -2,38 +2,57 @@ package de.erethon.factions.war.objective;
 
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FBroadcastUtil;
 import io.papermc.paper.math.Position;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EnderCrystal;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 /**
- * @author Fyreum
+ * @author Fyreum, Malfrador
  */
-public class CrystalWarObjective extends TickingWarObjective {
+public class CrystalWarObjective extends TickingWarObjective implements Listener {
 
     /* Settings */
     protected double energyLossOnDamage;
     protected double energyLossPerInterval;
     protected double maxEnergy;
+    protected double energyGainPerCarrier;
+    protected double energyLossForCarrierSpawn;
     /* Temporary */
     protected Alliance alliance;
     protected EnderCrystal crystal;
     protected double energy;
+    protected double energyAtLastCarrierSpawn;
     protected TextDisplay energyDisplay;
     protected Location crystalLocation;
+    protected Set<CrystalChargeCarrier> carriers = new HashSet<>();
 
     public CrystalWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
@@ -48,6 +67,8 @@ public class CrystalWarObjective extends TickingWarObjective {
         this.energyLossOnDamage = config.getDouble("energyLossOnDamage", 10.0);
         this.energyLossPerInterval = config.getDouble("energyLossPerInterval", 1.0);
         this.maxEnergy = config.getDouble("maxEnergy", 600.0);
+        this.energyGainPerCarrier = config.getDouble("energyGainPerCarrier", 200.0);
+        this.energyLossForCarrierSpawn = config.getDouble("energyLossForCarrierSpawn", 180.0);
         this.energy = maxEnergy;
 
         World world = region.getWorld();
@@ -61,11 +82,16 @@ public class CrystalWarObjective extends TickingWarObjective {
             }
         }
         crystalLocation = new Location(world, x, y + 1, z);
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     @Override
     public void tick() {
         removeEnergy(energyLossPerInterval, null);
+        if (energy - energyAtLastCarrierSpawn >= energyLossForCarrierSpawn) {
+            spawnCrystalCarrier();
+            energyAtLastCarrierSpawn = energy;
+        }
     }
 
     public void damage(double damage, @Nullable FPlayer damager) {
@@ -81,6 +107,73 @@ public class CrystalWarObjective extends TickingWarObjective {
         deactivate();
         deleteStructure();
         crystalLocation.createExplosion(4f, false, false);
+    }
+
+    @EventHandler
+    private void onInteract(PlayerInteractEntityEvent event) {
+        if (event.getRightClicked() == crystal) {
+            Player player = event.getPlayer();
+            FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
+            if (player.getPersistentDataContainer().has(CrystalChargeCarrier.CARRIER_PLAYER_KEY) && fPlayer.getFaction().getRelation(alliance) != Relation.ENEMY) {
+                handleCarrierDeposit(player);
+            }
+        }
+    }
+
+    @EventHandler
+    private void onDeath(PlayerDeathEvent event) {
+        if (region.getRegionalWarTracker().isCrystalCarrier(event.getPlayer())) {
+            region.getRegionalWarTracker().removeCrystalCarrier(event.getPlayer());
+        }
+    }
+
+    public void spawnCrystalCarrier() {
+        double locationX = 0, locationZ = 0;
+        Random random = new Random();
+        int chunkIndex = random.nextInt(region.getChunks().size());
+        int i = 0;
+        for (LazyChunk chunk : region.getChunks()) {
+            if (i++ == chunkIndex) {
+                locationX = chunk.getX() * 16 + random.nextDouble(16);
+                locationZ = chunk.getZ() * 16 + random.nextDouble(16);
+                break;
+            }
+        }
+        World world = region.getWorld();
+        double y = world.getHighestBlockYAt((int) locationX, (int) locationZ);
+        CrystalChargeCarrier carrier = new CrystalChargeCarrier(world, new Location(world, locationX, y, locationZ), region, alliance);
+        carriers.add(carrier);
+        region.playSound((Sound.sound(org.bukkit.Sound.ENTITY_ENDER_DRAGON_GROWL, Sound.Source.RECORD, 0.8f, 1)));
+        Title title = Title.title(Component.empty(), Component.translatable("factions.war.carrier.spawned"));
+        region.showTitle(title);
+    }
+
+    private void handleCarrierDeposit(Player player) {
+        region.getRegionalWarTracker().removeCrystalCarrier(player);
+        player.setGlowing(false);
+        player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).removeModifier(CrystalChargeCarrier.CARRIER_BUFF);
+        player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getAttribute(Attribute.ADV_PHYSICAL).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getAttribute(Attribute.ADV_MAGIC).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getPersistentDataContainer().remove(CrystalChargeCarrier.CARRIER_PLAYER_KEY);
+        player.playSound(Sound.sound(org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, Sound.Source.RECORD, 0.8f, 0.6f));
+        player.playSound(Sound.sound(org.bukkit.Sound.ENTITY_PHANTOM_SWOOP, Sound.Source.RECORD, 0.8f, 1.0f));
+        Title title = Title.title(Component.empty(), Component.translatable("factions.war.carrier.deposit"));
+        player.showTitle(title);
+        BukkitRunnable animation = new BukkitRunnable() {
+            int i = 0;
+
+            @Override
+            public void run() {
+                if (i++ > 40) {
+                    energy += Math.min(energyGainPerCarrier, maxEnergy - energy);
+                    cancel();
+                    return;
+                }
+                crystal.setBeamTarget(player.getLocation().add(0, 1, 0));
+            }
+        };
+        animation.runTaskTimer(plugin, 0, 1);
     }
 
     /* Setup */
