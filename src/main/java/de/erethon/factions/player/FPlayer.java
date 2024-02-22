@@ -1,5 +1,6 @@
 package de.erethon.factions.player;
 
+import de.erethon.aergia.command.logic.ESender;
 import de.erethon.aergia.ui.UIActionBar;
 import de.erethon.aergia.ui.UIBossBar;
 import de.erethon.aergia.ui.UIComponent;
@@ -32,6 +33,7 @@ import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -49,7 +51,7 @@ import java.util.UUID;
 /**
  * @author Fyreum
  */
-public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWrapper {
+public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWrapper, ESender {
 
     public static final int CONFIG_VERSION = 1;
 
@@ -207,6 +209,16 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
 
     public UIBossBar getUIBossBar() {
         return getUIUpdater().getBossBar();
+    }
+
+    @Override
+    public CommandSender getCommandSender() {
+        return player;
+    }
+
+    @Override
+    public boolean isPlayer() {
+        return true;
     }
 
     /* Permission stuff */

@@ -64,8 +64,6 @@ cmd:
     success: "<green>You have declined the invitation from <dark_green><arg:0></dark_green>."
   disband:
     confirmationRequired: "<red>If you disband the faction, all regional claims and any progress will be lost. <gold><arg:0></gold>"
-  home:
-    success: "<green>Teleported to the faction home."
   invite:
     success: "<green>You have invited player <dark_green><arg:0></dark_green> to faction <dark_green><arg:1></dark_green>."
   join:

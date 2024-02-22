@@ -1,5 +1,6 @@
 package de.erethon.factions.command;
 
+import de.erethon.aergia.util.TeleportUtil;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.player.FPlayer;
 import net.kyori.adventure.text.Component;
@@ -13,7 +14,7 @@ public class HomeCommand extends FCommand {
         setMinMaxArgs(0, 0);
         setFUsage(getCommand());
         setPermissionFromName();
-        setDescription("home"); // TODO: We need translatables for usage and description
+        setDescription("Teleportiert den Spieler zum Fraktions-Home"); // TODO: We need translatables for usage and description
     }
 
     @Override
@@ -24,8 +25,6 @@ public class HomeCommand extends FCommand {
             fPlayer.sendMessage(Component.translatable("factions.error.noFHome"));
             return;
         }
-        fPlayer.getPlayer().teleportAsync(fPlayer.getFaction().getFHome());
-        fPlayer.sendActionBar(Component.translatable("factions.cmd.home.success"));
-
+        TeleportUtil.teleport(fPlayer, fPlayer.getEPlayer(), fPlayer.getFaction().getFHome());
     }
 }

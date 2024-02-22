@@ -153,6 +153,7 @@ error:
   nameInUse: "<red>Der Name <gold><arg:0></gold> wird bereits verwendet."
   nameIsForbidden: "<red>Dieser Fraktions-Name ist nicht erlaubt."
   noBannerItemInHand: "<red>Du musst einen Banner in der Hand halten, um dies tun zu dürfen."
+  noFHome: "<red>Deine Fraktion hat keinen Home gesetzt. Use /f sethome to set one."
   noPermission: "<red>Du hast keine Berechtigung, um dies tun zu dürfen."
   noSelection: "<red>Du musst eine Markierung erstellen, um dies tun zu dürfen."
   notEnoughMoney: "<red>Du benötigst <gold><arg:0></gold>, um dies tun zu dürfen."
