@@ -5,6 +5,7 @@ import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildingEffectData;
 import de.erethon.factions.event.FPlayerCrossRegionEvent;
+import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
@@ -12,6 +13,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class SpeedBoost extends BuildingEffect implements Listener {
@@ -44,6 +46,15 @@ public class SpeedBoost extends BuildingEffect implements Listener {
             event.getFPlayer().getPlayer().getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).addTransientModifier(modifier);
         } else {
             event.getFPlayer().getPlayer().getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).removeModifier(modifier);
+        }
+    }
+
+    @EventHandler
+    private void onJoin(PlayerJoinEvent event) {
+        FPlayer fPlayer = Factions.get().getFPlayerCache().getByPlayer(event.getPlayer());
+        Region regionAtLogin = Factions.get().getRegionManager().getRegionByLocation(event.getPlayer().getLocation());
+        if (regionAtLogin == site.getRegion() && fPlayer.getFaction() == site.getRegion().getFaction()) {
+            fPlayer.getPlayer().getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).addTransientModifier(modifier);
         }
     }
 
