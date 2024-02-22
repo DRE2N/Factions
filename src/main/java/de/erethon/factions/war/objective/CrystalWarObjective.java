@@ -12,6 +12,7 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
+import net.minecraft.world.entity.Entity;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -191,6 +192,9 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
         super.deactivate();
         energyDisplay.remove();
         crystal.remove();
+        for (CrystalChargeCarrier carrier : carriers) {
+            carrier.remove(Entity.RemovalReason.DISCARDED);
+        }
     }
 
     @Override
