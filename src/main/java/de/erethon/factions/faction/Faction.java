@@ -5,9 +5,9 @@ import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.player.PlayerCollection;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
-import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.Building;
+import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.attributes.FactionAttribute;
 import de.erethon.factions.building.attributes.FactionAttributeModifier;
 import de.erethon.factions.building.attributes.FactionStatAttribute;
@@ -34,13 +34,12 @@ import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FPermissionUtil;
 import de.erethon.factions.util.FUtil;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -68,6 +67,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private PlayerCollection members;
     private final Set<Region> regions = new HashSet<>();
     private Region coreRegion;
+    private Location fHome;
     private double currentTaxDebt = 0;
     private ItemStack flag;
     private String shortName;
@@ -98,6 +98,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.members.add(admin);
         this.regions.add(coreRegion);
         this.coreRegion = coreRegion;
+        this.fHome = admin.getPlayer().getLocation();
         this.coreRegion.setOwner(this);
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
         this.fStorage = new FStorage(this);
@@ -310,6 +311,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         if (coreRegion == null) {
             FLogger.ERROR.log("Unknown core region ID in faction '" + id + "' found: " + coreRegionId);
         }
+        this.fHome = config.getLocation("home", null);
         this.currentTaxDebt = config.getDouble("currentTaxDebt");
         this.flag = config.getItemStack("flag");
         this.shortName = config.getString("shortName");
@@ -348,6 +350,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         config.set("members", members.serialize());
         saveEntities("regions", regions);
         config.set("coreRegion", coreRegion == null ? null : coreRegion.getId());
+        config.set("home", fHome);
         config.set("currentTaxDebt", currentTaxDebt);
         config.set("flag", flag);
         config.set("shortName", shortName);
@@ -454,6 +457,14 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setCoreRegion(@NotNull Region coreRegion) {
         this.coreRegion = coreRegion;
+    }
+
+    public @Nullable Location getFHome() {
+        return fHome;
+    }
+
+    public void setFHome(@Nullable Location fHome) {
+        this.fHome = fHome;
     }
 
     public boolean hasCurrentTaxDebt() {

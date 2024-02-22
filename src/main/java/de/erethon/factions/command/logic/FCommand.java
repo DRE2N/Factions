@@ -333,6 +333,13 @@ public abstract class FCommand extends ECommand {
         assure(sender instanceof Player player && faction.isAdmin(player.getUniqueId()), FMessage.ERROR_NO_PERMISSION);
     }
 
+    protected void assureSenderHasModPerms(@NotNull CommandSender sender, @NotNull Faction faction) {
+        if (FPermissionUtil.isBypass(sender)) {
+            return;
+        }
+        assure(sender instanceof Player player && faction.isMod(player.getUniqueId()), FMessage.ERROR_NO_PERMISSION);
+    }
+
     protected void assurePlayerIsFactionless(@NotNull FPlayer fPlayer) {
         assure(!fPlayer.hasFaction(), FMessage.ERROR_PLAYER_ALREADY_IN_A_FACTION);
     }
