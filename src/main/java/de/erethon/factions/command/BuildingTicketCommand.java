@@ -1,6 +1,7 @@
 package de.erethon.factions.command;
 
 import de.erethon.aergia.bedrock.chat.MessageUtil;
+import de.erethon.aergia.util.TeleportUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildingManager;
@@ -56,8 +57,7 @@ public class BuildingTicketCommand extends FCommand {
 
         if (args[1].equals("tp")) {
             Location tpLoc = buildSites.get(Integer.parseInt(args[2])).getInteractive();
-            MessageUtil.sendMessage(player, "&aTeleportiere zum Gebäude...");
-            player.teleportAsync(tpLoc);
+            TeleportUtil.teleportDirect(fPlayer, fPlayer.getEPlayer(), tpLoc);
             return;
         }
 
