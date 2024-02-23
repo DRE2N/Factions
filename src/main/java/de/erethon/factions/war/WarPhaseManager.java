@@ -75,7 +75,7 @@ public class WarPhaseManager extends EConfig {
         }
         if (currentStage.getWarPhase() != nextStage.getWarPhase()) {
             currentStage.getWarPhase().onChangeTo(nextStage.getWarPhase());
-            FBroadcastUtil.broadcastWar(nextStage.getWarPhase().getAnnouncementMessage());
+            nextStage.getWarPhase().announce();
         }
         currentStage = nextStage;
     }
@@ -252,6 +252,7 @@ public class WarPhaseManager extends EConfig {
         oldPhase.onChangeTo(warPhase);
         this.currentStage = new WarPhaseStage(DAY_DURATION, 0, warPhase);
         this.currentStage.setNextStage(currentStage);
+        warPhase.announce();
     }
 
     public void disableDebugMode() {

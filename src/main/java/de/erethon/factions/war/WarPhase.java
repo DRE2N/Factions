@@ -139,6 +139,10 @@ public enum WarPhase {
         FBroadcastUtil.broadcastWar(FMessage.WAR_END_WINNER, winner.getColoredLongName());
     }
 
+    public void announce() {
+        FBroadcastUtil.broadcastWar(announcementMessage);
+    }
+
     /* Getters */
 
     public boolean isAllowPvP() {
