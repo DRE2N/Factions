@@ -22,7 +22,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.ExplosionPrimeEvent;
+import org.bukkit.event.entity.EntityDropItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -181,8 +181,8 @@ public class WarListener implements Listener {
         crystal.addEnergy(20); // todo: Make energy configurable
     }
 
-    @EventHandler(ignoreCancelled = true)
-    public void onCrystalExplode(ExplosionPrimeEvent event) {
+    @EventHandler
+    public void onCrystalDrop(EntityDropItemEvent event) {
         CrystalWarObjective crystal = getCrystalObjective(event.getEntity());
         if (crystal == null) {
             return;
