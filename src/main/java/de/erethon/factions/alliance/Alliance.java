@@ -1,6 +1,7 @@
 package de.erethon.factions.alliance;
 
 import de.erethon.bedrock.misc.EnumUtil;
+import de.erethon.factions.building.attributes.FactionStatAttribute;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.FAccount;
 import de.erethon.factions.economy.FAccountDummy;
@@ -67,6 +68,11 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     protected Alliance(@NotNull File file) throws NumberFormatException {
         super(file);
+    }
+
+    @Override
+    protected void addDefaultAttributes() {
+        attributes.put("tax_rate", new FactionStatAttribute(1.0));
     }
 
     public void temporaryOccupy(@NotNull Region region) {

@@ -25,5 +25,11 @@ public interface FactionAttribute {
 
     default void addModifier(FactionAttributeModifier modifier) {
         getModifiers().add(modifier);
+        apply();
+    }
+
+    default void removeModifier(FactionAttributeModifier modifier) {
+        getModifiers().remove(modifier);
+        apply();
     }
 }

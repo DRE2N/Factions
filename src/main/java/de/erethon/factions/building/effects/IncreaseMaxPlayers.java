@@ -25,14 +25,12 @@ public class IncreaseMaxPlayers extends BuildingEffect {
 
     @Override
     public void apply() {
-        modifier = new FactionAttributeModifier(UUID.randomUUID(), amount, AttributeModifier.Operation.ADD_NUMBER);
-        maxPlayers.getModifiers().add(modifier);
-        maxPlayers.apply();
+        modifier = new FactionAttributeModifier(amount, AttributeModifier.Operation.ADD_NUMBER);
+        maxPlayers.addModifier(modifier);
     }
 
     @Override
     public void remove() {
-        maxPlayers.getModifiers().remove(modifier);
-        maxPlayers.apply();
+        maxPlayers.removeModifier(modifier);
     }
 }

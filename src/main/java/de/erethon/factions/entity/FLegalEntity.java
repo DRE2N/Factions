@@ -2,7 +2,9 @@ package de.erethon.factions.entity;
 
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.Factions;
-import de.erethon.factions.building.BuildSite;
+import de.erethon.factions.building.attributes.FactionAttribute;
+import de.erethon.factions.building.attributes.FactionAttributeModifier;
+import de.erethon.factions.building.attributes.FactionStatAttribute;
 import de.erethon.factions.data.FMessage;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -10,6 +12,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Fyreum
@@ -23,12 +27,14 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
     protected final int id;
     protected String name;
     protected String description;
+    protected final Map<String, FactionAttribute> attributes = new HashMap<>();
 
     public FLegalEntity(@NotNull File file, int id, @NotNull String name, @Nullable String description) {
         super(file, CONFIG_VERSION);
         this.id = id;
         this.name = name;
         this.description = description;
+        addDefaultAttributes(); // Initialize default attributes
     }
 
     /**
@@ -42,6 +48,10 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
         this.id = Integer.parseInt(file.getName().replace(".yml", ""));
         this.name = config.getString("name");
         this.description = config.getString("description");
+        addDefaultAttributes(); // Initialize default attributes
+    }
+
+    protected void addDefaultAttributes() {
     }
 
     /* Serialisation */
@@ -93,5 +103,42 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
 
     public void setDescription(@Nullable String description) {
         this.description = description;
+    }
+
+    public @NotNull Map<String, FactionAttribute> getAttributes() {
+        return attributes;
+    }
+
+    public void addModifier(FactionAttribute attribute, FactionAttributeModifier modifier) {
+        attribute.addModifier(modifier);
+    }
+
+    public void removeModifier(FactionAttribute attribute, FactionAttributeModifier modifier) {
+        attribute.removeModifier(modifier);
+    }
+
+    public void removeModifier(FactionAttributeModifier modifier) {
+        for (FactionAttribute attribute : attributes.values()) {
+            attribute.removeModifier(modifier);
+        }
+    }
+
+    public @Nullable FactionAttribute getAttribute(@NotNull String name) {
+        FactionAttribute attribute = attributes.get(name);
+        return attribute == null ? null : attribute.apply();
+    }
+
+    public FactionAttribute getOrCreateAttribute(@NotNull String name, double def) {
+        attributes.putIfAbsent(name, new FactionStatAttribute(def));
+        return attributes.get(name);
+    }
+
+    public double getAttributeValue(@NotNull String name) {
+        return getAttributeValue(name, 0d);
+    }
+
+    public double getAttributeValue(@NotNull String name, double def) {
+        FactionAttribute attribute = attributes.get(name);
+        return attribute == null ? def : attribute.getValue();
     }
 }

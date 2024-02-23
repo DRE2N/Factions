@@ -8,8 +8,6 @@ import de.erethon.factions.building.attributes.FactionAttributeModifier;
 import org.bukkit.attribute.AttributeModifier;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.UUID;
-
 public class AddHousing extends BuildingEffect {
 
     private final FactionAttributeModifier modifier;
@@ -17,8 +15,8 @@ public class AddHousing extends BuildingEffect {
 
     public AddHousing(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
-        attribute = faction.getAttribute("housing_" + data.getString("level"));
-        modifier = new FactionAttributeModifier(UUID.randomUUID(), data.getInt("amount", 0), AttributeModifier.Operation.ADD_NUMBER);
+        attribute = faction.getOrCreateAttribute("housing_" + data.getString("level"), 0.0);
+        modifier = new FactionAttributeModifier(data.getInt("amount", 0), AttributeModifier.Operation.ADD_NUMBER);
     }
 
     @Override

@@ -84,7 +84,6 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     /* Temporary */
     private final Set<BuildingEffect> buildingEffects = new HashSet<>();
     private final Set<BuildingEffect> tickingBuildingEffects = new HashSet<>();
-    private final Map<String, FactionAttribute> attributes = new HashMap<>();
     private final Set<String> additionalMemberPermissions = new HashSet<>();
     private FAccount fAccount;
     private FEconomy fEconomy;
@@ -112,17 +111,14 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         super(file);
     }
 
+    @Override
     protected void addDefaultAttributes() {
         attributes.put("max_players", new FactionStatAttribute(5));
         attributes.put("housing_peasant", new FactionStatAttribute(10));
         addPopulation(PopulationLevel.PEASANT, 5); // Let's start with something at least
     }
 
-    public void applyModifiers() {
-        for (FactionAttribute attribute : attributes.values()) {
-            attribute.apply();
-        }
-    }
+    /* Member handling */
 
     public void invitePlayer(@NotNull FPlayer fPlayer) {
         invitedPlayers.add(fPlayer);
@@ -170,8 +166,8 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
         if (isAdmin(fPlayer)) {
             if (members.isEmpty()) {
-                if (FPermissionUtil.isBypass(fPlayer.getPlayer())) {
-                    FLogger.FACTION.log("Admin '" + fPlayer.getUniqueId() + "' left the faction '" + name + "' but has bypass permission. Faction will not be disbanded.");
+                if (fPlayer.isBypass()) {
+                    FLogger.FACTION.log("Last player '" + fPlayer.getUniqueId() + "' left the faction '" + name + "' but has bypass permission. Faction will not be disbanded.");
                     return;
                 }
                 disband(FactionDisbandEvent.Reason.NO_MEMBERS_LEFT);
@@ -496,7 +492,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         for (Region region : regions) {
             amount += region.getLastClaimingPrice();
         }
-        return amount * plugin.getFConfig().getRegionPriceTaxRate();
+        return amount * plugin.getFConfig().getRegionPriceTaxRate() * alliance.getAttributeValue("tax_rate", 1.0);
     }
 
     public @Nullable ItemStack getFlag() {
@@ -702,42 +698,6 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public @NotNull Set<String> getAdditionalMemberPermissions() {
         return additionalMemberPermissions;
-    }
-
-    public @NotNull Map<String, FactionAttribute> getAttributes() {
-        return attributes;
-    }
-
-    public void addModifier(FactionAttribute attribute, FactionAttributeModifier modifier) {
-        attribute.addModifier(modifier);
-        applyModifiers();
-    }
-
-    public void removeModifier(FactionAttribute attribute, FactionAttributeModifier modifier) {
-        attribute.getModifiers().remove(modifier);
-        applyModifiers();
-    }
-
-    public void removeModifier(FactionAttributeModifier modifier) {
-        for (FactionAttribute attribute : attributes.values()) {
-            attribute.getModifiers().remove(modifier);
-        }
-        applyModifiers();
-    }
-
-    public @Nullable FactionAttribute getAttribute(@NotNull String name) {
-        FactionAttribute attribute = attributes.get(name);
-        return attribute == null ? null : attribute.apply();
-    }
-
-    public FactionAttribute getOrCreateStatAttribute(@NotNull String name) {
-        attributes.putIfAbsent(name, new FactionStatAttribute(0));
-        return attributes.get(name);
-    }
-
-    public double getAttributeValue(@NotNull String name) {
-        FactionAttribute attribute = attributes.get(name);
-        return attribute == null ? 0 : attribute.apply().getValue();
     }
 
     public @NotNull FAccount getFAccount() {
