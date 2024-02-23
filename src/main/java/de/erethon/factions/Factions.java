@@ -159,8 +159,7 @@ public final class Factions extends EPlugin {
         loadCommands();
         registerListeners();
         registerAergiaPlaceholders();
-        EntityType.customEntities.put("crystal_charge_carrier", Map.entry(this, CrystalChargeCarrier.class));
-        EntityType.customEntities.put("crystal_mob", Map.entry(this, CrystalMob.class));
+        registerCustomEntities();
     }
 
     public void initFolders() {
@@ -372,6 +371,11 @@ public final class Factions extends EPlugin {
             return;
         }
         chatPlaceholder.getHoverEventBuilder().removeHoverInfo(AERGIA_PLACEHOLDER_WEIGHT);
+    }
+
+    public void registerCustomEntities() {
+        EntityType.customEntities.put("crystal_charge_carrier", Map.entry(this, CrystalChargeCarrier.class));
+        EntityType.customEntities.put("crystal_mob", Map.entry(this, CrystalMob.class));
     }
 
     /* Tasks */

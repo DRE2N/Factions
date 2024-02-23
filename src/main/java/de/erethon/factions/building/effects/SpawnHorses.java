@@ -57,7 +57,7 @@ public class SpawnHorses extends BuildingEffect {
             FLogger.BUILDING.log("No horse spawn position found for building " + site.getBuilding().getName());
             return;
         }
-        Location loc = new Location(site.getInteractive().getWorld(), spawner.x(), spawner.y(), spawner.z());
+        Location loc = spawner.toLocation(site.getInteractive().getWorld());
         int horses = 0;
         for (LivingEntity livingEntity : loc.getNearbyEntitiesByType(Horse.class, checkRadius)) {
             if (livingEntity instanceof Horse horse && horse.getPersistentDataContainer().has(key)) {
