@@ -181,15 +181,6 @@ public class WarListener implements Listener {
         crystal.addEnergy(20); // todo: Make energy configurable
     }
 
-    @EventHandler
-    public void onCrystalDrop(EntityDropItemEvent event) {
-        CrystalWarObjective crystal = getCrystalObjective(event.getEntity());
-        if (crystal == null) {
-            return;
-        }
-        event.setCancelled(true);
-    }
-
     private CrystalWarObjective getCrystalObjective(org.bukkit.entity.Entity entity) {
         Region region = plugin.getRegionManager().getRegionByLocation(entity.getLocation());
         if (region == null) {

@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.monster.Slime;
@@ -23,6 +24,7 @@ public class CrystalMob extends Slime {
         syncAttributes = false;
         dataCrystal = EntityType.END_CRYSTAL.create(world);
         dataCrystal.setShowBottom(false);
+        drops.clear();
     }
 
     public CrystalMob(World world, double x, double y, double z) {
