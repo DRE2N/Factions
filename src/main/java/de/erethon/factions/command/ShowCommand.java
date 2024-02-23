@@ -45,7 +45,7 @@ public class ShowCommand extends FCommand {
                 faction.hasCurrentTaxDebt() ? " (" + faction.getFAccount().getFormatted(faction.getCurrentTaxDebt()) + ")" : ""));
         sender.sendMessage(FMessage.CMD_SHOW_CORE_REGION.message(faction.getCoreRegion().asComponent(fPlayer)));
         sender.sendMessage(FMessage.CMD_SHOW_ADMIN.message(getDisplayName(faction, faction.getAdmin())));
-        sender.sendMessage(FMessage.CMD_SHOW_MEMBERS.message(String.valueOf(faction.getMembers().size()), getMembersString(faction)));
+        sender.sendMessage(FMessage.CMD_SHOW_MEMBERS.message(faction.getMembers().size() + "/" + faction.getMaxMembers(), getMembersString(faction)));
     }
 
     private String getMembersString(Faction faction) {

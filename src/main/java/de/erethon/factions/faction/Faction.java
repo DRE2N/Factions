@@ -92,6 +92,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     protected Faction(@NotNull FPlayer admin, @NotNull Region coreRegion, int id, String name, String description) {
         super(new File(Factions.FACTIONS, id + ".yml"), id, name, description);
+        this.alliance = admin.getAlliance();
         this.admin = admin.getUniqueId();
         this.mods = new PlayerCollection();
         this.members = new PlayerCollection();
@@ -103,10 +104,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
         this.fStorage = new FStorage(this);
         this.fEconomy = new FEconomy(this, fStorage);
-        if (admin.hasAlliance()) {
-            alliance = admin.getAlliance();
-            alliance.addFaction(this);
-        }
+        this.alliance.addFaction(this);
         saveData();
     }
 
@@ -142,6 +140,8 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     public void playerJoin(@NotNull FPlayer fPlayer) {
         FException.throwIf(isMember(fPlayer), "The player '" + fPlayer.getLastName() + "' is already a member of the faction '" + name + "'",
                 FMessage.ERROR_TARGET_IS_ALREADY_IN_THIS_FACTION, fPlayer.getLastName(), name);
+        FException.throwIf(members.size() >= getMaxMembers(), "The faction '" + name + "' is already full",
+                FMessage.ERROR_FACTION_IS_FULL, name, String.valueOf(getMaxMembers()));
         FLogger.FACTION.log("Processing '" + fPlayer.getUniqueId() + "' joining faction '" + name + "'...");
         invitedPlayers.remove(fPlayer);
         members.add(fPlayer);
@@ -445,6 +445,10 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public boolean isMember(@NotNull FPlayer fPlayer) {
         return members.contains(fPlayer);
+    }
+
+    public int getMaxMembers() {
+        return (int) getAttributeValue("max_players");
     }
 
     public @NotNull Region getCoreRegion() {

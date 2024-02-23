@@ -229,6 +229,7 @@ error:
   chunkAlreadyARegion: "<red>The chunk is already part of a region."
   chunkOutsideTheRegion: "<red>The chunk is not within the region."
   debugModeNotEnabled: "<red>Debug mode is not enabled."
+  factionIsFull: "<red>The faction <gold><arg:0></gold> is already full."
   factionHasNotEnoughMoney: "<red>The faction needs <gold><arg:0></gold> to perform this action."
   factionNotFound: "<red>The faction <gold><arg:0></gold> could not be found."
   generic: "<red>An error occurred while performing this action."

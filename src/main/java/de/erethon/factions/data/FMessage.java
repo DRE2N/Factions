@@ -132,6 +132,7 @@ public enum FMessage implements Message {
     ERROR_CHUNK_ALREADY_A_REGION("error.chunkAlreadyARegion"),
     ERROR_CHUNK_OUTSIDE_THE_REGION("error.chunkOutsideTheRegion"),
     ERROR_DEBUG_MODE_NOT_ENABLED("error.debugModeNotEnabled"),
+    ERROR_FACTION_IS_FULL("error.factionIsFull"),
     ERROR_FACTION_HAS_NOT_ENOUGH_MONEY("error.factionHasNotEnoughMoney"),
     ERROR_FACTION_NOT_FOUND("error.factionNotFound"),
     ERROR_NAME_IN_USE("error.nameInUse"),
