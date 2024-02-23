@@ -57,6 +57,9 @@ public class BlockProtectionListener implements Listener {
     }
 
     private void forbidIfInProtectedTerritory(Cancellable event, Player player, Block block, FMessage message) {
+        if (player == null) { // Some events don't always have a player, such as the BlockIgniteEvent.
+            return;
+        }
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
         if (fPlayer.isBypassRaw()) {
             doBuildingChecks(player, block, event);
