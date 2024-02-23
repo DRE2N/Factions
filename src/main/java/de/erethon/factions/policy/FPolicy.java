@@ -1,13 +1,14 @@
-package de.erethon.factions.alliance;
+package de.erethon.factions.policy;
 
-import de.erethon.factions.alliance.policies.ReduceTaxes;
+import de.erethon.factions.policy.handlers.ReduceTaxes;
+import de.erethon.factions.entity.FLegalEntity;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Fyreum
  */
-public enum AlliancePolicy implements AlliancePolicyHandler {
+public enum FPolicy implements FPolicyHandler {
 
     REDUCE_TAXES(Component.translatable("factions.policy.reduceTaxes"), PolicyType.POSITIVE, new ReduceTaxes()),
 
@@ -15,22 +16,22 @@ public enum AlliancePolicy implements AlliancePolicyHandler {
 
     private final Component displayName;
     private final PolicyType type;
-    private final AlliancePolicyHandler handler;
+    private final FPolicyHandler handler;
 
-    AlliancePolicy(@NotNull Component displayName, @NotNull PolicyType type, @NotNull AlliancePolicyHandler handler) {
+    FPolicy(@NotNull Component displayName, @NotNull PolicyType type, @NotNull FPolicyHandler handler) {
         this.displayName = displayName;
         this.type = type;
         this.handler = handler;
     }
 
     @Override
-    public void apply(@NotNull Alliance alliance) {
-        handler.apply(alliance);
+    public void apply(@NotNull FLegalEntity entity) {
+        handler.apply(entity);
     }
 
     @Override
-    public void remove(@NotNull Alliance alliance) {
-        handler.remove(alliance);
+    public void remove(@NotNull FLegalEntity entity) {
+        handler.remove(entity);
     }
 
     /* Getters */

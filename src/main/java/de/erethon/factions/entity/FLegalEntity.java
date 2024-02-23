@@ -1,11 +1,14 @@
 package de.erethon.factions.entity;
 
 import de.erethon.bedrock.config.EConfig;
+import de.erethon.bedrock.misc.EnumUtil;
 import de.erethon.factions.Factions;
+import de.erethon.factions.policy.FPolicy;
 import de.erethon.factions.building.attributes.FactionAttribute;
 import de.erethon.factions.building.attributes.FactionAttributeModifier;
 import de.erethon.factions.building.attributes.FactionStatAttribute;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +31,7 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
     protected String name;
     protected String description;
     protected final Map<String, FactionAttribute> attributes = new HashMap<>();
+    protected final Map<FPolicy, Boolean> policies = new HashMap<>(); // boolean == forced by war
 
     public FLegalEntity(@NotNull File file, int id, @NotNull String name, @Nullable String description) {
         super(file, CONFIG_VERSION);
@@ -48,6 +52,20 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
         this.id = Integer.parseInt(file.getName().replace(".yml", ""));
         this.name = config.getString("name");
         this.description = config.getString("description");
+
+        for (String policyString : config.getStringList("policies")) {
+            String[] split = policyString.split(":");
+            String policyName = split[0];
+            boolean forcedByWar = split.length > 1 && Boolean.parseBoolean(split[1]);
+            FPolicy policy = EnumUtil.getEnumIgnoreCase(FPolicy.class, policyName);
+
+            if (policy == null) {
+                FLogger.WARN.log("FPolicy " + policyName + " not found for entity " + name);
+                continue;
+            }
+            policy.apply(this);
+            policies.put(policy, forcedByWar);
+        }
         addDefaultAttributes(); // Initialize default attributes
     }
 
@@ -141,4 +159,17 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
         FactionAttribute attribute = attributes.get(name);
         return attribute == null ? def : attribute.getValue();
     }
+
+    public @NotNull Map<FPolicy, Boolean> getPolicies() {
+        return policies;
+    }
+
+    public void addPolicy(@NotNull FPolicy policy, boolean forcedByWar) {
+        policies.put(policy, forcedByWar);
+    }
+
+    public void removePolicy(@NotNull FPolicy policy) {
+        policies.remove(policy);
+    }
+
 }
