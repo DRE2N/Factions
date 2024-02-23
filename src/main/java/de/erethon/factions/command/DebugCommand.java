@@ -3,6 +3,7 @@ package de.erethon.factions.command;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.war.objective.CrystalChargeCarrier;
+import de.erethon.factions.war.objective.CrystalMob;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -33,6 +34,12 @@ public class DebugCommand extends FCommand {
             Player player = (Player) sender;
             FPlayer fPlayer = getFPlayer(player);
             CrystalChargeCarrier carrier = new CrystalChargeCarrier(player.getWorld(), player.getLocation(), fPlayer.getCurrentRegion(), fPlayer.getAlliance());
+            return;
+        }
+        if (args[1].equalsIgnoreCase("spawncrystal")) {
+            Player player = (Player) sender;
+            CrystalMob crystalMob = new CrystalMob(player.getWorld(), player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ());
+            return;
         }
     }
 }

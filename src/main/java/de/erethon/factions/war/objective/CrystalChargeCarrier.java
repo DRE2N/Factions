@@ -43,6 +43,7 @@ public class CrystalChargeCarrier extends IronGolem {
     private Region region;
     private Alliance alliance;
 
+    // Required constructor for entity loading
     public CrystalChargeCarrier(EntityType<? extends IronGolem> type, Level world) {
         super(type, world);
     }

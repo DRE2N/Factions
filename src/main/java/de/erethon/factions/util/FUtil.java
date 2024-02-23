@@ -5,6 +5,9 @@ import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.Position;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -110,5 +113,11 @@ public class FUtil {
     @SuppressWarnings("UnstableApiUsage")
     public static String positionToString(Position position) {
         return position.x() + ";" + position.y() + ";" + position.z();
+    }
+
+    // This constructor is just so damn long, so let's put it here
+    // Note: If the fake type is not living, the client lags when attributes get updated
+    public static ClientboundAddEntityPacket getAddEntityPacketWithType(Entity entity, EntityType<?> type) {
+        return new ClientboundAddEntityPacket(entity.getId(), entity.getUUID(), entity.getX(), entity.getY(), entity.getZ(), entity.getXRot(), entity.getYRot(), type, 0, entity.getDeltaMovement(), entity.getYHeadRot(), entity);
     }
 }
