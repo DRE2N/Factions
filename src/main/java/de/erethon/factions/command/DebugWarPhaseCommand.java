@@ -35,9 +35,9 @@ public class DebugWarPhaseCommand extends FCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, String[] args) {
-        if (args.length == 1) {
-            List<String> completes = getTabList(WarPhase.values(), args[0]);
-            if ("none".startsWith(args[0].toLowerCase())) {
+        if (args.length == 2) {
+            List<String> completes = getTabList(WarPhase.values(), args[1]);
+            if ("none".startsWith(args[1].toLowerCase())) {
                 completes.add("none");
             }
             return completes;
