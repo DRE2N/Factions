@@ -59,7 +59,6 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
     protected TextDisplay energyDisplay;
     protected Location crystalLocation;
     protected Set<CrystalChargeCarrier> carriers = new HashSet<>();
-    protected Set<Chunk> carrierChunks = new HashSet<>();
 
     public CrystalWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
@@ -165,8 +164,6 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
         double finalLocationZ = locationZ;
         CompletableFuture<Chunk> chunkLoad = world.getChunkAtAsync(chunk.getX(), chunk.getZ());
         chunkLoad.thenAccept(c -> {
-            c.addPluginChunkTicket(plugin);
-            carrierChunks.add(c);
             CrystalChargeCarrier carrier = new CrystalChargeCarrier(world, new Location(world, finalLocationX, world.getHighestBlockYAt((int) finalLocationX, (int) finalLocationZ), finalLocationZ), region, alliance);
             carriers.add(carrier);
             Title title = Title.title(Component.empty(), Component.translatable("factions.war.carrier.spawn"));
@@ -221,7 +218,6 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
         for (CrystalChargeCarrier carrier : carriers) {
             carrier.remove(Entity.RemovalReason.DISCARDED);
         }
-        carrierChunks.forEach(c -> c.removePluginChunkTicket(plugin));
     }
 
     @Override

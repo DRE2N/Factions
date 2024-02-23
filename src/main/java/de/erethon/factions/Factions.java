@@ -34,8 +34,10 @@ import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.WarHistory;
 import de.erethon.factions.war.WarListener;
 import de.erethon.factions.war.WarPhaseManager;
+import de.erethon.factions.war.objective.CrystalChargeCarrier;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.minecraft.world.entity.EntityType;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
@@ -48,6 +50,7 @@ import java.io.File;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -155,6 +158,7 @@ public final class Factions extends EPlugin {
         loadCommands();
         registerListeners();
         registerAergiaPlaceholders();
+        EntityType.customEntities.put("crystal_charge_carrier", Map.entry(this, CrystalChargeCarrier.class));
     }
 
     public void initFolders() {

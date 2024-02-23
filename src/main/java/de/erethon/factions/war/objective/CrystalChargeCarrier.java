@@ -5,7 +5,9 @@ import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -28,6 +30,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 public class CrystalChargeCarrier extends IronGolem {
 
@@ -37,8 +40,12 @@ public class CrystalChargeCarrier extends IronGolem {
     public static final AttributeModifier CARRIER_BUFF = new AttributeModifier("factions-carrier-speed-buff", Factions.get().getFConfig().getCrystalCarrierSpeedBuff(), AttributeModifier.Operation.ADD_NUMBER);
 
     private final Factions plugin = Factions.get();
-    private final Region region;
-    private final Alliance alliance;
+    private Region region;
+    private Alliance alliance;
+
+    public CrystalChargeCarrier(EntityType<? extends IronGolem> type, Level world) {
+        super(type, world);
+    }
 
     public CrystalChargeCarrier(World world, Location location, Region region, Alliance alliance) {
         this(EntityType.IRON_GOLEM, ((CraftWorld) world).getHandle(), region, alliance, location.getX(), location.getY(), location.getZ());
@@ -51,6 +58,7 @@ public class CrystalChargeCarrier extends IronGolem {
         this.alliance = alliance;
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(plugin.getFConfig().getDefaultCrystalCarrierHealth());
         world.addFreshEntity(this);
+        setPersistenceRequired(true);
         getBukkitEntity().getPersistentDataContainer().set(CARRIER_KEY, PersistentDataType.BYTE, (byte) 1);
     }
 
@@ -67,12 +75,12 @@ public class CrystalChargeCarrier extends IronGolem {
     }
 
     private boolean isFactionEnemy(LivingEntity entity) {
+        if (region == null || alliance == null) { // Just in so we don't throw an entity ticking exception.
+            return false;
+        }
         if (entity instanceof Player player) {
             FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer((org.bukkit.entity.Player) player.getBukkitEntity());
-            assert region.getFaction() != null;
-            if (fPlayer.getRelation(alliance) == Relation.ENEMY) {
-                return true;
-            }
+            return region.getFaction() != null && fPlayer.getRelation(alliance) == Relation.ENEMY;
         }
         return false;
     }
@@ -106,6 +114,26 @@ public class CrystalChargeCarrier extends IronGolem {
             bukkitPlayer.getAttribute(Attribute.ADV_PHYSICAL).addTransientModifier(CARRIER_DEBUFF);
             bukkitPlayer.getAttribute(Attribute.ADV_MAGIC).addTransientModifier(CARRIER_DEBUFF);
             region.getRegionalWarTracker().addCrystalCarrier(bukkitPlayer);
+        }
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag nbt) {
+        super.readAdditionalSaveData(nbt);
+        region = plugin.getRegionManager().getRegionById(nbt.getInt("factions-region-id"));
+        alliance = plugin.getAllianceCache().getById(nbt.getInt("factions-alliance-id"));
+    }
+
+    @Override
+    public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
+        super.addAdditionalSaveData(nbt);
+        try { // Just in case the Factions side of things is broken.
+            nbt.putString("papyrus-entity-id", "crystal_charge_carrier");
+            nbt.putInt("factions-region-id", region.getId());
+            nbt.putInt("factions-alliance-id", alliance.getId());
+        } catch (Exception e) {
+            FLogger.WAR.log("Failed to save crystal charge carrier data at " + position().x + ", " + position().y + ", " + position().z);
+            e.printStackTrace();
         }
     }
 }
