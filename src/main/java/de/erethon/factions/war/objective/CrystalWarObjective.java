@@ -211,7 +211,6 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
         World world = crystalLocation.getWorld();
         crystal = new CrystalMob(world, crystalLocation.getX(), crystalLocation.getY(), crystalLocation.getZ());
         crystal.getBukkitEntity().getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name);
-        ((CraftWorld) world).addEntity(crystal, CreatureSpawnEvent.SpawnReason.CUSTOM);
         crystal.getBukkitEntity().addPassenger(energyDisplay = world.spawn(crystalLocation, TextDisplay.class, this::displayEnergy));
     }
 

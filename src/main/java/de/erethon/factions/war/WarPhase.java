@@ -58,7 +58,7 @@ public enum WarPhase {
                 onWarEnd();
             } else {
                 // openCapital: false -> true
-                foreachWarObjective(obj -> obj.getRegion().getType() != RegionType.CAPITAL, WarObjective::activate);
+                foreachWarObjective(obj -> obj.getRegion().getType() == RegionType.CAPITAL, WarObjective::activate);
             }
         }
     }
@@ -68,7 +68,7 @@ public enum WarPhase {
             foreachWarObjective(obj -> obj.getRegion().getType() != RegionType.CAPITAL, WarObjective::activate);
         }
         if (isOpenCapital()) {
-            foreachWarObjective(obj -> obj.getRegion().getType() != RegionType.CAPITAL, WarObjective::activate);
+            foreachWarObjective(obj -> obj.getRegion().getType() == RegionType.CAPITAL, WarObjective::activate);
         }
     }
 
