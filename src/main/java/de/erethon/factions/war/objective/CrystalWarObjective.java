@@ -1,6 +1,5 @@
 package de.erethon.factions.war.objective;
 
-import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
@@ -20,15 +19,17 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.EnderCrystal;
+import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R3.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_20_R3.util.CraftLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +54,7 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
     protected double energyLossForCarrierSpawn;
     /* Temporary */
     protected Alliance alliance;
-    protected EnderCrystal crystal;
+    protected CrystalMob crystal;
     protected double energy;
     protected double energyAtLastCarrierSpawn;
     protected TextDisplay energyDisplay;
@@ -117,13 +118,15 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
 
     @EventHandler
     private void onInteract(PlayerInteractEntityEvent event) {
-        if (event.getRightClicked() == crystal) {
-            Player player = event.getPlayer();
-            FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
-            if (player.getPersistentDataContainer().has(CrystalChargeCarrier.CARRIER_PLAYER_KEY) && fPlayer.getFaction().getRelation(alliance) != Relation.ENEMY) {
-                handleCarrierDeposit(player);
-            }
+        if (((CraftEntity) event.getRightClicked()).getHandle() != crystal) {
+            return;
         }
+        Player player = event.getPlayer();
+        FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
+        if (!player.getPersistentDataContainer().has(CrystalChargeCarrier.CARRIER_PLAYER_KEY) || fPlayer.getFaction().getRelation(alliance) == Relation.ENEMY) {
+            return;
+        }
+        handleCarrierDeposit(player);
     }
 
     @EventHandler
@@ -190,11 +193,11 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
             @Override
             public void run() {
                 if (i++ > 40) {
-                    energy += Math.min(energyGainPerCarrier, maxEnergy - energy);
+                    addEnergy(energyGainPerCarrier);
                     cancel();
                     return;
                 }
-                crystal.setBeamTarget(player.getLocation().add(0, 1, 0));
+                crystal.getDataCrystal().setBeamTarget(CraftLocation.toBlockPosition(player.getLocation().add(0, 1, 0)));
             }
         };
         animation.runTaskTimer(plugin, 0, 1);
@@ -206,15 +209,17 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
     public void activate() {
         super.activate();
         World world = crystalLocation.getWorld();
-        crystal = world.spawn(crystalLocation, EnderCrystal.class, c -> c.getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name));
-        crystal.addPassenger(energyDisplay = world.spawn(crystalLocation, TextDisplay.class, this::displayEnergy));
+        crystal = new CrystalMob(world, crystalLocation.getX(), crystalLocation.getY(), crystalLocation.getZ());
+        crystal.getBukkitEntity().getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name);
+        ((CraftWorld) world).addEntity(crystal, CreatureSpawnEvent.SpawnReason.CUSTOM);
+        crystal.getBukkitEntity().addPassenger(energyDisplay = world.spawn(crystalLocation, TextDisplay.class, this::displayEnergy));
     }
 
     @Override
     public void deactivate() {
         super.deactivate();
         energyDisplay.remove();
-        crystal.remove();
+        crystal.remove(Entity.RemovalReason.DISCARDED);
         for (CrystalChargeCarrier carrier : carriers) {
             carrier.remove(Entity.RemovalReason.DISCARDED);
         }
@@ -311,7 +316,7 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
         return this;
     }
 
-    public @Nullable EnderCrystal getCrystal() {
+    public @Nullable CrystalMob getCrystal() {
         return crystal;
     }
 }

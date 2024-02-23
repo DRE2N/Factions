@@ -57,4 +57,8 @@ public class CrystalMob extends Slime {
         super.addAdditionalSaveData(nbt);
         nbt.putString("papyrus-entity-id", "crystal_mob");
     }
+
+    public @NotNull EndCrystal getDataCrystal() {
+        return dataCrystal;
+    }
 }

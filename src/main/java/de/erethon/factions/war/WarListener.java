@@ -27,8 +27,8 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -195,15 +195,7 @@ public class WarListener implements Listener {
         if (region == null) {
             return null;
         }
-        Collection<CrystalWarObjective> crystals = region.getStructures(CrystalWarObjective.class).values();
-        if (crystals.isEmpty()) {
-            return null;
-        }
-        for (CrystalWarObjective current : crystals) {
-            if (entity.equals(current.getCrystal())) {
-                return current;
-            }
-        }
-        return null;
+        String name = entity.getPersistentDataContainer().get(WarObjective.NAME_KEY, PersistentDataType.STRING);
+        return name == null ? null : region.getStructure(name, CrystalWarObjective.class);
     }
 }
