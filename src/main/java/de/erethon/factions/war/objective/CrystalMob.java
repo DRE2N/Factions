@@ -20,12 +20,14 @@ public class CrystalMob extends Slime {
     // Required constructor for entity loading
     public CrystalMob(EntityType<? extends Slime> type, Level world) {
         super(type, world);
+        syncAttributes = false;
         dataCrystal = EntityType.END_CRYSTAL.create(world);
         dataCrystal.setShowBottom(false);
     }
 
     public CrystalMob(World world, double x, double y, double z) {
         this(EntityType.SLIME, ((CraftWorld) world).getHandle());
+        syncAttributes = false;
         Level level = ((CraftWorld) world).getHandle();
         setPos(x, y, z);
         setNoGravity(true);
