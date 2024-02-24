@@ -3,6 +3,8 @@ package de.erethon.factions.policy;
 import de.erethon.factions.policy.handlers.ReduceTaxes;
 import de.erethon.factions.entity.FLegalEntity;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -37,7 +39,7 @@ public enum FPolicy implements FPolicyHandler {
     /* Getters */
 
     public @NotNull Component getDisplayName() {
-        return displayName;
+        return displayName.color(type.getColor());
     }
 
     public @NotNull PolicyType getType() {
@@ -47,9 +49,19 @@ public enum FPolicy implements FPolicyHandler {
     /* Classes */
 
     public enum PolicyType {
-        POSITIVE,
-        NEGATIVE,
-        NEUTRAL
+        POSITIVE(NamedTextColor.GREEN),
+        NEGATIVE(NamedTextColor.RED),
+        NEUTRAL(NamedTextColor.GRAY);
+
+        public final TextColor color;
+
+        PolicyType(@NotNull TextColor color) {
+            this.color = color;
+        }
+
+        public @NotNull TextColor getColor() {
+            return color;
+        }
     }
 
 }

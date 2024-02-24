@@ -242,6 +242,8 @@ gui:
 placeholder:
   allianceDisplay: "<gold>Allianz</gold><dark_gray>:</dark_gray> <gray><arg:0>"
   factionDisplay: "<gold>Fraktion</gold><dark_gray>:</dark_gray> <gray><arg:0>"
+policy:
+  reduceTaxes: "Steuerreduzierung"
 protection:
   cannotAttack:
     capital: "<red>Du darfst nicht in dem Kapital von <gold><arg:0></gold> angreifen."

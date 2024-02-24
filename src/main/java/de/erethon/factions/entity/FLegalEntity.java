@@ -142,13 +142,12 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
     }
 
     public @Nullable FactionAttribute getAttribute(@NotNull String name) {
-        FactionAttribute attribute = attributes.get(name);
-        return attribute == null ? null : attribute.apply();
+        return attributes.get(name);
     }
 
     public FactionAttribute getOrCreateAttribute(@NotNull String name, double def) {
         attributes.putIfAbsent(name, new FactionStatAttribute(def));
-        return attributes.get(name);
+        return getAttribute(name);
     }
 
     public double getAttributeValue(@NotNull String name) {
