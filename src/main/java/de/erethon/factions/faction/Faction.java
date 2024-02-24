@@ -104,6 +104,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.fStorage = new FStorage(this);
         this.fEconomy = new FEconomy(this, fStorage);
         this.alliance.addFaction(this);
+        addPopulation(PopulationLevel.PEASANT, 5); // Let's start with something at least
         saveData();
     }
 
@@ -113,9 +114,9 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     @Override
     protected void addDefaultAttributes() {
+        super.addDefaultAttributes();
         attributes.put("max_players", new FactionStatAttribute(5));
         attributes.put("housing_peasant", new FactionStatAttribute(10));
-        addPopulation(PopulationLevel.PEASANT, 5); // Let's start with something at least
     }
 
     /* Member handling */

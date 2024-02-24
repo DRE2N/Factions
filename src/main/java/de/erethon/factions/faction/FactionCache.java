@@ -4,6 +4,7 @@ import de.erethon.aergia.util.BroadcastUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.entity.FEntityCache;
 import de.erethon.factions.event.FPlayerFactionLeaveEvent;
 import de.erethon.factions.event.FactionCreateEvent;
