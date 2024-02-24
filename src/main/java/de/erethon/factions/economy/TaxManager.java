@@ -45,6 +45,9 @@ public class TaxManager {
             faction.getEconomy().doEconomyCalculations();
             double amount = faction.calculateRegionTaxes();
 
+            if (amount <= 0) {
+                continue;
+            }
             if (fAccount.getBalance() > 0 && faction.getCurrentTaxDebt() > 0) {
                 if (fAccount.canAfford(faction.getCurrentTaxDebt())) {
                     fAccount.withdraw(faction.getCurrentTaxDebt());

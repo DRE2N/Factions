@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 public enum FPolicy implements FPolicyHandler {
 
     REDUCE_TAXES(Component.translatable("factions.policy.reduceTaxes"), PolicyType.POSITIVE, new ReduceTaxes()),
+    INCREASE_RESOURCE_PRODUCTION(Component.translatable("factions.policy.increaseResourceProduction"), PolicyType.POSITIVE, new ReduceTaxes()),
 
     ;
 

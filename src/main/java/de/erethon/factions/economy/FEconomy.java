@@ -43,8 +43,11 @@ public class FEconomy {
         for (Map.Entry<String, FactionAttribute> entry : faction.getAttributes().entrySet()) {
             if (entry.getValue() instanceof FactionResourceAttribute attribute) {
                 Resource resource = attribute.getResource();
-                attribute.apply(); // Just in case
-                double amount = attribute.getValue();
+
+                double factor = faction.getAlliance().getAttributeValue("production_rate", 1.0);
+                factor *= faction.getAttributeValue("production_rate", 1.0);
+                double amount = attribute.apply().getValue() * factor; // apply() just in case
+
                 storage.addResource(resource, (int) amount);
                 FLogger.ECONOMY.log("[" + faction.getName() + "] Received/Lost " + amount + " of " + resource.name());
             }

@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author Fyreum
@@ -128,27 +129,31 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
         return attributes;
     }
 
-    public void addModifier(FactionAttribute attribute, FactionAttributeModifier modifier) {
-        attribute.addModifier(modifier);
+    public void addAttribute(@NotNull String name, @NotNull FactionAttribute attribute) {
+        attributes.put(name, attribute);
     }
 
-    public void removeModifier(FactionAttribute attribute, FactionAttributeModifier modifier) {
-        attribute.removeModifier(modifier);
-    }
-
-    public void removeModifier(FactionAttributeModifier modifier) {
-        for (FactionAttribute attribute : attributes.values()) {
-            attribute.removeModifier(modifier);
-        }
+    public void removeAttribute(@NotNull String name) {
+        attributes.remove(name);
     }
 
     public @Nullable FactionAttribute getAttribute(@NotNull String name) {
         return attributes.get(name);
     }
 
-    public FactionAttribute getOrCreateAttribute(@NotNull String name, double def) {
+    public @NotNull FactionAttribute getOrCreateAttribute(@NotNull String name, double def) {
         attributes.putIfAbsent(name, new FactionStatAttribute(def));
         return getAttribute(name);
+    }
+
+    public @NotNull <T extends FactionAttribute> T getOrCreateAttribute(@NotNull String name, @NotNull Class<T> clazz, @NotNull Supplier<@NotNull T> def) {
+        FactionAttribute found = attributes.get(name);
+        if (!clazz.isInstance(found)) {
+            T attribute = def.get();
+            attributes.put(name, attribute);
+            return attribute;
+        }
+        return (T) found;
     }
 
     public double getAttributeValue(@NotNull String name) {
@@ -158,6 +163,12 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
     public double getAttributeValue(@NotNull String name, double def) {
         FactionAttribute attribute = attributes.get(name);
         return attribute == null ? def : attribute.getValue();
+    }
+
+    public void removeModifier(FactionAttributeModifier modifier) {
+        for (FactionAttribute attribute : attributes.values()) {
+            attribute.removeModifier(modifier);
+        }
     }
 
     public @NotNull Map<FPolicy, Boolean> getPolicies() {

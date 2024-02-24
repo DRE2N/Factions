@@ -386,11 +386,11 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     /* Getters and setters */
 
     @Override
-    public @Nullable Alliance getAlliance() {
+    public @NotNull Alliance getAlliance() {
         return alliance;
     }
 
-    public void setAlliance(@Nullable Alliance alliance) {
+    public void setAlliance(@NotNull Alliance alliance) {
         this.alliance = alliance;
     }
 

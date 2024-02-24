@@ -4,7 +4,11 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildingEffectData;
+import de.erethon.factions.building.attributes.FactionAttribute;
+import de.erethon.factions.building.attributes.FactionAttributeModifier;
+import de.erethon.factions.building.attributes.FactionResourceAttribute;
 import de.erethon.factions.economy.resource.Resource;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,7 +47,12 @@ public class ResourceProduction extends BuildingEffect {
 
     private void produce() {
         for (Map.Entry<Resource, Integer> entry : production.entrySet()) {
-            faction.getStorage().addResource(entry.getKey(), entry.getValue());
+            FactionResourceAttribute attribute = faction.getOrCreateAttribute(
+                    entry.getKey().name(),
+                    FactionResourceAttribute.class,
+                    () -> new FactionResourceAttribute(entry.getKey(), 0.0)
+            );
+            attribute.addModifier(new FactionAttributeModifier(entry.getValue(), AttributeModifier.Operation.ADD_NUMBER));
         }
     }
 

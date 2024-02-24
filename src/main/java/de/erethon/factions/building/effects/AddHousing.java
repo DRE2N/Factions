@@ -21,11 +21,11 @@ public class AddHousing extends BuildingEffect {
 
     @Override
     public void apply() {
-        faction.addModifier(attribute, modifier);
+        attribute.addModifier(modifier);
     }
 
     @Override
     public void remove() {
-        faction.removeModifier(attribute, modifier);
+        attribute.removeModifier(modifier);
     }
 }

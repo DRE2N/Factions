@@ -40,10 +40,10 @@ public class FStorage {
     public boolean addResource(@NotNull Resource resource, int amount) {
         int current = resources.getOrDefault(resource, 0);
         int limit = resourceLimits.getOrDefault(resource, 0);
-        if (current + amount > limit) {
+        if (current >= limit) {
             return false;
         }
-        resources.put(resource, current + amount);
+        resources.put(resource, Math.min(current + amount, limit));
         return true;
     }
 
