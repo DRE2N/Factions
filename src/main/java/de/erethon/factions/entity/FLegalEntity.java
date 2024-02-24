@@ -77,6 +77,7 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
     public void saveData() {
         config.set("name", name);
         config.set("description", description);
+        config.set("policies", policies.keySet().stream().map(policy -> policy.name() + ":" + policies.get(policy)).toList());
         serializeData();
         save();
     }
