@@ -243,6 +243,9 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
     }
 
     private void displayPercentage(TextDisplay display, double max, double current) {
+        if (display == null) {
+            return;
+        }
         int colored = (int) (20 * (1 / max * current));
         display.text(Component.text().color(NamedTextColor.BLUE).content("█".repeat(colored))
                 .append(Component.text().color(NamedTextColor.GRAY).content("█".repeat(20 - colored))).build());
