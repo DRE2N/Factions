@@ -34,8 +34,9 @@ import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.WarHistory;
 import de.erethon.factions.war.WarListener;
 import de.erethon.factions.war.WarPhaseManager;
-import de.erethon.factions.war.objective.CrystalChargeCarrier;
-import de.erethon.factions.war.objective.CrystalMob;
+import de.erethon.factions.war.entities.CrystalChargeCarrier;
+import de.erethon.factions.war.entities.CrystalMob;
+import de.erethon.factions.war.entities.ObjectiveGuard;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.minecraft.world.entity.EntityType;
@@ -376,6 +377,7 @@ public final class Factions extends EPlugin {
     public void registerCustomEntities() {
         EntityType.customEntities.put("crystal_charge_carrier", Map.entry(this, CrystalChargeCarrier.class));
         EntityType.customEntities.put("crystal_mob", Map.entry(this, CrystalMob.class));
+        EntityType.customEntities.put("objective_guard", Map.entry(this, ObjectiveGuard.class));
     }
 
     /* Tasks */

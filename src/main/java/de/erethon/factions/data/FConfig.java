@@ -75,6 +75,7 @@ public class FConfig extends EConfig {
     private int warCapturedRegionsPerBattle = 5;
     private double warScorePerKill = 5.0;
     private double defaultCrystalCarrierHealth = 2000;
+    private double defaultObjectiveGuardHealth = 200;
     private double crystalCarrierSpeedBuff = 0.3;
 
     public FConfig(File file) {
@@ -115,6 +116,7 @@ public class FConfig extends EConfig {
         initValue("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
         initValue("war.scorePerKill", warScorePerKill);
         initValue("war.defaultCrystalCarrierHealth", defaultCrystalCarrierHealth);
+        initValue("war.defaultObjectiveGuardHealth", defaultObjectiveGuardHealth);
         initValue("war.crystalCarrierSpeedBuff", crystalCarrierSpeedBuff);
         for (Resource resource : Resource.values()) {
             initValue("defaultResourceLimits." + resource.name(), 512);
@@ -163,6 +165,7 @@ public class FConfig extends EConfig {
         warCapturedRegionsPerBattle = config.getInt("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
         warScorePerKill = config.getDouble("war.scorePerKill", warScorePerKill);
         defaultCrystalCarrierHealth = config.getDouble("war.defaultCrystalCarrierHealth", defaultCrystalCarrierHealth);
+        defaultObjectiveGuardHealth = config.getDouble("war.defaultObjectiveGuardHealth", defaultObjectiveGuardHealth);
         crystalCarrierSpeedBuff = config.getDouble("war.crystalCarrierSpeedBuff", crystalCarrierSpeedBuff);
         defaultResourceLimits = new HashMap<>();
         for (Resource resource : Resource.values()) {
@@ -356,6 +359,10 @@ public class FConfig extends EConfig {
         return defaultCrystalCarrierHealth;
     }
 
+    public double getDefaultObjectiveGuardHealth() {
+        return defaultObjectiveGuardHealth;
+    }
+
     public double getCrystalCarrierSpeedBuff() {
         return crystalCarrierSpeedBuff;
     }
@@ -363,4 +370,5 @@ public class FConfig extends EConfig {
     public @Nullable Set<Building> getRequiredBuildings(@NotNull FactionLevel factionLevel) {
         return requiredBuildings.get(factionLevel);
     }
+
 }

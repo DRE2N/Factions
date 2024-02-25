@@ -1,4 +1,4 @@
-package de.erethon.factions.war.objective;
+package de.erethon.factions.war.entities;
 
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
