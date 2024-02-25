@@ -17,6 +17,7 @@ public enum FPolicy implements FPolicyHandler {
     REDUCE_TAXES(Component.translatable("factions.policy.reduceTaxes"), PolicyType.POSITIVE, PolicyScope.FACTION, new ReduceTaxes()),
     INCREASE_RESOURCE_PRODUCTION(Component.translatable("factions.policy.increaseResourceProduction"), PolicyType.POSITIVE, PolicyScope.FACTION, new IncreaseProduction()),
     CRYSTAL_CARRIER_HEALTH_BUFF(Component.translatable("factions.policy.crystalCarrierHealthBuff"), PolicyType.POSITIVE, PolicyScope.ALLIANCE, new SimplePolicy()),
+    CRYSTAL_DAMAGE_REDUCTION(Component.translatable("factions.policy.crystalDamageReduction"), PolicyType.POSITIVE, PolicyScope.ALLIANCE, new SimplePolicy()),
 
     ;
 

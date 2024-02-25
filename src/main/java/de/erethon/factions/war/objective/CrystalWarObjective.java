@@ -4,6 +4,7 @@ import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.policy.FPolicy;
 import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FBroadcastUtil;
@@ -102,7 +103,11 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
     }
 
     public void damage(double damage, @Nullable FPlayer damager) {
-        removeEnergy(energyLossOnDamage, damager);
+        double energyLoss = energyLossOnDamage;
+        if (alliance.getPolicies().getOrDefault(FPolicy.CRYSTAL_DAMAGE_REDUCTION, false)) {
+            energyLoss *= 0.5;
+        }
+        removeEnergy(energyLoss, damager);
     }
 
     public void destroy(@Nullable FPlayer damager) {
