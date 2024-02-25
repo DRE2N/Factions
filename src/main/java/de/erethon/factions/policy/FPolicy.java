@@ -1,5 +1,6 @@
 package de.erethon.factions.policy;
 
+import de.erethon.factions.policy.handlers.IncreaseProduction;
 import de.erethon.factions.policy.handlers.ReduceTaxes;
 import de.erethon.factions.entity.FLegalEntity;
 import net.kyori.adventure.text.Component;
@@ -13,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public enum FPolicy implements FPolicyHandler {
 
     REDUCE_TAXES(Component.translatable("factions.policy.reduceTaxes"), PolicyType.POSITIVE, new ReduceTaxes()),
-    INCREASE_RESOURCE_PRODUCTION(Component.translatable("factions.policy.increaseResourceProduction"), PolicyType.POSITIVE, new ReduceTaxes()),
+    INCREASE_RESOURCE_PRODUCTION(Component.translatable("factions.policy.increaseResourceProduction"), PolicyType.POSITIVE, new IncreaseProduction()),
 
     ;
 
