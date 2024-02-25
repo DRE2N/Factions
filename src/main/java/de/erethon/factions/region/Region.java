@@ -119,7 +119,7 @@ public class Region extends FLegalEntity {
         ConfigurationSection structuresSection = config.getConfigurationSection("structures");
         if (structuresSection != null) {
             for (String key : structuresSection.getKeys(false)) {
-                ConfigurationSection section = config.getConfigurationSection(key);
+                ConfigurationSection section = structuresSection.getConfigurationSection(key);
                 if (section == null) {
                     FLogger.ERROR.log("Unknown region structure in region '" + id + "' found: " + key);
                     continue;
