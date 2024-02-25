@@ -41,8 +41,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -75,6 +79,10 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     private Inventory inventory;
     private final Set<BuildingEffect> buildingEffects = new HashSet<>();
     private final Set<ItemStack> buildingStorage = new HashSet<>();
+
+    private final Set<ItemStack> inputItems = new HashSet<>();
+    private final Set<ItemStack> outputItems = new HashSet<>();
+    private final Set<Position> chestPositions = new HashSet<>();
 
     private UUID progressHoloUUID = null;
 
@@ -504,6 +512,14 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         return inventory;
     }
 
+    public Set<ItemStack> getInputItems() {
+        return inputItems;
+    }
+
+    public Set<ItemStack> getOutputItems() {
+        return outputItems;
+    }
+
     public Set<BuildingEffect> getEffects() {
         return buildingEffects;
     }
@@ -631,6 +647,26 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                 namedPositions.put(id, FUtil.parsePosition(getString("namedPositions." + id)));
             }
         }
+        if (contains("chestPositions")) {
+            for (String id : getStringList("chestPositions")) {
+                chestPositions.add(FUtil.parsePosition(id));
+            }
+        }
+        if (contains("buildingStorage")) {
+            for (String id : getStringList("buildingStorage")) {
+                buildingStorage.add(ItemStack.deserializeBytes(Base64.getDecoder().decode(id)));
+            }
+        }
+        if (contains("inputItems")) {
+            for (String id : getStringList("inputItems")) {
+                inputItems.add(ItemStack.deserializeBytes(Base64.getDecoder().decode(id)));
+            }
+        }
+        if (contains("outputItems")) {
+            for (String id : getStringList("outputItems")) {
+                outputItems.add(ItemStack.deserializeBytes(Base64.getDecoder().decode(id)));
+            }
+        }
         region.getBuildSites().add(this);
         if (!finished) {
             scheduleProgressUpdate();
@@ -665,6 +701,24 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         for (Map.Entry<String, Position> entry : namedPositions.entrySet()) {
             set("namedPositions." + entry.getKey(), FUtil.positionToString(entry.getValue()));
         }
+        List<String> positions = new ArrayList<>();
+        for (Position position : chestPositions) {
+            positions.add(FUtil.positionToString(position));
+        }
+        set("chestPositions", positions);
+        List<String> items = new ArrayList<>();
+        for (ItemStack stack : buildingStorage) {
+            items.add(java.util.Base64.getEncoder().encodeToString(stack.serializeAsBytes()));
+        }
+        set("buildingStorage", items);
+        for (ItemStack stack : inputItems) {
+            items.add(java.util.Base64.getEncoder().encodeToString(stack.serializeAsBytes()));
+        }
+        set("inputItems", items);
+        for (ItemStack stack : outputItems) {
+            items.add(java.util.Base64.getEncoder().encodeToString(stack.serializeAsBytes()));
+        }
+        set("outputItems", items);
         super.save(file);
     }
 }
