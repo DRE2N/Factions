@@ -122,7 +122,9 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     public void onQuit(PlayerQuitEvent event) {
         bypass = isBypassRaw();
         if (hasFaction()) {
-            player.removeAttachment(permissionAttachment);
+            if (permissionAttachment != null) {
+                player.removeAttachment(permissionAttachment);
+            }
         }
     }
 
