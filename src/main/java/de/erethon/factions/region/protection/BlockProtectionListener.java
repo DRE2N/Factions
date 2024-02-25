@@ -103,6 +103,9 @@ public class BlockProtectionListener implements Listener {
 
     private void doBuildingChecks(Player player, Block block, Cancellable event) {
         Chunk chunk = block.getChunk();
+        if (plugin.getBuildSiteCache().get(chunk.getChunkKey()) == null) {
+            return;
+        }
         plugin.getBuildSiteCache().get(chunk.getChunkKey()).forEach(building -> {
             if (building.isInBuildSite(block.getLocation())) {
                 if (event instanceof BlockPlaceEvent) {
