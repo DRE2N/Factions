@@ -75,8 +75,11 @@ public class ObjectiveGuard extends Vindicator {
         ServerLevel level = ((CraftWorld) world).getHandle();
         setPos(x, y, z);
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(plugin.getFConfig().getDefaultObjectiveGuardHealth());
-        if (alliance.getPolicies().getOrDefault(FPolicy.STRONGER_OBJECTIVE_GUARDS, false)) {
+        if (alliance.getPolicies().containsKey(FPolicy.STRONGER_OBJECTIVE_GUARDS)) {
             getAttribute(Attributes.MAX_HEALTH).setBaseValue(getMaxHealth() * 1.5);
+        }
+        if (alliance.getPolicies().containsKey(FPolicy.OBJECTIVE_GUARDS_REGEN)) {
+            getAttribute(Attributes.STAT_HEALTHREGEN).setBaseValue(0.1);
         }
         setHealth(getMaxHealth());
         createPlayerStuff(level);

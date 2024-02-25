@@ -19,6 +19,7 @@ public enum FPolicy implements FPolicyHandler {
     CRYSTAL_CARRIER_HEALTH_BUFF(Component.translatable("factions.policy.crystalCarrierHealthBuff"), PolicyType.POSITIVE, PolicyScope.ALLIANCE, new SimplePolicy()),
     CRYSTAL_DAMAGE_REDUCTION(Component.translatable("factions.policy.crystalDamageReduction"), PolicyType.POSITIVE, PolicyScope.ALLIANCE, new SimplePolicy()),
     STRONGER_OBJECTIVE_GUARDS(Component.translatable("factions.policy.strongerObjectiveGuards"), PolicyType.POSITIVE, PolicyScope.ALLIANCE, new SimplePolicy()),
+    OBJECTIVE_GUARDS_REGEN(Component.translatable("factions.policy.objectiveGuardsRegen"), PolicyType.POSITIVE, PolicyScope.FACTION, new SimplePolicy()),
 
     ;
 
