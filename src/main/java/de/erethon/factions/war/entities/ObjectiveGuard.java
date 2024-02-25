@@ -57,7 +57,7 @@ public class ObjectiveGuard extends Vindicator {
     private Region region;
     private RegionStructure structure;
 
-    protected ObjectiveGuard(EntityType<? extends Vindicator> type, Level world) {
+    public ObjectiveGuard(EntityType<? extends Vindicator> type, Level world) {
         super(type, world);
         createPlayerStuff((ServerLevel) world);
     }
