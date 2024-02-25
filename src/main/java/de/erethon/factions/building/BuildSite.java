@@ -343,6 +343,16 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         return blockList;
     }
 
+    public Set<String> getMissingSections() {
+        Set<String> result = new HashSet<>();
+        for (String section : building.getRequiredSections()) {
+            if (sections.stream().noneMatch(buildSiteSection -> buildSiteSection.name().equalsIgnoreCase(section))) {
+                result.add(section);
+            }
+        }
+        return result;
+    }
+
     public @Nullable Inventory createInventoryFromStorage() {
         if (interactive.getBlock().getType() != Material.CHEST) {
             return null;

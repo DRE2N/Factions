@@ -6,8 +6,10 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildingManager;
 import de.erethon.factions.command.logic.FCommand;
+import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.util.FUtil;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -35,9 +37,12 @@ public class BuildingTicketCommand extends FCommand {
         Player player = (Player) sender;
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
         Region region = fPlayer.getLastRegion();
+        if (region == null) {
+            MessageUtil.sendMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
+            return;
+        }
         List<String> tickets = new ArrayList<>();
         List<BuildSite> buildSites = plugin.getBuildingManager().getBuildingTickets();
-        MessageUtil.log("Args: " + args.length);
         if (args.length == 1) {
             int i = 0;
             for (BuildSite site : buildSites) {
@@ -65,6 +70,10 @@ public class BuildingTicketCommand extends FCommand {
             BuildSite site = buildingManager.getBuildSite(player.getLocation(), region);
             if (site == null || site.isFinished()) {
                 MessageUtil.sendMessage(player, "&cDu stehst nicht in einem unfertigen Gebäude.");
+                return;
+            }
+            if (!site.getMissingSections().isEmpty()) {
+                MessageUtil.sendMessage(player, "&cEs fehlen folgende Sektionen: " + FUtil.stringArrayToString(site.getMissingSections().toArray(new String[0])));
                 return;
             }
             site.finishBuilding();
@@ -98,6 +107,13 @@ public class BuildingTicketCommand extends FCommand {
             MessageUtil.sendMessage(player, "&aDas Gebäude wurde erfolgreich abgelehnt.\n&aNachricht: &7&o" + msg);
             MessageUtil.log(player.getName() + " denied a BuildSite ticket for " + site.getBuilding().getName() + " in " + site.getRegion().getName());
         }
+    }
 
+    @Override
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
+        if (args.length == 1) {
+            return List.of("tp", "accept", "deny");
+        }
+        return super.onTabComplete(sender, args);
     }
 }

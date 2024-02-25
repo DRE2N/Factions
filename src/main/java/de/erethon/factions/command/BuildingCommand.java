@@ -22,6 +22,7 @@ public class BuildingCommand extends FCommand {
         setMaxArgs(3);
         setFUsage("/f building");
         setDescription("...");
+        addSubCommand(new BuildingSectionCommand());
     }
 
     @Override

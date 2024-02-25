@@ -58,6 +58,12 @@ cmd:
   authorised:
     added: "<green>You have granted permission to faction <dark_green><arg:0></dark_green> to build on the territory of <dark_green><arg:1></dark_green>."
     removed: "<green>You have revoked permission from faction <dark_green><arg:0></dark_green> to build on the territory of <dark_green><arg:1></dark_green>."
+  building:
+    section:
+      created: "<green>You have added section <dark_green><arg:0></dark_green> to the build site."
+      deleted: "<green>You have removed section <dark_green><arg:0></dark_green> from the build site."
+      list: "<green>Sections<dark_gray>:<gray> <arg:0>"
+      renamed: "<green>You have renamed section <dark_green><arg:0></dark_green> to <dark_green><arg:1></dark_green>."
   createWarFlag:
     success: "<green>A war flag has been added to war object <dark_green><arg:0></dark_green>."
   decline:
@@ -236,6 +242,7 @@ error:
   nameInUse: "<red>The name <gold><arg:0></gold> is already in use."
   nameIsForbidden: "<red>This faction name is not allowed."
   noBannerItemInHand: "<red>You must hold a banner in your hand to perform this action."
+  noBuildSite: "<red>No build site found at your location."
   noFHome: "<red>Your faction does not have a home set. Use /f sethome to set one."
   noPermission: "<red>You do not have permission to perform this action."
   noSelection: "<red>You must make a selection to perform this action."
@@ -258,6 +265,8 @@ error:
   regionTypeNotFound: "<red>The region type <gold><arg:0></gold> could not be found."
   regionsAlreadyNeighbours: "<red>The regions <gold><arg:0></gold> and <gold><arg:1></gold> are already neighbors."
   regionsAreNotNeighbours: "<red>The regions <gold><arg:0></gold> and <gold><arg:1></gold> are not neighbors."
+  sectionExists: "<red>The section <gold><arg:0></gold> already exists in this build site."
+  sectionNotFound: "<red>The section <gold><arg:0></gold> could not be found."
   selectionInDifferentRegions: "<red>The selections must be within the same region."
   senderIsNoPlayer: "<red>You must be a player to perform this action."
   targetIsAlreadyAdmin: "<red>The player <gold><arg:0></gold> is already an admin of faction <gold><arg:1></gold>."

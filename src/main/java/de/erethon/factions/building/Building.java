@@ -67,6 +67,7 @@ public class Building {
     private Biome requiredBiome;
     private List<String> requiredBuildings = new ArrayList<>(); // String with ids because the other buildings might not be loaded yet.
     private final Set<BuildingEffectData> effects = new HashSet<>();
+    private final Set<String> requiredSections = new HashSet<>();
     Material icon;
 
     public Building(@NotNull File file) {
@@ -357,6 +358,18 @@ public class Building {
         return requiredBuildings;
     }
 
+    public @NotNull Set<RegionType> getRequiredRegionTypes() {
+        return requiredRegionTypes;
+    }
+
+    public @NotNull Biome getRequiredBiome() {
+        return requiredBiome;
+    }
+
+    public @NotNull Set<String> getRequiredSections() {
+        return requiredSections;
+    }
+
     public @NotNull String getId() {
         return id;
     }
@@ -406,6 +419,9 @@ public class Building {
         }
         if (config.contains("requiredBuildings")) {
             requiredBuildings = config.getStringList("requiredBuildings");
+        }
+        if (config.contains("requiredSections")) {
+            requiredSections.addAll(config.getStringList("requiredSections"));
         }
         if (config.contains("icon")) {
             Material material = Material.getMaterial(config.getString("icon"));

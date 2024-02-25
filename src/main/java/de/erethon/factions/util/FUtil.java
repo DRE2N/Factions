@@ -87,6 +87,14 @@ public class FUtil {
         return regionContainsAABB(region, new LazyChunk(pos1.blockX() >> 4, pos1.blockZ() >> 4), new LazyChunk(pos2.blockX() >> 4, pos2.blockZ() >> 4));
     }
 
+    public static String stringArrayToString(@NotNull String[] strings) {
+        StringBuilder builder = new StringBuilder();
+        for (String string : strings) {
+            builder.append(string).append(", ");
+        }
+        return builder.toString().trim();
+    }
+
     public static boolean regionContainsAABB(@NotNull Region region, @NotNull LazyChunk pos1, @NotNull LazyChunk pos2) {
         if (pos1.equals(pos2)) {
             return region.getChunks().contains(pos1);
