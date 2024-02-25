@@ -24,6 +24,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.craftbukkit.v1_20_R3.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_20_R3.util.CraftLocation;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
@@ -216,7 +217,11 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
         World world = crystalLocation.getWorld();
         crystal = new CrystalMob(world, crystalLocation.getX(), crystalLocation.getY(), crystalLocation.getZ());
         crystal.getBukkitEntity().getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name);
-        crystal.getBukkitEntity().addPassenger(energyDisplay = world.spawn(crystalLocation, TextDisplay.class, this::displayEnergy));
+        crystal.getBukkitEntity().addPassenger(energyDisplay = world.spawn(crystalLocation, TextDisplay.class, display -> {
+            display.setBillboard(Display.Billboard.VERTICAL);
+            display.setPersistent(false);
+            displayEnergy(display);
+        }));
     }
 
     @Override
