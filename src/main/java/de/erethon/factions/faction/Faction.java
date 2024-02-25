@@ -40,6 +40,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -271,7 +272,12 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         if (alliance != null) {
             hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.alliance", "factions.faction.hover.alliance", alliance.getColoredName()));
         }
-        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.admin", "factions.faction.hover.admin", Component.text(Bukkit.getOfflinePlayer(admin).getName())));
+        String adminName = "Mysterious Admin";
+        OfflinePlayer admin = Bukkit.getOfflinePlayer(this.admin);
+        if (admin.getName() != null) {
+            adminName = admin.getName();
+        }
+        hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.admin", "factions.faction.hover.admin", Component.text(adminName)));
         hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.coreRegion", "factions.faction.hover.coreRegion", coreRegion.asComponent(viewer)));
         hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.level", "factions.faction.hover.level", level.displayName()));
         hoverMessage = hoverMessage.appendNewline().append(Component.translatable("factions.faction.hover.members", "factions.faction.hover.members", Component.text(String.valueOf(members.size()))));
