@@ -49,13 +49,13 @@ import java.util.concurrent.CompletableFuture;
 public class CrystalWarObjective extends TickingWarObjective implements Listener {
 
     /* Settings */
+    protected Alliance alliance;
     protected double energyLossOnDamage;
     protected double energyLossPerInterval;
     protected double maxEnergy;
     protected double energyGainPerCarrier;
     protected double energyLossForCarrierSpawn;
     /* Temporary */
-    protected Alliance alliance;
     protected CrystalMob crystal;
     protected double energy;
     protected double energyAtLastCarrierSpawn;
@@ -73,6 +73,7 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
 
     @Override
     protected void load(@NotNull ConfigurationSection config) {
+        this.alliance = plugin.getAllianceCache().getById(config.getInt("alliance", -1));
         this.energyLossOnDamage = config.getDouble("energyLossOnDamage", 10.0);
         this.energyLossPerInterval = config.getDouble("energyLossPerInterval", 1.0);
         this.maxEnergy = config.getDouble("maxEnergy", 600.0);
@@ -105,7 +106,7 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
 
     public void damage(double damage, @Nullable FPlayer damager) {
         double energyLoss = energyLossOnDamage;
-        if (alliance.getPolicies().getOrDefault(FPolicy.CRYSTAL_DAMAGE_REDUCTION, false)) {
+        if (alliance != null && alliance.getPolicies().containsKey(FPolicy.CRYSTAL_DAMAGE_REDUCTION)) {
             energyLoss *= 0.5;
         }
         removeEnergy(energyLoss, damager);
@@ -261,9 +262,12 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
     @Override
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> serialized = super.serialize();
+        serialized.put("alliance", alliance);
         serialized.put("energyLossOnDamage", energyLossOnDamage);
         serialized.put("energyLossPerInterval", energyLossPerInterval);
         serialized.put("maxEnergy", maxEnergy);
+        serialized.put("energyGainPerCarrier", energyGainPerCarrier);
+        serialized.put("energyLossForCarrierSpawn", energyLossForCarrierSpawn);
         return serialized;
     }
 
