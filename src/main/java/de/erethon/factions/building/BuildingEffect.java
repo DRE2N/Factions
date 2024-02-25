@@ -5,6 +5,7 @@ import de.erethon.factions.player.FPlayer;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,6 +44,9 @@ public class BuildingEffect {
     }
 
     public void onPlaceBlockRegion(FPlayer player, Block block, Cancellable event) {
+    }
+
+    public void onEntityKill(FPlayer player, EntityDeathEvent event) {
     }
 
     public void onEnter(FPlayer player) {

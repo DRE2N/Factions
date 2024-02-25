@@ -2,6 +2,7 @@ package de.erethon.factions.region.protection;
 
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
+import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
@@ -19,6 +20,7 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.entity.LingeringPotionSplashEvent;
 import org.bukkit.event.entity.PlayerLeashEntityEvent;
@@ -86,6 +88,23 @@ public class EntityProtectionListener implements Listener {
     public void onEntityTame(EntityTameEvent event) {
         if (event.getOwner() instanceof Player player) {
             forbidIfInProtectedTerritory(event, player, event.getEntity(), FMessage.PROTECTION_CANNOT_TAME_FACTION);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onEntityDeath(EntityDeathEvent event) {
+        // Don't need to do any protection here because that is already handled in the EntityDamageByEntityEvent
+        Region region = plugin.getRegionManager().getRegionByChunk(event.getEntity().getChunk());
+        if (region == null) {
+            return;
+        }
+        Player killer = event.getEntity().getKiller();
+        if (killer == null) {
+            return;
+        }
+        FPlayer fKiller = plugin.getFPlayerCache().getByPlayer(killer);
+        for (BuildSite site : plugin.getBuildSiteCache().get(event.getEntity().getChunk().getChunkKey())) {
+            site.onEntityDeath(fKiller, event);
         }
     }
 
