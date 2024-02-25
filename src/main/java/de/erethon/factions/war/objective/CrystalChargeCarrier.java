@@ -4,6 +4,7 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.policy.FPolicy;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
@@ -58,6 +59,9 @@ public class CrystalChargeCarrier extends IronGolem {
         this.region = region;
         this.alliance = alliance;
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(plugin.getFConfig().getDefaultCrystalCarrierHealth());
+        if (alliance.getPolicies().getOrDefault(FPolicy.CRYSTAL_CARRIER_HEALTH_BUFF, false)) {
+            getAttribute(Attributes.MAX_HEALTH).setBaseValue(getAttribute(Attributes.MAX_HEALTH).getBaseValue() * 1.2);
+        }
         world.addFreshEntity(this);
         setPersistenceRequired(true);
         getBukkitEntity().getPersistentDataContainer().set(CARRIER_KEY, PersistentDataType.BYTE, (byte) 1);
