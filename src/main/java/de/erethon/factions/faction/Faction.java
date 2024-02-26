@@ -265,7 +265,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     }
 
     @Override
-    public Component asComponent(FEntity viewer) {
+    public @NotNull Component asComponent(@NotNull FEntity viewer) {
         Component component = Component.text(getName());
         Component hoverMessage = Component.translatable("factions.faction.hover.header", Component.text(getName()));
         hoverMessage = hoverMessage.append(Component.translatable("factions.faction.hover.header", Component.text(getName()))); // Workaround for weird hover issue

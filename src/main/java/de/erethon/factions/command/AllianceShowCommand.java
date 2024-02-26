@@ -6,11 +6,16 @@ import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FLegalEntity;
+import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Fyreum
@@ -46,11 +51,20 @@ public class AllianceShowCommand extends FCommand {
     }
 
     private Component getFactionsComponent(Alliance alliance, FPlayer player) {
-        Component component = Component.empty();
-        for (FLegalEntity faction : alliance.getFactions()) {
-            component = component.append(faction.asComponent(player)).append(Component.text(", "));
+        if (alliance.getFactions().isEmpty()) {
+            return Component.empty();
         }
-        return component;
+        List<Faction> factions = alliance.getFactions().stream().sorted(Comparator.comparing(FLegalEntity::getName)).toList();
+        Component component = Component.empty();
+        int i = 0;
+
+        while (true) {
+            component = component.append(factions.get(i).asComponent(player));
+            if (++i >= factions.size()) {
+                return component;
+            }
+            component = component.append(Component.text(", "));
+        }
     }
 
     @Override

@@ -374,7 +374,7 @@ public class Region extends FLegalEntity {
     }
 
     @Override
-    public Component asComponent(FEntity viewer) {
+    public @NotNull Component asComponent(@NotNull FEntity viewer) {
         Component component = Component.text(getName());
         Component hoverMessage = Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName()));
         hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName())));

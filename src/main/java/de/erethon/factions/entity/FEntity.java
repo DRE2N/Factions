@@ -33,6 +33,6 @@ public interface FEntity extends ForwardingAudience {
         return hasFaction() ? getFaction().getDisplayShortName() : (hasAlliance() ? getAlliance().getDisplayShortName() : FMessage.GENERAL_LONER.getMessage());
     }
 
-    Component asComponent(FEntity viewer);
+    @NotNull Component asComponent(@NotNull FEntity viewer);
 
 }

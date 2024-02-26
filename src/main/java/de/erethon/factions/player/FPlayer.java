@@ -162,7 +162,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     }
 
     @Override
-    public Component asComponent(FEntity viewer) {
+    public @NotNull Component asComponent(@NotNull FEntity viewer) {
         Component component = Component.text(getDisplayName());
         Component hoverMessage = getAllianceTag();
         hoverMessage = hoverMessage.appendNewline().append(Component.text(getDisplayMembership(), getRelation(viewer).getColor()));
