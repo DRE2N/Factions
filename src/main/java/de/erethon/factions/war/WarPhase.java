@@ -28,7 +28,8 @@ public enum WarPhase {
     CAPITAL(FMessage.WAR_PHASE_CAPITAL_DISPLAY_NAME, FMessage.WAR_PHASE_CAPITAL_ANNOUNCEMENT),
     REGULAR(FMessage.WAR_PHASE_REGULAR_DISPLAY_NAME, FMessage.WAR_PHASE_REGULAR_ANNOUNCEMENT),
     SCORING(FMessage.WAR_PHASE_SCORING_DISPLAY_NAME, FMessage.WAR_PHASE_SCORING_ANNOUNCEMENT),
-    PEACE(FMessage.WAR_PHASE_PEACE_DISPLAY_NAME, FMessage.WAR_PHASE_PEACE_ANNOUNCEMENT);
+    PEACE(FMessage.WAR_PHASE_PEACE_DISPLAY_NAME, FMessage.WAR_PHASE_PEACE_ANNOUNCEMENT),
+    UNDEFINED(FMessage.WAR_PHASE_UNDEFINED_DISPLAY_NAME, FMessage.WAR_PHASE_UNDEFINED_ANNOUNCEMENT); // do not use as an actual phase
 
     private final Factions plugin = Factions.get();
     private final FMessage displayName, announcementMessage;
@@ -60,15 +61,6 @@ public enum WarPhase {
                 // openCapital: false -> true
                 foreachWarObjective(obj -> obj.getRegion().getType() == RegionType.CAPITAL, WarObjective::activate);
             }
-        }
-    }
-
-    public void initialize() {
-        if (isAllowPvP()) {
-            foreachWarObjective(obj -> obj.getRegion().getType() != RegionType.CAPITAL, WarObjective::activate);
-        }
-        if (isOpenCapital()) {
-            foreachWarObjective(obj -> obj.getRegion().getType() == RegionType.CAPITAL, WarObjective::activate);
         }
     }
 
@@ -146,7 +138,7 @@ public enum WarPhase {
     /* Getters */
 
     public boolean isAllowPvP() {
-        return this != PEACE;
+        return this != PEACE && this != UNDEFINED;
     }
 
     public boolean isOpenCapital() {

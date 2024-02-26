@@ -4,7 +4,7 @@ import de.erethon.aergia.util.DateUtil;
 import de.erethon.aergia.util.TickUtil;
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.Factions;
-import de.erethon.factions.util.FBroadcastUtil;
+import de.erethon.factions.event.WarPhaseChangeEvent;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FUtil;
 import de.erethon.factions.war.task.PhaseSwitchTask;
@@ -73,9 +73,13 @@ public class WarPhaseManager extends EConfig {
             incrementCurrentDay();
             nextStage = getFirstStageOfTheDay();
         }
-        if (currentStage.getWarPhase() != nextStage.getWarPhase()) {
-            currentStage.getWarPhase().onChangeTo(nextStage.getWarPhase());
-            nextStage.getWarPhase().announce();
+        WarPhase currentPhase = currentStage.getWarPhase();
+        WarPhase nextPhase = nextStage.getWarPhase();
+
+        if (currentPhase != nextPhase) {
+            currentPhase.onChangeTo(nextPhase);
+            new WarPhaseChangeEvent(currentPhase, nextPhase).callEvent();
+            nextPhase.announce();
         }
         currentStage = nextStage;
     }
@@ -87,7 +91,8 @@ public class WarPhaseManager extends EConfig {
         while (currentStage != null && currentStage.getFullDuration() < currentProgress) {
             currentStage = currentStage.getNextStage();
         }
-        currentStage.getWarPhase().initialize();
+        WarPhase.UNDEFINED.onChangeTo(currentStage.getWarPhase());
+        new WarPhaseChangeEvent(WarPhase.UNDEFINED, currentStage.getWarPhase()).callEvent();
     }
 
     void incrementCurrentDay() {
