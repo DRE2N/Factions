@@ -499,7 +499,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         for (Region region : regions) {
             amount += region.getLastClaimingPrice();
         }
-        return amount * plugin.getFConfig().getRegionPriceTaxRate() * alliance.getAttributeValue("tax_rate", 1.0);
+        return amount * plugin.getFConfig().getRegionPriceTaxRate() * getAttributeValue("tax_rate", 1.0);
     }
 
     public @Nullable ItemStack getFlag() {
@@ -753,6 +753,19 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
             poll.closePoll();
         }
         HandlerList.unregisterAll(poll);
+    }
+
+    @Override
+    public double getAttributeValue(@NotNull String name, double def) {
+        double value = alliance.getAttributeValue(name, def);
+        FactionAttribute attribute = getAttribute(name);
+        if (attribute == null) {
+            return value;
+        }
+        for (FactionAttributeModifier modifier : attribute.getModifiers()) {
+            value = modifier.apply(value);
+        }
+        return value;
     }
 
     /* Object methods */

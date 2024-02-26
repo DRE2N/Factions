@@ -1,5 +1,7 @@
 package de.erethon.factions.building.attributes;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +25,7 @@ public abstract class AbstractFactionAttribute implements FactionAttribute {
     }
 
     @Override
-    public FactionAttribute apply() {
+    public @NotNull FactionAttribute apply() {
         double newValue = baseValue;
         for (FactionAttributeModifier modifier : modifiers) {
             newValue = modifier.apply(newValue);

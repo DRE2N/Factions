@@ -1,7 +1,5 @@
 package de.erethon.factions.economy;
 
-import de.erethon.factions.building.BuildSite;
-import de.erethon.factions.building.Building;
 import de.erethon.factions.building.attributes.FactionAttribute;
 import de.erethon.factions.building.attributes.FactionResourceAttribute;
 import de.erethon.factions.economy.population.HappinessModifier;
@@ -44,8 +42,7 @@ public class FEconomy {
             if (entry.getValue() instanceof FactionResourceAttribute attribute) {
                 Resource resource = attribute.getResource();
 
-                double factor = faction.getAlliance().getAttributeValue("production_rate", 1.0);
-                factor *= faction.getAttributeValue("production_rate", 1.0);
+                double factor = faction.getAttributeValue("production_rate", 1.0);
                 double amount = attribute.apply().getValue() * factor; // apply() just in case
 
                 storage.addResource(resource, (int) amount);

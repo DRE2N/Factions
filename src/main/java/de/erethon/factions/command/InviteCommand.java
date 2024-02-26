@@ -34,7 +34,7 @@ public class InviteCommand extends FCommand {
         } else {
             faction = getFaction(fPlayer);
         }
-        double maxPlayers = faction.getAttribute("max_players").getValue();
+        double maxPlayers = faction.getAttributeValue("max_players");
         int members = faction.getMembers().size();
         if (maxPlayers <= members) {
             MessageUtil.sendTranslatable(sender, "factions.error.max_players", Component.text(members), Component.text(maxPlayers));

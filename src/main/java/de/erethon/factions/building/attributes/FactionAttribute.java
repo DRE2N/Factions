@@ -1,5 +1,7 @@
 package de.erethon.factions.building.attributes;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Set;
 
 /**
@@ -17,7 +19,7 @@ public interface FactionAttribute {
     /**
      * @return the attribute with all modifiers applied
      */
-    FactionAttribute apply();
+    @NotNull FactionAttribute apply();
 
     double getBaseValue();
 
