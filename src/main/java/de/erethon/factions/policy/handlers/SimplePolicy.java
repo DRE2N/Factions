@@ -5,6 +5,9 @@ import de.erethon.factions.policy.FPolicyHandler;
 import org.jetbrains.annotations.NotNull;
 
 public class SimplePolicy implements FPolicyHandler {
+
+    public static final SimplePolicy INSTANCE = new SimplePolicy();
+
     @Override
     public void apply(@NotNull FLegalEntity entity) {
     }
