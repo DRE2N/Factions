@@ -62,6 +62,7 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
     protected TextDisplay energyDisplay;
     protected Location crystalLocation;
     protected Set<CrystalChargeCarrier> carriers = new HashSet<>();
+    protected boolean defenderCrystal;
 
     public CrystalWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
@@ -97,7 +98,7 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
 
     @Override
     public void tick() {
-        removeEnergy(energyLossPerInterval, null);
+        removeEnergy(defenderCrystal ? energyLossPerInterval : energyLossPerInterval * 1.25, null);
         if (energy - energyAtLastCarrierSpawn >= energyLossForCarrierSpawn) {
             spawnCrystalCarrier();
             energyAtLastCarrierSpawn = energy;
@@ -334,5 +335,13 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
 
     public @Nullable CrystalMob getCrystal() {
         return crystal;
+    }
+
+    public boolean isDefenderCrystal() {
+        return defenderCrystal;
+    }
+
+    public void setDefenderCrystal(boolean defenderCrystal) {
+        this.defenderCrystal = defenderCrystal;
     }
 }

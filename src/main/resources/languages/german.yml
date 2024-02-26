@@ -317,4 +317,7 @@ war:
     peace:
       announcement: "<dark_green>Der Krieg ist vorübergehend beendet. Kriegsgebiete können nicht mehr umkämpft werden und PvP ist <red>deaktiviert</red>."
       displayName: "Frieden"
+    undefined:
+      announcement: "<gray>Die Kriegsphase wurde noch nicht definiert."
+      displayName: "Unbekannt"
   prefix: "<dark_gray><b>[ <dark_red>KRIEG</dark_red> ]</b></dark_gray><gray> <arg:0>"

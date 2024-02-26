@@ -433,4 +433,7 @@ war:
     peace:
       announcement: "<dark_green>The war has temporarily ceased. War zones cannot be contested anymore and PvP is <red>disabled</red>.</dark_green>"
       displayName: "Peace"
+    undefined:
+      announcement: "<gray>The war phase has not been defined yet."
+      displayName: "Undefined"
   prefix: "<dark_gray><b>[ <dark_red>WAR</dark_red> ]</b></dark_gray><gray> <arg:0>"

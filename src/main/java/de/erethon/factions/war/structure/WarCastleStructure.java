@@ -1,5 +1,6 @@
 package de.erethon.factions.war.structure;
 
+import de.erethon.factions.event.WarPhaseChangeEvent;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
@@ -7,8 +8,10 @@ import de.erethon.factions.region.schematic.RegionSchematic;
 import de.erethon.factions.region.schematic.RestoreProcess;
 import de.erethon.factions.region.schematic.RestoreProcessImpl;
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.war.objective.CrystalWarObjective;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.util.TriState;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
@@ -30,6 +33,7 @@ public class WarCastleStructure extends RegionStructure implements Listener {
 
     protected RegionSchematic schematic;
     private RestoreProcess restoreProcess;
+    private CrystalWarObjective crystalObjective;
 
     public WarCastleStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
@@ -75,6 +79,19 @@ public class WarCastleStructure extends RegionStructure implements Listener {
         }
     }
 
+    @EventHandler
+    public void onWarPhaseChange(WarPhaseChangeEvent event) {
+        if (event.getOldPhase().isAllowPvP() != event.getNewPhase().isAllowPvP()) {
+            if (event.getOldPhase().isAllowPvP()) {
+                // PvP: true -> false
+                crystalObjective.deactivate();
+            } else {
+                // PvP: false -> true
+                crystalObjective.activate();
+            }
+        }
+    }
+
     /* Serialization */
 
     @Override
@@ -91,6 +108,22 @@ public class WarCastleStructure extends RegionStructure implements Listener {
             return;
         }
         this.restoreProcess = new RestoreProcessImpl(region.getWorld(), getMinPosition(), schematic);
+        ConfigurationSection section = config.getConfigurationSection("crystalObjective");
+        if (section == null) {
+            section = config.createSection("crystalObjective");
+        }
+        if (!section.contains("minPosition") || !section.contains("maxPosition")) {
+            // Initialize default crystal position
+            int radius = 3;
+            int centerX = xRange.getMinimumInteger() + xRange.getMaximumInteger() / 2,
+                    centerZ = zRange.getMinimumInteger() + zRange.getMaximumInteger() / 2;
+
+            section.set("minPosition", Map.of("x", centerX - radius, "y", yRange.getMinimumInteger(), "z", centerZ - radius));
+            section.set("maxPosition", Map.of("x", centerX + radius, "y", yRange.getMinimumInteger() + radius, "z", centerZ + radius));
+        }
+        this.crystalObjective = new CrystalWarObjective(region, section);
+        this.crystalObjective.setDefenderCrystal(true);
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     @Override
@@ -99,6 +132,7 @@ public class WarCastleStructure extends RegionStructure implements Listener {
         if (schematic != null) {
             serialized.put("schematic", schematic.getName());
         }
+        serialized.put("crystalObjective", crystalObjective.serialize());
         return serialized;
     }
 
@@ -120,4 +154,7 @@ public class WarCastleStructure extends RegionStructure implements Listener {
         this.restoreProcess = restoreProcess;
     }
 
+    public @NotNull CrystalWarObjective getCrystalObjective() {
+        return crystalObjective;
+    }
 }

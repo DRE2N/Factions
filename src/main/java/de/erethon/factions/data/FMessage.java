@@ -278,6 +278,8 @@ public enum FMessage implements Message {
     WAR_PHASE_SCORING_DISPLAY_NAME("war.phase.scoring.displayName"),
     WAR_PHASE_PEACE_ANNOUNCEMENT("war.phase.peace.announcement"),
     WAR_PHASE_PEACE_DISPLAY_NAME("war.phase.peace.displayName"),
+    WAR_PHASE_UNDEFINED_DISPLAY_NAME("war.phase.undefined.displayName"),
+    WAR_PHASE_UNDEFINED_ANNOUNCEMENT("war.phase.undefined.announcement"),
     WAR_PREFIX("war.prefix"),
     ;
 
