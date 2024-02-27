@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * @author Malfrador
  */
-public record FactionAttributeModifier(@NotNull UUID uuid, double modifier, @NotNull AttributeModifier.Operation operation) {
+public record FactionAttributeModifier(@NotNull UUID uuid, double modifier, @NotNull AttributeModifier.Operation operation) implements Comparable<FactionAttributeModifier> {
 
     public FactionAttributeModifier(double modifier, @NotNull AttributeModifier.Operation operation) {
         this(UUID.randomUUID(), modifier, operation);
@@ -34,6 +34,11 @@ public record FactionAttributeModifier(@NotNull UUID uuid, double modifier, @Not
         if (obj == this) return true;
         if (!(obj instanceof FactionAttributeModifier other)) return false;
         return uuid.equals(other.uuid);
+    }
+
+    @Override
+    public int compareTo(@NotNull FactionAttributeModifier o) {
+        return Integer.compare(operation.ordinal(), o.operation.ordinal());
     }
 }
 

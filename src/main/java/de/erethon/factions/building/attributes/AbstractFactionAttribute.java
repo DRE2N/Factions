@@ -2,15 +2,15 @@ package de.erethon.factions.building.attributes;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author Fyreum
  */
 public abstract class AbstractFactionAttribute implements FactionAttribute {
 
-    protected final Set<FactionAttributeModifier> modifiers = new HashSet<>();
+    protected final Set<FactionAttributeModifier> modifiers = new TreeSet<>();
     protected final double baseValue;
     protected double value;
 
