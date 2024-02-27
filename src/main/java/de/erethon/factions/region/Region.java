@@ -2,11 +2,14 @@ package de.erethon.factions.region;
 
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.building.BuildSite;
+import de.erethon.factions.building.attributes.FactionAttribute;
+import de.erethon.factions.building.attributes.FactionAttributeModifier;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.faction.Faction;
+import de.erethon.factions.policy.FPolicy;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FUtil;
 import de.erethon.factions.war.RegionalWarTracker;
@@ -404,12 +407,39 @@ public class Region extends FLegalEntity {
                 if (player.getFaction() == null) {
                     return;
                 }
-                if (player.getFaction() == owner || player.getFaction().getAlliance() == alliance) {
+                if (player.getFaction().getAlliance() == alliance) {
                     players.add(player.getPlayer());
                 }
             }
         });
         return players;
+    }
+
+    @Override
+    public double getAttributeValue(@NotNull String name, double def) {
+        FactionAttribute attribute = getAttribute(name);
+        if (alliance == null) {
+            return attribute == null ? def : attribute.getValue();
+        }
+        double value = (owner == null ? alliance : owner).getAttributeValue(name, def);
+        if (attribute == null) {
+            return value;
+        }
+        for (FactionAttributeModifier modifier : attribute.getModifiers()) {
+            value = modifier.apply(value);
+        }
+        return value;
+    }
+
+    @Override
+    public boolean hasPolicy(@NotNull FPolicy policy) {
+        if (alliance != null && alliance.hasPolicy(policy)) {
+            return true;
+        }
+        if (owner != null && owner.hasPolicy(policy)) {
+            return true;
+        }
+        return super.hasPolicy(policy);
     }
 
     /* Object methods */

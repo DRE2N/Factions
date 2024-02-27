@@ -175,6 +175,10 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
         return policies;
     }
 
+    public boolean hasPolicy(@NotNull FPolicy policy) {
+        return policies.containsKey(policy);
+    }
+
     public void addPolicy(@NotNull FPolicy policy, boolean forcedByWar) {
         policies.put(policy, forcedByWar);
     }

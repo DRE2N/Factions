@@ -59,7 +59,7 @@ public class CrystalChargeCarrier extends IronGolem {
         this.region = region;
         this.alliance = alliance;
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(plugin.getFConfig().getDefaultCrystalCarrierHealth());
-        if (alliance.getPolicies().containsKey(FPolicy.CRYSTAL_CARRIER_HEALTH_BUFF)) {
+        if (alliance.hasPolicy(FPolicy.CRYSTAL_CARRIER_HEALTH_BUFF)) {
             getAttribute(Attributes.MAX_HEALTH).setBaseValue(getAttribute(Attributes.MAX_HEALTH).getBaseValue() * 1.2);
         }
         world.addFreshEntity(this);

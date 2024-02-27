@@ -25,6 +25,7 @@ import de.erethon.factions.entity.ShortableNamed;
 import de.erethon.factions.event.FPlayerFactionLeaveEvent;
 import de.erethon.factions.event.FactionDisbandEvent;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.policy.FPolicy;
 import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.PollContainer;
 import de.erethon.factions.region.Region;
@@ -766,6 +767,11 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
             value = modifier.apply(value);
         }
         return value;
+    }
+
+    @Override
+    public boolean hasPolicy(@NotNull FPolicy policy) {
+        return alliance.hasPolicy(policy) || super.hasPolicy(policy);
     }
 
     /* Object methods */

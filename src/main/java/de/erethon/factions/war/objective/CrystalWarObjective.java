@@ -107,7 +107,7 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
 
     public void damage(double damage, @Nullable FPlayer damager) {
         double energyLoss = energyLossOnDamage;
-        if (alliance != null && alliance.getPolicies().containsKey(FPolicy.CRYSTAL_DAMAGE_REDUCTION)) {
+        if (alliance != null && alliance.hasPolicy(FPolicy.CRYSTAL_DAMAGE_REDUCTION)) {
             energyLoss *= 0.5;
         }
         removeEnergy(energyLoss, damager);
