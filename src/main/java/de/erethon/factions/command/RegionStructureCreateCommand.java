@@ -9,8 +9,8 @@ import de.erethon.factions.region.RegionStructure;
 import de.erethon.factions.war.structure.ResourceStructure;
 import de.erethon.factions.war.structure.WarCastleStructure;
 import de.erethon.factions.util.FUtil;
-import de.erethon.factions.war.objective.CrystalWarObjective;
-import de.erethon.factions.war.objective.OccupyWarObjective;
+import de.erethon.factions.war.structure.CrystalWarStructure;
+import de.erethon.factions.war.structure.OccupyWarStructure;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -55,8 +55,8 @@ public class RegionStructureCreateCommand extends FCommand {
         ConfigurationSection config = createConfig(args);
         RegionStructure structure = switch (args[1].toLowerCase()) {
             case "castle" -> new WarCastleStructure(region, config, pos1, pos2);
-            case "crystal" -> new CrystalWarObjective(region, config, pos1, pos2).setAlliance(fPlayer.getAlliance());
-            case "occupy" -> new OccupyWarObjective(region, config, pos1, pos2);
+            case "crystal" -> new CrystalWarStructure(region, config, pos1, pos2).setAlliance(fPlayer.getAlliance());
+            case "occupy" -> new OccupyWarStructure(region, config, pos1, pos2);
             case "resource" -> new ResourceStructure(region, config, pos1, pos2);
             default -> throw new CommandFailedException(FMessage.ERROR_REGION_STRUCTURE_TYPE_NOT_FOUND, args[1]);
         };

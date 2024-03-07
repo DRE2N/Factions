@@ -1,4 +1,4 @@
-package de.erethon.factions.war.objective;
+package de.erethon.factions.war.structure;
 
 import de.erethon.aergia.util.TickUtil;
 import de.erethon.factions.player.FPlayer;
@@ -14,16 +14,16 @@ import java.util.Map;
 /**
  * @author Fyreum
  */
-public abstract class TickingWarObjective extends WarObjective {
+public abstract class TickingWarStructure extends WarStructure {
 
     protected long tickInterval;
     protected BukkitTask task;
 
-    public TickingWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public TickingWarStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
     }
 
-    public TickingWarObjective(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+    public TickingWarStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
     }
 
@@ -66,14 +66,4 @@ public abstract class TickingWarObjective extends WarObjective {
         return task != null;
     }
 
-    /* Sub classes */
-
-    public static abstract class Builder<THIS extends Builder<THIS, TYPE>, TYPE extends WarObjective> extends WarObjectiveBuilder<THIS, TYPE> {
-
-        public @NotNull THIS tickInterval(long tickInterval) {
-            data.set("tickInterval", tickInterval);
-            return (THIS) this;
-        }
-
-    }
 }

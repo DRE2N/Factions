@@ -1,11 +1,10 @@
-package de.erethon.factions.war.objective;
+package de.erethon.factions.war.structure;
 
 import de.erethon.aergia.util.TickUtil;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
-import de.erethon.factions.war.structure.FlagStructure;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
@@ -22,7 +21,7 @@ import java.util.Set;
 /**
  * @author Fyreum
  */
-public class OccupyWarObjective extends TickingWarObjective {
+public class OccupyWarStructure extends TickingWarStructure {
 
     /* Settings */
     protected long occupyDuration;
@@ -38,11 +37,11 @@ public class OccupyWarObjective extends TickingWarObjective {
     protected int currentOccupiedProgress = 0;
     protected BossBar bossBar;
 
-    public OccupyWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public OccupyWarStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
     }
 
-    public OccupyWarObjective(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+    public OccupyWarStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
     }
 
@@ -334,38 +333,4 @@ public class OccupyWarObjective extends TickingWarObjective {
         this.currentOccupiedProgress = score;
     }
 
-    /* Sub classes */
-
-    public static class Builder extends TickingWarObjective.Builder<Builder, OccupyWarObjective> {
-
-        public @NotNull Builder occupyDuration(long occupyDuration) {
-            data.set("occupyDuration", occupyDuration);
-            return this;
-        }
-
-        public @NotNull Builder occupiedInterval(long occupiedInterval) {
-            data.set("occupiedInterval", occupiedInterval);
-            return this;
-        }
-
-        public @NotNull Builder warProgressDecline(long warProgressDecline) {
-            data.set("warProgressDecline", warProgressDecline);
-            return this;
-        }
-
-        public @NotNull Builder warProgressDeclineContested(long warProgressDeclineContested) {
-            data.set("warProgressDeclineContested", warProgressDeclineContested);
-            return this;
-        }
-
-        public @NotNull Builder warProgressPerOccupiedInterval(long warProgressPerOccupiedInterval) {
-            data.set("warProgressPerOccupiedInterval", warProgressPerOccupiedInterval);
-            return this;
-        }
-
-        @Override
-        public @NotNull OccupyWarObjective build(@NotNull Region region) {
-            return new OccupyWarObjective(region, data);
-        }
-    }
 }

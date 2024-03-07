@@ -24,7 +24,7 @@ import de.erethon.factions.ui.UIFactionsListener;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FPermissionUtil;
 import de.erethon.factions.war.WarStats;
-import de.erethon.factions.war.objective.WarObjective;
+import de.erethon.factions.war.structure.WarStructure;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -69,7 +69,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     private long lastFactionJoinDate;
     private WarStats warStats;
     /* Functionality */
-    private final Set<WarObjective> activeWarObjectives = new HashSet<>();
+    private final Set<WarStructure> activeWarStructures = new HashSet<>();
     private final AutomatedChunkManager automatedChunkManager = new AutomatedChunkManager(this);
     private Region lastRegion;
     private Location pos1, pos2;
@@ -365,12 +365,12 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         return warStats;
     }
 
-    public @NotNull Set<WarObjective> getActiveWarObjectives() {
-        return activeWarObjectives;
+    public @NotNull Set<WarStructure> getActiveWarObjectives() {
+        return activeWarStructures;
     }
 
     public boolean hasActiveWarObjectives() {
-        return !activeWarObjectives.isEmpty();
+        return !activeWarStructures.isEmpty();
     }
 
     public @NotNull AutomatedChunkManager getAutomatedChunkManager() {

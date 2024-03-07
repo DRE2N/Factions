@@ -2,7 +2,7 @@
  */
 plugins {
     `java-library`
-    id("io.papermc.paperweight.userdev") version "1.5.3"
+    id("io.papermc.paperweight.userdev") version "1.5.11"
     id("xyz.jpenilla.run-paper") version "1.0.6" // Adds runServer and runMojangMappedServer tasks for testing
     id("io.github.goooler.shadow") version "8.1.5" // Use fork until shadow has updated to Java 21
     id("maven-publish")
@@ -30,7 +30,7 @@ repositories {
 dependencies {
     paperweight.devBundle("de.erethon.papyrus", papyrusVersion) { isChanging = true }
     implementation("de.erethon:bedrock:1.3.1")
-    implementation("de.erethon.lectern:Lectern:1.0-SNAPSHOT") //not ready yet
+    //implementation("de.erethon.lectern:Lectern:1.0-SNAPSHOT") //not ready yet
     compileOnly("de.erethon.aergia:Aergia:1.0.0-SNAPSHOT")
     implementation("org.jetbrains:annotations:23.1.0")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") { isTransitive = false }

@@ -10,7 +10,7 @@ import de.erethon.factions.region.RegionCache;
 import de.erethon.factions.region.RegionType;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
-import de.erethon.factions.war.objective.WarObjective;
+import de.erethon.factions.war.structure.WarStructure;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,10 +47,10 @@ public enum WarPhase {
         if (isAllowPvP() != nextPhase.isAllowPvP()) {
             if (isAllowPvP()) {
                 // PvP: true -> false
-                foreachWarObjective(obj -> true, WarObjective::deactivate);
+                foreachWarObjective(obj -> true, WarStructure::deactivate);
             } else {
                 // PvP: false -> true
-                foreachWarObjective(obj -> obj.getRegion().getType() != RegionType.CAPITAL, WarObjective::activate);
+                foreachWarObjective(obj -> obj.getRegion().getType() != RegionType.CAPITAL, WarStructure::activate);
             }
         }
         if (isOpenCapital() != nextPhase.isOpenCapital()) {
@@ -59,15 +59,15 @@ public enum WarPhase {
                 onWarEnd();
             } else {
                 // openCapital: false -> true
-                foreachWarObjective(obj -> obj.getRegion().getType() == RegionType.CAPITAL, WarObjective::activate);
+                foreachWarObjective(obj -> obj.getRegion().getType() == RegionType.CAPITAL, WarStructure::activate);
             }
         }
     }
 
-    private void foreachWarObjective(Predicate<WarObjective> filter, Consumer<WarObjective> consumer) {
+    private void foreachWarObjective(Predicate<WarStructure> filter, Consumer<WarStructure> consumer) {
         for (RegionCache cache : plugin.getRegionManager()) {
             for (Region region : cache) {
-                Map<String, WarObjective> structures = region.getStructures(WarObjective.class);
+                Map<String, WarStructure> structures = region.getStructures(WarStructure.class);
                 structures.forEach((name, obj) -> {
                     if (filter.test(obj)) {
                         consumer.accept(obj);

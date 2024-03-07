@@ -2,8 +2,8 @@ package de.erethon.factions.command;
 
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.factions.war.objective.CrystalChargeCarrier;
-import de.erethon.factions.war.objective.CrystalMob;
+import de.erethon.factions.war.entities.CrystalChargeCarrier;
+import de.erethon.factions.war.entities.CrystalMob;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 

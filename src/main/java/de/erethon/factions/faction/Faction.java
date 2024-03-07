@@ -106,7 +106,6 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.fStorage = new FStorage(this);
         this.fEconomy = new FEconomy(this, fStorage);
         this.alliance.addFaction(this);
-        addPopulation(PopulationLevel.PEASANT, 5); // Let's start with something at least
         saveData();
     }
 
@@ -341,6 +340,9 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.level = FactionLevel.getByName(config.getString("level"), FactionLevel.HAMLET);
         for (PopulationLevel level : PopulationLevel.values()) {
             this.population.put(level, config.getInt("population." + level.name(), 0));
+        }
+        if (population.getOrDefault(PopulationLevel.PEASANT, 0) == 0) {
+            population.put(PopulationLevel.PEASANT, 5); // Let's start with something at least
         }
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
         this.fStorage = new FStorage(this, config.getConfigurationSection("storage"));

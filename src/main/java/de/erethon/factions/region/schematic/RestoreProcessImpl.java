@@ -23,6 +23,7 @@ public class RestoreProcessImpl implements RestoreProcess {
     private final RegionSchematic schematic;
     private Runnable onFinish;
     private final Deque<BlockPosition> remainingPositions = new ArrayDeque<>();
+    private int t;
 
     public RestoreProcessImpl(@NotNull World world, @NotNull Position start, @NotNull RegionSchematic schematic) {
         this.world = world;

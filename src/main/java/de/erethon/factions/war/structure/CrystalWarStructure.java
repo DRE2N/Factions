@@ -1,4 +1,4 @@
-package de.erethon.factions.war.objective;
+package de.erethon.factions.war.structure;
 
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
@@ -46,7 +46,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * @author Fyreum, Malfrador
  */
-public class CrystalWarObjective extends TickingWarObjective implements Listener {
+public class CrystalWarStructure extends TickingWarStructure implements Listener {
 
     /* Settings */
     protected Alliance alliance;
@@ -64,11 +64,11 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
     protected Set<CrystalChargeCarrier> carriers = new HashSet<>();
     protected boolean defenderCrystal;
 
-    public CrystalWarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public CrystalWarStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
     }
 
-    public CrystalWarObjective(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+    public CrystalWarStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
     }
 
@@ -237,6 +237,14 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
     }
 
     @Override
+    public void deleteStructure() {
+        if (defenderCrystal) {
+            return;
+        }
+        super.deleteStructure();
+    }
+
+    @Override
     public void onTemporaryOccupy(@NotNull Alliance alliance) {
         deactivate();
     }
@@ -328,7 +336,7 @@ public class CrystalWarObjective extends TickingWarObjective implements Listener
         return alliance;
     }
 
-    public @NotNull CrystalWarObjective setAlliance(@NotNull Alliance alliance) {
+    public @NotNull CrystalWarStructure setAlliance(@NotNull Alliance alliance) {
         this.alliance = alliance;
         return this;
     }

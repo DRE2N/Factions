@@ -7,8 +7,8 @@ import de.erethon.factions.entity.Relation;
 import de.erethon.factions.event.FPlayerCrossRegionEvent;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
-import de.erethon.factions.war.objective.CrystalWarObjective;
-import de.erethon.factions.war.objective.WarObjective;
+import de.erethon.factions.war.structure.CrystalWarStructure;
+import de.erethon.factions.war.structure.WarStructure;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.entity.Entity;
@@ -22,7 +22,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDropItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -49,7 +48,7 @@ public class WarListener implements Listener {
         if (region == null) {
             return;
         }
-        for (WarObjective objective : region.getStructures(WarObjective.class).values()) {
+        for (WarStructure objective : region.getStructures(WarStructure.class).values()) {
             boolean inRange = objective.containsPosition(event.getTo());
             if (objective.isActive(fPlayer)) {
                 if (inRange) {
@@ -77,7 +76,7 @@ public class WarListener implements Listener {
             return;
         }
         // Remove previous objectives
-        for (WarObjective objective : fPlayer.getActiveWarObjectives()) {
+        for (WarStructure objective : fPlayer.getActiveWarObjectives()) {
             objective.onExit(fPlayer);
         }
         fPlayer.getActiveWarObjectives().clear();
@@ -138,7 +137,7 @@ public class WarListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onCrystalDamage(EntityDamageByEntityEvent event) {
-        CrystalWarObjective crystal = getCrystalObjective(event.getEntity());
+        CrystalWarStructure crystal = getCrystalObjective(event.getEntity());
         if (crystal == null) {
             return;
         }
@@ -158,7 +157,7 @@ public class WarListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onCrystalDamage(EntityDamageByBlockEvent event) {
-        CrystalWarObjective crystal = getCrystalObjective(event.getEntity());
+        CrystalWarStructure crystal = getCrystalObjective(event.getEntity());
         if (crystal == null) {
             return;
         }
@@ -167,7 +166,7 @@ public class WarListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onCrystalInteract(PlayerInteractEntityEvent event) {
-        CrystalWarObjective crystal = getCrystalObjective(event.getRightClicked());
+        CrystalWarStructure crystal = getCrystalObjective(event.getRightClicked());
         if (crystal == null) {
             return;
         }
@@ -181,12 +180,12 @@ public class WarListener implements Listener {
         crystal.addEnergy(20); // todo: Make energy configurable
     }
 
-    private CrystalWarObjective getCrystalObjective(org.bukkit.entity.Entity entity) {
+    private CrystalWarStructure getCrystalObjective(org.bukkit.entity.Entity entity) {
         Region region = plugin.getRegionManager().getRegionByLocation(entity.getLocation());
         if (region == null) {
             return null;
         }
-        String name = entity.getPersistentDataContainer().get(WarObjective.NAME_KEY, PersistentDataType.STRING);
-        return name == null ? null : region.getStructure(name, CrystalWarObjective.class);
+        String name = entity.getPersistentDataContainer().get(WarStructure.NAME_KEY, PersistentDataType.STRING);
+        return name == null ? null : region.getStructure(name, CrystalWarStructure.class);
     }
 }

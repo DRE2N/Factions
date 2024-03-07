@@ -8,7 +8,6 @@ import de.erethon.factions.region.schematic.RegionSchematic;
 import de.erethon.factions.region.schematic.RestoreProcess;
 import de.erethon.factions.region.schematic.RestoreProcessImpl;
 import de.erethon.factions.util.FLogger;
-import de.erethon.factions.war.objective.CrystalWarObjective;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
@@ -33,7 +32,7 @@ public class WarCastleStructure extends RegionStructure implements Listener {
 
     protected RegionSchematic schematic;
     private RestoreProcess restoreProcess;
-    private CrystalWarObjective crystalObjective;
+    private CrystalWarStructure crystalObjective;
 
     public WarCastleStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
@@ -121,7 +120,7 @@ public class WarCastleStructure extends RegionStructure implements Listener {
             section.set("minPosition", Map.of("x", centerX - radius, "y", yRange.getMinimumInteger(), "z", centerZ - radius));
             section.set("maxPosition", Map.of("x", centerX + radius, "y", yRange.getMinimumInteger() + radius, "z", centerZ + radius));
         }
-        this.crystalObjective = new CrystalWarObjective(region, section);
+        this.crystalObjective = new CrystalWarStructure(region, section);
         this.crystalObjective.setDefenderCrystal(true);
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
@@ -154,7 +153,7 @@ public class WarCastleStructure extends RegionStructure implements Listener {
         this.restoreProcess = restoreProcess;
     }
 
-    public @NotNull CrystalWarObjective getCrystalObjective() {
+    public @NotNull CrystalWarStructure getCrystalObjective() {
         return crystalObjective;
     }
 }

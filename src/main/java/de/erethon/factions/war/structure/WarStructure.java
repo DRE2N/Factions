@@ -1,4 +1,4 @@
-package de.erethon.factions.war.objective;
+package de.erethon.factions.war.structure;
 
 import de.erethon.factions.Factions;
 import de.erethon.factions.player.FPlayer;
@@ -19,7 +19,7 @@ import java.util.Set;
  *
  * @author Fyreum
  */
-public abstract class WarObjective extends RegionStructure {
+public abstract class WarStructure extends RegionStructure {
 
     public static final NamespacedKey NAME_KEY = new NamespacedKey(Factions.get(), "warObjectiveName");
 
@@ -27,11 +27,11 @@ public abstract class WarObjective extends RegionStructure {
     protected Map<FPlayer, Long> activePlayers = new HashMap<>();
     protected Set<FPlayer> activeSpectators = new HashSet<>();
 
-    public WarObjective(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public WarStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
     }
 
-    public WarObjective(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+    public WarStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
     }
 
