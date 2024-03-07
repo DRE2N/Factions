@@ -1,6 +1,7 @@
 package de.erethon.factions.war.structure;
 
 import com.destroystokyo.paper.MaterialSetTag;
+import com.destroystokyo.paper.MaterialTags;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
@@ -25,6 +26,7 @@ import java.util.Map;
 public class FlagStructure extends RegionStructure {
 
     private static final Map<NamedTextColor, Material> COLOR_TO_WOOL = new HashMap<>();
+    private static final Map<NamedTextColor, Material> COLOR_TO_CONCRETE = new HashMap<>();
 
     static {
         COLOR_TO_WOOL.put(NamedTextColor.BLACK, Material.BLACK_WOOL);
@@ -44,6 +46,22 @@ public class FlagStructure extends RegionStructure {
         COLOR_TO_WOOL.put(NamedTextColor.YELLOW, Material.YELLOW_WOOL);
         COLOR_TO_WOOL.put(NamedTextColor.WHITE, Material.WHITE_WOOL);
 
+        COLOR_TO_CONCRETE.put(NamedTextColor.BLACK, Material.BLACK_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.DARK_BLUE, Material.BLUE_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.DARK_GREEN, Material.GREEN_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.DARK_AQUA, Material.CYAN_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.DARK_RED, Material.RED_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.DARK_PURPLE, Material.PURPLE_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.GOLD, Material.ORANGE_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.GRAY, Material.LIGHT_GRAY_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.DARK_GRAY, Material.GRAY_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.BLUE, Material.BLUE_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.GREEN, Material.LIME_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.AQUA, Material.LIGHT_BLUE_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.RED, Material.RED_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.LIGHT_PURPLE, Material.MAGENTA_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.YELLOW, Material.YELLOW_CONCRETE);
+        COLOR_TO_CONCRETE.put(NamedTextColor.WHITE, Material.WHITE_CONCRETE);
     }
 
     public FlagStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
@@ -64,6 +82,7 @@ public class FlagStructure extends RegionStructure {
 
     public void displayColor(@NotNull World world, @NotNull NamedTextColor color) {
         final Material wool = COLOR_TO_WOOL.getOrDefault(color, Material.WHITE_WOOL);
+        final Material concrete = COLOR_TO_CONCRETE.getOrDefault(color, Material.WHITE_CONCRETE);
         final Position minPosition = getMinPosition();
         final Position maxPosition = getMaxPosition();
         final int maxX = maxPosition.blockX(), maxY = maxPosition.blockY(), maxZ = maxPosition.blockZ();
@@ -72,10 +91,11 @@ public class FlagStructure extends RegionStructure {
             for (int x = minPosition.blockX(); x < maxX; x++) {
                 for (int y = minPosition.blockY(); y < maxY; y++) {
                     for (int z = minPosition.blockZ(); z < maxZ; z++) {
-                        if (!MaterialSetTag.WOOL.isTagged(world.getType(x, y, z))) {
-                            continue;
+                        if (MaterialSetTag.WOOL.isTagged(world.getType(x, y, z))) {
+                            world.setType(x, y, z, wool);
+                        } else if (MaterialTags.CONCRETES.isTagged(world.getType(x, y, z))) {
+                            world.setType(x, y, z, concrete);
                         }
-                        world.setType(x, y, z, wool);
                     }
                 }
             }

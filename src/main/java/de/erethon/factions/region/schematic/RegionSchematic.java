@@ -6,9 +6,11 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.QuadConsumer;
 import io.papermc.paper.math.Position;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -186,6 +188,15 @@ public class RegionSchematic extends EConfig {
      */
     public @Nullable String getBlockAt(int x, int y, int z) throws IndexOutOfBoundsException {
         return blocks[x][y][z];
+    }
+
+    /**
+     * @return the blockdata at the given coordinates
+     * @throws IndexOutOfBoundsException if the coordinates are out of bounds
+     */
+    public @NotNull BlockData getBlockDataAt(int x, int y, int z) throws IndexOutOfBoundsException {
+        String data = getBlockAt(x, y, z);
+        return data == null ? Material.AIR.createBlockData() : Bukkit.createBlockData(data);
     }
 
     public int getXLength() {

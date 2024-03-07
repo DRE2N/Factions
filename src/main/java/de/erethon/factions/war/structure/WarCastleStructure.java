@@ -17,6 +17,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -89,6 +90,14 @@ public class WarCastleStructure extends RegionStructure implements Listener {
                 crystalObjective.activate();
             }
         }
+    }
+
+    @EventHandler
+    public void onChunkLoad(ChunkLoadEvent event) {
+        if (!plugin.getWarPhaseManager().getCurrentWarPhase().isAllowPvP()) {
+            return;
+        }
+        restoreProcess.onChunkLoad(event.getChunk());
     }
 
     /* Serialization */
