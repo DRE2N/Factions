@@ -1,5 +1,6 @@
 package de.erethon.factions.region;
 
+import com.google.gson.JsonObject;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.attributes.FactionAttribute;
@@ -458,6 +459,17 @@ public class Region extends FLegalEntity {
     @Override
     public String toString() {
         return "Region[world=" + getWorldId() + ",id=" + id + "]";
+    }
+
+    public @NotNull JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.addProperty("id", id);
+        json.addProperty("name", name);
+        json.addProperty("type", type.name());
+        json.addProperty("owner", owner == null ? -1 : owner.getId());
+        json.addProperty("alliance", alliance == null ? -1 : alliance.getId());
+        json.addProperty("claimable", claimable);
+        return json;
     }
 
 }

@@ -37,6 +37,7 @@ import de.erethon.factions.war.WarPhaseManager;
 import de.erethon.factions.war.entities.CrystalChargeCarrier;
 import de.erethon.factions.war.entities.CrystalMob;
 import de.erethon.factions.war.entities.ObjectiveGuard;
+import de.erethon.factions.web.RegionHttpServer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.minecraft.world.entity.EntityType;
@@ -104,6 +105,7 @@ public final class Factions extends EPlugin {
     /* Tasks */
     private BukkitTask backupTask;
     private BukkitTask saveDataTask;
+    private BukkitTask webCacheUpdateTask;
 
     /* Listeners */
     private BlockProtectionListener blockProtectionListener;
@@ -111,6 +113,9 @@ public final class Factions extends EPlugin {
     private FPlayerListener fPlayerListener;
     private UIFactionsListener uiFactionsListener;
     private WarListener warListener;
+
+    /* Web */
+    private RegionHttpServer regionHttpServer;
 
     public Factions() {
         settings = EPluginSettings.builder()
@@ -139,6 +144,7 @@ public final class Factions extends EPlugin {
         HandlerList.unregisterAll(this);
         Bukkit.getScheduler().cancelTasks(this);
         unregisterAergiaPlaceholders();
+        stopWebApplication();
         saveData();
         FLogger.closeWriter();
     }
@@ -156,6 +162,7 @@ public final class Factions extends EPlugin {
         }
         loadWarHistory();
         loadWarPhaseManager();
+        runWebApplication();
         runTasks();
         loadCommands();
         registerListeners();
@@ -245,6 +252,9 @@ public final class Factions extends EPlugin {
         warPhaseManager.updateCurrentStageTask();
         runSaveDataTask();
         runBackupTask();
+        if (fConfig.isWebEnabled()) {
+            runWebCacheUpdateTask();
+        }
     }
 
     public void loadCommands() {
@@ -380,6 +390,24 @@ public final class Factions extends EPlugin {
         EntityType.customEntities.put("objective_guard", Map.entry(this, ObjectiveGuard.class));
     }
 
+    /* Web */
+
+    public void runWebApplication() {
+        if (!fConfig.isWebEnabled()) {
+            return;
+        }
+        FLogger.WEB.log("Starting web application...");
+        regionHttpServer = new RegionHttpServer();
+        regionHttpServer.runServer();
+    }
+
+    public void stopWebApplication() {
+        if (regionHttpServer != null) {
+            FLogger.WEB.log("Stopping web application...");
+            regionHttpServer.stopServer();
+        }
+    }
+
     /* Tasks */
 
     public void runSaveDataTask() {
@@ -396,6 +424,14 @@ public final class Factions extends EPlugin {
         }
         long interval = fConfig.getBackupInterval() * TickUtil.MINUTE;
         backupTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::createBackup, interval, interval);
+    }
+
+    public void runWebCacheUpdateTask() {
+        if (webCacheUpdateTask != null) {
+            webCacheUpdateTask.cancel();
+        }
+        long interval = fConfig.getWebCacheUpdateInterval() * TickUtil.MINUTE;
+        webCacheUpdateTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::updateWebCache, interval, interval);
     }
 
     /* Data storing */
@@ -431,6 +467,11 @@ public final class Factions extends EPlugin {
         warPhaseManager.saveData();
         buildSiteCache.saveAllPendingChunks();
         FLogger.save();
+    }
+
+    public void updateWebCache() {
+        FLogger.DEBUG.log("Updating web cache...");
+        regionHttpServer.getCache().updateCache();
     }
 
     /* Getters and setters */

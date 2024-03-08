@@ -29,6 +29,7 @@ public enum FLogger {
     INFO(true),
     WAR(true),
     WARN(true, NamedTextColor.GOLD),
+    WEB(true), // todo: -> false
     ERROR(true, NamedTextColor.RED);
 
     private static File configFile;

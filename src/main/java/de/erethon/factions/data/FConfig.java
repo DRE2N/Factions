@@ -78,6 +78,11 @@ public class FConfig extends EConfig {
     private double defaultObjectiveGuardHealth = 200;
     private double crystalCarrierSpeedBuff = 0.3;
 
+    /* Web */
+    private long webCacheUpdateInterval = 30; // minutes
+    private boolean webEnabled = true;
+    private int webPort = 8000;
+
     public FConfig(File file) {
         super(file, CONFIG_VERSION);
         initialize();
@@ -121,6 +126,7 @@ public class FConfig extends EConfig {
         for (Resource resource : Resource.values()) {
             initValue("defaultResourceLimits." + resource.name(), 512);
         }
+        initValue("web.cacheUpdateInterval", webCacheUpdateInterval);
         save();
     }
 
@@ -171,6 +177,9 @@ public class FConfig extends EConfig {
         for (Resource resource : Resource.values()) {
             defaultResourceLimits.put(resource, config.getInt("defaultResourceLimits." + resource.name(), 512));
         }
+        webCacheUpdateInterval = config.getLong("web.cacheUpdateInterval", webCacheUpdateInterval);
+        webPort = config.getInt("web.port", webPort);
+        webEnabled = config.getBoolean("web.enabled", webEnabled);
     }
 
     public void lateLoad() { // Config values that depend on FConfig already being loaded
@@ -371,4 +380,15 @@ public class FConfig extends EConfig {
         return requiredBuildings.get(factionLevel);
     }
 
+    public long getWebCacheUpdateInterval() {
+        return webCacheUpdateInterval;
+    }
+
+    public boolean isWebEnabled() {
+        return webEnabled;
+    }
+
+    public int getWebPort() {
+        return webPort;
+    }
 }
