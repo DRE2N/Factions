@@ -72,7 +72,8 @@ public class FConfig extends EConfig {
 
     /* War */
     private long warCastleRestoreInterval = TickUtil.MINUTE;
-    private int warCapturedRegionsPerBattle = 5;
+    private int warMaximumOccupiedRegions = 2;
+    private long warRegionCooldownAfterOccupy = 5; // minutes
     private double warScorePerKill = 5.0;
     private double defaultCrystalCarrierHealth = 2000;
     private double defaultObjectiveGuardHealth = 200;
@@ -118,7 +119,7 @@ public class FConfig extends EConfig {
         initValue("ticksPerBuildingTick", ticksPerBuildingTick);
         initValue("effectsPerTick", effectsPerTick);
         initValue("war.castleRestoreInterval", warCastleRestoreInterval);
-        initValue("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
+        initValue("war.maximumOccupiedRegions", warMaximumOccupiedRegions);
         initValue("war.scorePerKill", warScorePerKill);
         initValue("war.defaultCrystalCarrierHealth", defaultCrystalCarrierHealth);
         initValue("war.defaultObjectiveGuardHealth", defaultObjectiveGuardHealth);
@@ -168,7 +169,8 @@ public class FConfig extends EConfig {
         ticksPerBuildingTick = config.getInt("ticksPerBuildingTick", ticksPerBuildingTick);
         effectsPerTick = config.getInt("effectsPerTick", effectsPerTick);
         warCastleRestoreInterval = config.getLong("war.castleRestoreInterval", warCastleRestoreInterval);
-        warCapturedRegionsPerBattle = config.getInt("war.capturedRegionsPerBattle", warCapturedRegionsPerBattle);
+        warMaximumOccupiedRegions = config.getInt("war.maximumOccupiedRegions", warMaximumOccupiedRegions);
+        warRegionCooldownAfterOccupy = config.getLong("war.regionCooldownAfterOccupy", warRegionCooldownAfterOccupy);
         warScorePerKill = config.getDouble("war.scorePerKill", warScorePerKill);
         defaultCrystalCarrierHealth = config.getDouble("war.defaultCrystalCarrierHealth", defaultCrystalCarrierHealth);
         defaultObjectiveGuardHealth = config.getDouble("war.defaultObjectiveGuardHealth", defaultObjectiveGuardHealth);
@@ -356,8 +358,12 @@ public class FConfig extends EConfig {
         return warCastleRestoreInterval;
     }
 
-    public int getWarCapturedRegionsPerBattle() {
-        return warCapturedRegionsPerBattle;
+    public int getWarMaximumOccupiedRegions() {
+        return warMaximumOccupiedRegions;
+    }
+
+    public long getWarRegionCooldownAfterOccupy() {
+        return warRegionCooldownAfterOccupy;
     }
 
     public double getWarScorePerKill() {

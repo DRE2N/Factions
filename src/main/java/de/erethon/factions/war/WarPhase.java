@@ -10,6 +10,7 @@ import de.erethon.factions.region.RegionCache;
 import de.erethon.factions.region.RegionType;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.war.structure.WarFortressStructure;
 import de.erethon.factions.war.structure.WarStructure;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -81,7 +82,7 @@ public enum WarPhase {
     private void onScoringClose() {
         FLogger.WAR.log("Awarding alliances relative to their captured regions...");
         for (Alliance alliance : plugin.getAllianceCache()) {
-            for (Region region : alliance.getUnconfirmedTemporaryRegions()) {
+            for (Region region : alliance.getTemporaryRegions()) {
                 alliance.addWarScore(region.getRegionalWarTracker().getRegionValue());
             }
         }
@@ -89,21 +90,19 @@ public enum WarPhase {
 
     // Called after the CAPITAL phase has ended
     private void onWarEnd() {
-        // Calculate remaining winners for each region.
+        // Remove every occupied region that is not a fortress
         for (RegionCache cache : plugin.getRegionManager()) {
             for (Region region : cache) {
                 if (region.getType() != RegionType.WAR_ZONE) {
                     continue;
                 }
-                Alliance winner = region.getRegionalWarTracker().getLeader();
-                Alliance rAlliance = region.getAlliance();
-                if (winner != null) {
-                    winner.temporaryOccupy(region);
+                region.getRegionalWarTracker().reset(false);
+
+                if (!region.hasAlliance() || !region.getStructures(WarFortressStructure.class).isEmpty()) {
                     continue;
                 }
-                if (rAlliance != null) {
-                    FLogger.WAR.log("Region '" + region.getId() + "' is no longer held by alliance '" + rAlliance + "'");
-                    region.setAlliance(null);
+                if (region.hasAlliance()) {
+                    region.getAlliance().removeTemporaryRegion(region);
                 }
             }
         }
@@ -119,7 +118,9 @@ public enum WarPhase {
             scores.put(alliance.getId(), alliance.getWarScore());
             alliance.setCurrentEmperor(false);
             alliance.setWarScore(0);
-            alliance.addPoll(new CapturedRegionsPoll(alliance), TickUtil.DAY);
+            if (alliance.getTemporaryRegions().size() > plugin.getFConfig().getWarMaximumOccupiedRegions()) {
+                alliance.addPoll(new CapturedRegionsPoll(alliance), TickUtil.DAY);
+            }
         }
         plugin.getWarHistory().storeEntry(System.currentTimeMillis(), scores);
 

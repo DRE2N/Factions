@@ -2,7 +2,6 @@ package de.erethon.factions.poll.polls;
 
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
-import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.poll.AlliancePoll;
 import de.erethon.factions.poll.Poll;
@@ -36,7 +35,7 @@ public class CapturedRegionsPoll extends AlliancePoll<Region> {
     };
 
     public CapturedRegionsPoll(@NotNull Alliance alliance) {
-        super(FMessage.GENERAL_WAR_ZONES.getMessage(), alliance, PollScope.ADMIN, alliance.getUnconfirmedTemporaryRegions(), REGION_CONVERTER);
+        super(FMessage.GENERAL_WAR_ZONES.getMessage(), alliance, PollScope.ADMIN, alliance.getTemporaryRegions(), REGION_CONVERTER);
     }
 
     public CapturedRegionsPoll(@NotNull ConfigurationSection config) throws IllegalArgumentException {
@@ -61,14 +60,13 @@ public class CapturedRegionsPoll extends AlliancePoll<Region> {
     @Override
     protected void onResult(@NotNull TreeSet<PollEntry> results) {
         int i = 0;
-        int max = plugin.getFConfig().getWarCapturedRegionsPerBattle();
+        int max = plugin.getFConfig().getWarMaximumOccupiedRegions();
         for (Poll<Region>.PollEntry entry : results) {
-            if (i++ >= max) {
-                break;
+            if (i++ < max) {
+                continue;
             }
-            alliance.persistTemporaryOccupy(entry.getSubject());
+            FLogger.WAR.log("Alliance '" + alliance.getId() + "' loses occupied region '" + entry.getSubject().getId() + "' due to poll results.");
+            alliance.removeTemporaryRegion(entry.getSubject());
         }
-        FLogger.WAR.log("Alliance '" + alliance.getId() + "' persistently occupied the regions: " + alliance.getTemporaryRegions().stream().map(FLegalEntity::getId).toList());
-        alliance.getUnconfirmedTemporaryRegions().clear();
     }
 }

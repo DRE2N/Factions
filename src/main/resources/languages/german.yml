@@ -3,6 +3,7 @@ alliance:
   info:
     factionCannotAffordDailyTaxes: "<yellow>Die Fraktion <gold><arg:0></gold> konnte ihre täglichen Steuern nicht bezahlen."
     newPoll: "<green>Eine neue Abstimmung wurde erstellt. Stimme mit <dark_green>/f vote <arg:0></dark_green> ab!"
+    regionLost: "<red>Die Allianz hat die Region <gold><arg:0></gold> verloren."
     prefix: "<dark_gray>[<dark_purple><arg:0></dark_purple>]<gray> "
 acm:
   addedChunk: "Chunk <gold><arg:0></gold> wurde hinzugefügt."
@@ -149,6 +150,7 @@ error:
   chunkAlreadyARegion: "<red>Der Chunk ist bereits Teil einer Region."
   chunkOutsideTheRegion: "<red>Der Chunk befindet sich nicht in der Region."
   debugModeNotEnabled: "<red>Der Debug-Modus ist nicht aktiviert."
+  factionAlreadyOccupiedRegion: "<red>Die Fraktion besetzt bereits eine andere Region."
   factionIsFull: "<red>Die Fraktion <gold><arg:0></gold> ist bereits voll."
   factionHasNotEnoughMoney: "<red>Die Fraktion benötigt <gold><arg:0></gold>, um dies tun zu dürfen."
   factionNotFound: "<red>Die Fraktion <gold><arg:0></gold> konnte nicht gefunden werden."
@@ -168,9 +170,12 @@ error:
   playerNotFound: "<red>Der Spieler <gold><arg:0></gold> konnte nicht gefunden werden."
   playerRegionNull: "<red>Du musst dich in einer Region befinden, um dies tun zu dürfen."
   pollNotFound: "<red>Die Abstimmung <gold><arg:0></gold> konnte nicht gefunden werden."
+  regionAlreadyClaimed: "<red>Die Region ist bereits beansprucht."
+  regionAlreadyOccupied: "<red>Die Region ist bereits von einer Fraktion besetzt."
   regionInAnotherWorld: "<red>Die Region befindet sich in einer anderen Welt als du."
   regionIsNotAWarzone: "<red>Die Region is kein Kriegsgebiet."
   regionIsNotClaimable: "<red>Die Region kann nicht beansprucht werden."
+  regionIsNotOccupiable: "<red>Die Region kann nicht besetzt werden."
   regionNotFound: "<red>Die Region <gold><arg:0></gold> konnte nicht gefunden werden."
   regionStructureTypeNotFound: "<red>Der Reginsstrukturentyp <gold><arg:0></gold> konnte nicht gefunden werden."
   regionTypeNotFound: "<red>Der Gebietstyp <gold><arg:0></gold> konnte nicht gefunden werden."

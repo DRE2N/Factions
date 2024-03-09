@@ -69,6 +69,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private PlayerCollection members;
     private final Set<Region> regions = new HashSet<>();
     private Region coreRegion;
+    private Region occupiedRegion;
     private Location fHome;
     private double currentTaxDebt = 0;
     private ItemStack flag;
@@ -314,6 +315,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         if (coreRegion == null) {
             FLogger.ERROR.log("Unknown core region ID in faction '" + id + "' found: " + coreRegionId);
         }
+        this.occupiedRegion = plugin.getRegionManager().getRegionById(config.getInt("occupiedRegion"));
         this.fHome = config.getLocation("home", null);
         this.currentTaxDebt = config.getDouble("currentTaxDebt");
         this.flag = config.getItemStack("flag");
@@ -356,6 +358,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         config.set("members", members.serialize());
         saveEntities("regions", regions);
         config.set("coreRegion", coreRegion == null ? null : coreRegion.getId());
+        config.set("occupiedRegion", occupiedRegion == null ? null : occupiedRegion.getId());
         config.set("home", fHome);
         config.set("currentTaxDebt", currentTaxDebt);
         config.set("flag", flag);
@@ -467,6 +470,18 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setCoreRegion(@NotNull Region coreRegion) {
         this.coreRegion = coreRegion;
+    }
+
+    public boolean hasOccupiedRegion() {
+        return occupiedRegion != null;
+    }
+
+    public @Nullable Region getOccupiedRegion() {
+        return occupiedRegion;
+    }
+
+    public void setOccupiedRegion(Region occupiedRegion) {
+        this.occupiedRegion = occupiedRegion;
     }
 
     public @Nullable Location getFHome() {

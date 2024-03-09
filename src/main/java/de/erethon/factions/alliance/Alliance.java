@@ -49,7 +49,6 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
     /* Persistent */
     private final Set<Region> coreRegions = new HashSet<>();
     private final Set<Region> temporaryRegions = new HashSet<>();
-    private final Set<Region> unconfirmedTemporaryRegions = new HashSet<>();
     private final Set<Faction> factions = new HashSet<>();
     private final Map<String, Poll<?>> polls = new HashMap<>();
     private BossBar.Color bossBarColor;
@@ -78,23 +77,14 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
     public void temporaryOccupy(@NotNull Region region) {
         FLogger.WAR.log("Region '" + region.getId() + "' was temporarily occupied by alliance '" + id + "'");
         if (region.hasAlliance()) {
-            region.getAlliance().getTemporaryRegions().remove(region);
+            region.getAlliance().removeTemporaryRegion(region);
         }
-        unconfirmedTemporaryRegions.add(region);
-        region.getRegionalWarTracker().reset();
+        temporaryRegions.add(region);
+        region.getRegionalWarTracker().reset(true);
         for (RegionStructure structure : region.getStructures().values()) {
             structure.onTemporaryOccupy(this);
         }
         FBroadcastUtil.broadcastWar(FMessage.WAR_REGION_OCCUPIED, name, region.getName());
-    }
-
-    public void persistTemporaryOccupy(@NotNull Region region) {
-        if (!unconfirmedTemporaryRegions.contains(region)) {
-            return;
-        }
-        unconfirmedTemporaryRegions.remove(region);
-        temporaryRegions.add(region);
-        region.setAlliance(this);
     }
 
     /* Messages */
@@ -137,7 +127,6 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
     public void load() {
         loadRegions("coreRegions", coreRegions);
         loadRegions("temporaryRegions", temporaryRegions);
-        loadRegions("unconfirmedTemporaryRegions", unconfirmedTemporaryRegions);
         for (int factionId : config.getIntegerList("factions")) {
             Faction faction = plugin.getFactionCache().getById(factionId);
             if (faction == null) {
@@ -172,7 +161,6 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
     protected void serializeData() {
         saveEntities("coreRegions", coreRegions);
         saveEntities("temporaryRegions", temporaryRegions);
-        saveEntities("unconfirmedTemporaryRegions", unconfirmedTemporaryRegions);
         saveEntities("factions", factions);
         config.set("polls", serializePolls());
         config.set("bossBarColor", bossBarColor.name());
@@ -209,8 +197,8 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
     }
 
     /**
-     * Returns a Set of regions that the alliance previously captured and
-     * chose to persist during the last war cycle.
+     * Returns a Set of regions that the alliance temporarily owns.
+     * These regions may also be occupied by a faction.
      *
      * @return a Set of regions that the alliance temporarily owns
      */
@@ -218,12 +206,17 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         return temporaryRegions;
     }
 
-    /**
-     * Returns a Set of regions that the alliance previously captured but
-     * <b>not yet</b> chose to persist during the last war cycle.
-     */
-    public @NotNull Set<Region> getUnconfirmedTemporaryRegions() {
-        return unconfirmedTemporaryRegions;
+    public void removeTemporaryRegion(@NotNull Region region) {
+        if (!temporaryRegions.remove(region)) {
+            return;
+        }
+        region.setAlliance(null);
+
+        if (region.hasFaction()) {
+            region.getOwner().setOccupiedRegion(null);
+            region.setOwner(null);
+        }
+        sendMessage(FMessage.ALLIANCE_INFO_REGION_LOST.message(region.getName()));
     }
 
     public @NotNull Set<Faction> getFactions() {

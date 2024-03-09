@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Fyreum
@@ -32,14 +33,19 @@ public class RegionalWarTracker {
     private final Set<Player> crystalCarriers = new HashSet<>();
     private double captureCap = DEFAULT_CAPTURE_CAP;
     private int regionValue = DEFAULT_REGION_VALUE;
+    private long cooldownDate = 0;
 
     public RegionalWarTracker(@NotNull Region region) {
         this.region = region;
     }
 
-    public void reset() {
+    public void reset(boolean applyCooldown) {
+        if (applyCooldown) {
+            cooldownDate = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(plugin.getFConfig().getWarRegionCooldownAfterOccupy());
+        }
         kills.clear();
         scores.clear();
+        crystalCarriers.clear(); // todo: Malfrador please remove any effects from the players
     }
 
     /* Serialization */
@@ -146,6 +152,9 @@ public class RegionalWarTracker {
     }
 
     public void addScore(@NotNull Alliance alliance, double score) {
+        if (cooldownDate > System.currentTimeMillis()) {
+            return;
+        }
         double newScore = getScore(alliance) + score;
         scores.put(alliance, newScore);
         if (newScore >= captureCap) {
@@ -157,7 +166,7 @@ public class RegionalWarTracker {
         Alliance winner = null;
         double score = -1;
         double secondScore = 0;
-        for (Alliance alliance : plugin.getAllianceCache()) {
+        for (Alliance alliance : scores.keySet()) {
             double currentScore = getScore(alliance);
             if (currentScore <= 0) {
                 continue;

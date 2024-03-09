@@ -15,6 +15,7 @@ public enum FMessage implements Message {
 
     ALLIANCE_INFO_FACTION_CANNOT_AFFORD_DAILY_TAXES("alliance.info.factionCannotAffordDailyTaxes"),
     ALLIANCE_INFO_NEW_POLL("alliance.info.newPoll"),
+    ALLIANCE_INFO_REGION_LOST("alliance.info.regionLost"),
     ALLIANCE_INFO_PREFIX("alliance.info.prefix"),
 
     ACM_ADDED_CHUNK("acm.addedChunk"),
@@ -132,6 +133,7 @@ public enum FMessage implements Message {
     ERROR_CHUNK_ALREADY_A_REGION("error.chunkAlreadyARegion"),
     ERROR_CHUNK_OUTSIDE_THE_REGION("error.chunkOutsideTheRegion"),
     ERROR_DEBUG_MODE_NOT_ENABLED("error.debugModeNotEnabled"),
+    ERROR_FACTION_ALREADY_OCCUPIED_REGION("error.factionAlreadyOccupiedRegion"),
     ERROR_FACTION_IS_FULL("error.factionIsFull"),
     ERROR_FACTION_HAS_NOT_ENOUGH_MONEY("error.factionHasNotEnoughMoney"),
     ERROR_FACTION_NOT_FOUND("error.factionNotFound"),
@@ -151,9 +153,11 @@ public enum FMessage implements Message {
     ERROR_PLAYER_REGION_NULL("error.playerRegionNull"),
     ERROR_POLL_NOT_FOUND("error.pollNotFound"),
     ERROR_REGION_ALREADY_CLAIMED("error.regionAlreadyClaimed"),
+    ERROR_REGION_ALREADY_OCCUPIED("error.regionAlreadyOccupied"),
     ERROR_REGION_IN_ANOTHER_WORLD("error.regionInAnotherWorld"),
     ERROR_REGION_IS_NOT_A_WARZONE("error.regionIsNotAWarzone"),
     ERROR_REGION_IS_NOT_CLAIMABLE("error.regionIsNotClaimable"),
+    ERROR_REGION_IS_NOT_OCCUPIABLE("error.regionIsNotOccupiable"),
     ERROR_REGION_NOT_FOUND("error.regionNotFound"),
     ERROR_REGION_STRUCTURE_TYPE_NOT_FOUND("error.regionStructureTypeNotFound"),
     ERROR_REGION_STRUCTURE_WRONG_ARG_FORMAT("error.regionStructureWrongArgFormat"),
