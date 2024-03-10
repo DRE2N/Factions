@@ -34,6 +34,7 @@ public class InviteCommand extends FCommand {
         } else {
             faction = getFaction(fPlayer);
         }
+        assureSameAlliance(fPlayer, faction);
         double maxPlayers = faction.getAttributeValue("max_players");
         int members = faction.getMembers().size();
         if (maxPlayers <= members) {

@@ -31,6 +31,7 @@ public class JoinCommand extends FCommand {
         assurePlayerIsFactionless(fPlayer);
 
         if (!fPlayer.isBypassRaw()) {
+            assureSameAlliance(faction, fPlayer);
             assure(!faction.isOpen() && !faction.isInvitedPlayer(fPlayer), FMessage.CMD_JOIN_NOT_INVITED);
 
             long cooldownExpirationDate = fPlayer.getLastFactionJoinDate() + plugin.getFConfig().getFactionJoinCooldown();
