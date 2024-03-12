@@ -4,6 +4,7 @@ import de.erethon.aergia.util.DateUtil;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.event.FPlayerChangeAllianceEvent;
 import de.erethon.factions.player.FPlayer;
 import org.bukkit.command.CommandSender;
 
@@ -32,7 +33,9 @@ public class AllianceChooseCommand extends FCommand {
             long cooldownExpirationDate = fPlayer.getLastAllianceJoinDate() + plugin.getFConfig().getAllianceJoinCooldown();
             assure(cooldownExpirationDate >= System.currentTimeMillis(), FMessage.CMD_ALLIANCE_CHOOSE_ON_COOLDOWN, DateUtil.formatDateDiff(cooldownExpirationDate));
         }
+        Alliance old = fPlayer.getAlliance();
         assure(fPlayer.setAlliance(alliance), FMessage.ERROR_CANNOT_CHOOSE_ALLIANCE);
+        new FPlayerChangeAllianceEvent(fPlayer, old).callEvent();
         fPlayer.setLastAllianceJoinDate(System.currentTimeMillis());
         sender.sendMessage(FMessage.CMD_ALLIANCE_CHOOSE_SUCCESS.message(alliance.getName()));
     }

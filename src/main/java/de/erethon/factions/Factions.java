@@ -1,5 +1,6 @@
 package de.erethon.factions;
 
+import de.erethon.aergia.Aergia;
 import de.erethon.aergia.placeholder.ChatPlaceholder;
 import de.erethon.aergia.placeholder.ChatPlaceholders;
 import de.erethon.aergia.placeholder.HoverEventBuilder;
@@ -19,6 +20,7 @@ import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.TaxManager;
 import de.erethon.factions.faction.FactionCache;
+import de.erethon.factions.integrations.DiscordBotListener;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
 import de.erethon.factions.player.FPlayerListener;
@@ -109,6 +111,7 @@ public final class Factions extends EPlugin {
 
     /* Listeners */
     private BlockProtectionListener blockProtectionListener;
+    private DiscordBotListener discordBotListener;
     private EntityProtectionListener entityProtectionListener;
     private FPlayerListener fPlayerListener;
     private UIFactionsListener uiFactionsListener;
@@ -264,6 +267,9 @@ public final class Factions extends EPlugin {
 
     public void registerListeners() {
         register(blockProtectionListener = new BlockProtectionListener());
+        if (Aergia.inst().getDiscordConfig().isEnabled()) {
+            register(discordBotListener = new DiscordBotListener());
+        }
         register(entityProtectionListener = new EntityProtectionListener());
         register(fPlayerListener = new FPlayerListener());
         register(uiFactionsListener = new UIFactionsListener());

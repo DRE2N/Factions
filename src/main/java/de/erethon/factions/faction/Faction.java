@@ -81,9 +81,11 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private final Set<BuildSite> buildSites = new HashSet<>();
     private final Map<String, Poll<?>> polls = new HashMap<>();
     private final Map<PopulationLevel, Integer> population = new HashMap<>();
-    private final Map<PopulationLevel, Double> populationHappiness = new HashMap<>();
     private FStorage fStorage;
     private FactionLevel level = FactionLevel.HAMLET;
+    private long discordTextChannelId = -1;
+    private long discordVoiceChannelId = -1;
+    private long discordRoleId = -1;
     /* Temporary */
     private final Set<BuildingEffect> buildingEffects = new HashSet<>();
     private final Set<BuildingEffect> tickingBuildingEffects = new HashSet<>();
@@ -91,6 +93,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private FAccount fAccount;
     private FEconomy fEconomy;
     private final Set<FPlayer> invitedPlayers = new HashSet<>();
+    private final Map<PopulationLevel, Double> populationHappiness = new HashMap<>();
 
     protected Faction(@NotNull FPlayer admin, @NotNull Region coreRegion, int id, String name, String description) {
         super(new File(Factions.FACTIONS, id + ".yml"), id, name, description);
@@ -348,6 +351,9 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         }
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
         this.fStorage = new FStorage(this, config.getConfigurationSection("storage"));
+        this.discordTextChannelId = config.getLong("discordChannelId", discordTextChannelId);
+        this.discordVoiceChannelId = config.getLong("discordVoiceChannelId", discordVoiceChannelId);
+        this.discordRoleId = config.getLong("discordRoleId", discordRoleId);
     }
 
     @Override
@@ -365,14 +371,16 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         config.set("shortName", shortName);
         config.set("longName", longName);
         config.set("open", open);
-        config.set("level", level.name());
+        saveEntities("authorisedBuilders", authorisedBuilders);
+        saveEntities("adjacentFactions", adjacentFactions);
         config.set("polls", serializePolls());
         for (PopulationLevel level : PopulationLevel.values()) {
             config.set("population." + level.name(), population.get(level));
         }
         config.set("storage", fStorage.save());
-        saveEntities("authorisedBuilders", authorisedBuilders);
-        saveEntities("adjacentFactions", adjacentFactions);
+        config.set("level", level.name());
+        config.set("discordChannelId", discordTextChannelId);
+        config.set("discordRoleId", discordRoleId);
     }
 
     /* Permission stuff */
@@ -689,14 +697,6 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         population.put(level, population.getOrDefault(level, 0) + amount);
     }
 
-    public double getHappiness(@NotNull PopulationLevel level) {
-        return populationHappiness.getOrDefault(level, 0.0);
-    }
-
-    public void setHappiness(@NotNull PopulationLevel level, double happiness) {
-        populationHappiness.put(level, populationHappiness.getOrDefault(level, 0.0) + happiness);
-    }
-
     public @NotNull FStorage getStorage() {
         return fStorage;
     }
@@ -743,6 +743,38 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void removeInvitedPlayer(@NotNull FPlayer fPlayer) {
         invitedPlayers.remove(fPlayer);
+    }
+
+    public double getHappiness(@NotNull PopulationLevel level) {
+        return populationHappiness.getOrDefault(level, 0.0);
+    }
+
+    public void setHappiness(@NotNull PopulationLevel level, double happiness) {
+        populationHappiness.put(level, populationHappiness.getOrDefault(level, 0.0) + happiness);
+    }
+
+    public long getDiscordTextChannelId() {
+        return discordTextChannelId;
+    }
+
+    public void setDiscordTextChannelId(long channelId) {
+        this.discordTextChannelId = channelId;
+    }
+
+    public long getDiscordVoiceChannelId() {
+        return discordVoiceChannelId;
+    }
+
+    public void setDiscordVoiceChannelId(long channelId) {
+        this.discordVoiceChannelId = channelId;
+    }
+
+    public long getDiscordRoleId() {
+        return discordRoleId;
+    }
+
+    public void setDiscordRoleId(long roleId) {
+        this.discordRoleId = roleId;
     }
 
     @Override

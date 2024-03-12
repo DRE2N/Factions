@@ -20,7 +20,6 @@ import de.erethon.factions.util.FUtil;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -58,6 +57,9 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
     private String shortName;
     private String longName;
     private double warScore;
+    private long discordCategoryId = -1;
+    private long discordArchiveCategoryId = -1;
+    private long discordRoleId = -1;
     /* Temporary */
     private FAccount fAccount;
 
@@ -144,6 +146,10 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         this.shortName = config.getString("shortName");
         this.longName = config.getString("longName");
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
+        this.warScore = config.getDouble("warScore", warScore);
+        this.discordCategoryId = config.getLong("discordCategoryId", discordCategoryId);
+        this.discordArchiveCategoryId = config.getLong("discordArchiveCategoryId", discordArchiveCategoryId);
+        this.discordRoleId = config.getLong("discordRoleId", discordRoleId);
     }
 
     private void loadRegions(String key, Collection<Region> into) {
@@ -170,6 +176,9 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         config.set("shortName", shortName);
         config.set("longName", longName);
         config.set("warScore", warScore);
+        config.set("discordCategoryId", discordCategoryId);
+        config.set("discordArchiveCategoryId", discordArchiveCategoryId);
+        config.set("discordRoleId", discordRoleId);
     }
 
     /* Dummy getters and setters */
@@ -318,6 +327,30 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     public void removeWarScore(double amount) {
         this.warScore -= amount;
+    }
+
+    public long getDiscordCategoryId() {
+        return discordCategoryId;
+    }
+
+    public void setDiscordCategoryId(long categoryId) {
+        this.discordCategoryId = categoryId;
+    }
+
+    public long getDiscordArchiveCategoryId() {
+        return discordArchiveCategoryId;
+    }
+
+    public void setDiscordArchiveCategoryId(long categoryId) {
+        this.discordArchiveCategoryId = categoryId;
+    }
+
+    public long getDiscordRoleId() {
+        return discordRoleId;
+    }
+
+    public void setDiscordRoleId(long roleId) {
+        this.discordRoleId = roleId;
     }
 
     public @NotNull FAccount getFAccount() {
