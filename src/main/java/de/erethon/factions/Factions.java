@@ -29,7 +29,7 @@ import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.region.protection.BlockProtectionListener;
 import de.erethon.factions.region.protection.EntityProtectionListener;
 import de.erethon.factions.region.schematic.RegionSchematicManager;
-import de.erethon.factions.ui.UIFactionsListener;
+import de.erethon.factions.integrations.UIFactionsListener;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.WarHistory;
 import de.erethon.factions.war.WarListener;

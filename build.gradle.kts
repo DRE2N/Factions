@@ -1,5 +1,3 @@
-/**
- */
 plugins {
     `java-library`
     id("io.papermc.paperweight.userdev") version "1.5.11"

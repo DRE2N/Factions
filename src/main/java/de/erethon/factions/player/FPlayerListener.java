@@ -4,14 +4,12 @@ import de.erethon.aergia.ui.UIComponent;
 import de.erethon.factions.Factions;
 import de.erethon.factions.event.FPlayerCrossRegionEvent;
 import de.erethon.factions.region.Region;
-import de.erethon.factions.region.RegionCache;
-import de.erethon.factions.ui.UIFactionsListener;
+import de.erethon.factions.integrations.UIFactionsListener;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 /**
