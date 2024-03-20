@@ -199,7 +199,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     public void disband(@NotNull FactionDisbandEvent.Reason reason) {
         FLogger.FACTION.log("Disbanding faction " + id + " (" + name + ") reason: " + reason.name() + "...");
         new FactionDisbandEvent(this, reason).callEvent();
-        plugin.getFactionCache().getCache().remove(id);
+        plugin.getFactionCache().removeFaction(this);
         if (alliance != null) {
             alliance.removeFaction(this);
         }

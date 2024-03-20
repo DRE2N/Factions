@@ -32,6 +32,7 @@ import de.erethon.factions.region.protection.BlockProtectionListener;
 import de.erethon.factions.region.protection.EntityProtectionListener;
 import de.erethon.factions.region.schematic.RegionSchematicManager;
 import de.erethon.factions.integrations.UIFactionsListener;
+import de.erethon.factions.statistic.FStatistics;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.WarHistory;
 import de.erethon.factions.war.WarListener;
@@ -107,6 +108,7 @@ public final class Factions extends EPlugin {
     /* Tasks */
     private BukkitTask backupTask;
     private BukkitTask saveDataTask;
+    private BukkitTask updateStatisticsTask;
     private BukkitTask webCacheUpdateTask;
 
     /* Listeners */
@@ -165,6 +167,7 @@ public final class Factions extends EPlugin {
         }
         loadWarHistory();
         loadWarPhaseManager();
+        FStatistics.initialize();
         runWebApplication();
         runTasks();
         loadCommands();
@@ -255,6 +258,7 @@ public final class Factions extends EPlugin {
         warPhaseManager.updateCurrentStageTask();
         runSaveDataTask();
         runBackupTask();
+        updateStatisticsTask();
         if (fConfig.isWebEnabled()) {
             runWebCacheUpdateTask();
         }
@@ -430,6 +434,14 @@ public final class Factions extends EPlugin {
         }
         long interval = fConfig.getBackupInterval() * TickUtil.MINUTE;
         backupTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::createBackup, interval, interval);
+    }
+
+    public void updateStatisticsTask() {
+        if (updateStatisticsTask != null) {
+            updateStatisticsTask.cancel();
+        }
+        long interval = fConfig.getUpdateStatisticsInterval() * TickUtil.MINUTE;
+        updateStatisticsTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this, FStatistics::update, interval, interval);
     }
 
     public void runWebCacheUpdateTask() {

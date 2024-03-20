@@ -4,7 +4,6 @@ import de.erethon.aergia.util.BroadcastUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
-import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.entity.FEntityCache;
 import de.erethon.factions.event.FPlayerFactionLeaveEvent;
 import de.erethon.factions.event.FactionCreateEvent;
@@ -54,6 +53,10 @@ public class FactionCache extends FEntityCache<Faction> {
         new FactionCreateEvent(faction, fPlayer).callEvent();
         BroadcastUtil.broadcast(FMessage.FACTION_INFO_CREATED.message(fPlayer.getLastName(), faction.getName()));
         return faction;
+    }
+
+    protected void removeFaction(@NotNull Faction faction) {
+        cache.remove(faction.getId());
     }
 
     /**

@@ -42,6 +42,7 @@ public class FConfig extends EConfig {
     private int maximumLongNameChars = 128;
     private int maximumNameChars = 64;
     private int maximumShortNameChars = 32;
+    private long updateStatisticsInterval = 5; // minutes
 
     /* Alliance */
     private long allianceJoinCooldown = TimeUnit.DAYS.toMillis(30);
@@ -151,6 +152,7 @@ public class FConfig extends EConfig {
         maximumLongNameChars = config.getInt("maximumLongNameChars", maximumLongNameChars);
         maximumNameChars = config.getInt("maximumNameChars", maximumNameChars);
         maximumShortNameChars = config.getInt("maximumShortNameChars", maximumShortNameChars);
+        updateStatisticsInterval = config.getLong("updateStatisticsInterval", updateStatisticsInterval);
         allianceJoinCooldown = config.getLong("allianceJoinCooldown", allianceJoinCooldown);
         factionChatAdminIcon = config.getString("factionChatAdminIcon", factionChatAdminIcon);
         factionChatModIcon = config.getString("factionChatModIcon", factionChatModIcon);
@@ -257,6 +259,10 @@ public class FConfig extends EConfig {
 
     public int getMaximumShortNameChars() {
         return maximumShortNameChars;
+    }
+
+    public long getUpdateStatisticsInterval() {
+        return updateStatisticsInterval;
     }
 
     public long getAllianceJoinCooldown() {
