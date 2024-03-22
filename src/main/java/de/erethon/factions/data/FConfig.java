@@ -58,8 +58,8 @@ public class FConfig extends EConfig {
 
     /* Economy */
     private Map<FactionLevel, Double> maximumFactionDebts = new HashMap<>();
-    private double regionPriceBase = 250.0;
-    private double regionPricePerChunk = 0.3;
+    private double regionPriceBase = 200.0;
+    private double regionPricePerChunk = 0.2;
     private double regionPricePerRegion = 50.0;
     private double regionPricePerRegionFactor = 0.25;
     private double regionPriceTaxRate = 0.02;

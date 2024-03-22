@@ -24,6 +24,7 @@ import de.erethon.factions.integrations.DiscordBotListener;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
 import de.erethon.factions.player.FPlayerListener;
+import de.erethon.factions.policy.FPolicyConfig;
 import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.polls.CapturedRegionsPoll;
 import de.erethon.factions.region.AutomatedChunkManager;
@@ -82,6 +83,7 @@ public final class Factions extends EPlugin {
     private File debugFile;
     private File fLoggerFile;
     private File fConfigFile;
+    private File fPolicyConfigFile;
     private File warPhaseManagerFile;
 
     /* Registries */
@@ -89,6 +91,7 @@ public final class Factions extends EPlugin {
 
     /* Configs */
     private FConfig fConfig;
+    private FPolicyConfig fPolicyConfig;
 
     /* Caches */
     private AllianceCache allianceCache;
@@ -194,6 +197,7 @@ public final class Factions extends EPlugin {
         debugFile = new File(getDataFolder(), "debug.txt");
         fLoggerFile = new File(getDataFolder(), "logger.yml");
         fConfigFile = new File(getDataFolder(), "config.yml");
+        fPolicyConfigFile = new File(getDataFolder(), "policies.yml");
         warPhaseManagerFile = FileUtil.initFile(this, new File(WAR, "schedule.yml"), "defaults/schedule.yml");
     }
 
@@ -210,6 +214,7 @@ public final class Factions extends EPlugin {
         fConfig = new FConfig(fConfigFile);
         fConfig.lateInit();
         fConfig.lateLoad();
+        fPolicyConfig = new FPolicyConfig(fPolicyConfigFile);
     }
 
     public void loadFMessages() {
@@ -500,6 +505,10 @@ public final class Factions extends EPlugin {
 
     public @NotNull FConfig getFConfig() {
         return fConfig;
+    }
+
+    public @NotNull FPolicyConfig getFPolicyConfig() {
+        return fPolicyConfig;
     }
 
     public @NotNull AllianceCache getAllianceCache() {
