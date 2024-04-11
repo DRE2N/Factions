@@ -15,6 +15,7 @@ public class WarPhaseChangeEvent extends Event {
     private final WarPhase oldPhase, newPhase;
 
     public WarPhaseChangeEvent(@NotNull WarPhase oldPhase, @NotNull WarPhase newPhase) {
+        super(true);
         this.oldPhase = oldPhase;
         this.newPhase = newPhase;
     }
