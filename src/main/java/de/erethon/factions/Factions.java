@@ -20,6 +20,7 @@ import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.TaxManager;
 import de.erethon.factions.faction.FactionCache;
+import de.erethon.factions.integrations.BoltIntegration;
 import de.erethon.factions.integrations.DiscordBotListener;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
@@ -177,6 +178,7 @@ public final class Factions extends EPlugin {
         registerListeners();
         registerAergiaPlaceholders();
         registerCustomEntities();
+        BoltIntegration.setup(this);
     }
 
     public void initFolders() {
@@ -557,6 +559,10 @@ public final class Factions extends EPlugin {
 
     public @NotNull BlockProtectionListener getBlockProtectionListener() {
         return blockProtectionListener;
+    }
+
+    public @NotNull DiscordBotListener getDiscordBotListener() {
+        return discordBotListener;
     }
 
     public @NotNull EntityProtectionListener getEntityProtectionListener() {

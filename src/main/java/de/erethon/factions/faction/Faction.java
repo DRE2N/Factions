@@ -464,6 +464,10 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         return members.contains(fPlayer);
     }
 
+    public boolean isMember(@NotNull UUID uuid) {
+        return members.contains(uuid);
+    }
+
     public int getMaxMembers() {
         return (int) getAttributeValue("max_players");
     }

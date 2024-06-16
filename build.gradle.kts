@@ -18,6 +18,7 @@ repositories {
     maven("https://jitpack.io")
     maven("https://erethon.de/repo")
     maven("https://papermc.io/repo/repository/maven-public/")
+    maven("https://repo.codemc.io/repository/maven-public/")
 }
 
 dependencies {
@@ -33,6 +34,9 @@ dependencies {
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core")
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit") { isTransitive = false }
     compileOnly("io.prometheus:simpleclient:0.16.0")
+    compileOnly("org.popcraft:bolt-common:1.0.480")
+    compileOnly("org.popcraft:bolt-bukkit:1.0.480")
+    compileOnly("net.dv8tion:JDA:5.0.0-beta.20")
 }
 
 
