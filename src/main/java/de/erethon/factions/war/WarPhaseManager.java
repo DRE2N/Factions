@@ -60,7 +60,7 @@ public class WarPhaseManager extends EConfig {
         FLogger.WAR.log("Current war phase stage: " + currentStage.getWarPhase() + ", remaining duration: " + DateUtil.formatDateDiff(System.currentTimeMillis() + delay));
     }
 
-    void updateCurrentStage() {
+    private void updateCurrentStage() {
         // Cancel previous tasks.
         cancelTasks();
         // Initialize or progress the current stage.
@@ -84,7 +84,7 @@ public class WarPhaseManager extends EConfig {
         currentStage = nextStage;
     }
 
-    void initializeStage() {
+    private void initializeStage() {
         currentStage = getFirstStageOfTheDay();
         long currentProgress = System.currentTimeMillis() - midnight.toInstant().toEpochMilli();
 
@@ -95,7 +95,7 @@ public class WarPhaseManager extends EConfig {
         new WarPhaseChangeEvent(WarPhase.UNDEFINED, currentStage.getWarPhase()).callEvent();
     }
 
-    void incrementCurrentDay() {
+    private void incrementCurrentDay() {
         midnight = midnight.plusDays(1);
         // Increase week count on each monday & reset week count if no scheduled weeks left.
         if (midnight.getDayOfWeek() == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
@@ -103,14 +103,14 @@ public class WarPhaseManager extends EConfig {
         }
     }
 
-    WarPhaseStage getFirstStageOfTheDay() {
+    private WarPhaseStage getFirstStageOfTheDay() {
         if (schedule.get(currentWeek) == null) {
             currentWeek = 1;
         }
         return schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
     }
 
-    void cancelTasks()  {
+    private void cancelTasks()  {
         if (!runningTasks.isEmpty()) {
             Iterator<BukkitTask> iterator = runningTasks.iterator();
             while (iterator.hasNext()) {
