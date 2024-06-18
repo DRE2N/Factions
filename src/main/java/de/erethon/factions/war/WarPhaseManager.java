@@ -104,6 +104,9 @@ public class WarPhaseManager extends EConfig {
     }
 
     WarPhaseStage getFirstStageOfTheDay() {
+        if (schedule.get(currentWeek) == null) {
+            currentWeek = 1;
+        }
         return schedule.get(currentWeek).get(midnight.getDayOfWeek().getValue());
     }
 
