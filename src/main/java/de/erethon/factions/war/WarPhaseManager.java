@@ -55,7 +55,7 @@ public class WarPhaseManager extends EConfig {
         final long taskDelay = (delay / 50) - (TickUtil.MINUTE * minutes) + TickUtil.SECOND; // 1 second puffer
 
         // Schedule next update task.
-        runningTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> new PhaseSwitchTask(this, minutes).start(), taskDelay);
+        runningTask = Bukkit.getScheduler().runTaskLater(plugin, () -> new PhaseSwitchTask(this, minutes).start(), taskDelay);
         FLogger.WAR.log("Current war phase stage: " + currentStage.getWarPhase() + ", remaining duration: " + DateUtil.formatDateDiff(System.currentTimeMillis() + delay));
     }
 
