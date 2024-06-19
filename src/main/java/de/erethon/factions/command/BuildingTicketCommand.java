@@ -1,6 +1,6 @@
 package de.erethon.factions.command;
 
-import de.erethon.aergia.bedrock.chat.MessageUtil;
+import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.aergia.util.TeleportUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.building.BuildSite;

@@ -23,7 +23,7 @@ import java.util.function.Supplier;
  */
 public class FUtil {
 
-    private static final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
+    public static final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
 
     public static boolean isAdjacent(@NotNull Faction faction, @NotNull Faction other) {
         for (Region region : faction.getRegions()) {

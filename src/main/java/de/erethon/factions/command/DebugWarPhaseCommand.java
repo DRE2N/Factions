@@ -1,6 +1,6 @@
 package de.erethon.factions.command;
 
-import de.erethon.aergia.bedrock.misc.EnumUtil;
+import de.erethon.bedrock.misc.EnumUtil;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.war.WarPhase;

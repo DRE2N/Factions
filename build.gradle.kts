@@ -28,8 +28,8 @@ dependencies {
     compileOnly("de.erethon.aergia:Aergia:1.0.1")
     compileOnly("org.jetbrains:annotations:23.1.0")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") { isTransitive = false }
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
     implementation(platform("com.intellectualsites.bom:bom-newest:1.41")) // Ref: https://github.com/IntellectualSites/bom
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core")
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit") { isTransitive = false }
@@ -50,6 +50,10 @@ publishing {
             from(components["java"])
         }
     }
+}
+
+tasks.withType(Test::class) {
+    useJUnitPlatform()
 }
 
 tasks {

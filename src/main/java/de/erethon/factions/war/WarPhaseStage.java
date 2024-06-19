@@ -45,7 +45,7 @@ public class WarPhaseStage {
 
     public long getScheduleDuration() {
         WarPhaseStage lastStage = getLastWarPhaseStage();
-        return lastStage.getPreviousDurations() + lastStage.getDuration();
+        return lastStage.getFullDuration();
     }
 
     public @NotNull WarPhase getWarPhase() {

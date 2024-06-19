@@ -19,6 +19,10 @@ public class BoltIntegration {
         }
         initialized = true;
 
+        if (!plugin.getServer().getPluginManager().isPluginEnabled("Bolt")) {
+            return;
+        }
+
         BoltAPI bolt = plugin.getServer().getServicesManager().load(BoltAPI.class);
 
         if (bolt == null) {

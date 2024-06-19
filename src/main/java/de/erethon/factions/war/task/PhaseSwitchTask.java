@@ -56,7 +56,8 @@ public class PhaseSwitchTask extends BukkitRunnable {
 
     public @NotNull BukkitTask start() {
         BukkitTask task = runTaskTimerAsynchronously(plugin, 0, TickUtil.SECOND);
-        warPhaseManager.getRunningTasks().add(task);
+        warPhaseManager.cancelRunningTask();
+        warPhaseManager.setRunningTask(task);
         return task;
     }
 
