@@ -43,11 +43,6 @@ public class WarPhaseStage {
         return previousDurations + duration;
     }
 
-    public long getScheduleDuration() {
-        WarPhaseStage lastStage = getLastWarPhaseStage();
-        return lastStage.getFullDuration();
-    }
-
     public @NotNull WarPhase getWarPhase() {
         return warPhase;
     }

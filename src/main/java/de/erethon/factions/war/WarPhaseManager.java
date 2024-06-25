@@ -71,7 +71,11 @@ public class WarPhaseManager extends EConfig {
         WarPhaseStage nextStage = currentStage.getNextStage();
 
         if (nextStage == null) { // the current day schedule appears to have ended.
-            incrementCurrentDay();
+            midnight = midnight.plusDays(1);
+            // Increase week count on each monday & reset week count if no scheduled weeks left.
+            if (midnight.getDayOfWeek() == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
+                currentWeek = 1;
+            }
             nextStage = getFirstStageOfTheDay();
         }
         final WarPhase currentPhase = currentStage.getWarPhase();
@@ -96,14 +100,6 @@ public class WarPhaseManager extends EConfig {
         assert currentStage != null : "Current stage is null";
         WarPhase.UNDEFINED.onChangeTo(currentStage.getWarPhase());
         new WarPhaseChangeEvent(WarPhase.UNDEFINED, currentStage.getWarPhase()).callEvent();
-    }
-
-    private void incrementCurrentDay() {
-        midnight = midnight.plusDays(1);
-        // Increase week count on each monday & reset week count if no scheduled weeks left.
-        if (midnight.getDayOfWeek() == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
-            currentWeek = 1;
-        }
     }
 
     private WarPhaseStage getFirstStageOfTheDay() {
@@ -167,7 +163,7 @@ public class WarPhaseManager extends EConfig {
             for (int day : days) {
                 WarPhaseStage warPhaseStage = new WarPhaseStage(daySection, 0);
                 WarPhaseStage lastStage = warPhaseStage.getLastWarPhaseStage();
-                long fullDuration = lastStage.getScheduleDuration();
+                long fullDuration = lastStage.getLastWarPhaseStage().getFullDuration();
 
                 if (fullDuration > DAY_DURATION) {
                     FLogger.ERROR.log("Duration of week " + week + " day " + day + " is too long. Inactive stage will be used instead...");

@@ -262,7 +262,11 @@ public final class Factions extends EPlugin {
         if (taxManager != null) {
             taxManager.runFactionTaxTask();
         }
-        warPhaseManager.updateCurrentStageTask();
+        try {
+            warPhaseManager.updateCurrentStageTask();
+        } catch (Exception e) {
+            FLogger.ERROR.log("Failed to start war phase manager task: " + e.getMessage());
+        }
         runSaveDataTask();
         runBackupTask();
         updateStatisticsTask();
