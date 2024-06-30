@@ -38,7 +38,7 @@ public class PollBuilder<V> {
         return this;
     }
 
-    public @NotNull PollBuilder<V> subjects(@NotNull Collection<@NotNull V> subjects) {
+    public @NotNull PollBuilder<V> subjects(@NotNull Collection<V> subjects) {
         this.subjects = subjects;
         return this;
     }

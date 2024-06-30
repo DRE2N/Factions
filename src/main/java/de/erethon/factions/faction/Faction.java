@@ -546,7 +546,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         }
         ItemStack copy = new ItemStack(flag.getType());
         BannerMeta copyMeta = (BannerMeta) copy.getItemMeta();
-        copyMeta.setBaseColor(bannerMeta.getBaseColor());
+        //copyMeta.setBaseColor(bannerMeta.getBaseColor()); TODO Update to DataComponents
         copyMeta.setPatterns(bannerMeta.getPatterns());
         copy.setItemMeta(copyMeta);
         this.flag = copy;

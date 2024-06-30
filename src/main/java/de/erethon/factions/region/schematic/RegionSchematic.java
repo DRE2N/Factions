@@ -211,7 +211,7 @@ public class RegionSchematic extends EConfig {
         return blocks[0][0].length;
     }
 
-    public void foreach(@NotNull QuadConsumer<Integer, Integer, Integer, @Nullable String> action) {
+    public void foreach(@NotNull QuadConsumer<Integer, Integer, Integer, String> action) {
         int xLength = getXLength(), yLength = getYLength(), zLength = getZLength();
 
         for (int x = 0; x < xLength; x++) {

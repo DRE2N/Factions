@@ -37,13 +37,13 @@ public class FUtil {
     }
 
     @SafeVarargs
-    public static <V> @Nullable V getNotNull(@NotNull Supplier<@Nullable V>... suppliers) {
+    public static <V> @Nullable V getNotNull(@NotNull Supplier<V>... suppliers) {
         return getNotNullOr(null, suppliers);
     }
 
     @SafeVarargs
     @Contract("!null, _ -> !null; null, _ -> _")
-    public static <V> @Nullable V getNotNullOr(@Nullable V def, @NotNull Supplier<@Nullable V>... suppliers) {
+    public static <V> @Nullable V getNotNullOr(@Nullable V def, @NotNull Supplier<V>... suppliers) {
         for (Supplier<V> supplier : suppliers) {
             V value = supplier.get();
             if (value != null) {
@@ -54,7 +54,7 @@ public class FUtil {
     }
 
     @SafeVarargs
-    public static <V> @NotNull V getNotNullOrThrow(@NotNull Supplier<@Nullable V>... suppliers) {
+    public static <V> @NotNull V getNotNullOrThrow(@NotNull Supplier<V>... suppliers) {
         V value = getNotNullOr(null, suppliers);
         assert value != null : "Null value not permitted";
         return value;

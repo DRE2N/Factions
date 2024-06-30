@@ -30,7 +30,7 @@ public interface RestoreProcess {
 
     void setOnFinish(@Nullable Runnable onFinish);
 
-    @NotNull Deque<@NotNull BlockPosition> getRemainingPositions();
+    @NotNull Deque<BlockPosition> getRemainingPositions();
 
     default void addRemainingPosition(@NotNull Block block) {
         addRemainingPosition(block.getLocation().toBlock());

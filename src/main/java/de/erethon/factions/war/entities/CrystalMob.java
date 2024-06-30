@@ -1,17 +1,21 @@
 package de.erethon.factions.war.entities;
 
 import de.erethon.factions.util.FUtil;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.level.Level;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.entity.TextDisplay;
 import org.jetbrains.annotations.NotNull;
 
 public class CrystalMob extends Slime {
@@ -42,7 +46,7 @@ public class CrystalMob extends Slime {
     }
 
     @Override
-    public @NotNull Packet<ClientGamePacketListener> getAddEntityPacket() {
+    public @NotNull Packet<ClientGamePacketListener> getAddEntityPacket(@NotNull ServerEntity entity) {
         return FUtil.getAddEntityPacketWithType(this, EntityType.END_CRYSTAL);
     }
 

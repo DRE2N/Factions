@@ -270,9 +270,9 @@ public class Building {
                 }
                 for (Location loc : result) {
                     if (allowed) {
-                        player.spawnParticle(Particle.REDSTONE, loc, 5, new Particle.DustOptions(Color.LIME, 3));
+                        player.spawnParticle(Particle.DUST, loc, 5, new Particle.DustOptions(Color.LIME, 3));
                     } else {
-                        player.spawnParticle(Particle.REDSTONE, loc, 5, new Particle.DustOptions(Color.RED, 3));
+                        player.spawnParticle(Particle.DUST, loc, 5, new Particle.DustOptions(Color.RED, 3));
                     }
                 }
             }

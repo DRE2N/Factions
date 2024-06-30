@@ -19,12 +19,12 @@ public abstract class FactionPoll<V> extends Poll<V> {
     protected final Faction faction;
 
     public FactionPoll(@NotNull String name, @NotNull Faction faction, @NotNull PollScope scope,
-                       @NotNull Collection<@NotNull V> subjects, @NotNull Function<V, ItemStack> subjectConverter) {
+                       @NotNull Collection<V> subjects, @NotNull Function<V, ItemStack> subjectConverter) {
         this(name, faction, scope, subjects, subjectConverter, null);
     }
 
     public FactionPoll(@NotNull String name, @NotNull Faction faction, @NotNull PollScope scope,
-                       @NotNull Collection<@NotNull V> subjects, @NotNull Function<V, ItemStack> subjectConverter,
+                       @NotNull Collection<V> subjects, @NotNull Function<V, ItemStack> subjectConverter,
                        @Nullable Comparator<V> comparator) {
         super(name, scope, subjects, subjectConverter, comparator);
         this.faction = faction;

@@ -4,17 +4,15 @@ import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.misc.FileUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.faction.Faction;
+import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
-import de.erethon.hephaestus.HItem;
-import de.erethon.hephaestus.ItemLibrary;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -41,7 +39,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class BuildingManager implements Listener {
 
-    private final static ResourceLocation ITEM_ID = new ResourceLocation("factions", "building_item");
+    //private final static ResourceLocation ITEM_ID = new ResourceLocation("factions", "building_item");
 
     Factions plugin = Factions.get();
 
@@ -57,13 +55,13 @@ public class BuildingManager implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::tickBuildingEffects, 0, plugin.getFConfig().getTicksPerBuildingTick());
         // Register the building item if it doesn't exist
-        ItemLibrary lib = Main.itemLibrary;
+        /*ItemLibrary lib = Main.itemLibrary;
         if (!lib.has(ITEM_ID)) {
             HItem item = new HItem.Builder(plugin, ITEM_ID).baseItem(Material.CHEST).register();
             item.setPlugin(plugin);
             item.setBehaviour(new FBuildingItemBehaviour(item));
             lib.enableHandler(plugin);
-        }
+        }*/
     }
 
     public @Nullable Building getById(@NotNull String id) {
@@ -184,12 +182,41 @@ public class BuildingManager implements Listener {
     }
 
     public static ItemStack getBuildingItemStack(Building building) {
-        HItem item = Main.itemLibrary.get(ITEM_ID);
+        /*HItem item = Main.itemLibrary.get(ITEM_ID);
         ItemStack stack = item.getItem().getBukkitStack();
         stack.editMeta(meta -> {
             meta.getPersistentDataContainer().set(FBuildingItemBehaviour.KEY, PersistentDataType.STRING, building.getId());
             meta.displayName(building.getName());
-        });
-        return stack;
+        });*/
+        return new ItemStack(Material.BEDROCK);
+    }
+
+    public static List<Building> getUnlockedBuildingsForPlacement(FPlayer fPlayer, Faction faction, Region region) {
+        List<Building> available = new ArrayList<>();
+        for (Building building : Factions.get().getBuildingManager().getBuildings()) {
+            if (building.getRequiredBuildings().isEmpty()) {
+                available.add(building);
+                continue;
+            }
+            Set<Building> factionBuildings = new HashSet<>();
+            for (BuildSite site : faction.getFactionBuildings()) {
+                if (site.isActive() && site.isFinished()) {
+                    factionBuildings.add(site.getBuilding());
+                }
+            }
+            for (BuildSite site : region.getBuildSites()) {
+                if (site.isActive() && site.isFinished()) {
+                    factionBuildings.add(site.getBuilding());
+                }
+            }
+            for (String string : building.getRequiredBuildings()) {
+                Building required = Factions.get().getBuildingManager().getById(string);
+                if (!factionBuildings.contains(required)) {
+                    continue;
+                }
+                available.add(building);
+            }
+        }
+        return available;
     }
 }

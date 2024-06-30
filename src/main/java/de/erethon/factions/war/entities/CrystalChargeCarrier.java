@@ -29,7 +29,8 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,8 +38,8 @@ public class CrystalChargeCarrier extends IronGolem {
 
     public static NamespacedKey CARRIER_KEY = new NamespacedKey(Factions.get(), "crystal-charge-carrier");
     public static NamespacedKey CARRIER_PLAYER_KEY = new NamespacedKey(Factions.get(), "crystal-charge-carrier");
-    public static final AttributeModifier CARRIER_DEBUFF = new AttributeModifier("factions-carrier-damage-debuff", -1000, AttributeModifier.Operation.ADD_NUMBER);
-    public static final AttributeModifier CARRIER_BUFF = new AttributeModifier("factions-carrier-speed-buff", Factions.get().getFConfig().getCrystalCarrierSpeedBuff(), AttributeModifier.Operation.ADD_NUMBER);
+    public static final AttributeModifier CARRIER_DEBUFF = new AttributeModifier(CARRIER_KEY, -1000, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.ANY);
+    public static final AttributeModifier CARRIER_BUFF = new AttributeModifier(CARRIER_KEY, Factions.get().getFConfig().getCrystalCarrierSpeedBuff(), AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.ANY);
 
     private final Factions plugin = Factions.get();
     private Region region;
