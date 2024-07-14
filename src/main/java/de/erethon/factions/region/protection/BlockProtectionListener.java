@@ -84,7 +84,7 @@ public class BlockProtectionListener implements Listener {
             return;
         }
         if (state == TriState.FALSE || !region.getType().isAllowsBuilding() ||
-                (region.getType() == RegionType.WAR_ZONE && plugin.getWarPhaseManager().getCurrentWarPhase().isAllowPvP())) { // Can only build during peace.
+                (region.getType() == RegionType.WAR_ZONE && plugin.getCurrentWarPhase().isAllowPvP())) { // Can only build during peace.
             cancel(event, fPlayer, region, message);
             return;
         }

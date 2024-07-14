@@ -82,6 +82,15 @@ cmd:
   objective:
     create:
       success: "<green>War object has been created."
+  portal:
+    addCondition:
+      success: "<green>Condition <dark_green><arg:0></dark_green> has been added to portal <dark_green><arg:1></dark_green>."
+    create:
+      success: "<green>Portal <dark_green><arg:0></dark_green> has been created."
+    removeCondition:
+      success: "<green>Condition <dark_green><arg:0></dark_green> has been removed from portal <dark_green><arg:1></dark_green>."
+    setLocation:
+      success: "<green>Location of alliance <dark_green><arg:0></dark_green> for portal <dark_green><arg:1></dark_green> has been set."
   pos1:
     success: "<green>The first position has been set to <dark_green><arg:0></dark_green>."
   pos2:
@@ -256,6 +265,12 @@ error:
   playerNotFound: "<red>The player <gold><arg:0></gold> could not be found."
   playerRegionNull: "<red>You must be within a region to perform this action."
   pollNotFound: "<red>The poll <gold><arg:0></gold> could not be found."
+  portal:
+    allianceNotSetup: "<red>The portal is not set up for your alliance."
+    capitalClosed: "<red>The capital portal is closed."
+    conditionNotFound: "<red>The condition <gold><arg:0></gold> could not be found."
+    notFound: "<red>The portal <gold><arg:0></gold> could not be found."
+    pvpNotAllowed: "<red>The portal is closed during the peace phase."
   regionAlreadyClaimed: "<red>The region is already claimed."
   regionAlreadyOccupied: "<red>The region is already occupied by a faction."
   regionInAnotherWorld: "<red>The region is in a different world than you."
@@ -375,12 +390,12 @@ region:
   allianceCity: "Alliance City"
   barren: "Barren"
   capital: "Capital"
-  city: "City"
   desert: "Desert"
   farmland: "Farmland"
   forest: "Forest"
   magic: "Magic"
   mountainous: "Mountainous"
+  pve: "PvE"
   sea: "Sea"
   warZone: "War Zone"
   info:

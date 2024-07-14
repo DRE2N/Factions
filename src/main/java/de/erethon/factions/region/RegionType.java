@@ -16,14 +16,14 @@ public enum RegionType {
     ALLIANCE_CITY(FMessage.REGION_ALLIANCE_CITY, Material.PLAYER_HEAD, NamedTextColor.LIGHT_PURPLE, false),
     BARREN(FMessage.REGION_BARREN, Material.DEAD_BUSH, NamedTextColor.GOLD),
     CAPITAL(FMessage.REGION_CAPITAL, Material.BRICK, NamedTextColor.DARK_RED, false),
-    CITY(FMessage.REGION_CITY, Material.GLASS_PANE, NamedTextColor.WHITE),
     DESERT(FMessage.REGION_DESERT, Material.SAND, NamedTextColor.YELLOW),
     FARMLAND(FMessage.REGION_FARMLAND, Material.SHORT_GRASS, NamedTextColor.GREEN),
     FOREST(FMessage.REGION_FOREST, Material.OAK_LOG, NamedTextColor.DARK_GREEN),
     MAGIC(FMessage.REGION_MAGIC, Material.PURPLE_DYE, NamedTextColor.DARK_PURPLE),
     MOUNTAINOUS(FMessage.REGION_MOUNTAINOUS, Material.STONE, NamedTextColor.GRAY),
     SEA(FMessage.REGION_SEA, Material.WATER_BUCKET, NamedTextColor.BLUE),
-    WAR_ZONE(FMessage.REGION_WAR_ZONE, Material.IRON_SWORD, NamedTextColor.RED);
+    WAR_ZONE(FMessage.REGION_WAR_ZONE, Material.IRON_SWORD, NamedTextColor.RED),
+    PVE(FMessage.REGION_PVE, Material.DIAMOND_SWORD, NamedTextColor.AQUA);
 
     private final FMessage name;
     private final Material icon;

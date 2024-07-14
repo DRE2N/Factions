@@ -45,7 +45,7 @@ public class WarCastleStructure extends RegionStructure implements Listener {
 
     @Override
     public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @Nullable Block block) {
-        if (!plugin.getWarPhaseManager().getCurrentWarPhase().isAllowPvP()) {
+        if (!plugin.getCurrentWarPhase().isAllowPvP()) {
             return fPlayer.hasAlliance() && fPlayer.getAlliance() == region.getAlliance() ? TriState.TRUE : TriState.FALSE;
         }
         return super.canBuild(fPlayer, block);
@@ -55,7 +55,7 @@ public class WarCastleStructure extends RegionStructure implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (!plugin.getWarPhaseManager().getCurrentWarPhase().isAllowPvP()) {
+        if (!plugin.getCurrentWarPhase().isAllowPvP()) {
             return;
         }
         if (!containsPosition(event.getBlock().getLocation())) {
@@ -68,7 +68,7 @@ public class WarCastleStructure extends RegionStructure implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockExplode(BlockExplodeEvent event) {
-        if (!plugin.getWarPhaseManager().getCurrentWarPhase().isAllowPvP()) {
+        if (!plugin.getCurrentWarPhase().isAllowPvP()) {
             return;
         }
         if (!containsPosition(event.getBlock().getLocation())) {
@@ -94,7 +94,7 @@ public class WarCastleStructure extends RegionStructure implements Listener {
 
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent event) {
-        if (!plugin.getWarPhaseManager().getCurrentWarPhase().isAllowPvP()) {
+        if (!plugin.getCurrentWarPhase().isAllowPvP()) {
             return;
         }
         restoreProcess.onChunkLoad(event.getChunk());

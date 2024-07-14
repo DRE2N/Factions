@@ -20,14 +20,14 @@ public class DebugCommand extends FCommand {
         setFUsage(getCommand());
         setDescription("Debug command");
         setHelpType(HelpType.LISTED);
-        setListedHelpHeader("Allianzbefehle");
+        setListedHelpHeader("Debugbefehle");
         addSubCommand(new DebugWarPhaseCommand());
         setAllExecutionPrefixes();
     }
 
     @Override
     public void onExecute(CommandSender sender, String[] args) {
-        if (args.length == 0) {
+        if (args.length == 1) {
             displayHelp(sender);
         }
         if (args[1].equalsIgnoreCase("spawnmob")) {
@@ -42,4 +42,5 @@ public class DebugCommand extends FCommand {
             return;
         }
     }
+
 }

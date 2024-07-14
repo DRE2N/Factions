@@ -57,6 +57,15 @@ cmd:
   objective:
     create:
       success: "<green>Kriegsobjekt wurde erstellt."
+  portal:
+    addCondition:
+      success: "<green>Die Bedingung <dark_green><arg:0></dark_green> wurde dem Portal <dark_green><arg:1></dark_green> hinzugefügt."
+    create:
+      success: "<green>Das Portal <dark_green><arg:0></dark_green> wurde erstellt."
+    removeCondition:
+      success: "<green>Die Bedingung <dark_green><arg:0></dark_green> wurde aus dem Portal <dark_green><arg:1></dark_green> entfernt."
+    setLocation:
+      success: "<green>Die Position der Allianz <dark_green><arg:0></dark_green> für das Portal <dark_green><arg:1></dark_green> wurde gesetzt."
   pos1:
     success: "<green>Die erste Position wurde zu <dark_green><arg:0></dark_green> gesetzt."
   pos2:
@@ -170,6 +179,12 @@ error:
   playerNotFound: "<red>Der Spieler <gold><arg:0></gold> konnte nicht gefunden werden."
   playerRegionNull: "<red>Du musst dich in einer Region befinden, um dies tun zu dürfen."
   pollNotFound: "<red>Die Abstimmung <gold><arg:0></gold> konnte nicht gefunden werden."
+  portal:
+    allianceNotSetup: "<red>Das Portal ist für deine Allianz nicht eingerichtet."
+    capitalClosed: "<red>Das Portal zur Hauptstadt ist geschlossen."
+    conditionNotFound: "<red>Die Bedingung <gold><arg:0></gold> konnte nicht gefunden werden."
+    notFound: "<red>Das Portal <gold><arg:0></gold> konnte nicht gefunden werden."
+    pvpNotAllowed: "<red>Das Portal ist während der Friedenszeit geschlossen."
   regionAlreadyClaimed: "<red>Die Region ist bereits beansprucht."
   regionAlreadyOccupied: "<red>Die Region ist bereits von einer Fraktion besetzt."
   regionInAnotherWorld: "<red>Die Region befindet sich in einer anderen Welt als du."
@@ -274,14 +289,20 @@ region:
   allianceCity: "Allianzstadt"
   barren: "Ödland"
   capital: "Hauptstadt"
-  city: "Stadt"
   desert: "Wüste"
   farmland: "Farmland"
   forest: "Wald"
   magic: "Magie"
   mountainous: "Gebirge"
+  pve: "PvE"
   sea: "See"
   warZone: "Kriegsgebiet"
+  info:
+    header: "<dark_green>[</dark_green><green><arg:0></green><dark_green>]</dark_green><br>"
+    type: "<gray>Typ<dark_gray>:<gray> <arg:0><br>"
+    owner: "<gray>Owner<dark_gray>:<gray> <arg:0><br>"
+    description: "<gray>Beschreibung<dark_gray>:<gray> <arg:0><br>"
+    buildings: "<gray>Gebäude<dark_gray>:<gray> <arg:0><br>"
 ui:
   region:
     displayName: "<gold><arg:0>"

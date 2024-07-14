@@ -11,6 +11,8 @@ import de.erethon.factions.entity.FEntityCache;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.portal.Portal;
+import de.erethon.factions.portal.PortalCondition;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionCache;
 import de.erethon.factions.util.FException;
@@ -222,6 +224,12 @@ public abstract class FCommand extends ECommand {
         return faction == null ? new AbstractMap.SimpleEntry<>(getFaction(getFPlayer(sender)), false) : new AbstractMap.SimpleEntry<>(faction, true);
     }
 
+    protected @NotNull Portal getPortal(@NotNull String arg) {
+        Portal portal = plugin.getPortalManager().getById(parseInt(arg));
+        assure(portal != null, FMessage.ERROR_PORTAL_NOT_FOUND, arg);
+        return portal;
+    }
+
     protected boolean sameFaction(@NotNull FPlayer player, @NotNull FPlayer target) {
         return player.getFaction() != null && player.getFaction() == target.getFaction();
     }
@@ -296,6 +304,14 @@ public abstract class FCommand extends ECommand {
             return List.of();
         }
         return getTabList(fPlayer.getParticipativePolls().keySet(), arg);
+    }
+
+    protected @NotNull List<String> getTabPortals(@NotNull String arg) {
+        return getTabList(plugin.getPortalManager().getPortals().values(), p -> String.valueOf(p.getId()), arg);
+    }
+
+    protected @NotNull List<String> getTabPortalConditions(@NotNull String arg) {
+        return getTabList(PortalCondition.getConditionNames(), arg);
     }
 
     protected double parseDouble(@NotNull String arg) {

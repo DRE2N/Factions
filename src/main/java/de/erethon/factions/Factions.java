@@ -28,6 +28,7 @@ import de.erethon.factions.player.FPlayerListener;
 import de.erethon.factions.policy.FPolicyConfig;
 import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.polls.CapturedRegionsPoll;
+import de.erethon.factions.portal.PortalManager;
 import de.erethon.factions.region.AutomatedChunkManager;
 import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.region.protection.BlockProtectionListener;
@@ -38,6 +39,7 @@ import de.erethon.factions.statistic.FStatistics;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.WarHistory;
 import de.erethon.factions.war.WarListener;
+import de.erethon.factions.war.WarPhase;
 import de.erethon.factions.war.WarPhaseManager;
 import de.erethon.factions.war.entities.CrystalChargeCarrier;
 import de.erethon.factions.war.entities.CrystalMob;
@@ -77,6 +79,7 @@ public final class Factions extends EPlugin {
     public static File REGIONS;
     public static File SCHEMATICS;
     public static File PLAYERS;
+    public static File PORTALS;
     public static File WAR;
     public static File WAR_HISTORY;
 
@@ -99,6 +102,7 @@ public final class Factions extends EPlugin {
     private FactionCache factionCache;
     private RegionManager regionManager;
     private FPlayerCache fPlayerCache;
+    private PortalManager portalManager;
     private FCommandCache fCommandCache;
     private BuildSiteCache buildSiteCache;
 
@@ -193,6 +197,7 @@ public final class Factions extends EPlugin {
         initFolder(REGIONS = new File(getDataFolder(), "regions"));
         initFolder(SCHEMATICS = new File(getDataFolder(), "schematics"));
         initFolder(PLAYERS = new File(getDataFolder(), "players"));
+        initFolder(PORTALS = new File(getDataFolder(), "portals"));
         initFolder(WAR = new File(getDataFolder(), "war"));
         initFolder(WAR_HISTORY = new File(WAR, "history"));
     }
@@ -235,6 +240,7 @@ public final class Factions extends EPlugin {
         factionCache = new FactionCache(FACTIONS);
         regionManager = new RegionManager(REGIONS);
         fPlayerCache = new FPlayerCache(this);
+        portalManager = new PortalManager(PORTALS);
         buildSiteCache = new BuildSiteCache(BUILD_SITES);
     }
 
@@ -242,6 +248,7 @@ public final class Factions extends EPlugin {
         allianceCache.loadAll();
         factionCache.loadAll();
         regionManager.loadAll();
+        portalManager.loadAll();
         fPlayerCache.loadAll();
     }
 
@@ -494,6 +501,7 @@ public final class Factions extends EPlugin {
         regionManager.saveAll();
         regionSchematicManager.saveAll();
         fPlayerCache.saveAll();
+        portalManager.saveAll();
         warHistory.saveAll();
         warPhaseManager.saveData();
         buildSiteCache.saveAllPendingChunks();
@@ -535,6 +543,10 @@ public final class Factions extends EPlugin {
         return fPlayerCache;
     }
 
+    public @NotNull PortalManager getPortalManager() {
+        return portalManager;
+    }
+
     public @NotNull FCommandCache getFCommandCache() {
         return fCommandCache;
     }
@@ -557,6 +569,10 @@ public final class Factions extends EPlugin {
 
     public @NotNull WarPhaseManager getWarPhaseManager() {
         return warPhaseManager;
+    }
+
+    public @NotNull WarPhase getCurrentWarPhase() {
+        return warPhaseManager.getCurrentWarPhase();
     }
 
     public @Nullable TaxManager getTaxManager() {

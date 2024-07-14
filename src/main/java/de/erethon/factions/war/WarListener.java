@@ -39,7 +39,7 @@ public class WarListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
-        WarPhase currentWarPhase = plugin.getWarPhaseManager().getCurrentWarPhase();
+        WarPhase currentWarPhase = plugin.getCurrentWarPhase();
         if (!currentWarPhase.isAllowPvP()) {
             return;
         }
@@ -121,7 +121,7 @@ public class WarListener implements Listener {
             }
         }
         // Update war score if necessary
-        if (!plugin.getWarPhaseManager().getCurrentWarPhase().isInfluencingScoring()) {
+        if (!plugin.getCurrentWarPhase().isInfluencingScoring()) {
             return;
         }
         Alliance krAlliance = fKiller.getAlliance();
