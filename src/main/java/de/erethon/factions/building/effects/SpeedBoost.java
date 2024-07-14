@@ -8,12 +8,14 @@ import de.erethon.factions.event.FPlayerCrossRegionEvent;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.jetbrains.annotations.NotNull;
 
 public class SpeedBoost extends BuildingEffect implements Listener {
@@ -22,7 +24,7 @@ public class SpeedBoost extends BuildingEffect implements Listener {
 
     public SpeedBoost(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
-        modifier = new AttributeModifier("factions-speed-boost", data.getDouble("amount", 0.1), AttributeModifier.Operation.ADD_NUMBER);
+        modifier = new AttributeModifier(NamespacedKey.fromString("factions:building-speedbuff"), data.getDouble("amount", 0.1), AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.ANY);
     }
 
     @Override

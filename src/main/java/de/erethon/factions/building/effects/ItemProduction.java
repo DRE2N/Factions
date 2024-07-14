@@ -4,7 +4,6 @@ import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildingEffectData;
 import de.erethon.factions.util.FLogger;
-import de.erethon.hephaestus.HItem;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Main;
 import org.bukkit.configuration.ConfigurationSection;
@@ -16,7 +15,7 @@ import java.util.Map;
 
 public class ItemProduction extends BuildingEffect {
 
-    private final Map<HItem, Integer> production = new HashMap<>();
+    //private final Map<HItem, Integer> production = new HashMap<>();
     private final int interval; // In seconds
     private int ticks = 0;
 
@@ -29,12 +28,12 @@ public class ItemProduction extends BuildingEffect {
                 FLogger.ERROR.log("Invalid item id in production effect for building " + site.getBuilding().getName() + ": " + section.getString("id"));
                 continue;
             }
-            HItem item = Main.itemLibrary.get(id);
+            /*HItem item = Main.itemLibrary.get(id);
             if (item == null) {
                 FLogger.ERROR.log("Item not found in production effect for building " + site.getBuilding().getName() + ": " + section.getString("id"));
                 continue;
             }
-            production.put(item, section.getInt("amount"));
+            production.put(item, section.getInt("amount"));*/
         }
         interval = data.getInt("interval", 60);
     }
@@ -50,8 +49,8 @@ public class ItemProduction extends BuildingEffect {
 
     private void produce() {
         Inventory storage = site.getInventory();
-        for (Map.Entry<HItem, Integer> entry : production.entrySet()) {
+        /*for (Map.Entry<HItem, Integer> entry : production.entrySet()) {
             storage.addItem(entry.getKey().getItem(entry.getValue()).getBukkitStack());
-        }
+        }*/
     }
 }

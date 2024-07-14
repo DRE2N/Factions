@@ -5,7 +5,6 @@ import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildingEffectData;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.util.FLogger;
-import de.erethon.hephaestus.HItem;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Main;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -18,7 +17,7 @@ import java.util.Random;
 
 public class AdditionalEntityDrops extends BuildingEffect {
 
-    private final HashMap<Map.Entry<HItem, Integer>, Integer> drops = new HashMap<>();
+    //private final HashMap<Map.Entry<HItem, Integer>, Integer> drops = new HashMap<>();
     private boolean friendlyOnly = false;
     private Random random = new Random();
 
@@ -26,14 +25,14 @@ public class AdditionalEntityDrops extends BuildingEffect {
         super(data, site);
         for (String drop : data.getStringList("drops")) {
             String[] split = drop.split(";");
-            HItem item = Main.itemLibrary.get(ResourceLocation.tryParse(split[0]));
+            /*HItem item = Main.itemLibrary.get(ResourceLocation.tryParse(split[0]));
             if (item == null) {
                 FLogger.ERROR.log("Item " + split[0] + " not found in item library for AdditionalEntityDrops effect in building " + site.getBuilding().getId());
                 continue;
             }
             int amount = Integer.parseInt(split[1]);
             int chance = Integer.parseInt(split[2]);
-            drops.put(Map.entry(item, amount), chance);
+            drops.put(Map.entry(item, amount), chance);*/
         }
     }
 
@@ -43,13 +42,13 @@ public class AdditionalEntityDrops extends BuildingEffect {
             return;
         }
         double chance = random.nextDouble();
-        for (Map.Entry<HItem, Integer> entry : drops.keySet()) {
+        /*for (Map.Entry<HItem, Integer> entry : drops.keySet()) {
             HItem item = entry.getKey();
             int amount = entry.getValue();
             if (chance < (double) drops.get(entry) / 100) {
                 ItemStack drop = item.getItem(amount).getBukkitStack();
                 event.getDrops().add(drop);
             }
-        }
+        }*/
     }
 }

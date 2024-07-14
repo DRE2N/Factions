@@ -146,7 +146,7 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
         return getAttribute(name);
     }
 
-    public @NotNull <T extends FactionAttribute> T getOrCreateAttribute(@NotNull String name, @NotNull Class<T> clazz, @NotNull Supplier<@NotNull T> def) {
+    public @NotNull <T extends FactionAttribute> T getOrCreateAttribute(@NotNull String name, @NotNull Class<T> clazz, @NotNull Supplier<T> def) {
         FactionAttribute found = attributes.get(name);
         if (!clazz.isInstance(found)) {
             T attribute = def.get();

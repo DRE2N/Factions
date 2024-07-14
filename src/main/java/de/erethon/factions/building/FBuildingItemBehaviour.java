@@ -1,10 +1,8 @@
-package de.erethon.factions.building;
+/*package de.erethon.factions.building;
 
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.hephaestus.HItem;
-import de.erethon.hephaestus.HItemBehaviour;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -16,7 +14,7 @@ import java.util.Set;
 
 /**
  * @author Malfrador
- */
+ *
 public class FBuildingItemBehaviour extends HItemBehaviour {
 
     public static final NamespacedKey KEY = new NamespacedKey(Factions.get(), "building_item");
@@ -68,4 +66,4 @@ public class FBuildingItemBehaviour extends HItemBehaviour {
         waitingForConfirmation.remove(player);
         // Message
     }
-}
+}*/

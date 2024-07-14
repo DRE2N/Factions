@@ -106,7 +106,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
             if (plugin.getFPlayerCache().getByPlayer(player).getAlliance() != this) {
                 continue;
             }
-            player.sendMessage(message);
+            player.sendMessage(String.valueOf(message));
         }
     }
 

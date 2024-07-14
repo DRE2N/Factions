@@ -57,11 +57,11 @@ public abstract class Poll<V> implements Listener {
     protected long closeTime;
     protected BukkitTask closeTask = null;
 
-    public Poll(@NotNull String name, @NotNull PollScope scope, @NotNull Collection<@NotNull V> entries, @NotNull Function<V, ItemStack> subjectConverter) {
+    public Poll(@NotNull String name, @NotNull PollScope scope, @NotNull Collection<V> entries, @NotNull Function<V, ItemStack> subjectConverter) {
         this(name, scope, entries, subjectConverter, null);
     }
 
-    public Poll(@NotNull String name, @NotNull PollScope scope, @NotNull Collection<@NotNull V> entries, @NotNull Function<V, ItemStack> subjectConverter, @Nullable Comparator<V> comparator) {
+    public Poll(@NotNull String name, @NotNull PollScope scope, @NotNull Collection<V> entries, @NotNull Function<V, ItemStack> subjectConverter, @Nullable Comparator<V> comparator) {
         assert !name.contains(" ") : "Illegal name found: whitespaces are not allowed";
         this.name = name;
         this.scope = scope;

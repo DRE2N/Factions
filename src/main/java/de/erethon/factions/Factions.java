@@ -171,7 +171,9 @@ public final class Factions extends EPlugin {
         }
         loadWarHistory();
         loadWarPhaseManager();
-        FStatistics.initialize();
+        if (Bukkit.getPluginManager().getPlugin("PrometheusExporter") != null) {
+            FStatistics.initialize();
+        }
         runWebApplication();
         runTasks();
         loadCommands();

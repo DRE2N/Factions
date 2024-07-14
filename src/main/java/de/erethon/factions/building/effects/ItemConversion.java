@@ -3,10 +3,7 @@ package de.erethon.factions.building.effects;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildingEffectData;
-import de.erethon.hephaestus.HItem;
-import de.erethon.hephaestus.HItemStack;
 import net.minecraft.server.Main;
-import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,7 +13,7 @@ public class ItemConversion extends BuildingEffect {
 
     private final int buildingTicksPeritem;
     private int ticks = 0;
-    HashMap<HItem, HItem> conversion = new HashMap<>();
+    //HashMap<HItem, HItem> conversion = new HashMap<>();
 
     public ItemConversion(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
@@ -30,7 +27,7 @@ public class ItemConversion extends BuildingEffect {
         }
         ticks = 0;
         for (ItemStack stack : site.getInputItems()) {
-            HItem item = Main.itemLibrary.get(stack);
+            /*HItem item = Main.itemLibrary.get(stack);
             if (item == null) {
                 continue;
             }
@@ -43,7 +40,7 @@ public class ItemConversion extends BuildingEffect {
             if (hItem == null) {
                 continue;
             }
-            site.getOutputItems().add(hItem.getItem().getBukkitStack());
+            site.getOutputItems().add(hItem.getItem().getBukkitStack());*/
         }
     }
 
