@@ -57,9 +57,12 @@ tasks.withType(Test::class) {
 }
 
 tasks {
-    // Run reobfJar on build
-    build {
-        dependsOn(reobfJar)
+    jar {
+        manifest {
+            attributes(
+                    "paperweight-mappings-namespace" to "mojang"
+            )
+        }
     }
     compileJava {
         options.encoding = Charsets.UTF_8.name()
@@ -75,7 +78,7 @@ tasks {
         }
         val f = File(project.buildDir, "server.jar");
         // \/ Comment this out in case you are offline, will fail to start otherwise \/
-        uri("https://github.com/DRE2N/Papyrus/releases/download/latest/papyrus-paperclip-$papyrusVersion-reobf.jar").toURL().openStream().use { it.copyTo(f.outputStream()) }
+        uri("https://github.com/DRE2N/Papyrus/releases/download/latest/papyrus-paperclip-$papyrusVersion-mojmap.jar").toURL().openStream().use { it.copyTo(f.outputStream()) }
         serverJar(f)
         jvmArgs("--enable-preview")
     }
