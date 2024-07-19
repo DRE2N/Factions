@@ -18,6 +18,7 @@ public class ReloadCommand extends FCommand {
         setCommand("reload");
         setAliases("rl");
         setMinMaxArgs(1, 1);
+        setConsoleCommand(true);
         setPermissionFromName();
         setFUsage(getCommand() + " [part]");
         setDescription("Lädt Teile des Plugins neu");
