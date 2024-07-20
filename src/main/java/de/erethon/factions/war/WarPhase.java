@@ -133,7 +133,17 @@ public enum WarPhase {
     }
 
     public void announce() {
-        FBroadcastUtil.broadcastWar(announcementMessage);
+        FBroadcastUtil.broadcastWar(announcementMessage.message()
+                .hoverEvent(FMessage.WAR_PHASE_HOVER.message(
+                        boolToComponent(isAllowPvP()),
+                        boolToComponent(isInfluencingScoring()),
+                        boolToComponent(isOpenCapital()))
+                )
+        );
+    }
+
+    private Component boolToComponent(boolean bool) {
+        return (bool ? FMessage.GENERAL_YES : FMessage.GENERAL_NO).message();
     }
 
     /* Getters */

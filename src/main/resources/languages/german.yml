@@ -241,12 +241,14 @@ general:
   defaultDescription: "Default Beschreibung :("
   faction: "Fraktion"
   loner: "fraktionslos"
+  no: "<red>Nein"
   none: "keine"
   regionDefaultNamePrefix: "PROV_"
   spectator: "Zuschauer"
   unknown: "unbekannt"
   warZones: "Kriegsgebiete"
   wilderness: "Wildnis"
+  yes: "<green>Ja"
 gui:
   poll:
     nextPage:
@@ -334,8 +336,9 @@ war:
     capital:
       announcement: "<dark_red>Die Hauptstadteroberung hat begonnen. Die Hauptstadt kann nun umkämpft werden."
       displayName: "Hauptstadteroberung"
+    hover: "<gold>PVP<dark_gray>:</dark_gray> <arg:0></gold> <br><gold>Punktevergabe<dark_gray>:</dark_gray> <arg:1></gold><br><gold>Offene Hauptstadt<dark_gray>:</dark_gray> <arg:2></gold><br>"
     regular:
-      announcement: "<red>Der Normalzustand ist wieder eingekehrt. PvP ist <green>aktiviert</green>."
+      announcement: "<red>Die Kampfphase ist vorbei. PvP in Grenzgebieten ist weiterhin <green>aktiviert</green>."
       displayName: "Normalzustand"
     scoring:
       announcement: "<dark_red>Die Kampfphase hat begonnen. Kriegsgebiete beeinflussen nun in die Kriegsbewertung."
@@ -344,6 +347,6 @@ war:
       announcement: "<dark_green>Der Krieg ist vorübergehend beendet. Kriegsgebiete können nicht mehr umkämpft werden und PvP ist <red>deaktiviert</red>."
       displayName: "Frieden"
     undefined:
-      announcement: "<gray>Die Kriegsphase wurde noch nicht definiert."
+      announcement: "<gray>Die aktuelle Phase wurde noch nicht definiert."
       displayName: "Unbekannt"
   prefix: "<dark_gray><b>[ <dark_red>KRIEG</dark_red> ]</b></dark_gray><gray> <arg:0>"

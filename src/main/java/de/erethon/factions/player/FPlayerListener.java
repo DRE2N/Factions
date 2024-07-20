@@ -5,6 +5,7 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.event.FPlayerCrossRegionEvent;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.integrations.UIFactionsListener;
+import de.erethon.papyrus.PlayerSwitchProfileEvent;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -44,6 +45,16 @@ public class FPlayerListener implements Listener {
             component.resetDuration();
         }
         new FPlayerCrossRegionEvent(fPlayer, fPlayer.getLastRegion(), region).callEvent();
+    }
+
+    @EventHandler
+    public void onCharacterSwitch(PlayerSwitchProfileEvent event) {
+        FPlayer fPlayer = plugin.getFPlayerCache().getByUniqueIdIfCached(event.getPlayer().getUniqueId());
+
+        if (fPlayer == null) {
+            return;
+        }
+        fPlayer.updatePlayer(event.getPlayer());
     }
 
 }

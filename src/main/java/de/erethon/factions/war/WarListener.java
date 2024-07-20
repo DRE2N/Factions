@@ -40,7 +40,8 @@ public class WarListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
         WarPhase currentWarPhase = plugin.getCurrentWarPhase();
-        if (!currentWarPhase.isAllowPvP()) {
+        // Check for null, if for some reason this breaks again
+        if (currentWarPhase == null || !currentWarPhase.isAllowPvP()) {
             return;
         }
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(event.getPlayer());

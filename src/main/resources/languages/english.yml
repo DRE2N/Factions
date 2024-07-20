@@ -342,12 +342,14 @@ general:
   defaultDescription: "Default Description :("
   faction: "Faction"
   loner: "unaffiliated"
+  no: "<red>no"
   none: "none"
   regionDefaultNamePrefix: "PROV_"
   spectator: "Spectator"
   unknown: "unknown"
   warZones: "War Zones"
   wilderness: "Wilderness"
+  yes: "<green>yes"
 gui:
   poll:
     nextPage:
@@ -441,8 +443,9 @@ war:
     capital:
       announcement: "<dark_red>The capital conquest has begun. The capital can now be contested.</dark_red>"
       displayName: "Capital Conquest"
+    hover: "<gold>PVP<dark_gray>:</dark_gray> <arg:0></gold> <br><gold>Scoring<dark_gray>:</dark_gray> <arg:1></gold><br><gold>Open capital<dark_gray>:</dark_gray> <arg:2></gold><br>"
     regular:
-      announcement: "<red>The normal state has been restored. PvP is <green>enabled</green>.</red>"
+      announcement: "<dark_green>The combat phase has ended. War zones are no longer contested and PvP is <red>disabled</red>.</dark_green>"
       displayName: "Normal State"
     scoring:
       announcement: "<dark_red>The combat phase has begun. War zones now influence the war score.</dark_red>"
