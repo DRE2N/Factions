@@ -19,6 +19,7 @@ import de.erethon.factions.command.logic.FCommandCache;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.TaxManager;
+import de.erethon.factions.economy.population.entities.Revolutionary;
 import de.erethon.factions.faction.FactionCache;
 import de.erethon.factions.integrations.BoltIntegration;
 import de.erethon.factions.integrations.DiscordBotListener;
@@ -275,6 +276,7 @@ public final class Factions extends EPlugin {
             warPhaseManager.updateCurrentStageTask();
         } catch (Exception e) {
             FLogger.ERROR.log("Failed to start war phase manager task: " + e.getMessage());
+            e.printStackTrace();
         }
         runSaveDataTask();
         runBackupTask();
@@ -415,9 +417,10 @@ public final class Factions extends EPlugin {
     }
 
     public void registerCustomEntities() {
-        EntityType.customEntities.put("crystal_charge_carrier", Map.entry(this, CrystalChargeCarrier.class));
-        EntityType.customEntities.put("crystal_mob", Map.entry(this, CrystalMob.class));
-        EntityType.customEntities.put("objective_guard", Map.entry(this, ObjectiveGuard.class));
+        EntityType.customEntities.put("factions_crystal_charge_carrier", Map.entry(this, CrystalChargeCarrier.class));
+        EntityType.customEntities.put("factions_crystal_mob", Map.entry(this, CrystalMob.class));
+        EntityType.customEntities.put("factions_objective_guard", Map.entry(this, ObjectiveGuard.class));
+        EntityType.customEntities.put("factions_revolutionary", Map.entry(this, Revolutionary.class));
     }
 
     /* Web */

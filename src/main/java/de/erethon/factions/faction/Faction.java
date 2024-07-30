@@ -116,6 +116,8 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     protected Faction(@NotNull File file) throws NumberFormatException {
         super(file);
+        this.fStorage = new FStorage(this);
+        this.fEconomy = new FEconomy(this, fStorage);
     }
 
     @Override

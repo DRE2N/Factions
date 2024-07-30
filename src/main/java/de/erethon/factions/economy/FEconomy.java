@@ -1,23 +1,30 @@
 package de.erethon.factions.economy;
 
+import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.building.attributes.FactionAttribute;
 import de.erethon.factions.building.attributes.FactionResourceAttribute;
 import de.erethon.factions.economy.population.HappinessModifier;
 import de.erethon.factions.economy.population.PopulationLevel;
+import de.erethon.factions.economy.population.entities.Revolutionary;
 import de.erethon.factions.economy.resource.Resource;
 import de.erethon.factions.faction.Faction;
+import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
+import org.bukkit.World;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 /**
  * @author Malfrador
  */
 public class FEconomy {
+
+    private final static double UNREST_SPAWN_MULTIPLIER = 10.0;
 
     private final Faction faction;
     private final FStorage storage;
@@ -139,6 +146,9 @@ public class FEconomy {
             }
         }
         faction.setUnrestLevel(totalUnrest);
+        if (totalUnrest > 0) {
+            spawnRevolt(faction, (int) (totalUnrest * UNREST_SPAWN_MULTIPLIER));
+        }
     }
 
     private void calculateFactionLevel() {
@@ -161,5 +171,41 @@ public class FEconomy {
 
     public void removeHappinessModifier(HappinessModifier modifier) {
         happinessModifiers.remove(modifier);
+    }
+
+    // Select random chunks in the faction's core region and spawn a revolt there
+    public void spawnRevolt(Faction faction, int attempts) {
+        MessageUtil.log("Spawning revolt for " + faction.getName());
+        World world = faction.getCoreRegion().getWorld();
+        Random random = new Random();
+        int maxX = 0;
+        int minX = 0;
+        int maxZ = 0;
+        int minZ = 0;
+        for (LazyChunk chunk : faction.getCoreRegion().getChunks()) {
+            maxX = Math.max(maxX, chunk.getX());
+            minZ = Math.min(minZ, chunk.getZ());
+            maxZ = Math.max(maxZ, chunk.getZ());
+            minX = Math.min(minX, chunk.getX());
+        }
+        MessageUtil.log("minX: " + minX + ", maxX: " + maxX + ", minZ: " + minZ + ", maxZ: " + maxZ);
+        for (int i = 0; i < attempts; i++) {
+            int x = random.nextInt(minZ, maxX);
+            int z = random.nextInt(minZ, maxZ);
+            MessageUtil.log("Chunk: " + x + ", " + z);
+            if (world.isChunkLoaded(x, z)) {
+                // Spawn a small group of revolutionaries
+                int amount = random.nextInt(2, 8);
+                for (int j = 0; j < amount; j++) {
+                    int xInChunk = random.nextInt(-8, 8);
+                    int zInChunk = random.nextInt(-8, 8);
+                    int xInWorld = x * 16 + xInChunk;
+                    int zInWorld = z * 16 + zInChunk;
+                    Revolutionary rev = new Revolutionary(faction, world.getHighestBlockAt(xInWorld, zInWorld).getLocation());
+                    ((org.bukkit.craftbukkit.CraftWorld) world).getHandle().addFreshEntity(rev);
+                    MessageUtil.log("Spawned revolutionary at " + x + ", " + z);
+                }
+            }
+        }
     }
 }

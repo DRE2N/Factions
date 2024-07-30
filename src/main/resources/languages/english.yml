@@ -233,6 +233,14 @@ economy:
     siege_equipment: "Siege Equipment"
     weapons: "Weapons"
     armor: "Armor"
+  revolutionary:
+    message:
+      0: "<red><i>The time has come to cast off the chains of serfdom and reclaim our land!"
+      1: "<red><i>We fight not for gold or glory, but for justice and the freedom of our children!"
+      2: "<red><i>The lords grow fat while we toil in the fields; let us rise and take back what is rightfully ours!"
+      3: "<red><i>No more shall we bow to unjust taxes and the cruelty of our rulers!"
+      4: "<red><i>The time has come to rise up and take back what is rightfully ours!"
+      5: "<red><i>In unity, we find strength; together, we shall overturn the tyranny of the crown!"
 error:
   acmShapeNotFound: "<red>The shape <gold><arg:0></gold> could not be found."
   cannotAuthoriseSameFaction: "<red>You cannot authorize a faction for itself."
