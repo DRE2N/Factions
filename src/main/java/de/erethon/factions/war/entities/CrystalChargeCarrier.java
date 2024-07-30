@@ -134,7 +134,7 @@ public class CrystalChargeCarrier extends IronGolem {
     public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
         try { // Just in case the Factions side of things is broken.
-            nbt.putString("papyrus-entity-id", "crystal_charge_carrier");
+            nbt.putString("papyrus-entity-id", "factions_crystal_charge_carrier");
             nbt.putInt("factions-region-id", region.getId());
             nbt.putInt("factions-alliance-id", alliance.getId());
         } catch (Exception e) {

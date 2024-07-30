@@ -159,7 +159,7 @@ public class ObjectiveGuard extends Vindicator {
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
-        nbt.putString("papyrus-entity-id", "objective_guard");
+        nbt.putString("papyrus-entity-id", "factions_objective_guard");
         try { // Just in case the Factions side of things is broken.
             nbt.putInt("factions-region-id", region.getId());
             nbt.putInt("factions-alliance-id", alliance.getId());
