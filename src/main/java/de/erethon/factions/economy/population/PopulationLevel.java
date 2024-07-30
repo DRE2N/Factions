@@ -1,12 +1,9 @@
 package de.erethon.factions.economy.population;
 
-import de.erethon.factions.Factions;
-import de.erethon.factions.building.Building;
 import de.erethon.factions.economy.FStorage;
 import de.erethon.factions.economy.PopulationResourceConsumption;
 import de.erethon.factions.economy.resource.Resource;
 import de.erethon.factions.faction.Faction;
-import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,31 +17,39 @@ import java.util.stream.Collectors;
  */
 public enum PopulationLevel {
 
-    BEGGAR(new HashSet<>(),0),
-    PEASANT(new HashSet<>(), 0,
-            new PopulationResourceConsumption(Resource.GRAIN, 0.5, 0, 3, 1.2),
-            new PopulationResourceConsumption(Resource.FISH, 0.5, 0, 3, 0.5)),
-    CITIZEN(new HashSet<>(Arrays.asList("")),4,
-            new PopulationResourceConsumption(Resource.MEAT, 0.7, 200, 1, 0.5),
-            new PopulationResourceConsumption(Resource.BREAD, 0.7, 200, 5, 1.2),
-            new PopulationResourceConsumption(Resource.FRUIT, 0.3, 200, 1, 0.5),
-            new PopulationResourceConsumption(Resource.VEGETABLES, 0.3, 200, 1, 0.5)),
-    PATRICIAN(new HashSet<>(Arrays.asList("")),5,
-            new PopulationResourceConsumption(Resource.WINE, 1.0, 50, 5, 1.2),
-            new PopulationResourceConsumption(Resource.BOOKS, 0.5, 200, 1, 0.5),
-            new PopulationResourceConsumption(Resource.PAPER, 0.5, 200, 1, 0.5)),
-    NOBLEMEN(new HashSet<>(Arrays.asList("")), 7,
-            new PopulationResourceConsumption(Resource.JEWELRY, 0.5, 200, 1, 0.5),
-            new PopulationResourceConsumption(Resource.FURNITURE, 0.1, 10, 1, 0.5));
+    BEGGAR(new HashSet<>(),0, 1.5),
+    PEASANT(new HashSet<>(Arrays.asList("Chapel")), 0, 1.3,
+            new PopulationResourceConsumption(Resource.GRAIN, 1, 0, 3, 1.2, 0.7),
+            new PopulationResourceConsumption(Resource.FISH, 1, 0, 3, 1.2, 0.7)),
+    CITIZEN(new HashSet<>(Arrays.asList("Chapel", "Courthouse")),4, 1.2,
+            new PopulationResourceConsumption(Resource.GRAIN, 2, 0, 3, 1.2, 0.2),
+            new PopulationResourceConsumption(Resource.VEGETABLES, 1, 200, 1, 0.5, 0.25),
+            new PopulationResourceConsumption(Resource.COAL, 1, 200, 1, 0.5, 0.3),
+            new PopulationResourceConsumption(Resource.MEAT, 1, 200, 5, 1.2, 0.3)),
+    PATRICIAN(new HashSet<>(Arrays.asList("Church", "Park", "Courthouse")),5, 1.1,
+            new PopulationResourceConsumption(Resource.VEGETABLES, 2, 200, 1, 0.5, 0.1),
+            new PopulationResourceConsumption(Resource.COAL, 2, 200, 1, 0.5, 0.1),
+            new PopulationResourceConsumption(Resource.BREAD, 1, 50, 5, 1.2, 0.1),
+            new PopulationResourceConsumption(Resource.MEAT, 2, 200, 1, 0.5, 0.15),
+            new PopulationResourceConsumption(Resource.BEER, 2, 200, 1, 0.5, 0.15)),
+    NOBLEMEN(new HashSet<>(Arrays.asList("Church", "Park", "Government", "Courthouse")), 7, 1.0,
+            new PopulationResourceConsumption(Resource.VEGETABLES, 4, 200, 1, 0.5, 0.05),
+            new PopulationResourceConsumption(Resource.COAL, 4, 200, 1, 0.5, 0.05),
+            new PopulationResourceConsumption(Resource.BREAD, 3, 50, 5, 1.2, 0.075),
+            new PopulationResourceConsumption(Resource.MEAT, 3, 200, 1, 0., 0.1),
+            new PopulationResourceConsumption(Resource.WINE, 1, 200, 1, 0.5, 0.15),
+            new PopulationResourceConsumption(Resource.CANDLES, 1, 200, 1, 0.5, 0.15));
 
     private final Set<String> buildings;
     private final int minimumVariety;
     private final Set<PopulationResourceConsumption> requiredResources;
+    private final double unrestMultiplier;
 
-    PopulationLevel(Set<String> buildings, int minimumVariety, PopulationResourceConsumption... requiredResources) {
+    PopulationLevel(Set<String> buildings, int minimumVariety, double unrestMultiplier, PopulationResourceConsumption... requiredResources) {
         this.buildings = buildings;
         this.minimumVariety = minimumVariety;
         this.requiredResources = Set.of(requiredResources);
+        this.unrestMultiplier = unrestMultiplier;
     }
 
     public @NotNull PopulationLevel above() {
@@ -71,7 +76,7 @@ public enum PopulationLevel {
                 return false;
             }
         }
-        return true;
+        return hasRequiredBuildings(storage.getFaction());
     }
 
     public PopulationResourceConsumption getResourceConsumption(Resource resource) {
@@ -85,6 +90,14 @@ public enum PopulationLevel {
 
     public Set<Resource> getResources() {
         return requiredResources.stream().map(PopulationResourceConsumption::resource).collect(Collectors.toSet());
+    }
+
+    public int getMinimumVariety() {
+        return minimumVariety;
+    }
+
+    public double getUnrestMultiplier() {
+        return unrestMultiplier;
     }
 
     public boolean hasRequiredBuildings(Faction faction) {

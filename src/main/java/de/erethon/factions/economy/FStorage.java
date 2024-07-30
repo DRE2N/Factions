@@ -89,4 +89,8 @@ public class FStorage {
         }
         return section;
     }
+
+    public Faction getFaction() {
+        return faction;
+    }
 }

@@ -94,6 +94,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private FEconomy fEconomy;
     private final Set<FPlayer> invitedPlayers = new HashSet<>();
     private final Map<PopulationLevel, Double> populationHappiness = new HashMap<>();
+    private double unrestLevel = 0;
 
     protected Faction(@NotNull FPlayer admin, @NotNull Region coreRegion, int id, String name, String description) {
         super(new File(Factions.FACTIONS, id + ".yml"), id, name, description);
@@ -349,6 +350,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         if (population.getOrDefault(PopulationLevel.PEASANT, 0) == 0) {
             population.put(PopulationLevel.PEASANT, 5); // Let's start with something at least
         }
+        this.unrestLevel = config.getDouble("unrestLevel", unrestLevel);
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
         this.fStorage = new FStorage(this, config.getConfigurationSection("storage"));
         this.discordTextChannelId = config.getLong("discordChannelId", discordTextChannelId);
@@ -377,6 +379,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         for (PopulationLevel level : PopulationLevel.values()) {
             config.set("population." + level.name(), population.get(level));
         }
+        config.set("unrestLevel", unrestLevel);
         config.set("storage", fStorage.save());
         config.set("level", level.name());
         config.set("discordChannelId", discordTextChannelId);
@@ -699,6 +702,14 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void addPopulation(@NotNull PopulationLevel level, int amount) {
         population.put(level, population.getOrDefault(level, 0) + amount);
+    }
+
+    public double getUnrestLevel() {
+        return unrestLevel;
+    }
+
+    public void setUnrestLevel(double unrestLevel) {
+        this.unrestLevel = unrestLevel;
     }
 
     public @NotNull FStorage getStorage() {

@@ -94,6 +94,7 @@ public class FEconomy {
     }
 
     private void calculatePopulationLevels() {
+        double totalUnrest = faction.getUnrestLevel();
         for (PopulationLevel level : PopulationLevel.values()) {
             int currentPop = faction.getPopulation(level);
             PopulationLevel nextLevel = level.above();
@@ -113,10 +114,11 @@ public class FEconomy {
                     double popWeCanFeed = storage.getResource(resource) / consumptionPerPop;
                     popToLevelUp = (int) Math.min(popWeCanFeed, popToLevelUp);
                 }
-                if (canLevelUp && level.hasRequiredBuildings(faction)) {
+                if (canLevelUp && level.canLevelUp(storage) && popToLevelUp > 0) {
                     int levellingUp = Math.min(popToLevelUp, housingCapacity);
                     faction.getPopulation().put(level, currentPop - levellingUp);
                     faction.getPopulation().put(nextLevel, faction.getPopulation(nextLevel) + levellingUp);
+                    totalUnrest -= levellingUp * nextLevel.getUnrestMultiplier();
                     FLogger.ECONOMY.log("[" + faction.getName() + "] Levelled up " + levellingUp + " from " + level.name() + " to " + nextLevel.name());
                 }
             }
@@ -131,10 +133,12 @@ public class FEconomy {
                 if (needsToLevelDown) {
                     faction.getPopulation().put(level, currentPop - popToLevelDown);
                     faction.getPopulation().put(previousLevel, faction.getPopulation(previousLevel) + popToLevelDown);
+                    totalUnrest += popToLevelDown * level.getUnrestMultiplier();
                     FLogger.ECONOMY.log("[" + faction.getName() + "] Levelled down " + popToLevelDown + " from " + level.name() + " to " + previousLevel.name());
                 }
             }
         }
+        faction.setUnrestLevel(totalUnrest);
     }
 
     private void calculateFactionLevel() {
