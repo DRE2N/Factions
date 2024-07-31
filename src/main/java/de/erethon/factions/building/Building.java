@@ -54,7 +54,6 @@ public class Building {
     protected final FileConfiguration config;
 
     private String id;
-    private Component name;
     private final List<Component> description = new ArrayList<>();
     private boolean isCoreRequired;
     private boolean isWarBuilding;
@@ -378,10 +377,6 @@ public class Building {
         return description;
     }
 
-    public @NotNull Component getName() {
-        return name;
-    }
-
     public @NotNull Set<BuildingEffectData> getEffects() {
         return effects;
     }
@@ -410,7 +405,6 @@ public class Building {
 
     public void load() {
         ConfigurationSection config = this.config;
-        name = MiniMessage.miniMessage().deserialize(config.getString("name", "<none>"));
         FLogger.BUILDING.log("Loading building " + id + "...");
         isCoreRequired = config.getBoolean("coreRequired", false);
         size = config.getInt("size");

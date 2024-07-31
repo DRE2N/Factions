@@ -97,7 +97,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         otherCorner = loc2;
         interactive = center;
         chunkKey = center.getChunk().getChunkKey();
-        FLogger.BUILDING.log("Created new building site in " + this.region.getName() + ". Building type: " + building.getName());
+        FLogger.BUILDING.log("Created new building site in " + this.region.getName() + ". Building type: " + building.getId());
         region.getBuildSites().add(this);
         uuid = UUID.randomUUID();
         plugin.getBuildSiteCache().add(this, center.getChunk());
@@ -131,7 +131,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         progressHolo.setBillboard(Display.Billboard.CENTER);
         progressHolo.setDefaultBackground(false);
         progressHolo.setBackgroundColor(Color.fromARGB(0,0,0,0));
-        Component content = building.getName().color(NamedTextColor.GOLD);
+        Component content = Component.translatable("building.name." + building.getId()).color(NamedTextColor.GOLD);
         content = content.append(Component.newline());
         if (!finished) {
             for (Material material : building.getRequiredBlocks().keySet()) {
