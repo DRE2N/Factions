@@ -54,7 +54,7 @@ public class SpawnHorses extends BuildingEffect {
     private void spawnHorse() {
         Position spawner = site.getNamedPositions().get("horseSpawn");
         if (spawner == null) {
-            FLogger.BUILDING.log("No horse spawn position found for building " + site.getBuilding().getName());
+            FLogger.BUILDING.log("No horse spawn position found for building " + site.getBuilding().getId());
             return;
         }
         Location loc = spawner.toLocation(site.getInteractive().getWorld());

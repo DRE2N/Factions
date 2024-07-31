@@ -1,7 +1,10 @@
 package de.erethon.factions.building.attributes;
 
+import de.erethon.factions.Factions;
+import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.inventory.EquipmentSlotGroup;
 
 import java.util.UUID;
 
@@ -25,6 +28,6 @@ public class FactionPlayerAttribute extends AbstractFactionAttribute {
     }
 
     public AttributeModifier getBukkitModifier() {
-        return new AttributeModifier(UUID.randomUUID(), attributeModifier.getName(), value, attributeModifier.getOperation());
+        return new AttributeModifier(new NamespacedKey(Factions.get(), "factions-attribute"), value, attributeModifier.getOperation(), EquipmentSlotGroup.ANY);
     }
 }

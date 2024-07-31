@@ -234,13 +234,13 @@ public class BuildingManager implements Listener {
                     factionBuildings.add(site.getBuilding());
                 }
             }
-            for (String string : building.getRequiredBuildings()) {
+            /*for (String string : building.getRequiredBuildings()) {
                 Building required = Factions.get().getBuildingManager().getById(string);
                 if (!factionBuildings.contains(required)) {
                     continue;
                 }
                 available.add(building);
-            }
+            }*/
         }
         return available;
     }

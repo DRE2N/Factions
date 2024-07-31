@@ -25,7 +25,7 @@ public class ItemProduction extends BuildingEffect {
             ConfigurationSection section = data.getConfigurationSection("production." + entry);
             ResourceLocation id = ResourceLocation.tryParse(section.getString("id"));
             if (id == null) {
-                FLogger.ERROR.log("Invalid item id in production effect for building " + site.getBuilding().getName() + ": " + section.getString("id"));
+                FLogger.ERROR.log("Invalid item id in production effect for building " + site.getBuilding().getId() + ": " + section.getString("id"));
                 continue;
             }
             /*HItem item = Main.itemLibrary.get(id);
