@@ -1,15 +1,10 @@
 package de.erethon.factions.building.effects;
 
-import de.erethon.factions.Factions;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildingEffectData;
-import de.erethon.factions.building.attributes.FactionAttribute;
-import de.erethon.factions.building.attributes.FactionAttributeModifier;
 import de.erethon.factions.building.attributes.FactionResourceAttribute;
 import de.erethon.factions.economy.resource.Resource;
-import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -17,10 +12,7 @@ import java.util.Map;
 
 public class ResourceProduction extends BuildingEffect {
 
-    private final Map<Resource, Integer> production = new HashMap<>();
-    private final int interval; // In minutes
-
-    private BukkitRunnable task;
+    protected final Map<Resource, Integer> production = new HashMap<>();
 
     public ResourceProduction(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
@@ -28,36 +20,21 @@ public class ResourceProduction extends BuildingEffect {
             Resource resource = Resource.valueOf(key.toUpperCase());
             production.put(resource, data.getInt("production." + key));
         }
-        interval = data.getInt("interval", 60);
     }
 
     @Override
-    public void apply() {
-        if (task != null) {
-            task.cancel();
-        }
-        task = new BukkitRunnable() {
-            @Override
-            public void run() {
-                produce();
-            }
-        };
-        task.runTaskTimer(Factions.get(), 0, (long) interval * 20 * 60);
+    public void onPayday() {
+        produce();
     }
 
-    private void produce() {
+    protected void produce() {
         for (Map.Entry<Resource, Integer> entry : production.entrySet()) {
             FactionResourceAttribute attribute = faction.getOrCreateAttribute(
                     entry.getKey().name(),
                     FactionResourceAttribute.class,
                     () -> new FactionResourceAttribute(entry.getKey(), 0.0)
             );
-            attribute.addModifier(new FactionAttributeModifier(entry.getValue(), AttributeModifier.Operation.ADD_NUMBER));
+            attribute.setBaseValue(attribute.getBaseValue() + entry.getValue());
         }
-    }
-
-    @Override
-    public void remove() {
-        task.cancel();
     }
 }
