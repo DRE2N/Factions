@@ -64,6 +64,9 @@ public class BuildingEffect {
     public void onInteract(FPlayer player) {
     }
 
+    public void onPrePayday() {
+    }
+
     public void onPayday() {
     }
 

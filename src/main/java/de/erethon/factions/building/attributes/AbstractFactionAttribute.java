@@ -11,7 +11,7 @@ import java.util.TreeSet;
 public abstract class AbstractFactionAttribute implements FactionAttribute {
 
     protected final Set<FactionAttributeModifier> modifiers = new TreeSet<>();
-    protected final double baseValue;
+    protected double baseValue;
     protected double value;
 
     public AbstractFactionAttribute(double value) {
@@ -37,6 +37,11 @@ public abstract class AbstractFactionAttribute implements FactionAttribute {
     @Override
     public double getBaseValue() {
         return baseValue;
+    }
+
+    @Override
+    public void setBaseValue(double value) {
+        baseValue = value;
     }
 
     @Override

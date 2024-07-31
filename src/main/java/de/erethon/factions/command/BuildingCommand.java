@@ -52,7 +52,7 @@ public class BuildingCommand extends FCommand {
                 fPlayer.sendMessage("Building not found.");
                 return;
             }
-            ItemStack item = BuildingManager.getBuildingItemStack(building);
+            ItemStack item = BuildingManager.getBuildingItemStack(building, faction, fPlayer.getPlayer());
             fPlayer.getPlayer().getInventory().addItem(item);
             fPlayer.sendMessage("Building " + building.getId() + " added.");
         }

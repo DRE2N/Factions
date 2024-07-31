@@ -23,6 +23,8 @@ public interface FactionAttribute {
 
     double getBaseValue();
 
+    void setBaseValue(double value);
+
     double getValue();
 
     default void addModifier(FactionAttributeModifier modifier) {

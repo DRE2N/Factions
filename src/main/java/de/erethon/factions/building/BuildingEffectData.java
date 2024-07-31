@@ -28,7 +28,7 @@ public class BuildingEffectData extends MemorySection {
 
     public BuildingEffectData(ConfigurationSection section, String path) {
         super(section, path);
-        id = path.replace("effects.", "");
+        id = path.replace("effects.", "").replaceAll("_.*$", ""); // Quick fix to allow for multiple effects with the same id
         className = "de.erethon.factions.building.effects." + id;
         load();
         FLogger.BUILDING.log("Loaded building effect " + id);

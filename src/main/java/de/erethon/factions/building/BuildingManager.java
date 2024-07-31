@@ -7,11 +7,16 @@ import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
+import de.erethon.hephaestus.Hephaestus;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.translation.GlobalTranslator;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -26,6 +31,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -39,7 +45,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class BuildingManager implements Listener {
 
-    //private final static ResourceLocation ITEM_ID = new ResourceLocation("factions", "building_item");
+    private static final Hephaestus hephaestus = Hephaestus.INSTANCE;
+    private static final NamespacedKey ITEM_ID = new NamespacedKey(Factions.get(), "building_item");
+    private static final NamespacedKey BUILDING_ID = new NamespacedKey(Factions.get(), "building_id");
+    private static final NamespacedKey FACTION_ID = new NamespacedKey(Factions.get(), "faction_id");
 
     Factions plugin = Factions.get();
 
@@ -54,14 +63,11 @@ public class BuildingManager implements Listener {
         effectsPerTick = plugin.getFConfig().getEffectsPerTick();
         Bukkit.getPluginManager().registerEvents(this, plugin);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::tickBuildingEffects, 0, plugin.getFConfig().getTicksPerBuildingTick());
-        // Register the building item if it doesn't exist
-        /*ItemLibrary lib = Main.itemLibrary;
-        if (!lib.has(ITEM_ID)) {
-            HItem item = new HItem.Builder(plugin, ITEM_ID).baseItem(Material.CHEST).register();
-            item.setPlugin(plugin);
-            item.setBehaviour(new FBuildingItemBehaviour(item));
-            lib.enableHandler(plugin);
-        }*/
+        if (!hephaestus.getLibrary().has(ITEM_ID)) {
+            ItemStack stack = new ItemStack(Material.PAPER);
+            hephaestus.getLibrary().register(stack, ITEM_ID);
+            FLogger.BUILDING.log("Registered building item forwith key " + ITEM_ID + " as it previously didn't exist.");
+        }
     }
 
     public @Nullable Building getById(@NotNull String id) {
@@ -79,11 +85,19 @@ public class BuildingManager implements Listener {
 
     public void load(@NotNull File dir) {
         for (File file : FileUtil.getFilesForFolder(dir)) {
-            if (file.getName().toLowerCase().contains("ploppable")) {
-                buildings.add(new PloppableBuilding(file));
-            } else {
-                buildings.add(new Building(file));
+            Building building;
+            try {
+                if (file.getName().toLowerCase().contains("ploppable")) {
+                    building = new PloppableBuilding(file);
+                } else {
+                    building = new Building(file);
+                }
             }
+            catch (Exception e) {
+                FLogger.ERROR.log("Failed to load building from file " + file.getName() + ": " + e.getMessage());
+                continue;
+            }
+            buildings.add(building);
         }
         if (buildings.isEmpty()) {
             FLogger.INFO.log("No buildings found. Please create some.");
@@ -181,14 +195,25 @@ public class BuildingManager implements Listener {
         saveTask.runTaskAsynchronously(plugin);
     }
 
-    public static ItemStack getBuildingItemStack(Building building) {
-        /*HItem item = Main.itemLibrary.get(ITEM_ID);
-        ItemStack stack = item.getItem().getBukkitStack();
+    public static ItemStack getBuildingItemStack(Building building, Faction faction, Player player) {
+        ItemStack stack = hephaestus.getLibrary().get(ITEM_ID).rollRandomStack().getBukkitStack();
         stack.editMeta(meta -> {
-            meta.getPersistentDataContainer().set(FBuildingItemBehaviour.KEY, PersistentDataType.STRING, building.getId());
-            meta.displayName(building.getName());
-        });*/
-        return new ItemStack(Material.BEDROCK);
+            Component title = GlobalTranslator.translator().translate(Component.translatable("factions.building.buildings." + building.getId() + ".name"), player.locale());
+            meta.displayName(title);
+            List<Component> lore = new ArrayList<>();
+            for (int i = 1; i < 6; i++) {
+                String key = "factions.building.buildings." + building.getId() + ".description." + i;
+                Component line = GlobalTranslator.translator().translate(Component.translatable(key), player.locale());
+                if (line == null || line.equals(Component.empty()) || PlainTextComponentSerializer.plainText().serialize(line).equals(key)) {
+                    break;
+                }
+                lore.add(line);
+            }
+            meta.lore(lore);
+            meta.getPersistentDataContainer().set(BUILDING_ID, PersistentDataType.STRING, building.getId());
+            meta.getPersistentDataContainer().set(FACTION_ID, PersistentDataType.INTEGER, faction.getId());
+        });
+        return stack;
     }
 
     public static List<Building> getUnlockedBuildingsForPlacement(FPlayer fPlayer, Faction faction, Region region) {

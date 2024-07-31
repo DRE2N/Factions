@@ -125,6 +125,14 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         super.addDefaultAttributes();
         attributes.put("max_players", new FactionStatAttribute(5));
         attributes.put("housing_peasant", new FactionStatAttribute(10));
+        attributes.put("housing_citizen", new FactionStatAttribute(0));
+        attributes.put("housing_patrician", new FactionStatAttribute(0));
+        attributes.put("housing_noblemen", new FactionStatAttribute(0));
+        attributes.put("happiness_bonus_peasant", new FactionStatAttribute(0.0));
+        attributes.put("happiness_bonus_citizen", new FactionStatAttribute(0.0));
+        attributes.put("happiness_bonus_patrician", new FactionStatAttribute(0.0));
+        attributes.put("happiness_bonus_noblemen", new FactionStatAttribute(0.0));
+        attributes.put("unrest_multiplier", new FactionStatAttribute(1.0));
     }
 
     /* Member handling */

@@ -72,6 +72,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     private Location interactive;
     private String problemMessage = null;
     private Map<Material, Integer> placedBlocks = new HashMap<>();
+    private final Map<Material, Set<BuildSiteCoordinate>> blocksOfInterest = new HashMap<>();
     private boolean finished;
     private boolean active;
     private boolean hasTicket = false;
@@ -83,6 +84,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     private final Set<ItemStack> inputItems = new HashSet<>();
     private final Set<ItemStack> outputItems = new HashSet<>();
     private final Set<Position> chestPositions = new HashSet<>();
+    private final HashMap<String, String> additionalData = new HashMap<>();
 
     private UUID progressHoloUUID = null;
 
@@ -131,7 +133,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         progressHolo.setBillboard(Display.Billboard.CENTER);
         progressHolo.setDefaultBackground(false);
         progressHolo.setBackgroundColor(Color.fromARGB(0,0,0,0));
-        Component content = Component.translatable("building.name." + building.getId()).color(NamedTextColor.GOLD);
+        Component content = Component.translatable("building.buildings" + building.getId() + ".name").color(NamedTextColor.GOLD);
         content = content.append(Component.newline());
         if (!finished) {
             for (Material material : building.getRequiredBlocks().keySet()) {
@@ -267,6 +269,9 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                         }
                         placed.put(type, amount + 1);
                     }
+                    if (building.getBlocksOfInterest().contains(type)) {
+                        blocksOfInterest.getOrDefault(type, new HashSet<>()).add(new BuildSiteCoordinate(block.getX(), block.getY(), block.getZ()));
+                    }
                 }
                 FLogger.BUILDING.log("-------------------");
                 FLogger.BUILDING.log(placed.toString());
@@ -350,6 +355,10 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
             blockList.add(world.getBlockAt(location));
         }
         return blockList;
+    }
+
+    public Set<BuildSiteCoordinate> getCoordinatesFor(Material material) {
+        return blocksOfInterest.get(material);
     }
 
     public Set<String> getMissingSections() {
@@ -468,6 +477,10 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         return namedPositions;
     }
 
+    public int getBlockCount(Material material) {
+        return placedBlocks.getOrDefault(material, 0);
+    }
+
     public @NotNull long getChunkKey() {
         return chunkKey;
     }
@@ -580,6 +593,15 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         }
     }
 
+    public void onPrePayday() {
+        if (!active) {
+            return;
+        }
+        for (BuildingEffect effect : buildingEffects) {
+            effect.onPrePayday();
+        }
+    }
+
     public void onPayday() {
         if (!active) {
             return;
@@ -667,6 +689,27 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                 outputItems.add(ItemStack.deserializeBytes(Base64.getDecoder().decode(id)));
             }
         }
+        if (contains("placedBlocks")) {
+            for (String id : getConfigurationSection("placedBlocks").getKeys(false)) {
+                placedBlocks.put(Material.valueOf(id), getInt("placedBlocks." + id));
+            }
+        }
+        if (contains("blocksOfInterest")) {
+            ConfigurationSection section = getConfigurationSection("blocksOfInterest");
+            for (String id : section.getKeys(false)) {
+                List<String> coords = section.getStringList(id);
+                Set<BuildSiteCoordinate> set = new HashSet<>();
+                for (String coord : coords) {
+                    set.add(BuildSiteCoordinate.fromString(coord));
+                }
+                blocksOfInterest.put(Material.valueOf(id), set);
+            }
+        }
+        if (contains("additionalData")) {
+            for (String id : getConfigurationSection("additionalData").getKeys(false)) {
+                additionalData.put(id, getString("additionalData." + id));
+            }
+        }
         region.getBuildSites().add(this);
         if (!finished) {
             scheduleProgressUpdate();
@@ -717,6 +760,21 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         set("inputItems", items);
         for (ItemStack stack : outputItems) {
             items.add(java.util.Base64.getEncoder().encodeToString(stack.serializeAsBytes()));
+        }
+        for (Map.Entry<Material, Integer> entry : placedBlocks.entrySet()) {
+            set("placedBlocks." + entry.getKey().name(), entry.getValue());
+        }
+        for (Material type : blocksOfInterest.keySet()) {
+            YamlConfiguration section = new YamlConfiguration();
+            List<String> coords = new ArrayList<>();
+            for (BuildSiteCoordinate coordinate : blocksOfInterest.get(type)) {
+                coords.add(coordinate.toString());
+            }
+            section.set(type.name(), coords);
+            set("blocksOfInterest." + type.name(), section);
+        }
+        for (Map.Entry<String, String> entry : additionalData.entrySet()) {
+            set("additionalData." + entry.getKey(), entry.getValue());
         }
         set("outputItems", items);
         super.save(file);

@@ -15,6 +15,7 @@ import de.erethon.bedrock.plugin.EPluginSettings;
 import de.erethon.factions.alliance.AllianceCache;
 import de.erethon.factions.building.BuildSiteCache;
 import de.erethon.factions.building.BuildingManager;
+import de.erethon.factions.building.Councillor;
 import de.erethon.factions.command.logic.FCommandCache;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
@@ -421,6 +422,7 @@ public final class Factions extends EPlugin {
         EntityType.customEntities.put("factions_crystal_mob", Map.entry(this, CrystalMob.class));
         EntityType.customEntities.put("factions_objective_guard", Map.entry(this, ObjectiveGuard.class));
         EntityType.customEntities.put("factions_revolutionary", Map.entry(this, Revolutionary.class));
+        EntityType.customEntities.put("factions_councillor", Map.entry(this, Councillor.class));
     }
 
     /* Web */

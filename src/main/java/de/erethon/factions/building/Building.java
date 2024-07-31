@@ -4,6 +4,7 @@ import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.FStorage;
+import de.erethon.factions.economy.FactionLevel;
 import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.economy.resource.Resource;
 import de.erethon.factions.faction.Faction;
@@ -15,7 +16,6 @@ import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.region.RegionType;
 import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -30,13 +30,14 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.print.attribute.IntegerSyntax;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,6 +58,8 @@ public class Building {
     private final List<Component> description = new ArrayList<>();
     private boolean isCoreRequired;
     private boolean isWarBuilding;
+    private boolean allowOverlap;
+    private boolean isUnique;
     private int size;
     private Map<Resource, Integer> unlockCost = new HashMap<>();
     private Map<Material, Integer> requiredBlocks = new HashMap<>();
@@ -64,9 +67,11 @@ public class Building {
     private final Map<PopulationLevel, Integer> requiredPopulation = new HashMap<>();
     private final Set<RegionType> requiredRegionTypes = new HashSet<>();
     private Biome requiredBiome;
-    private List<String> requiredBuildings = new ArrayList<>(); // String with ids because the other buildings might not be loaded yet.
+    private Map<String, Integer> requiredBuildings = new HashMap<>(); // String with ids because the other buildings might not be loaded yet.
     private final Set<BuildingEffectData> effects = new HashSet<>();
     private final Set<String> requiredSections = new HashSet<>();
+    private final Set<Material> blocksOfInterest = new HashSet<>();
+    private FactionLevel requiredLevel = FactionLevel.HAMLET;
     Material icon;
 
     public Building(@NotNull File file) {
@@ -93,21 +98,21 @@ public class Building {
         RegionManager board = plugin.getRegionManager();
         FPlayer fPlayer = playerCache.getByPlayer(player);
         if (faction == null) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_PLAYER_IS_NOT_IN_A_FACTION.message());
+            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_PLAYER_IS_NOT_IN_A_FACTION.message());
             return false;
         }
         if (!faction.isPrivileged(fPlayer)) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_NO_PERMISSION.message());
+            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_NO_PERMISSION.message());
             return false;
         }
         Region rg = fPlayer.getLastRegion();
         if (rg == null) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
+            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
             return false;
         }
         // If the faction does not own the region and the building is not a war building
         if (rg.getOwner() != faction && !isWarBuilding()) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
+            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
             return false;
         }
         boolean isBorder = false;
@@ -128,34 +133,41 @@ public class Building {
             return false;
         }
         boolean isInOtherBuilding = false;
+        BuildSite overlappingSite = null;
         for (BuildSite site : rg.getBuildSites()) {
             if (manager.hasOverlap(getCorner1(loc), getCorner2(loc), site)) {
                 isInOtherBuilding = true;
+                overlappingSite = site;
             }
         }
         // If the building overlaps with an existing building
-        if (isInOtherBuilding) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_BLOCKED.message());
+        if (isInOtherBuilding && !(allowOverlap || overlappingSite.getBuilding().isAllowOverlap())) {
+            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_BLOCKED.message());
+            return false;
+        }
+        // If the building is unique and the faction already has a build site for this building
+        if (isUnique && hasBuildSiteAlready(faction)) {
+            MessageUtil.sendActionBarMessage(player, Component.translatable("factions.error.building.unique"));
             return false;
         }
         // If the region is not of the correct RegionType
         if (!hasRequiredType(rg)) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_REQUIRED_TYPE.message());
+            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_REQUIRED_TYPE.message());
             return false;
         }
         // If the building requires other buildings to be built first in this faction
-        if (!hasRequiredBuilding(faction)) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_REQUIRED_FACTION.message());
+        if (!hasRequiredBuildings(faction)) {
+            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_REQUIRED_FACTION.message());
             return false;
         }
         // If the building requires a certain amount of population at a specific level
         if (!hasRequiredPopulation(rg)) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_POPULATION.message());
+            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_POPULATION.message());
             return false;
         }
         // If the faction can not afford the unlock costs.
         if (!canPay(faction)) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_NOT_ENOUGH_RESOURCES.message());
+            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_NOT_ENOUGH_RESOURCES.message());
             return false;
         }
         return true;
@@ -179,9 +191,9 @@ public class Building {
         }
     }
 
-    public boolean hasRequiredBuilding(@NotNull Faction faction) {
+    public boolean hasRequiredBuildings(@NotNull Faction faction) {
         BuildingManager buildingManager = plugin.getBuildingManager();
-        Set<Building> buildings = new HashSet<>();
+        Map<String, Integer> buildings = new HashMap<>();
         if (getRequiredBuildings().isEmpty()) {
             return true;
         }
@@ -192,13 +204,17 @@ public class Building {
             if (!bs.isFinished()) {
                 continue;
             }
-            buildings.add(bs.getBuilding());
+            buildings.put(bs.getBuilding().getId(), buildings.getOrDefault(bs.getBuilding().getId(), 0) + 1);
         }
-        Set<Building> required = new HashSet<>();
-        for (String s : requiredBuildings) {
-            required.add(buildingManager.getById(s));
+        for (String id : requiredBuildings.keySet()) {
+            if (!buildings.containsKey(id)) {
+                return false;
+            }
+            if (buildings.get(id) < getRequiredBuildings().get(id)) {
+                return false;
+            }
         }
-        return buildings.containsAll(required);
+        return true;
     }
 
     public boolean hasRequiredPopulation(@NotNull Region region) {
@@ -320,6 +336,9 @@ public class Building {
         return isWarBuilding;
     }
 
+    public boolean isAllowOverlap() {
+        return allowOverlap;
+    }
 
     public int getSize() {
         return size;
@@ -353,7 +372,7 @@ public class Building {
         return requiredPopulation;
     }
 
-    public @NotNull List<String> getRequiredBuildings() {
+    public @NotNull Map<String, Integer> getRequiredBuildings() {
         return requiredBuildings;
     }
 
@@ -381,6 +400,10 @@ public class Building {
         return effects;
     }
 
+    public @NotNull Set<Material> getBlocksOfInterest() {
+        return blocksOfInterest;
+    }
+
     public @NotNull Material getIcon() {
         return icon;
     }
@@ -403,16 +426,29 @@ public class Building {
         return false;
     }
 
+    public boolean hasBuildSiteAlready(@NotNull Faction faction) {
+        for (BuildSite buildSite : faction.getFactionBuildings()) {
+            if (buildSite.getBuilding() == this) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void load() {
         ConfigurationSection config = this.config;
         FLogger.BUILDING.log("Loading building " + id + "...");
         isCoreRequired = config.getBoolean("coreRequired", false);
+        isWarBuilding = config.getBoolean("warBuilding", false);
+        isUnique = config.getBoolean("unique", false);
+        allowOverlap = config.getBoolean("allowOverlap", false);
         size = config.getInt("size");
-        for (String s : config.getStringList("description")) {
-            description.add(MiniMessage.miniMessage().deserialize(s));
-        }
+        requiredLevel = FactionLevel.valueOf(config.getString("requiredLevel", "HAMLET"));
         if (config.contains("requiredBuildings")) {
-            requiredBuildings = config.getStringList("requiredBuildings");
+            Set<String> cfgList = config.getConfigurationSection("requiredBuildings").getKeys(false);
+            for (String s : cfgList) {
+                requiredBuildings.put(s, config.getInt("requiredBuildings." + s));
+            }
         }
         if (config.contains("requiredSections")) {
             requiredSections.addAll(config.getStringList("requiredSections"));
@@ -420,6 +456,15 @@ public class Building {
         if (config.contains("icon")) {
             Material material = Material.getMaterial(config.getString("icon"));
             icon = material == null ? Material.BARRIER : material;
+        }
+        if (config.contains("blocksOfInterest")) {
+            List<String> list = config.getStringList("blocksOfInterest");
+            for (String s : list) {
+                Material material = Material.getMaterial(s.toUpperCase(Locale.ROOT));
+                if (material != null) {
+                    blocksOfInterest.add(material);
+                }
+            }
         }
         if (config.contains("requiredCategories")) {
             Set<String> cfgList = config.getConfigurationSection("requiredCategories").getKeys(false);
@@ -462,8 +507,14 @@ public class Building {
         }
         if (config.contains("effects")) {
            for (String id : config.getConfigurationSection("effects").getKeys(false)) {
-               BuildingEffectData effect = new BuildingEffectData(config.getConfigurationSection("effects." + id), id);
-               effects.add(effect);
+               try {
+                   BuildingEffectData effect = new BuildingEffectData(config.getConfigurationSection("effects." + id), id);
+                   effects.add(effect);
+               }
+                catch (Exception e) {
+                     FLogger.ERROR.log("Failed to load effect " + id + " for building " + this.id + ": " + e.getMessage());
+                     e.printStackTrace();
+                }
            }
         }
         FLogger.BUILDING.log("Loaded building with size " + size);

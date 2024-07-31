@@ -1,6 +1,7 @@
 package de.erethon.factions.economy;
 
 import de.erethon.bedrock.chat.MessageUtil;
+import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.attributes.FactionAttribute;
 import de.erethon.factions.building.attributes.FactionResourceAttribute;
 import de.erethon.factions.economy.population.HappinessModifier;
@@ -45,6 +46,7 @@ public class FEconomy {
      * - Faction levels up based on population and buildings
      */
     public void doEconomyCalculations() {
+        doBuildingStuff(); // Do building stuff before the payday, so buildings affect production rates at short notice
         for (Map.Entry<String, FactionAttribute> entry : faction.getAttributes().entrySet()) {
             if (entry.getValue() instanceof FactionResourceAttribute attribute) {
                 Resource resource = attribute.getResource();
@@ -56,10 +58,21 @@ public class FEconomy {
                 FLogger.ECONOMY.log("[" + faction.getName() + "] Received/Lost " + amount + " of " + resource.name());
             }
         }
-        calculatePopulationConsumption();
-        calculatePopulationHappiness();
-        calculatePopulationLevels();
-        calculateFactionLevel();
+        calculatePopulationConsumption(); // Calculate and consume resources for the population
+        calculatePopulationHappiness(); // Based on the resources they got, calculate happiness
+        calculatePopulationLevels(); // Level up or down based on happiness
+        calculateFactionLevel(); // Level up the faction based on population and buildings, if possible
+    }
+
+    private void doBuildingStuff() {
+        // Some buildings might have effects that need to be applied before the payday
+        for (BuildSite site : faction.getFactionBuildings()) {
+            site.onPrePayday();
+        }
+        // Payday
+        for (BuildSite site : faction.getFactionBuildings()) {
+            site.onPayday();
+        }
     }
 
     private void calculatePopulationConsumption() {
@@ -145,6 +158,7 @@ public class FEconomy {
                 }
             }
         }
+        totalUnrest = totalUnrest * faction.getAttributeValue("unrest_multiplier", 1.0);
         faction.setUnrestLevel(totalUnrest);
         if (totalUnrest > 0) {
             spawnRevolt(faction, (int) (totalUnrest * UNREST_SPAWN_MULTIPLIER));

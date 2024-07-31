@@ -22,6 +22,232 @@ acm:
   transferredChunk: "Chunk <gold><arg:0></gold> has been transferred to <gold><arg:1></gold>."
   transferredChunks: "<gold><arg:0></gold> chunks have been transferred to <gold><arg:1></gold>."
 building:
+  buildings:
+    apple_orchard:
+      name: Apple Orchard
+      description: ""
+    bank:
+      name: Bank
+      description: ""
+    barracks:
+      name: Barracks
+      description: ""
+    bathhouse:
+      name: Bathhouse
+      description: ""
+    beekeeper:
+      name: Beekeeper
+      description: ""
+    blacksmith:
+      name: Blacksmith
+      description: ""
+    bowyer:
+      name: Bowyer
+      description: ""
+    brewery:
+      name: Brewery
+      description: ""
+    caravansary:
+      name: Caravansary
+      description: ""
+    castle:
+      name: Castle
+      description: ""
+    chandler:
+      name: Chandler
+      description: ""
+    chapel:
+      name: Chapel
+      description: ""
+    charcoal_kiln:
+      name: Charcoal Kiln
+      description: ""
+    church:
+      name: Church
+      description: ""
+    citizen_house:
+      name: Citizen House
+      description: ""
+    clay_pit:
+      name: Clay Pit
+      description: ""
+    cooperage:
+      name: Cooperage
+      description: ""
+    craft_guild:
+      name: Craft Guild
+      description: ""
+    demolitions_expert:
+      name: Demolitions Expert
+      description: ""
+    dungeon:
+      name: Dungeon
+      description: ""
+    embassy:
+      name: Embassy
+      description: ""
+    fairground:
+      name: Fairground
+      description: ""
+    farm:
+      name: Farm
+      description: ""
+    farmland:
+      name: Farmland
+      description: ""
+    farrier:
+      name: Farrier
+      description: ""
+    fountain:
+      name: Fountain
+      description: ""
+    fishery:
+      name: Fishery
+      description: ""
+    foresters_hut:
+      name: "Forester's Hut"
+      description: ""
+    geologist:
+      name: Geologist
+      description: ""
+    gravel_pit:
+      name: Gravel Pit
+      description: ""
+    guardhouse:
+      name: Guardhouse
+      description: ""
+    harbor:
+      name: Harbor
+      description: ""
+    herbalist:
+      name: Herbalist
+      description: ""
+    horse_farm:
+      name: Horse Farm
+      description: ""
+    hunting_lodge:
+      name: Hunting Lodge
+      description: ""
+    inn:
+      name: Inn
+      description: ""
+    library:
+      name: Library
+      description: ""
+    lumberjack:
+      name: Lumberjack
+      description: ""
+    mage_guild:
+      name: Mage Guild
+      description: ""
+    market:
+      name: Market
+      description: ""
+    master_builder:
+      name: Master Builder
+      description: ""
+    mine:
+      name: Mine
+      description: ""
+    moat:
+      name: Moat
+      description: ""
+    noble_house:
+      name: Noble House
+      description: ""
+    outpost:
+      name: Outpost
+      description: ""
+    park:
+      name: Park
+      description: ""
+    pasture:
+      name: Pasture
+      description: ""
+    patrician_house:
+      name: Patrician House
+      description: ""
+    peasant_house:
+      name: Peasant House
+      description: ""
+    quarry:
+      name: Quarry
+      description: ""
+    quartz_quarry:
+      name: Quartz Quarry
+      description: ""
+    runesmith:
+      name: Runesmith
+      description: ""
+    sand_digger:
+      name: Sand Digger
+      description: ""
+    scholar:
+      name: Scholar
+      description: ""
+    serf_hut:
+      name: Serf Hut
+      description: ""
+    siege_workshop:
+      name: Siege Workshop
+      description: ""
+    silo:
+      name: Silo
+      description: ""
+    slaughterhouse:
+      name: Slaughterhouse
+      description: ""
+    spearsmith:
+      name: Spearmaker
+      description: ""
+    stables:
+      name: Stables
+      description: ""
+    statue:
+      name: Statue
+      description: ""
+    shrine:
+      name: Shrine
+      description: ""
+    tannery:
+      name: Tannery
+      description: ""
+    tailor:
+      name: Tailor
+      description: ""
+    theater:
+      name: Theater
+      description: ""
+    town_hall:
+      name: Town Hall
+      description: ""
+    trade_guild:
+      name: Trade Guild
+      description: ""
+    tournament_ground:
+      name: Tournament Ground
+      description: ""
+    village_center:
+      name: Village Center
+      description: ""
+    vineyard:
+      name: Vineyard
+      description: ""
+    watermill:
+      name: Watermill
+      description: ""
+    watchtower:
+      name: Watchtower
+      description: ""
+    weaponsmith:
+      name: Weaponsmith
+      description: ""
+    well:
+      name: Well
+      description: ""
+    windmill:
+      name: Windmill
+      description: ""
   effects:
     radar:
       enemiesDetected: "<dark_red>Enemies detected!"
