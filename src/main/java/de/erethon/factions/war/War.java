@@ -33,7 +33,12 @@ public class War {
         } else {
             storage = new YamlConfiguration();
         }
-        phaseManager = new WarPhaseManager(scheduleFile);
+        try { // With how broken this is, I'm not even going to try to fix it
+            phaseManager = new WarPhaseManager(scheduleFile);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to load war schedule. Please fix me.");
+            e.printStackTrace();
+        }
         theanorRegion = plugin.getRegionManager().getRegionByName("Theanor");
         if (theanorRegion == null) {
             plugin.getLogger().warning("Region named Theanor region not found. Please create it.");
@@ -65,6 +70,12 @@ public class War {
     public void save() {
         phaseManager.save();
         storage.set("score", score.save());
+        try {
+            storage.save(new File(Factions.WAR, "war.yml"));
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to save war data.");
+            e.printStackTrace();
+        }
     }
 
     public void load() {
