@@ -10,6 +10,7 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -26,6 +27,7 @@ public class WarScore {
 
     private final Factions plugin = Factions.get();
     private static final int TICK_DURATION = (20 * 60) * 20; // 20 minutes, in ticks
+    private final Component HEADING = MiniMessage.miniMessage().deserialize("<gradient:red:dark_red><st>       </st></gradient><dark_gray>]<gray><st> </st> <red>⚔</red> <st> </st><dark_gray>[<gradient:dark_red:red><st>       </st></gradient>");
 
     // Scoring
     private final HashMap<Alliance, Integer> totalScore = new HashMap<>();
@@ -73,7 +75,7 @@ public class WarScore {
                 tickDisplays();
             }
         };
-        displayTask.runTaskTimer(plugin, 0, 20);
+        displayTask.runTaskTimer(plugin, 0, 60);
         tickTask = new BukkitRunnable() {
             @Override
             public void run() {
@@ -132,14 +134,13 @@ public class WarScore {
     }
 
     private Component getTabFooter() {
-        Component footer = Component.text("\n");
+        Component footer = HEADING;
+        footer = footer.append(Component.text("\n")); // No newline() support in the tab footer for some reason
         // Current victory points
         Component vpRed = Component.text(totalScore.get(War.ALLIANCE_RED), War.ALLIANCE_RED.getColor());
         Component vpGreen = Component.text(" " + totalScore.get(War.ALLIANCE_GREEN), War.ALLIANCE_GREEN.getColor());
         Component vpBlue = Component.text(" " + totalScore.get(War.ALLIANCE_BLUE), War.ALLIANCE_BLUE.getColor());
         Component vpIcon = Component.text("👑", NamedTextColor.GOLD);
-        footer = footer.append(Component.translatable("factions.war.score.victoryPointsHeading"));
-        footer = footer.append(Component.text("\n"));
         footer = footer.append(vpRed.append(vpIcon).append(Component.text(" | ", NamedTextColor.DARK_GRAY)).append(vpGreen).append(vpIcon).append(Component.text(" | ", NamedTextColor.DARK_GRAY)).append(vpBlue).append(vpIcon));
         footer = footer.append(Component.text("\n"));
         Component bar = Component.text("");
@@ -158,15 +159,13 @@ public class WarScore {
         for (Alliance alliance : distribution.keySet()) {
             bar = bar.append(Component.text(result.get(alliance), alliance.getColor()));
         }
-        bar = bar.append(Component.text("\n")); // No newline() support for some reason
+        bar = bar.append(Component.text("\n"));
 
         // Potential points
         Component pointsRed = Component.text(" +" + potentialPointsNextTick.get(War.ALLIANCE_RED), War.ALLIANCE_RED.getColor());
         Component pointsGreen = Component.text(" +" + potentialPointsNextTick.get(War.ALLIANCE_GREEN), War.ALLIANCE_GREEN.getColor());
         Component pointsBlue = Component.text(" +" + potentialPointsNextTick.get(War.ALLIANCE_BLUE), War.ALLIANCE_BLUE.getColor());
 
-        footer = footer.append(Component.translatable("factions.war.score.potentialHeading"));
-        footer = footer.append(Component.text("\n"));
         footer = footer.append(bar);
         footer = footer.append(pointsRed.append(Component.text(" | ", NamedTextColor.DARK_GRAY)).append(pointsGreen).append(Component.text(" | ", NamedTextColor.DARK_GRAY)).append(pointsBlue));
         footer = footer.append(Component.text("\n"));

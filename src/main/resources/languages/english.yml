@@ -692,6 +692,5 @@ war:
       displayName: "Undefined"
   prefix: "<dark_gray><b>[ <dark_red>WAR</dark_red> ]</b></dark_gray><gray> <arg:0>"
   score:
+    heading: ""
     potentialHeading: "<gold>Potential Score<dark_gray>:</dark_gray></gold>"
-    currentRegionHeading: "<green>Current Region<dark_gray>:</dark_gray></green>"
-    victoryPointsHeading: "<gold>Victory Points<dark_gray>:</dark_gray></gold>"
