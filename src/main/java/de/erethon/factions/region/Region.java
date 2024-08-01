@@ -1,6 +1,7 @@
 package de.erethon.factions.region;
 
 import com.google.gson.JsonObject;
+import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.attributes.FactionAttribute;
@@ -43,6 +44,8 @@ import java.util.UUID;
  * @author Fyreum
  */
 public class Region extends FLegalEntity {
+
+    private final Factions plugin = Factions.get();
 
     private final RegionCache regionCache;
     /* Data */
@@ -135,6 +138,9 @@ public class Region extends FLegalEntity {
             }
         }
         type = RegionType.getByName(config.getString("type", type.name()), type);
+        if (type.isWarGround()) {
+            plugin.getWar().registerRegion(regionalWarTracker);
+        }
     }
 
     @Override
@@ -374,6 +380,11 @@ public class Region extends FLegalEntity {
 
     public void setType(@NotNull RegionType type) {
         this.type = type;
+        if (type.isWarGround()) {
+            plugin.getWar().registerRegion(regionalWarTracker);
+        } else {
+            plugin.getWar().unregisterRegion(regionalWarTracker);
+        }
     }
 
     @Override
