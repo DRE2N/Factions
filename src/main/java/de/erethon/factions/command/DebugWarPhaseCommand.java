@@ -24,13 +24,13 @@ public class DebugWarPhaseCommand extends FCommand {
     @Override
     public void onExecute(CommandSender sender, String[] args) {
         if (args[1].equalsIgnoreCase("none")) {
-            assure(plugin.getWarPhaseManager().isDebugMode(), FMessage.ERROR_DEBUG_MODE_NOT_ENABLED);
-            plugin.getWarPhaseManager().disableDebugMode();
+            assure(plugin.getWar().getPhaseManager().isDebugMode(), FMessage.ERROR_DEBUG_MODE_NOT_ENABLED);
+            plugin.getWar().getPhaseManager().disableDebugMode();
             return;
         }
         WarPhase warPhase = EnumUtil.getEnumIgnoreCase(WarPhase.class, args[1]);
         assure(warPhase != null, FMessage.ERROR_WAR_PHASE_NOT_FOUND);
-        plugin.getWarPhaseManager().debugWarPhase(warPhase);
+        plugin.getWar().getPhaseManager().debugWarPhase(warPhase);
     }
 
     @Override

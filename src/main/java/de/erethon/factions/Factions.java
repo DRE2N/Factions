@@ -39,6 +39,7 @@ import de.erethon.factions.region.schematic.RegionSchematicManager;
 import de.erethon.factions.integrations.UIFactionsListener;
 import de.erethon.factions.statistic.FStatistics;
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.war.War;
 import de.erethon.factions.war.WarHistory;
 import de.erethon.factions.war.WarListener;
 import de.erethon.factions.war.WarPhase;
@@ -113,7 +114,7 @@ public final class Factions extends EPlugin {
     private RegionSchematicManager regionSchematicManager;
     private TaxManager taxManager;
     private WarHistory warHistory;
-    private WarPhaseManager warPhaseManager;
+    private War war;
 
     /* Tasks */
     private BukkitTask backupTask;
@@ -176,7 +177,7 @@ public final class Factions extends EPlugin {
             loadTaxManager();
         }
         loadWarHistory();
-        loadWarPhaseManager();
+        war = new War();
         if (Bukkit.getPluginManager().getPlugin("PrometheusExporter") != null) {
             FStatistics.initialize();
         }
@@ -209,7 +210,6 @@ public final class Factions extends EPlugin {
         fLoggerFile = new File(getDataFolder(), "logger.yml");
         fConfigFile = new File(getDataFolder(), "config.yml");
         fPolicyConfigFile = new File(getDataFolder(), "policies.yml");
-        warPhaseManagerFile = FileUtil.initFile(this, new File(WAR, "schedule.yml"), "defaults/schedule.yml");
     }
 
     public void loadFLogger() {
@@ -263,18 +263,13 @@ public final class Factions extends EPlugin {
         warHistory.load();
     }
 
-    public void loadWarPhaseManager() {
-        warPhaseManager = new WarPhaseManager(warPhaseManagerFile);
-        warPhaseManager.load();
-    }
-
     public void runTasks() {
         factionCache.runKickTask();
         if (taxManager != null) {
             taxManager.runFactionTaxTask();
         }
         try {
-            warPhaseManager.updateCurrentStageTask();
+            war.getPhaseManager().updateCurrentStageTask();
         } catch (Exception e) {
             FLogger.ERROR.log("Failed to start war phase manager task: " + e.getMessage());
             e.printStackTrace();
@@ -508,7 +503,7 @@ public final class Factions extends EPlugin {
         fPlayerCache.saveAll();
         portalManager.saveAll();
         warHistory.saveAll();
-        warPhaseManager.saveData();
+        war.save();
         buildSiteCache.saveAllPendingChunks();
         FLogger.save();
     }
@@ -572,12 +567,12 @@ public final class Factions extends EPlugin {
         return warHistory;
     }
 
-    public @NotNull WarPhaseManager getWarPhaseManager() {
-        return warPhaseManager;
+    public @NotNull War getWar() {
+        return war;
     }
 
     public @NotNull WarPhase getCurrentWarPhase() {
-        return warPhaseManager.getCurrentWarPhase();
+        return war.getCurrentPhase();
     }
 
     public @Nullable TaxManager getTaxManager() {
