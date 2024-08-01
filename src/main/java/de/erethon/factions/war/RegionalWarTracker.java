@@ -34,6 +34,7 @@ public class RegionalWarTracker {
     private double captureCap = DEFAULT_CAPTURE_CAP;
     private int regionValue = DEFAULT_REGION_VALUE;
     private long cooldownDate = 0;
+    private WarScore warScore;
 
     public RegionalWarTracker(@NotNull Region region) {
         this.region = region;
@@ -68,18 +69,6 @@ public class RegionalWarTracker {
             }
         }
         this.regionValue = config.getInt("regionValue", regionValue);
-        ConfigurationSection scoresSection = config.getConfigurationSection("scores");
-        if (scoresSection != null) {
-            for (String key : scoresSection.getKeys(false)) {
-                int allianceId = NumberUtil.parseInt(key, -1);
-                Alliance alliance = plugin.getAllianceCache().getById(allianceId);
-                if (alliance == null) {
-                    FLogger.ERROR.log("Unknown alliance ID in region '" + region.getId() + "' found: " + key);
-                    continue;
-                }
-                scores.put(alliance, config.getDouble("scores." + key));
-            }
-        }
     }
 
     public @NotNull Map<String, Object> serialize() {

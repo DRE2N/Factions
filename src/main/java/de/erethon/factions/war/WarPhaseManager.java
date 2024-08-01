@@ -59,7 +59,7 @@ public class WarPhaseManager extends EConfig {
         FLogger.WAR.log("Current war phase stage: " + currentStage.getWarPhase() + ", remaining duration: " + DateUtil.formatDateDiff(System.currentTimeMillis() + delay));
     }
 
-    private void updateCurrentStage() {
+    public void updateCurrentStage() {
         // Cancel previous running task.
         cancelRunningTask();
 
