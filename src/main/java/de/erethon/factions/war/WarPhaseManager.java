@@ -210,6 +210,9 @@ public class WarPhaseManager extends EConfig {
     }
 
     public @NotNull WarPhase getCurrentWarPhase() {
+        if (currentStage == null) { // TODO: Quick fix for NPE
+            return WarPhase.PEACE;
+        }
         return currentStage.getWarPhase();
     }
 
