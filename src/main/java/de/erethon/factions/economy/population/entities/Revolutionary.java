@@ -1,7 +1,7 @@
 package de.erethon.factions.economy.population.entities;
 
+import ca.spottedleaf.moonrise.common.misc.NearbyPlayers;
 import de.erethon.factions.faction.Faction;
-import io.papermc.paper.util.player.NearbyPlayers;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -50,7 +50,7 @@ public class Revolutionary extends Vindicator {
         super(type, world);
         level = world;
         ServerLevel serverLevel = (ServerLevel) world;
-        nearby = serverLevel.getChunkSource().chunkMap.nearbyPlayers;
+        nearby = serverLevel.getChunkSource().chunkMap.level.moonrise$getNearbyPlayers();
     }
 
     public Revolutionary(Faction faction, Location location) {

@@ -64,7 +64,7 @@ public class Councillor extends Villager {
             nbt.putString("papyrus-entity-id", "factions_councillor");
             nbt.putInt("factions-region-id", faction.getId());
         } catch (Exception e) {
-            FLogger.WAR.log("Failed to save crystal charge carrier data at " + position().x + ", " + position().y + ", " + position().z);
+            FLogger.WAR.log("Failed to save councillor NPC data at " + position().x + ", " + position().y + ", " + position().z);
             e.printStackTrace();
         }
     }

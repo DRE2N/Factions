@@ -43,7 +43,6 @@ import de.erethon.factions.war.War;
 import de.erethon.factions.war.WarHistory;
 import de.erethon.factions.war.WarListener;
 import de.erethon.factions.war.WarPhase;
-import de.erethon.factions.war.WarPhaseManager;
 import de.erethon.factions.war.entities.CrystalChargeCarrier;
 import de.erethon.factions.war.entities.CrystalMob;
 import de.erethon.factions.war.entities.ObjectiveGuard;
