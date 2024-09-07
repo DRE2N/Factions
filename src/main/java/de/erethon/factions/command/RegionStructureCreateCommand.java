@@ -24,7 +24,7 @@ import java.util.List;
 public class RegionStructureCreateCommand extends FCommand {
 
     // todo: There has to be a better way of doing this... (maybe some sort of property API)
-    public static final List<String> TYPES = List.of("castle", "crystal", "occupy");
+    public static final List<String> TYPES = List.of("castle", "crystal", "occupy", "resource");
     public static final List<String> CASTLE_OPTIONS = List.of("schematicId:");
     public static final List<String> CRYSTAL_OPTIONS = List.of("damagePerTick:", "maxHealth:", "tickInterval:");
     public static final List<String> OCCUPY_OPTIONS = List.of("occupyDuration:", "occupiedInterval:", "tickInterval:",
