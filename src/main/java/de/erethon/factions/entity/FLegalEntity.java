@@ -109,7 +109,10 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
         this.name = name;
     }
 
-    public boolean matchingName(@NotNull String name) {
+    public boolean matchingName(String name) {
+        if (name == null) {
+            return false;
+        }
         return this.name.equalsIgnoreCase(name);
     }
 
