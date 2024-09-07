@@ -70,6 +70,9 @@ public class Region extends FLegalEntity {
     protected Region(@NotNull RegionCache regionCache, @NotNull File file) throws NumberFormatException {
         super(file);
         this.regionCache = regionCache;
+        if (name == null) {
+            this.name = FMessage.GENERAL_REGION_DEFAULT_NAME_PREFIX.getMessage(String.valueOf(id));
+        }
     }
 
     /**
