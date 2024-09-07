@@ -138,7 +138,7 @@ public class Region extends FLegalEntity {
             }
         }
         type = RegionType.getByName(config.getString("type", type.name()), type);
-        if (type.isWarGround()) {
+        if (type.isWarGround() && plugin.getWar() != null) {
             plugin.getWar().registerRegion(regionalWarTracker);
         }
     }

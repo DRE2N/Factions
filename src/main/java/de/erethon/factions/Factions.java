@@ -566,7 +566,7 @@ public final class Factions extends EPlugin {
         return warHistory;
     }
 
-    public @NotNull War getWar() {
+    public @Nullable War getWar() {
         return war;
     }
 
