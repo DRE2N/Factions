@@ -123,6 +123,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     @Override
     protected void addDefaultAttributes() {
         super.addDefaultAttributes();
+        FLogger.FACTION.log("Adding default attributes to faction '" + name + "'...");
         attributes.put("max_players", new FactionStatAttribute(5));
         attributes.put("housing_peasant", new FactionStatAttribute(10));
         attributes.put("housing_citizen", new FactionStatAttribute(0));
@@ -153,14 +154,19 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     public void playerJoin(@NotNull FPlayer fPlayer) {
         FException.throwIf(isMember(fPlayer), "The player '" + fPlayer.getLastName() + "' is already a member of the faction '" + name + "'",
                 FMessage.ERROR_TARGET_IS_ALREADY_IN_THIS_FACTION, fPlayer.getLastName(), name);
-        FException.throwIf(members.size() >= getMaxMembers(), "The faction '" + name + "' is already full",
-                FMessage.ERROR_FACTION_IS_FULL, name, String.valueOf(getMaxMembers()));
+
+        if (!fPlayer.isBypass()) {
+            FException.throwIf(members.size() >= getMaxMembers(), "The faction '" + name + "' is already full",
+                    FMessage.ERROR_FACTION_IS_FULL, name, String.valueOf(getMaxMembers()));
+        }
+
         FLogger.FACTION.log("Processing '" + fPlayer.getUniqueId() + "' joining faction '" + name + "'...");
         invitedPlayers.remove(fPlayer);
         members.add(fPlayer);
         fPlayer.setFaction(this);
         fPlayer.setLastFactionJoinDate(System.currentTimeMillis());
         sendMessage(FMessage.FACTION_INFO_PLAYER_JOINED.message(fPlayer.getLastName()));
+
         for (BuildSite buildSite : buildSites) {
             buildSite.onFactionJoin(fPlayer);
         }
