@@ -7,6 +7,7 @@ import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.policy.FPolicy;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.war.structure.CrystalWarStructure;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.damagesource.DamageSource;
@@ -111,14 +112,9 @@ public class CrystalChargeCarrier extends IronGolem {
         super.die(damageSource);
         if (damageSource.getEntity() instanceof Player player) {
             org.bukkit.entity.Player bukkitPlayer = (org.bukkit.entity.Player) player.getBukkitEntity();
-            bukkitPlayer.getPersistentDataContainer().set(CARRIER_PLAYER_KEY, PersistentDataType.BYTE, (byte) 1);
+            CrystalWarStructure.addCarryingPlayerBuffs(bukkitPlayer);
             bukkitPlayer.sendMessage(Component.translatable("factions.war.carrier.killed"));
             bukkitPlayer.sendMessage(Component.translatable("factions.war.carrier.killedHint"));
-            bukkitPlayer.setGlowing(true);
-            bukkitPlayer.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).addTransientModifier(CARRIER_BUFF);
-            bukkitPlayer.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).addTransientModifier(CARRIER_DEBUFF);
-            bukkitPlayer.getAttribute(Attribute.ADV_PHYSICAL).addTransientModifier(CARRIER_DEBUFF);
-            bukkitPlayer.getAttribute(Attribute.ADV_MAGIC).addTransientModifier(CARRIER_DEBUFF);
             region.getRegionalWarTracker().addCrystalCarrier(bukkitPlayer);
         }
     }

@@ -110,7 +110,7 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
     }
 
     public boolean matchingName(String name) {
-        if (name == null) {
+        if (name == null || this.name == null) { // This can happen, don't ask me why
             return false;
         }
         return this.name.equalsIgnoreCase(name);

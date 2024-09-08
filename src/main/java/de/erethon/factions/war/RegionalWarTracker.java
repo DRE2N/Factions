@@ -6,6 +6,9 @@ import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.WarMath;
+import de.erethon.factions.war.entities.CrystalChargeCarrier;
+import de.erethon.factions.war.structure.CrystalWarStructure;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +49,10 @@ public class RegionalWarTracker {
         }
         kills.clear();
         scores.clear();
-        crystalCarriers.clear(); // todo: Malfrador please remove any effects from the players
+        for (Player carrier : crystalCarriers) {
+            CrystalWarStructure.removeCarryingPlayerBuffs(carrier);
+        }
+        crystalCarriers.clear();
     }
 
     /* Serialization */

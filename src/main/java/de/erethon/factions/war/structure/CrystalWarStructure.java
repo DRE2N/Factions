@@ -19,12 +19,14 @@ import net.minecraft.world.entity.Entity;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.Display;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
@@ -32,6 +34,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -185,12 +188,7 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
 
     private void handleCarrierDeposit(Player player) {
         region.getRegionalWarTracker().removeCrystalCarrier(player);
-        player.setGlowing(false);
-        player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).removeModifier(CrystalChargeCarrier.CARRIER_BUFF);
-        player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
-        player.getAttribute(Attribute.ADV_PHYSICAL).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
-        player.getAttribute(Attribute.ADV_MAGIC).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
-        player.getPersistentDataContainer().remove(CrystalChargeCarrier.CARRIER_PLAYER_KEY);
+        removeCarryingPlayerBuffs(player);
         player.playSound(Sound.sound(org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, Sound.Source.RECORD, 0.8f, 0.6f));
         player.playSound(Sound.sound(org.bukkit.Sound.ENTITY_PHANTOM_SWOOP, Sound.Source.RECORD, 0.8f, 1.0f));
         Title title = Title.title(Component.empty(), Component.translatable("factions.war.carrier.deposit"));
@@ -209,6 +207,39 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
             }
         };
         animation.runTaskTimer(plugin, 0, 1);
+    }
+
+    public static void removeCarryingPlayerBuffs(Player player) {
+        player.setGlowing(false);
+        player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).removeModifier(CrystalChargeCarrier.CARRIER_BUFF);
+        player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getAttribute(Attribute.ADV_PHYSICAL).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getAttribute(Attribute.ADV_MAGIC).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getPersistentDataContainer().remove(CrystalChargeCarrier.CARRIER_PLAYER_KEY);
+        for (org.bukkit.entity.Entity entity : player.getPassengers()) {
+            if (entity instanceof ItemDisplay display && display.getItemStack().getType() == Material.END_CRYSTAL) {
+                entity.remove();
+            }
+        }
+    }
+
+    public static void addCarryingPlayerBuffs(Player player) {
+        player.getPersistentDataContainer().set(CrystalChargeCarrier.CARRIER_PLAYER_KEY, PersistentDataType.BYTE, (byte) 1);
+        player.setGlowing(true);
+        player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).addTransientModifier(CrystalChargeCarrier.CARRIER_BUFF);
+        player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).addTransientModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getAttribute(Attribute.ADV_PHYSICAL).addTransientModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getAttribute(Attribute.ADV_MAGIC).addTransientModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        ItemDisplay itemDisplay = player.getWorld().spawn(player.getLocation().add(0, 1, 0), ItemDisplay.class, display -> {
+            display.setPersistent(false);
+            ItemStack itemStack = new ItemStack(Material.END_CRYSTAL);
+            itemStack.editMeta(
+                    meta -> meta.setEnchantmentGlintOverride(true)
+            );
+            display.setItemStack(itemStack);
+            display.setInvulnerable(true);
+        });
+        player.addPassenger(itemDisplay);
     }
 
     /* Setup */
