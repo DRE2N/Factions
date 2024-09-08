@@ -140,7 +140,9 @@ public class WarCastleStructure extends RegionStructure implements Listener {
         if (schematic != null) {
             serialized.put("schematic", schematic.getName());
         }
-        serialized.put("crystalObjective", crystalObjective.serialize());
+        if (crystalObjective != null) {
+            serialized.put("crystalObjective", crystalObjective.serialize());
+        }
         return serialized;
     }
 
