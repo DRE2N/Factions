@@ -24,6 +24,7 @@ public enum FPolicy implements FPolicyHandler {
     CRYSTAL_DAMAGE_REDUCTION(Component.translatable("factions.policy.crystalDamageReduction"), POSITIVE, ALLIANCE, SimplePolicy.INSTANCE),
     STRONGER_OBJECTIVE_GUARDS(Component.translatable("factions.policy.strongerObjectiveGuards"), POSITIVE, ALLIANCE, SimplePolicy.INSTANCE),
     OBJECTIVE_GUARDS_REGEN(Component.translatable("factions.policy.objectiveGuardsRegen"), POSITIVE, FACTION, SimplePolicy.INSTANCE),
+    STRONGER_CARAVANS(Component.translatable("factions.policy.strongerCaravans"), POSITIVE, ALLIANCE, SimplePolicy.INSTANCE),
 
     ;
 
