@@ -101,6 +101,11 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
         return name;
     }
 
+    public @NotNull String getName(boolean fancy) {
+        return name.replace("_", " "); // For display purposes
+    }
+
+
     public @NotNull Component name() {
         return Component.text(name);
     }

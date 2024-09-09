@@ -34,7 +34,7 @@ public class ShowCommand extends FCommand {
         Faction faction = args.length == 2 ? getFaction(args[1]) : getFaction(getFPlayer(sender));
         FPlayer fPlayer = getFPlayer(sender);
         sender.sendMessage(Component.empty());
-        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_HEADER.message(faction.getName()));
+        MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_HEADER.message(faction.getName(true)));
         MessageUtil.sendCenteredMessage(sender, FMessage.CMD_SHOW_SEPARATOR.message());
         sender.sendMessage(FMessage.CMD_SHOW_SHORT_NAME.message(faction.getDisplayShortName()));
         sender.sendMessage(FMessage.CMD_SHOW_LONG_NAME.message(faction.getDisplayLongName()));

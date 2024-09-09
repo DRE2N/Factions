@@ -303,7 +303,7 @@ public class Region extends FLegalEntity {
     }
 
     public @NotNull String getDisplayOwner() {
-        return isOwned() ? owner.getName() : FMessage.GENERAL_WILDERNESS.getMessage() + (alliance == null ? "" : " (" + alliance.getName() + ")");
+        return isOwned() ? owner.getName(true) : FMessage.GENERAL_WILDERNESS.getMessage() + (alliance == null ? "" : " (" + alliance.getName(true) + ")");
     }
 
     public void setOwner(@Nullable Faction owner) {
@@ -393,8 +393,8 @@ public class Region extends FLegalEntity {
     @Override
     public @NotNull Component asComponent(@NotNull FEntity viewer) {
         Component component = Component.text(getName());
-        Component hoverMessage = Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName()));
-        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName())));
+        Component hoverMessage = Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName(true)));
+        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName(true))));
         hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.type","factions.region.info.type", Component.text(getType().getName())));
         hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.owner", "factions.region.info.owner", Component.text(getDisplayOwner())));
         hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.buildings", "factions.region.info.buildings", Component.text(buildSites.size())));
