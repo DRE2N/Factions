@@ -843,6 +843,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         if (attribute == null) {
             return value;
         }
+        value += attribute.getValue();
         for (FactionAttributeModifier modifier : attribute.getModifiers()) {
             value = modifier.apply(value);
         }

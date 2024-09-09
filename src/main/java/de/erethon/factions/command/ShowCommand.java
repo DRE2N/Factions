@@ -21,7 +21,7 @@ public class ShowCommand extends FCommand {
 
     public ShowCommand() {
         setCommand("show");
-        setAliases("who", "info");
+        setAliases("who", "info", "f");
         setMinMaxArgs(0, 1);
         setConsoleCommand(true);
         setPermissionFromName();
