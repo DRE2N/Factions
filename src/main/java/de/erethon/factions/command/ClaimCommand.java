@@ -25,7 +25,7 @@ public class ClaimCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         FPlayer fPlayer = getFPlayerRaw(sender);
         Faction faction = getFaction(fPlayer);
-        Region region = args.length == 2 ? getClaimableRegion(fPlayer) : getClaimableRegion(args[1]);
+        Region region = args.length == 2 ? getClaimableRegion(args[1]) : getClaimableRegion(fPlayer);
         assureSameAlliance(region, fPlayer);
 
         FAccount fAccount = faction.getFAccount();

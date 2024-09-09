@@ -113,10 +113,13 @@ public class WarCastleStructure extends RegionStructure implements Listener {
             FLogger.DEBUG.log("Creating new schematic for war castle '" + name + "'...");
             schematic = plugin.getRegionSchematicManager().initializeSchematic(name);
             schematic.scanAndInsertBlocks(region.getWorld(), getMinPosition(), getMaxPosition());
-            return;
+        } else if (schematic.getBlocks() == null) {
+            FLogger.DEBUG.log("Initial scan for schematic: " + schematicId);
+            schematic.scanAndInsertBlocks(region.getWorld(), getMinPosition(), getMaxPosition());
         }
         this.restoreProcess = new RestoreProcessImpl(region.getWorld(), getMinPosition(), schematic);
         ConfigurationSection section = config.getConfigurationSection("crystalObjective");
+
         if (section == null) {
             section = config.createSection("crystalObjective");
         }

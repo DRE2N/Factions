@@ -21,12 +21,10 @@ public class ResourceStructure extends RegionStructure {
 
     public ResourceStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
-        load(config);
     }
 
     public ResourceStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
-        load(config);
     }
 
     @Override
