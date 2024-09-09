@@ -12,7 +12,6 @@ public class FlagCommand extends FCommand {
 
     public FlagCommand() {
         setCommand("flag");
-        setAliases("f");
         setMinMaxArgs(0, 1);
         setPermissionFromName();
         setFUsage(getCommand() + " ([faction])");
