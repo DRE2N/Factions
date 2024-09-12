@@ -396,12 +396,12 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     }
 
     public @NotNull String getDisplayRegion() {
-        return lastRegion == null ? FMessage.GENERAL_WILDERNESS.getMessage() : lastRegion.getName();
+        return lastRegion == null ? FMessage.GENERAL_WILDERNESS.getMessage() : lastRegion.getName(true);
     }
 
     public @NotNull String getDisplayRegionWithOwner() {
         return lastRegion == null ? FMessage.GENERAL_WILDERNESS.getMessage() :
-                lastRegion.hasFaction() ? lastRegion.getName() + " (" + lastRegion.getFaction().getName() + ")" : lastRegion.getName();
+                lastRegion.hasFaction() ? lastRegion.getName(true) + " (" + lastRegion.getFaction().getName(true) + ")" : lastRegion.getName(true);
     }
 
     public @NotNull LazyChunk getCurrentChunk() {

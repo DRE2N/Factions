@@ -112,7 +112,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     @Override
     public @NotNull Component asComponent(@NotNull FEntity viewer) {
-        Component component = Component.text(getName());
+        Component component = Component.text(getName(true));
         Component hoverMessage = Component.translatable("factions.alliance.info.header", getColoredName());
         hoverMessage = hoverMessage.append(Component.translatable("factions.alliance.info.header", getColoredName()));
         hoverMessage = hoverMessage.append(Component.translatable("factions.alliance.info.members", Component.text(factions.size())));
@@ -277,7 +277,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
     }
 
     public @NotNull Component getColoredName() {
-        return Component.text().color(color).content(name).build();
+        return Component.text().color(color).content(name.replace("_", " ")).build();
     }
 
     @Override

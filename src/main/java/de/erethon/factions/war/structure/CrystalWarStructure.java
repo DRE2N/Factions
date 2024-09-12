@@ -118,9 +118,9 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
 
     public void destroy(@Nullable FPlayer damager) {
         if (damager != null) {
-            FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED_BY_PLAYER, alliance.getDisplayShortName(), region.getName(), damager.getLastName());
+            FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED_BY_PLAYER, alliance.getDisplayShortName(), region.getName(true), damager.getLastName());
         } else {
-            FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED, alliance.getDisplayShortName(), region.getName());
+            FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED, alliance.getDisplayShortName(), region.getName(true));
         }
         deactivate();
         deleteStructure();
