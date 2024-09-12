@@ -59,7 +59,7 @@ public class RegionSchematic extends EConfig {
         blocks = new String[maxX - minX][maxY - minY][maxZ - minZ];
 
         foreach((x, y, z, data) -> {
-            Block block = world.getBlockAt(x, y, z);
+            Block block = world.getBlockAt(minX + x, minY + y, minZ + z);
             if (block.getType() == Material.AIR) {
                 return;
             }

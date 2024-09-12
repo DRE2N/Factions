@@ -104,6 +104,7 @@ public class WarCastleStructure extends RegionStructure implements Listener {
 
     @Override
     protected void load(@NotNull ConfigurationSection config) {
+        FLogger.DEBUG.log("Loading war castle '" + name + "' for region: " + region.getId() + "...");
         String schematicId = config.getString("schematicId");
         if (schematicId != null) {
             this.schematic = plugin.getRegionSchematicManager().getSchematic(schematicId);
