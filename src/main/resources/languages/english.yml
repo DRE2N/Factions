@@ -349,6 +349,8 @@ cmd:
       price: "<green>Price<dark_gray>:<gray> <arg:0>"
       type: "<green>Type<dark_green>:<gray> <arg:0>"
       warValue: "<green>War value<dark_green>:<gray> <arg:0>"
+    name:
+      success: "<green>The name of <dark_green><arg:0></dark_green> has been changed to <dark_green><arg:1></dark_green>."
     removeChunk:
       success: "<green>Chunk has been removed from region <gold><arg:0></gold>."
     removeNeighbour:
