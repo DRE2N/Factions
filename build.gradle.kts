@@ -19,6 +19,7 @@ repositories {
     maven("https://erethon.de/repo")
     maven("https://papermc.io/repo/repository/maven-public/")
     maven("https://repo.codemc.io/repository/maven-public/")
+    maven("https://maven.enginehub.org/repo/")
 }
 
 dependencies {
@@ -31,7 +32,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") { isTransitive = false }
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
-    implementation(platform("com.intellectualsites.bom:bom-newest:1.41")) // Ref: https://github.com/IntellectualSites/bom
+    implementation(platform("com.intellectualsites.bom:bom-newest:1.50"))
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core")
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit") { isTransitive = false }
     compileOnly("io.prometheus:simpleclient:0.16.0")

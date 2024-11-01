@@ -17,7 +17,6 @@ import java.util.Map;
 public class ResourceStructure extends RegionStructure {
 
     protected ResourceType resourceType;
-    protected BukkitTask restoreTask;
 
     public ResourceStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
         super(region, config);
@@ -33,24 +32,8 @@ public class ResourceStructure extends RegionStructure {
         if (region.getAlliance() == null) {
             return;
         }
-        startRestoring();
     }
 
-    public void startRestoring() {
-        if (restoreTask != null) {
-            return;
-        }
-        long interval = (long) (plugin.getFConfig().getWarCastleRestoreInterval() / resourceType.getSpeedModifier());
-        restoreTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::proceedNeighbourProcesses, 0, interval);
-    }
-
-    public void stopRestoring() {
-        if (restoreTask == null) {
-            return;
-        }
-        restoreTask.cancel();
-        restoreTask = null;
-    }
 
     private void proceedNeighbourProcesses() {
         if (region.getAlliance() == null) {
@@ -63,9 +46,6 @@ public class ResourceStructure extends RegionStructure {
             Map<String, WarCastleStructure> castles = neighbour.getStructures(WarCastleStructure.class);
             if (castles.isEmpty()) {
                 continue;
-            }
-            for (WarCastleStructure castle : castles.values()) {
-                castle.getRestoreProcess().proceed();
             }
         }
     }

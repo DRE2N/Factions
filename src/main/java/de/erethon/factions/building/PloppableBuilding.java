@@ -4,6 +4,7 @@ import com.fastasyncworldedit.core.FaweAPI;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -32,7 +33,7 @@ public class PloppableBuilding extends Building {
     public void paste(Player player) {
         Clipboard clipboard = null;
         try {
-            clipboard = FaweAPI.load(schematic);
+            clipboard = ClipboardFormats.findByFile(schematic).load(schematic);
         } catch (Exception e) {
             FLogger.BUILDING.log("Error loading schematic " + schematic.getName());
             e.printStackTrace();
