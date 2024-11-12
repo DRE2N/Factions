@@ -4,13 +4,12 @@ import de.erethon.factions.event.WarPhaseChangeEvent;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
-import de.erethon.factions.region.schematic.RegionSchematic;
-import de.erethon.factions.region.schematic.RestoreProcess;
-import de.erethon.factions.region.schematic.RestoreProcessImpl;
+import de.erethon.factions.region.schematic.SchematicSavable;
 import de.erethon.factions.util.FLogger;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
@@ -29,10 +28,9 @@ import java.util.Map;
  * @author Fyreum
  */
 @SuppressWarnings("UnstableApiUsage")
-public class WarCastleStructure extends RegionStructure implements Listener {
+public class WarCastleStructure extends RegionStructure implements Listener, SchematicSavable {
 
-    protected RegionSchematic schematic;
-    private RestoreProcess restoreProcess;
+
     private CrystalWarStructure crystalObjective;
 
     public WarCastleStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
@@ -63,7 +61,6 @@ public class WarCastleStructure extends RegionStructure implements Listener {
         }
         event.setDropItems(false);
         event.setExpToDrop(0);
-        restoreProcess.addRemainingPosition(event.getBlock());
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -73,9 +70,6 @@ public class WarCastleStructure extends RegionStructure implements Listener {
         }
         if (!containsPosition(event.getBlock().getLocation())) {
             return;
-        }
-        for (Block block : event.blockList()) {
-            restoreProcess.addRemainingPosition(block);
         }
     }
 
@@ -97,7 +91,6 @@ public class WarCastleStructure extends RegionStructure implements Listener {
         if (!plugin.getCurrentWarPhase().isAllowPvP()) {
             return;
         }
-        restoreProcess.onChunkLoad(event.getChunk());
     }
 
     /* Serialization */
@@ -105,20 +98,7 @@ public class WarCastleStructure extends RegionStructure implements Listener {
     @Override
     protected void load(@NotNull ConfigurationSection config) {
         FLogger.DEBUG.log("Loading war castle '" + name + "' for region: " + region.getId() + "...");
-        String schematicId = config.getString("schematicId");
-        if (schematicId != null) {
-            this.schematic = plugin.getRegionSchematicManager().getSchematic(schematicId);
-        }
-        if (schematic == null) {
-            FLogger.DEBUG.log("No schematic for war castle '" + name + "' found: " + schematicId);
-            FLogger.DEBUG.log("Creating new schematic for war castle '" + name + "'...");
-            schematic = plugin.getRegionSchematicManager().initializeSchematic(name);
-            schematic.scanAndInsertBlocks(region.getWorld(), getMinPosition(), getMaxPosition());
-        } else if (schematic.getBlocks() == null) {
-            FLogger.DEBUG.log("Initial scan for schematic: " + schematicId);
-            schematic.scanAndInsertBlocks(region.getWorld(), getMinPosition(), getMaxPosition());
-        }
-        this.restoreProcess = new RestoreProcessImpl(region.getWorld(), getMinPosition(), schematic);
+
         ConfigurationSection section = config.getConfigurationSection("crystalObjective");
 
         if (section == null) {
@@ -141,9 +121,6 @@ public class WarCastleStructure extends RegionStructure implements Listener {
     @Override
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> serialized = super.serialize();
-        if (schematic != null) {
-            serialized.put("schematic", schematic.getName());
-        }
         if (crystalObjective != null) {
             serialized.put("crystalObjective", crystalObjective.serialize());
         }
@@ -152,23 +129,17 @@ public class WarCastleStructure extends RegionStructure implements Listener {
 
     /* Getters and setters */
 
-    public @Nullable RegionSchematic getSchematic() {
-        return schematic;
-    }
-
-    public void setSchematic(@Nullable RegionSchematic schematic) {
-        this.schematic = schematic;
-    }
-
-    public @NotNull RestoreProcess getRestoreProcess() {
-        return restoreProcess;
-    }
-
-    public void setRestoreProcess(@NotNull RestoreProcess restoreProcess) {
-        this.restoreProcess = restoreProcess;
-    }
-
     public @NotNull CrystalWarStructure getCrystalObjective() {
         return crystalObjective;
+    }
+
+    @Override
+    public String getSchematicID() {
+        return getName() + "_" + getRegion().getId();
+    }
+
+    @Override
+    public Location getOrigin() {
+        return getCenterPosition().toLocation(getRegion().getWorld());
     }
 }

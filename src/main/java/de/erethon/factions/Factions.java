@@ -35,7 +35,6 @@ import de.erethon.factions.region.AutomatedChunkManager;
 import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.region.protection.BlockProtectionListener;
 import de.erethon.factions.region.protection.EntityProtectionListener;
-import de.erethon.factions.region.schematic.RegionSchematicManager;
 import de.erethon.factions.integrations.UIFactionsListener;
 import de.erethon.factions.statistic.FStatistics;
 import de.erethon.factions.util.FLogger;
@@ -110,7 +109,6 @@ public final class Factions extends EPlugin {
 
     /* Instances */
     private BuildingManager buildingManager;
-    private RegionSchematicManager regionSchematicManager;
     private TaxManager taxManager;
     private WarHistory warHistory;
     private War war;
@@ -237,7 +235,6 @@ public final class Factions extends EPlugin {
     public void initializeCaches() {
         allianceCache = new AllianceCache(ALLIANCES);
         buildingManager = new BuildingManager(BUILDINGS);
-        regionSchematicManager = new RegionSchematicManager(SCHEMATICS);
         factionCache = new FactionCache(FACTIONS);
         regionManager = new RegionManager(REGIONS);
         fPlayerCache = new FPlayerCache(this);
@@ -498,7 +495,6 @@ public final class Factions extends EPlugin {
         allianceCache.saveAll();
         factionCache.saveAll();
         regionManager.saveAll();
-        regionSchematicManager.saveAll();
         fPlayerCache.saveAll();
         portalManager.saveAll();
         warHistory.saveAll();
@@ -556,10 +552,6 @@ public final class Factions extends EPlugin {
 
     public @NotNull BuildSiteCache getBuildSiteCache() {
         return buildSiteCache;
-    }
-
-    public @NotNull RegionSchematicManager getRegionSchematicManager() {
-        return regionSchematicManager;
     }
 
     public @NotNull WarHistory getWarHistory() {

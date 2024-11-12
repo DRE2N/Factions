@@ -4,10 +4,15 @@ import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.region.schematic.FAWESchematicUtils;
+import de.erethon.factions.region.schematic.SchematicSavable;
 import de.erethon.factions.war.entities.CrystalChargeCarrier;
 import de.erethon.factions.war.entities.CrystalMob;
+import de.erethon.factions.war.structure.WarStructure;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * @author Fyreum
@@ -53,6 +58,52 @@ public class DebugCommand extends FCommand {
             faction.getEconomy().spawnRevolt(faction, Integer.parseInt(args[2]));
             MessageUtil.sendMessage(player, "Revolution!");
             return;
+        }
+        if (args[1].equalsIgnoreCase("saveRegionSchematic")) {
+            RegionStructure struct = plugin.getRegionManager().getRegionByPlayer((Player) sender).getStructureAt(((Player) sender).getLocation());
+            if (struct == null) {
+                MessageUtil.sendMessage(sender, "No structure found");
+                return;
+            }
+            if (struct instanceof SchematicSavable savable) {
+                FAWESchematicUtils.saveWarStructureToSchematic(struct);
+                MessageUtil.sendMessage(sender, "Saved schematic");
+            } else {
+                MessageUtil.sendMessage(sender, "Not a savable structure" + struct.getClass().getSimpleName());
+            }
+        }
+        if (args[1].equalsIgnoreCase("pasteSlice")) {
+            RegionStructure struct = plugin.getRegionManager().getRegionByPlayer((Player) sender).getStructureAt(((Player) sender).getLocation());
+            if (struct == null) {
+                MessageUtil.sendMessage(sender, "No structure found");
+                return;
+            }
+            if (struct instanceof SchematicSavable savable) {
+                FAWESchematicUtils.pasteSlice(savable.getSchematicID(), savable.getOrigin(), Integer.parseInt(args[2]));
+                MessageUtil.sendMessage(sender, "Pasted slice " + args[2]);
+            } else {
+                MessageUtil.sendMessage(sender, "Not a savable structure: " + struct.getClass().getSimpleName());
+            }
+        }
+        if (args[1].equalsIgnoreCase("pasteRegion")) {
+            RegionStructure struct = plugin.getRegionManager().getRegionByPlayer((Player) sender).getStructureAt(((Player) sender).getLocation());
+            if (struct == null) {
+                MessageUtil.sendMessage(sender, "No structure found");
+                return;
+            }
+            if (struct instanceof SchematicSavable savable) {
+                BukkitRunnable runnable = new BukkitRunnable() {
+                    private int y = 0;
+                    @Override
+                    public void run() {
+                        FAWESchematicUtils.pasteSlice(savable.getSchematicID(), savable.getOrigin(), y);
+                        y++;
+                    }
+                };
+                runnable.runTaskTimer(plugin, 0, Integer.parseInt(args[2]));
+            } else {
+                MessageUtil.sendMessage(sender, "Not a savable structure: " + struct.getClass().getSimpleName());
+            }
         }
     }
 
