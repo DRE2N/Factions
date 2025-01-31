@@ -109,7 +109,7 @@ public class WarListener implements Listener {
         if (++krStats.killStreak > krStats.highestKillStreak) {
             krStats.highestKillStreak = krStats.killStreak;
         }
-        // Update stats for assisting players
+        /* Update stats for assisting players - needs Papyrus patch again
         List<CombatEntry> entries = sKilled.getCombatTracker().entries;
         if (entries.size() > 1) {
             for (int i = 0; i < entries.size() - 1; i++) {
@@ -133,7 +133,7 @@ public class WarListener implements Listener {
         if (region == null || region.getType().isWarGround()) {
             return;
         }
-        region.getRegionalWarTracker().addKill(krAlliance);
+        region.getRegionalWarTracker().addKill(krAlliance);*/
     }
 
     @EventHandler(ignoreCancelled = true)

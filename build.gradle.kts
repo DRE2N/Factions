@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("io.papermc.paperweight.userdev") version "1.7.1"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.14"
     id("xyz.jpenilla.run-paper") version "1.0.6" // Adds runServer and runMojangMappedServer tasks for testing
     id("io.github.goooler.shadow") version "8.1.5" // Use fork until shadow has updated to Java 21
     id("maven-publish")
@@ -10,14 +10,14 @@ group = "de.erethon.factions"
 version = "1.0-SNAPSHOT"
 description = "A Factions plugin"
 
-val papyrusVersion = "1.21.1-R0.1-SNAPSHOT"
+val papyrusVersion = "1.21.4-R0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
     mavenLocal()
     maven("https://jitpack.io")
-    maven("https://erethon.de/repo")
-    maven("https://papermc.io/repo/repository/maven-public/")
+    maven("https://repo.erethon.de/snapshots/")
+    maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.codemc.io/repository/maven-public/")
     maven("https://maven.enginehub.org/repo/")
 }
