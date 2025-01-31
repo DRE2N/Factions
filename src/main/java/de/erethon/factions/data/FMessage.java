@@ -82,6 +82,7 @@ public enum FMessage implements Message {
     CMD_REGION_INFO_OWNER("cmd.region.info.owner"),
     CMD_REGION_INFO_PRICE("cmd.region.info.price"),
     CMD_REGION_INFO_WAR_VALUE("cmd.region.info.warValue"),
+    CMD_REGION_NAME_SUCCESS("cmd.region.name.success"),
     CMD_REGION_REMOVE_CHUNK_SUCCESS("cmd.region.removeChunk.success"),
     CMD_REGION_REMOVE_NEIGHBOUR_SUCCESS("cmd.region.removeNeighbour.success"),
     CMD_REGION_SPLIT_SUCCESS("cmd.region.split.success"),
