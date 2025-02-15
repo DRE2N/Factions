@@ -49,7 +49,7 @@ public class PhaseSwitchTask extends BukkitRunnable {
             }
         }
         if (s <= 0) {
-            warPhaseManager.updateCurrentStageTask();
+            warPhaseManager.updateCurrentStage();
         }
         m = (int) Math.ceil((double) --s / 60);
     }

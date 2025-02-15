@@ -1,5 +1,6 @@
 package de.erethon.factions.war;
 
+import de.erethon.factions.util.FUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,6 +30,13 @@ public class WarPhaseStage {
         if (nextSection != null) {
             nextStage = new WarPhaseStage(nextSection, previousDurations + duration);
         }
+    }
+
+    public long getDelay() {
+        long currentTime = System.currentTimeMillis();
+        long startTime = currentTime - FUtil.getMidnightDateTime().toInstant().toEpochMilli();
+        long delayMs = (previousDurations + duration) - startTime;
+        return Math.max(0, delayMs);
     }
 
     public long getDuration() {

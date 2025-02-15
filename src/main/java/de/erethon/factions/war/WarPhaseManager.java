@@ -1,6 +1,5 @@
 package de.erethon.factions.war;
 
-import de.erethon.aergia.util.DateUtil;
 import de.erethon.aergia.util.TickUtil;
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.Factions;
@@ -43,41 +42,74 @@ public class WarPhaseManager extends EConfig {
 
     public WarPhaseManager(@NotNull File file) {
         super(file, CONFIG_VERSION);
-        midnight = FUtil.getMidnightDateTime();
+        initializeMidnight();
         initialize();
     }
 
-    public void updateCurrentStageTask() {
-        updateCurrentStage();
-
-        final int minutes = 5;
-        final long delay = currentStage.getFullDuration() - (System.currentTimeMillis() - midnight.toInstant().toEpochMilli());
-        final long taskDelay = (delay / 50) - (TickUtil.MINUTE * minutes) + TickUtil.SECOND; // 1 second puffer
-
-        // Schedule next update task.
-        runningTask = Bukkit.getScheduler().runTaskLater(plugin, () -> new PhaseSwitchTask(this, minutes).start(), taskDelay);
-        FLogger.WAR.log("Current war phase stage: " + currentStage.getWarPhase() + ", remaining duration: " + DateUtil.formatDateDiff(System.currentTimeMillis() + delay));
+    private void initializeMidnight() {
+        ZonedDateTime now = FUtil.getMidnightDateTime();
+        if (now.getHour() >= 0 && now.getHour() < 1) { // In case anyone ever messes with the time
+            midnight = now.minusDays(1);
+        } else {
+            midnight = now;
+        }
     }
 
     public void updateCurrentStage() {
-        // Cancel previous running task.
         cancelRunningTask();
 
-        // Initialize or progress the current stage.
         if (currentStage == null) {
             initializeStage();
+            scheduleNextPhaseSwitch();
             return;
         }
-        WarPhaseStage nextStage = currentStage.getNextStage();
 
-        if (nextStage == null) { // the current day schedule appears to have ended.
-            midnight = midnight.plusDays(1);
-            // Increase week count on each monday & reset week count if no scheduled weeks left.
+        // Check if we need to roll over to a new day
+        ZonedDateTime currentTime = ZonedDateTime.now(midnight.getZone());
+        if (currentTime.isAfter(midnight.plusDays(1))) {
+            midnight = FUtil.getMidnightDateTime();
             if (midnight.getDayOfWeek() == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
                 currentWeek = 1;
             }
-            nextStage = getFirstStageOfTheDay();
+            currentStage = getFirstStageOfTheDay();
+        } else {
+            WarPhaseStage nextStage = currentStage.getNextStage();
+            if (nextStage == null) {
+                midnight = midnight.plusDays(1);
+                if (midnight.getDayOfWeek() == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
+                    currentWeek = 1;
+                }
+                nextStage = getFirstStageOfTheDay();
+            }
+            transitionToNewPhase(nextStage);
         }
+
+        scheduleNextPhaseSwitch();
+        saveData(); // Persist state changes
+    }
+
+    private void scheduleNextPhaseSwitch() {
+        if (debugMode) {
+            return;
+        }
+
+        WarPhaseStage nextStage = getNextWarPhaseStage();
+        long delay = nextStage.getDelay();
+
+        if (delay <= 0) {
+            FLogger.WARN.log("Invalid phase switch delay: " + delay + ". Using 1 minute fallback.");
+            delay = TickUtil.MINUTE;
+        }
+
+        try {
+            new PhaseSwitchTask(this, (int) TimeUnit.MILLISECONDS.toMinutes(delay)).start();
+        } catch (Exception e) {
+            FLogger.ERROR.log("Failed to schedule phase switch task: " + e.getMessage());
+            Bukkit.getScheduler().runTaskLater(plugin, this::updateCurrentStage, TickUtil.MINUTE);
+        }
+    }
+
+    private void transitionToNewPhase(WarPhaseStage nextStage) {
         final WarPhase currentPhase = currentStage.getWarPhase();
         final WarPhase nextPhase = nextStage.getWarPhase();
 
@@ -91,13 +123,28 @@ public class WarPhaseManager extends EConfig {
 
     private void initializeStage() {
         final long currentProgress = System.currentTimeMillis() - midnight.toInstant().toEpochMilli();
-
         currentStage = getFirstStageOfTheDay();
 
+        // Validate and find correct stage
         while (currentStage != null && currentStage.getFullDuration() < currentProgress) {
-            currentStage = currentStage.getNextStage();
+            WarPhaseStage nextStage = currentStage.getNextStage();
+            if (nextStage == null) {
+                // We've reached the end of the day
+                midnight = midnight.plusDays(1);
+                if (midnight.getDayOfWeek() == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
+                    currentWeek = 1;
+                }
+                currentStage = getFirstStageOfTheDay();
+            } else {
+                currentStage = nextStage;
+            }
         }
-        assert currentStage != null : "Current stage is null";
+
+        if (currentStage == null) {
+            FLogger.ERROR.log("Failed to initialize war phase stage. Using PEACE phase.");
+            currentStage = new WarPhaseStage(DAY_DURATION, 0, WarPhase.PEACE);
+        }
+
         WarPhase.UNDEFINED.onChangeTo(currentStage.getWarPhase());
         new WarPhaseChangeEvent(WarPhase.UNDEFINED, currentStage.getWarPhase()).callEvent();
     }
@@ -140,6 +187,51 @@ public class WarPhaseManager extends EConfig {
             e.printStackTrace();
             FLogger.WAR.log("Disabling war cycle...");
             setupInactiveSchedule();
+        }
+        validateSchedule();
+    }
+
+    private void validateSchedule() {
+        if (schedule.isEmpty()) {
+            FLogger.ERROR.log("War schedule is empty. Setting up inactive schedule...");
+            setupInactiveSchedule();
+            return;
+        }
+
+        // Find highest week number from ranges
+        int maxWeek = schedule.keySet().stream()
+                .mapToInt(Integer::intValue)
+                .max()
+                .orElse(7);
+
+        // Ensure all weeks exist with proper days
+        for (int week = 1; week <= maxWeek; week++) {
+            Map<Integer, WarPhaseStage> days = schedule.computeIfAbsent(week, k -> new HashMap<>());
+
+            // Fill missing days with PEACE phase
+            for (int day = 1; day <= 7; day++) {
+                if (!days.containsKey(day)) {
+                    days.put(day, new WarPhaseStage(DAY_DURATION, 0, WarPhase.PEACE));
+                }
+            }
+        }
+
+        // Validate all stages have correct duration
+        for (Map<Integer, WarPhaseStage> days : schedule.values()) {
+            for (Map.Entry<Integer, WarPhaseStage> entry : days.entrySet()) {
+                WarPhaseStage stage = entry.getValue();
+                long fullDuration = stage.getLastWarPhaseStage().getFullDuration();
+
+                if (fullDuration > DAY_DURATION) {
+                    FLogger.ERROR.log("Duration exceeds day length in week/day " + entry.getKey() + ". Using PEACE phase.");
+                    days.put(entry.getKey(), new WarPhaseStage(DAY_DURATION, 0, WarPhase.PEACE));
+                } else if (fullDuration < DAY_DURATION) {
+                    FLogger.WARN.log("Duration is shorter than day length in week/day " + entry.getKey() + ". Adding PEACE phase.");
+                    stage.getLastWarPhaseStage().setNextStage(
+                            new WarPhaseStage(DAY_DURATION - fullDuration, fullDuration, WarPhase.PEACE)
+                    );
+                }
+            }
         }
     }
 
@@ -269,6 +361,6 @@ public class WarPhaseManager extends EConfig {
     public void disableDebugMode() {
         this.debugMode = false;
         this.currentStage = null;
-        updateCurrentStageTask();
+        updateCurrentStage();
     }
 }
