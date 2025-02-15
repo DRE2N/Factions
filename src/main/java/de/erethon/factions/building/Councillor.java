@@ -2,10 +2,12 @@ package de.erethon.factions.building;
 
 import com.google.common.base.Predicates;
 import de.erethon.factions.Factions;
+import de.erethon.factions.economy.gui.EconomyGUI;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.util.FLogger;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -36,8 +38,14 @@ public class Councillor extends Villager {
     }
 
     @Override
-    public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        // Open GUI here
+    protected void customServerAiStep(@NotNull ServerLevel level) {
+        return; // Do nothing
+    }
+
+    @Override
+    public @NotNull InteractionResult mobInteract(Player player, @NotNull InteractionHand hand) {
+        EconomyGUI gui = new EconomyGUI((org.bukkit.entity.Player) player.getBukkitEntity(), faction);
+        gui.open();
         return InteractionResult.CONSUME;
     }
 

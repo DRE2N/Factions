@@ -1,0 +1,73 @@
+package de.erethon.factions.economy.gui;
+
+import de.erethon.bedrock.chat.MessageUtil;
+import de.erethon.factions.faction.Faction;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class EconomyGUI implements InventoryHolder {
+    protected final Faction faction;
+    protected final Player player;
+    protected final Inventory inventory;
+
+    public EconomyGUI(Player player, Faction faction) {
+        this.player = player;
+        this.faction = faction;
+        this.inventory = Bukkit.createInventory(this, 27, Component.translatable("factions.gui.economy.title"));
+        initializeItems();
+    }
+
+    protected void initializeItems() {
+        // Main menu items
+        ItemStack population = createGuiItem(Material.VILLAGER_SPAWN_EGG,
+                Component.translatable("factions.gui.economy.population.title"),
+                Component.translatable("factions.gui.economy.population.description"));
+
+        ItemStack resources = createGuiItem(Material.CHEST,
+                Component.translatable("factions.gui.economy.resources.title"),
+                Component.translatable("factions.gui.economy.resources.description"));
+
+        inventory.setItem(11, population);
+        inventory.setItem(15, resources);
+    }
+
+    protected ItemStack createGuiItem(Material material, Component name, Component... lore) {
+        ItemStack item = new ItemStack(material, 1);
+        ItemMeta meta = item.getItemMeta();
+        meta.displayName(name);
+        List<Component> loreList = new ArrayList<>();
+        Collections.addAll(loreList, lore);
+        meta.lore(loreList);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    public void handleClick(InventoryClickEvent event) {
+        event.setCancelled(true);
+        if (event.getSlot() == 11) {
+            new PopulationGUI(player, faction).open();
+        } else if (event.getSlot() == 15) {
+            new ResourceGUI(player, faction).open();
+        }
+    }
+
+    public void open() {
+        player.openInventory(inventory);
+    }
+
+    @Override
+    public Inventory getInventory() {
+        return inventory;
+    }
+}

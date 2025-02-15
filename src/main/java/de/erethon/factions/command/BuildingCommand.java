@@ -24,10 +24,6 @@ public class BuildingCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         FPlayer fPlayer = getFPlayerRaw(sender);
         Faction faction = fPlayer.getFaction();
-        if (faction == null) {
-            fPlayer.sendMessage(Component.translatable("factions.error.no_faction"));
-            return;
-        }
         if (faction.isPrivileged(fPlayer)) {
             fPlayer.sendMessage(Component.translatable("factions.error.no_permission"));
             return;
