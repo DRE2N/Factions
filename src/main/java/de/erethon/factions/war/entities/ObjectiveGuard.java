@@ -21,6 +21,7 @@ import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -72,7 +73,7 @@ public class ObjectiveGuard extends Vindicator {
         this.region = region;
         this.alliance = alliance;
         this.structure = structure;
-        syncAttributes = false;
+        //syncAttributes = false;
         ServerLevel level = ((CraftWorld) world).getHandle();
         setPos(x, y, z);
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(plugin.getFConfig().getDefaultObjectiveGuardHealth());
@@ -80,7 +81,7 @@ public class ObjectiveGuard extends Vindicator {
             getAttribute(Attributes.MAX_HEALTH).setBaseValue(getMaxHealth() * 1.5);
         }
         if (alliance.hasPolicy(FPolicy.OBJECTIVE_GUARDS_REGEN)) {
-            getAttribute(Attributes.STAT_HEALTHREGEN).setBaseValue(0.1);
+            getAttribute(Attributes.STAT_HEALTH_REGEN).setBaseValue(0.1);
         }
         setHealth(getMaxHealth());
         createPlayerStuff(level);
@@ -96,7 +97,7 @@ public class ObjectiveGuard extends Vindicator {
 
     private void createPlayerStuff(ServerLevel level) {
         CraftPlayerProfile craftPlayerProfile = new CraftPlayerProfile(uuid, "Objective Guard");
-        this.dataPlayer = new ServerPlayer(MinecraftServer.getServer(), level, craftPlayerProfile.buildGameProfile(), new ClientInformation("en", 0, ChatVisiblity.SYSTEM, false, 1, HumanoidArm.RIGHT, false, false));
+        this.dataPlayer = new ServerPlayer(MinecraftServer.getServer(), level, craftPlayerProfile.buildGameProfile(), new ClientInformation("en", 0, ChatVisiblity.SYSTEM, false, 1, HumanoidArm.RIGHT, false, false, ParticleStatus.ALL));
         dataPlayer.getInventory().add(100, new ItemStack(Items.CHAINMAIL_BOOTS));
         dataPlayer.getInventory().add(101, new ItemStack(Items.CHAINMAIL_LEGGINGS));
         dataPlayer.getInventory().add(102, new ItemStack(Items.CHAINMAIL_CHESTPLATE));
@@ -115,7 +116,7 @@ public class ObjectiveGuard extends Vindicator {
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isFactionEnemy));
     }
 
-    private boolean isFactionEnemy(LivingEntity entity) {
+    private boolean isFactionEnemy(LivingEntity entity, ServerLevel level) {
         if (region == null || alliance == null) { // Just so we don't throw an entity ticking exception.
             return false;
         }
@@ -132,7 +133,7 @@ public class ObjectiveGuard extends Vindicator {
             if (player instanceof ServerPlayer) {
                 ClientboundPlayerInfoUpdatePacket infoUpdatePacket = new ClientboundPlayerInfoUpdatePacket(
                         EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, ClientboundPlayerInfoUpdatePacket.Action.INITIALIZE_CHAT, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LATENCY, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME),
-                        new ClientboundPlayerInfoUpdatePacket.Entry(dataPlayer.getUUID(), dataPlayer.getGameProfile(), false, 0, GameType.SURVIVAL, Component.empty(), null));
+                        new ClientboundPlayerInfoUpdatePacket.Entry(dataPlayer.getUUID(), dataPlayer.getGameProfile(), false, 0, GameType.SURVIVAL, Component.empty(), true, 1, null));
                 ((ServerPlayer) player).connection.send(infoUpdatePacket);
             }
         });

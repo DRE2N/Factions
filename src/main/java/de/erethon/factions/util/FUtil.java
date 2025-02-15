@@ -126,6 +126,6 @@ public class FUtil {
     // This constructor is just so damn long, so let's put it here
     // Note: If the fake type is not living, the client lags when attributes get updated. Use LivingEntity#syncAttributes = false to prevent this.
     public static ClientboundAddEntityPacket getAddEntityPacketWithType(Entity entity, EntityType<?> type) {
-        return new ClientboundAddEntityPacket(entity.getId(), entity.getUUID(), entity.getX(), entity.getY(), entity.getZ(), entity.getXRot(), entity.getYRot(), type, 0, entity.getDeltaMovement(), entity.getYHeadRot(), entity);
+        return new ClientboundAddEntityPacket(entity.getId(), entity.getUUID(), entity.getX(), entity.getY(), entity.getZ(), entity.getXRot(), entity.getYRot(), type, 0, entity.getDeltaMovement(), entity.getYHeadRot());
     }
 }

@@ -7,6 +7,7 @@ import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.util.FLogger;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.EntityType;
@@ -40,13 +41,12 @@ public class CaravanCarrier extends Ravager {
     // Required constructor for entity loading
     public CaravanCarrier(EntityType<? extends Ravager> type, Level world) {
         super(type, world);
-        syncAttributes = false;
         drops.clear();
     }
 
     public CaravanCarrier(World world, double x, double y, double z, Alliance alliance, ActiveCaravanRoute route, CaravanRouting routing) {
         this(EntityType.RAVAGER, ((CraftWorld) world).getHandle());
-        syncAttributes = false;
+        //syncAttributes = false;
         setPos(x, y, z);
         this.alliance = alliance;
         this.route = route;
@@ -113,12 +113,12 @@ public class CaravanCarrier extends Ravager {
     }
 
     @Override
-    public boolean hurt(@NotNull DamageSource source, float amount) {
-        if (!hasSpawnedReinforcements && source.getEntity() instanceof Player player && isFactionEnemy(player)) {
+    public boolean hurtServer(ServerLevel level, @NotNull DamageSource source, float amount) {
+        if (!hasSpawnedReinforcements && source.getEntity() instanceof Player player && isFactionEnemy(player, level)) {
             hasSpawnedReinforcements = true;
             spawnGuardians();
         }
-        return super.hurt(source, amount);
+        return super.hurtServer(level, source, amount);
     }
 
     public void spawnGuardians() {
@@ -136,7 +136,7 @@ public class CaravanCarrier extends Ravager {
         }
     }
 
-    public boolean isFactionEnemy(LivingEntity entity) {
+    public boolean isFactionEnemy(LivingEntity entity, ServerLevel level) {
         if (alliance == null) { // Just so we don't throw an entity ticking exception.
             return false;
         }

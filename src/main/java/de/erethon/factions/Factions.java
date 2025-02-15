@@ -305,8 +305,8 @@ public final class Factions extends EPlugin {
         }
         // Register faction placeholders.
         ChatPlaceholders.register(ChatPlaceholder.builder()
-                .placeHolder("faction")
-                .baseBuilder((s, r) -> {
+                .placeholder("faction")
+                .baseBuilder((s, r, aq) -> {
                     FPlayer fSender = fPlayerCache.getByPlayer(s.getPlayer());
                     String faction = fSender.hasFaction() ? fSender.getFaction().getDisplayShortName() : FMessage.GENERAL_LONER.getMessage();
                     return Component.text(fSender.hasAlliance() && fSender.getAlliance().hasIcon() ? fSender.getAlliance().getIcon() + " " : "")
@@ -315,18 +315,18 @@ public final class Factions extends EPlugin {
                                     .append(MessageUtil.parse("<dark_gray>[</dark_gray>" + faction + "<dark_gray>]</dark_gray> "))
                                     .build());
                 })
-                .clickBuilder((s, r) -> {
+                .clickBuilder((s, r, aq) -> {
                     FPlayer fPlayer = fPlayerCache.getByPlayer(s.getPlayer());
                     return !fPlayer.hasFaction() ? null : ClickEvent.suggestCommand("/f show " + fPlayer.getFaction().getName());
                 })
-                .addHoverInfo((s, r) -> {
+                .addHoverInfo((s, r, aq) -> {
                     FPlayer fPlayer = fPlayerCache.getByPlayer(s.getPlayer());
                     return !fPlayer.hasFaction() ? null : MessageUtil.parse("<gold>Fraktion</gold><dark_gray>:</dark_gray><gray> " + fPlayer.getFaction().getName());
                 })
                 .build());
         ChatPlaceholders.register(ChatPlaceholder.builder()
-                .placeHolder("faction-rank")
-                .baseStringBuilder((s, r) -> {
+                .placeholder("faction-rank")
+                .baseStringBuilder((s, r, aq) -> {
                     FPlayer fPlayer = fPlayerCache.getByPlayer(s.getPlayer());
                     if (!fPlayer.hasFaction()) {
                         return "";
@@ -335,8 +335,8 @@ public final class Factions extends EPlugin {
                 })
                 .build());
         ChatPlaceholders.register(ChatPlaceholder.builder()
-                .placeHolder("faction-title")
-                .baseStringBuilder((s, r) -> {
+                .placeholder("faction-title")
+                .baseStringBuilder((s, r, aq) -> {
                     FPlayer fPlayer = fPlayerCache.getByPlayer(s.getPlayer());
                     if (!fPlayer.hasFaction()) {
                         return "";
@@ -344,7 +344,7 @@ public final class Factions extends EPlugin {
                     return fPlayer.getTitle();
                 })
                 .build());
-        HoverInfo info = (sender, recipient) -> {
+        HoverInfo info = (sender, recipient, aq) -> {
             FPlayer fSender = fPlayerCache.getByPlayer(sender.getPlayer());
             return FMessage.PLACEHOLDER_ALLIANCE_DISPLAY.message(fSender.getAllianceTag())
                     .appendNewline()
@@ -355,7 +355,7 @@ public final class Factions extends EPlugin {
         // Replace default display name placeholder.
         ChatPlaceholder displayNamePlaceholder = ChatPlaceholders.get("player-display-name");
         if (displayNamePlaceholder != null) {
-            displayNamePlaceholder.setBaseTextBuilder((s, r) -> Component.text()
+            displayNamePlaceholder.setBaseTextBuilder((s, r, aq) -> Component.text()
                     .color(fPlayerCache.getByPlayer(s.getPlayer()).getAllianceColor())
                     .content(s.getLastName())
                     .build());

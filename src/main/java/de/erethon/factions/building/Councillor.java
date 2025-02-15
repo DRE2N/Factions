@@ -42,11 +42,6 @@ public class Councillor extends Villager {
     }
 
     @Override
-    protected void customServerAiStep(boolean inactive) {
-        // Do nothing
-    }
-
-    @Override
     public boolean wantsToSpawnGolem(long time) {
         return false;
     }

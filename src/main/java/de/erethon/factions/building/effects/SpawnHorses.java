@@ -75,7 +75,7 @@ public class SpawnHorses extends BuildingEffect {
             horse.setBreed(false); // Prevent the horse from breeding
             horse.setJumpStrength(horse.getJumpStrength() + jumpStrengthBoost);
             horse.setHealth(20);
-            horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue() + speedBoost);
+            horse.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(horse.getAttribute(Attribute.MOVEMENT_SPEED).getBaseValue() + speedBoost);
         });
     }
 

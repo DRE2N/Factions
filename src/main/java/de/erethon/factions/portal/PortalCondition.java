@@ -16,8 +16,8 @@ import java.util.function.Predicate;
  */
 public abstract class PortalCondition {
 
-    public static final PortalCondition ALLOW_PVP = checkOrMessage("allow_pvp", _ -> Factions.get().getCurrentWarPhase().isAllowPvP(), FMessage.ERROR_PORTAL_CAPITAL_CLOSED);
-    public static final PortalCondition OPEN_CAPITAL = checkOrMessage("open_capital", _ -> Factions.get().getCurrentWarPhase().isOpenCapital(), FMessage.ERROR_PORTAL_CAPITAL_CLOSED);
+    public static final PortalCondition ALLOW_PVP = checkOrMessage("allow_pvp", fp -> Factions.get().getCurrentWarPhase().isAllowPvP(), FMessage.ERROR_PORTAL_CAPITAL_CLOSED);
+    public static final PortalCondition OPEN_CAPITAL = checkOrMessage("open_capital", fp -> Factions.get().getCurrentWarPhase().isOpenCapital(), FMessage.ERROR_PORTAL_CAPITAL_CLOSED);
 
     private static final Map<String, PortalCondition> CONDITIONS = new HashMap<>();
 

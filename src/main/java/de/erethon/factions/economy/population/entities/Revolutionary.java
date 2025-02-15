@@ -8,8 +8,10 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -70,7 +72,7 @@ public class Revolutionary extends Vindicator {
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.0, false));
         targetSelector.addGoal(1, new HurtByTargetGoal(this, Raider.class).setAlertOthers());
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, net.minecraft.world.entity.player.Player.class, true, e -> {
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, net.minecraft.world.entity.player.Player.class, true, (LivingEntity e, ServerLevel level) -> {
             Player player = (Player) e.getBukkitEntity();
             return faction.getMembers().contains(player);
         }));
@@ -95,8 +97,8 @@ public class Revolutionary extends Vindicator {
 
 
     @Override
-    protected void customServerAiStep() {
-        super.customServerAiStep();
+    protected void customServerAiStep(ServerLevel level) {
+        super.customServerAiStep(level);
         if (lastTimeISaidSomething + 500 < getServer().getTickCount()) {
             lastTimeISaidSomething = getServer().getTickCount();
             nearby.getPlayersByChunk(chunkPosition().x, chunkPosition().z, NearbyPlayers.NearbyMapType.GENERAL_SMALL).forEach(player -> {

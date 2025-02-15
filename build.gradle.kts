@@ -29,7 +29,7 @@ dependencies {
     compileOnly("de.erethon.aergia:Aergia:1.0.1")
     compileOnly("de.erethon.hephaestus:Hephaestus:1.0-SNAPSHOT")
     compileOnly("org.jetbrains:annotations:23.1.0")
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7") { isTransitive = false }
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") { isTransitive = false }
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
     implementation(platform("com.intellectualsites.bom:bom-newest:1.50"))
@@ -58,6 +58,15 @@ tasks.withType(Test::class) {
     useJUnitPlatform()
 }
 
+tasks.register<Copy>("deployToSharedServer") {
+    group = "Erethon"
+    description = "Used for deploying the plugin to the shared server. runServer will do this automatically." +
+            "This task is only for manual deployment when running runServer from another plugin."
+    dependsOn(":shadowJar")
+    from(layout.buildDirectory.file("libs/Factions-$version-all.jar"))
+    into("C:\\Dev\\Erethon\\plugins")
+}
+
 tasks {
     jar {
         manifest {
@@ -69,7 +78,6 @@ tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
         options.release.set(21)
-        options.compilerArgs.add("--enable-preview")
     }
     processResources {
         filteringCharset = Charsets.UTF_8.name()

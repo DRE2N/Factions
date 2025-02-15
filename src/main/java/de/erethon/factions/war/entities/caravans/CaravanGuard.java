@@ -13,6 +13,7 @@ import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -50,7 +51,7 @@ public class CaravanGuard extends Vindicator {
 
     public CaravanGuard(CaravanCarrier carrier) {
         this(EntityType.VINDICATOR, carrier.level());
-        syncAttributes = false;
+        //syncAttributes = false; Don't think we still need this
         setPos(carrier.getX(), carrier.getY(), carrier.getZ());
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(plugin.getFConfig().getDefaultObjectiveGuardHealth());
         setHealth(getMaxHealth());
@@ -66,7 +67,7 @@ public class CaravanGuard extends Vindicator {
 
     private void createPlayerStuff(ServerLevel level) {
         CraftPlayerProfile craftPlayerProfile = new CraftPlayerProfile(uuid, "Caravan Guard");
-        this.dataPlayer = new ServerPlayer(MinecraftServer.getServer(), level, craftPlayerProfile.buildGameProfile(), new ClientInformation("en", 0, ChatVisiblity.SYSTEM, false, 1, HumanoidArm.RIGHT, false, false));
+        this.dataPlayer = new ServerPlayer(MinecraftServer.getServer(), level, craftPlayerProfile.buildGameProfile(), new ClientInformation("en", 0, ChatVisiblity.SYSTEM, false, 1, HumanoidArm.RIGHT, false, false, ParticleStatus.ALL));
         dataPlayer.getInventory().add(100, new ItemStack(Items.CHAINMAIL_BOOTS));
         dataPlayer.getInventory().add(101, new ItemStack(Items.CHAINMAIL_LEGGINGS));
         dataPlayer.getInventory().add(102, new ItemStack(Items.CHAINMAIL_CHESTPLATE));
@@ -87,7 +88,7 @@ public class CaravanGuard extends Vindicator {
             if (player instanceof ServerPlayer) {
                 ClientboundPlayerInfoUpdatePacket infoUpdatePacket = new ClientboundPlayerInfoUpdatePacket(
                         EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, ClientboundPlayerInfoUpdatePacket.Action.INITIALIZE_CHAT, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LATENCY, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME),
-                        new ClientboundPlayerInfoUpdatePacket.Entry(dataPlayer.getUUID(), dataPlayer.getGameProfile(), false, 0, GameType.SURVIVAL, Component.empty(), null));
+                        new ClientboundPlayerInfoUpdatePacket.Entry(dataPlayer.getUUID(), dataPlayer.getGameProfile(), false, 0, GameType.SURVIVAL, Component.empty(), true, 1, null));
                 ((ServerPlayer) player).connection.send(infoUpdatePacket);
             }
         });

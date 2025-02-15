@@ -10,6 +10,7 @@ import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.structure.CrystalWarStructure;
 import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -81,7 +82,7 @@ public class CrystalChargeCarrier extends IronGolem {
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isFactionEnemy));
     }
 
-    private boolean isFactionEnemy(LivingEntity entity) {
+    private boolean isFactionEnemy(LivingEntity entity, ServerLevel level) {
         if (region == null || alliance == null) { // Just in so we don't throw an entity ticking exception.
             return false;
         }
@@ -93,8 +94,8 @@ public class CrystalChargeCarrier extends IronGolem {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount) {
-        if (source.getEntity() instanceof Player player) {
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
+        if (damageSource.getEntity() instanceof Player player) {
             org.bukkit.entity.Player bukkitPlayer = (org.bukkit.entity.Player) player.getBukkitEntity();
             FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(bukkitPlayer);
             if (fPlayer.getFaction() == null) {

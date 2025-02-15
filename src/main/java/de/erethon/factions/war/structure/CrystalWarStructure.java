@@ -211,10 +211,10 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
 
     public static void removeCarryingPlayerBuffs(Player player) {
         player.setGlowing(false);
-        player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).removeModifier(CrystalChargeCarrier.CARRIER_BUFF);
-        player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
-        player.getAttribute(Attribute.ADV_PHYSICAL).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
-        player.getAttribute(Attribute.ADV_MAGIC).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getAttribute(Attribute.MOVEMENT_SPEED).removeModifier(CrystalChargeCarrier.CARRIER_BUFF);
+        player.getAttribute(Attribute.ATTACK_DAMAGE).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getAttribute(Attribute.ADVANTAGE_PHYSICAL).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getAttribute(Attribute.ADVANTAGE_MAGICAL).removeModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
         player.getPersistentDataContainer().remove(CrystalChargeCarrier.CARRIER_PLAYER_KEY);
         for (org.bukkit.entity.Entity entity : player.getPassengers()) {
             if (entity instanceof ItemDisplay display && display.getItemStack().getType() == Material.END_CRYSTAL) {
@@ -226,10 +226,10 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
     public static void addCarryingPlayerBuffs(Player player) {
         player.getPersistentDataContainer().set(CrystalChargeCarrier.CARRIER_PLAYER_KEY, PersistentDataType.BYTE, (byte) 1);
         player.setGlowing(true);
-        player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).addTransientModifier(CrystalChargeCarrier.CARRIER_BUFF);
-        player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).addTransientModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
-        player.getAttribute(Attribute.ADV_PHYSICAL).addTransientModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
-        player.getAttribute(Attribute.ADV_MAGIC).addTransientModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getAttribute(Attribute.MOVEMENT_SPEED).addTransientModifier(CrystalChargeCarrier.CARRIER_BUFF);
+        player.getAttribute(Attribute.ATTACK_DAMAGE).addTransientModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getAttribute(Attribute.ADVANTAGE_PHYSICAL).addTransientModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
+        player.getAttribute(Attribute.ADVANTAGE_MAGICAL).addTransientModifier(CrystalChargeCarrier.CARRIER_DEBUFF);
         ItemDisplay itemDisplay = player.getWorld().spawn(player.getLocation().add(0, 1, 0), ItemDisplay.class, display -> {
             display.setPersistent(false);
             ItemStack itemStack = new ItemStack(Material.END_CRYSTAL);

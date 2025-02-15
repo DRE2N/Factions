@@ -44,9 +44,9 @@ public class Regeneration extends BuildingEffect implements Listener {
             return;
         }
         if (newRegion == site.getRegion() && event.getFPlayer().getFaction() == site.getRegion().getFaction()) {
-            event.getFPlayer().getPlayer().getAttribute(Attribute.STAT_HEALTHREGEN).addTransientModifier(modifier);
+            event.getFPlayer().getPlayer().getAttribute(Attribute.STAT_HEALTH_REGEN).addTransientModifier(modifier);
         } else {
-            event.getFPlayer().getPlayer().getAttribute(Attribute.STAT_HEALTHREGEN).removeModifier(modifier);
+            event.getFPlayer().getPlayer().getAttribute(Attribute.STAT_HEALTH_REGEN).removeModifier(modifier);
         }
     }
 
@@ -55,7 +55,7 @@ public class Regeneration extends BuildingEffect implements Listener {
         FPlayer fPlayer = Factions.get().getFPlayerCache().getByPlayer(event.getPlayer());
         Region regionAtLogin = Factions.get().getRegionManager().getRegionByLocation(event.getPlayer().getLocation());
         if (regionAtLogin == site.getRegion() && fPlayer.getFaction() == site.getRegion().getFaction()) {
-            fPlayer.getPlayer().getAttribute(Attribute.STAT_HEALTHREGEN).addTransientModifier(modifier);
+            fPlayer.getPlayer().getAttribute(Attribute.STAT_HEALTH_REGEN).addTransientModifier(modifier);
         }
     }
 

@@ -45,9 +45,9 @@ public class SpeedBoost extends BuildingEffect implements Listener {
             return;
         }
         if (newRegion == site.getRegion() && event.getFPlayer().getFaction() == site.getRegion().getFaction()) {
-            event.getFPlayer().getPlayer().getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).addTransientModifier(modifier);
+            event.getFPlayer().getPlayer().getAttribute(Attribute.MOVEMENT_SPEED).addTransientModifier(modifier);
         } else {
-            event.getFPlayer().getPlayer().getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).removeModifier(modifier);
+            event.getFPlayer().getPlayer().getAttribute(Attribute.MOVEMENT_SPEED).removeModifier(modifier);
         }
     }
 
@@ -56,7 +56,7 @@ public class SpeedBoost extends BuildingEffect implements Listener {
         FPlayer fPlayer = Factions.get().getFPlayerCache().getByPlayer(event.getPlayer());
         Region regionAtLogin = Factions.get().getRegionManager().getRegionByLocation(event.getPlayer().getLocation());
         if (regionAtLogin == site.getRegion() && fPlayer.getFaction() == site.getRegion().getFaction()) {
-            fPlayer.getPlayer().getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).addTransientModifier(modifier);
+            fPlayer.getPlayer().getAttribute(Attribute.MOVEMENT_SPEED).addTransientModifier(modifier);
         }
     }
 

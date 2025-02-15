@@ -6,6 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerEntity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.monster.Slime;
@@ -21,15 +22,15 @@ public class CrystalMob extends Slime {
     // Required constructor for entity loading
     public CrystalMob(EntityType<? extends Slime> type, Level world) {
         super(type, world);
-        syncAttributes = false;
-        dataCrystal = EntityType.END_CRYSTAL.create(world);
+        //syncAttributes = false;
+        dataCrystal = EntityType.END_CRYSTAL.create(world, EntitySpawnReason.COMMAND);
         dataCrystal.setShowBottom(false);
         drops.clear();
     }
 
     public CrystalMob(World world, double x, double y, double z) {
         this(EntityType.SLIME, ((CraftWorld) world).getHandle());
-        syncAttributes = false;
+        //syncAttributes = false;
         Level level = ((CraftWorld) world).getHandle();
         setPos(x, y, z);
         setNoGravity(true);
@@ -37,7 +38,7 @@ public class CrystalMob extends Slime {
         setNoAi(true);
         setHealth(getMaxHealth());
         level.addFreshEntity(this);
-        dataCrystal = EntityType.END_CRYSTAL.create(level);
+        dataCrystal = EntityType.END_CRYSTAL.create(level, EntitySpawnReason.COMMAND);
         dataCrystal.setShowBottom(false);
     }
 
