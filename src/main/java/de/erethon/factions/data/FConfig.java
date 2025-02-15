@@ -79,6 +79,7 @@ public class FConfig extends EConfig {
     private double defaultCrystalCarrierHealth = 2000;
     private double defaultObjectiveGuardHealth = 200;
     private double crystalCarrierSpeedBuff = 0.3;
+    private List<String> commandsDisabledInWarZone = new ArrayList<>();
 
     /* Web */
     private long webCacheUpdateInterval = 30; // minutes
@@ -125,6 +126,7 @@ public class FConfig extends EConfig {
         initValue("war.defaultCrystalCarrierHealth", defaultCrystalCarrierHealth);
         initValue("war.defaultObjectiveGuardHealth", defaultObjectiveGuardHealth);
         initValue("war.crystalCarrierSpeedBuff", crystalCarrierSpeedBuff);
+        initValue("war.disabledCommands", commandsDisabledInWarZone);
         for (Resource resource : Resource.values()) {
             initValue("defaultResourceLimits." + resource.name(), 512);
         }
@@ -177,6 +179,7 @@ public class FConfig extends EConfig {
         defaultCrystalCarrierHealth = config.getDouble("war.defaultCrystalCarrierHealth", defaultCrystalCarrierHealth);
         defaultObjectiveGuardHealth = config.getDouble("war.defaultObjectiveGuardHealth", defaultObjectiveGuardHealth);
         crystalCarrierSpeedBuff = config.getDouble("war.crystalCarrierSpeedBuff", crystalCarrierSpeedBuff);
+        commandsDisabledInWarZone = getStringList("war.disabledCommands", commandsDisabledInWarZone);
         defaultResourceLimits = new HashMap<>();
         for (Resource resource : Resource.values()) {
             defaultResourceLimits.put(resource, config.getInt("defaultResourceLimits." + resource.name(), 512));
@@ -386,6 +389,10 @@ public class FConfig extends EConfig {
 
     public double getCrystalCarrierSpeedBuff() {
         return crystalCarrierSpeedBuff;
+    }
+
+    public @NotNull List<String> getCommandsDisabledInWarZone() {
+        return commandsDisabledInWarZone;
     }
 
     public @Nullable Set<Building> getRequiredBuildings(@NotNull FactionLevel factionLevel) {
