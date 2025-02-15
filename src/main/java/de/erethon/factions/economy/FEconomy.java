@@ -8,10 +8,10 @@ import de.erethon.factions.economy.population.HappinessModifier;
 import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.economy.population.entities.Revolutionary;
 import de.erethon.factions.economy.resource.Resource;
+import de.erethon.factions.economy.resource.ResourceCategory;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.util.FLogger;
-import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 
 import java.util.HashMap;
@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Handles the economy for a faction by processing resource production,
@@ -46,6 +47,7 @@ public class FEconomy {
     private final static double MONEY_PER_CITIZEN = 10.0;
     /** Multiplier used to determine how many revolutionary units spawn based on unrest */
     private final static double UNREST_SPAWN_MULTIPLIER = 10.0;
+    private static final double VARIETY_BONUS_FACTOR = 0.1;
 
     private final Faction faction;
     private final FStorage storage;
@@ -137,16 +139,21 @@ public class FEconomy {
     }
 
     /**
-     * Aggregates resource satisfaction into an overall satisfaction value for each population level.
+     * Calculates and updates the overall happiness of each population level within the faction.
      * <p>
-     * The overall satisfaction is computed as a weighted average:
+     * The happiness value is determined using the following factors:
      * <ul>
-     *   <li>Each resource's satisfaction is multiplied by its weight (as defined in the population level).</li>
-     *   <li>The sum is normalized by the total weight.</li>
-     *   <li>Any additional happiness modifiers (for example, from building bonuses) are added.</li>
+     *     <li><b>Base Satisfaction:</b> A weighted average of resource satisfaction ratios,
+     *         where each required resource contributes based on its importance.</li>
+     *     <li><b>Additional Modifiers:</b> Effects from external happiness modifiers
+     *         (e.g., buildings, events, faction-wide effects).</li>
+     *     <li><b>Variety Bonus:</b> A satisfaction boost based on how many distinct resources
+     *         from each {@link ResourceCategory} are provided. The bonus is calculated as:
+     *         <pre>
+     *             variety_bonus = (distinct_resources / min_variety) * VARIETY_BONUS_FACTOR
+     *         </pre>
+     *         where min_variety is the minimum number of distinct resources required for full variety.</li>
      * </ul>
-     * The final value is stored in the faction for further processing.
-     * </p>
      */
     private void calculatePopulationHappiness() {
         for (PopulationLevel level : PopulationLevel.values()) {
@@ -161,26 +168,39 @@ public class FEconomy {
             }
             double baseSatisfaction = (totalWeight > 0) ? weightedSum / totalWeight : 1.0;
 
-            // Add any additional modifiers (e.g., from building effects)
+            // Include any additional happiness modifiers (e.g., from building effects)
             double additionalModifiers = 0;
             for (HappinessModifier modifier : happinessModifiers) {
                 additionalModifiers += modifier.getModifier(level);
             }
-            double finalHappiness = baseSatisfaction + additionalModifiers;
+
+            double totalVarietyBonus = calculateVarietyBonus(level, satisfactionMap);
+
+            double finalHappiness = baseSatisfaction + additionalModifiers + totalVarietyBonus;
             faction.setHappiness(level, finalHappiness);
             FLogger.ECONOMY.log("[" + faction.getName() + "] Overall satisfaction for " + level.name()
-                    + " is " + baseSatisfaction + " with additional modifiers " + additionalModifiers
+                    + " is " + baseSatisfaction + " with modifiers " + additionalModifiers
+                    + " and total variety bonus " + totalVarietyBonus
                     + " -> final happiness: " + finalHappiness);
         }
     }
 
     /**
-     * Calculates tax revenue based on the base resource satisfaction of each population level.
+     * Calculates and collects tax revenue based on population happiness.
      * <p>
-     * Each citizen produces a fixed amount of money. The actual tax collected is determined by the
-     * base satisfaction (weighted resource satisfaction) for that population level. The satisfaction value is
-     * clamped between 0 and 1.
-     * </p>
+     * The revenue for each population level is determined using the following formula:
+     * <pre>
+     *     revenue = population * MONEY_PER_CITIZEN * tax_satisfaction
+     * </pre>
+     * where:
+     * <ul>
+     *     <li><b>Base Satisfaction:</b> A weighted average of resource satisfaction ratios,
+     *         determining how well the population’s needs are met.</li>
+     *     <li><b>Variety Bonus:</b> A boost applied if multiple distinct resources from a
+     *         {@link ResourceCategory} are provided, improving satisfaction.</li>
+     *     <li><b>Tax Satisfaction:</b> The final satisfaction score used in tax calculations,
+     *         capped between 0 and 1.</li>
+     * </ul>
      */
     private void calculateTaxRevenue() {
         double totalTaxRevenue = 0.0;
@@ -196,15 +216,37 @@ public class FEconomy {
                 totalWeight += weight;
             }
             double baseSatisfaction = (totalWeight > 0) ? weightedSum / totalWeight : 1.0;
-            double taxSatisfaction = Math.max(0, Math.min(1, baseSatisfaction));
+            double totalVarietyBonus = calculateVarietyBonus(level, satisfactionMap);
+
+            double taxSatisfaction = Math.max(0, Math.min(1, baseSatisfaction + totalVarietyBonus));
             double revenue = population * MONEY_PER_CITIZEN * taxSatisfaction;
             totalTaxRevenue += revenue;
             FLogger.ECONOMY.log("[" + faction.getName() + "] Population level " + level.name()
                     + ": base satisfaction " + baseSatisfaction
+                    + " with total variety bonus " + totalVarietyBonus
                     + " -> tax revenue: " + revenue);
         }
         faction.getFAccount().deposit((int) totalTaxRevenue);
         FLogger.ECONOMY.log("[" + faction.getName() + "] Collected " + totalTaxRevenue + " money in taxes.");
+    }
+
+    private double calculateVarietyBonus(PopulationLevel level, Map<Resource, Double> satisfactionMap) {
+        double totalVarietyBonus = 0.0;
+        for (ResourceCategory category : ResourceCategory.values()) {
+            Set<Resource> categoryResources = category.getResources();
+            Set<Resource> levelCategoryResources = level.getResources().stream()
+                    .filter(categoryResources::contains)
+                    .collect(Collectors.toSet());
+            if (!levelCategoryResources.isEmpty()) {
+                long varietyCount = levelCategoryResources.stream()
+                        .filter(res -> satisfactionMap.getOrDefault(res, 0.0) > 0)
+                        .count();
+                double varietyRatio = Math.min(1.0, (double) varietyCount / level.getMinimumVariety());
+                double categoryBonus = varietyRatio * VARIETY_BONUS_FACTOR;
+                totalVarietyBonus += categoryBonus;
+            }
+        }
+        return totalVarietyBonus;
     }
 
     /**

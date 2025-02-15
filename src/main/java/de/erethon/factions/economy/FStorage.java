@@ -93,4 +93,8 @@ public class FStorage {
     public Faction getFaction() {
         return faction;
     }
+
+    public boolean hasResource(Resource resource) {
+        return resources.getOrDefault(resource, 0) > 0;
+    }
 }
