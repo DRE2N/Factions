@@ -93,27 +93,30 @@ public class Building {
         MessageUtil.sendMessage(player, FMessage.BUILDING_SITE_CREATED.getMessage());
     }
 
-    public boolean checkRequirements(@NotNull Player player, @Nullable Faction faction, @NotNull Location loc) {
+    public Set<RequirementFail> checkRequirements(@NotNull Player player, @Nullable Faction faction, @NotNull Location loc) {
+        Set<RequirementFail> fails = new HashSet<>();
         FPlayerCache playerCache = plugin.getFPlayerCache();
         RegionManager board = plugin.getRegionManager();
         FPlayer fPlayer = playerCache.getByPlayer(player);
         if (faction == null) {
             MessageUtil.sendActionBarMessage(player, FMessage.ERROR_PLAYER_IS_NOT_IN_A_FACTION.message());
-            return false;
+            fails.add(RequirementFail.NOT_IN_FACTION);
+            return fails;
         }
         if (!faction.isPrivileged(fPlayer)) {
             MessageUtil.sendActionBarMessage(player, FMessage.ERROR_NO_PERMISSION.message());
-            return false;
+            fails.add(RequirementFail.NO_PERMISSION);
         }
         Region rg = fPlayer.getLastRegion();
         if (rg == null) {
             MessageUtil.sendActionBarMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
-            return false;
+            fails.add(RequirementFail.NOT_IN_REGION);
+            return fails;
         }
         // If the faction does not own the region and the building is not a war building
         if (rg.getOwner() != faction && !isWarBuilding()) {
             MessageUtil.sendActionBarMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
-            return false;
+            fails.add(RequirementFail.NOT_IN_REGION);
         }
         boolean isBorder = false;
         LazyChunk chunk = new LazyChunk(player.getChunk());
@@ -130,7 +133,7 @@ public class Building {
         // If the building area overlaps with another region
         if (isBorder) {
             //MessageUtil.sendMessage(player, FMessage.ERROR_BUILDING_TOO_CLOSE_BORDER.getMessage());
-            return false;
+            fails.add(RequirementFail.TOO_CLOSE_TO_BORDER);
         }
         boolean isInOtherBuilding = false;
         BuildSite overlappingSite = null;
@@ -143,34 +146,34 @@ public class Building {
         // If the building overlaps with an existing building
         if (isInOtherBuilding && !(allowOverlap || overlappingSite.getBuilding().isAllowOverlap())) {
             MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_BLOCKED.message());
-            return false;
+            fails.add(RequirementFail.OVERLAPPING_BUILDING);
         }
         // If the building is unique and the faction already has a build site for this building
         if (isUnique && hasBuildSiteAlready(faction)) {
             MessageUtil.sendActionBarMessage(player, Component.translatable("factions.error.building.unique"));
-            return false;
+            fails.add(RequirementFail.UNIQUE_BUILDING);
         }
         // If the region is not of the correct RegionType
         if (!hasRequiredType(rg)) {
             MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_REQUIRED_TYPE.message());
-            return false;
+            fails.add(RequirementFail.WRONG_REGION_TYPE);
         }
         // If the building requires other buildings to be built first in this faction
         if (!hasRequiredBuildings(faction)) {
             MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_REQUIRED_FACTION.message());
-            return false;
+            fails.add(RequirementFail.REQUIRED_BUILDING_MISSING);
         }
         // If the building requires a certain amount of population at a specific level
         if (!hasRequiredPopulation(rg)) {
             MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_POPULATION.message());
-            return false;
+            fails.add(RequirementFail.REQUIRED_POPULATION);
         }
         // If the faction can not afford the unlock costs.
         if (!canPay(faction)) {
             MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_NOT_ENOUGH_RESOURCES.message());
-            return false;
+            fails.add(RequirementFail.NOT_ENOUGH_RESOURCES);
         }
-        return true;
+        return fails;
     }
 
     public boolean canPay(@NotNull Faction faction) {

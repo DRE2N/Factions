@@ -264,6 +264,16 @@ building:
       ticketHint: "<gray><i>A ticket has been created. The building will be validated by a staff member soon."
     destroyed: "<red>A <gold><arg:0> <red>in <gold><arg:1> <red>was destroyed!"
     problem: "<red>Issue:"
+  selection: "Building Selection"
+  requirements:
+    fulfilled: "Requirements fulfilled"
+    unfulfilled: "Missing requirements:"
+    no_permission: "You don't have permission to build this"
+    too_close_to_border: "Building too close to region border"
+    overlapping_building: "Building overlaps with another building"
+    required_building_missing: "Required building not constructed"
+    required_population: "Not enough population"
+    wrong_region_type: "Wrong region type"
   storage:
     title: "<gold>Building Storage"
 cmd:

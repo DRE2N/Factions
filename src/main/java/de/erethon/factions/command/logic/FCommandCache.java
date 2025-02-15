@@ -18,6 +18,7 @@ public class FCommandCache extends ECommandCache {
         addCommand(new AllianceCommand());
         addCommand(new AuthoriseCommand());
         addCommand(new BuildingCommand());
+        addCommand(new BuildingAdminCommand());
         addCommand(new BuildingTicketCommand());
         addCommand(new ClaimCommand());
         addCommand(new CreateCommand());

@@ -1,28 +1,23 @@
 package de.erethon.factions.command;
 
-import de.erethon.factions.Factions;
-import de.erethon.factions.building.BuildSiteCache;
-import de.erethon.factions.building.Building;
-import de.erethon.factions.building.BuildingManager;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.gui.BuildingSelectionGUI;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.Player;
 
 public class BuildingCommand extends FCommand {
-
-    // TODO: Temp for testing until we have NPCs or GUIs something else for selecting buildings
 
     public BuildingCommand() {
         setCommand("building");
         setAliases("b");
         setPermission("factions.building");
         setPlayerCommand(true);
-        setMaxArgs(3);
+        setMaxArgs(1);
         setFUsage("/f building");
         setDescription("...");
-        addSubCommand(new BuildingSectionCommand());
     }
 
     @Override
@@ -30,40 +25,19 @@ public class BuildingCommand extends FCommand {
         FPlayer fPlayer = getFPlayerRaw(sender);
         Faction faction = fPlayer.getFaction();
         if (faction == null) {
+            fPlayer.sendMessage(Component.translatable("factions.error.no_faction"));
             return;
         }
-        if (args.length == 1) {
-            fPlayer.sendMessage("Usage: /f building <list|add|remove> <id>");
+        if (faction.isPrivileged(fPlayer)) {
+            fPlayer.sendMessage(Component.translatable("factions.error.no_permission"));
             return;
         }
-        BuildSiteCache cache = Factions.get().getBuildSiteCache();
-        if (args[1].equalsIgnoreCase("list")) {
-            if (cache.get(fPlayer.getPlayer().getChunk().getChunkKey()) == null) {
-                fPlayer.sendMessage("No buildings found in region.");
-                return;
-            }
-            cache.get(fPlayer.getPlayer().getChunk().getChunkKey()).forEach(b ->
-                    fPlayer.sendMessage(b.getBuilding().getId()));
+        if (faction.getUnrestLevel() > 0) { // Can't build during unrest
+            fPlayer.sendMessage(Component.translatable("factions.error.unrest"));
             return;
         }
-        if (args[1].equalsIgnoreCase("add")) {
-            Building building = Factions.get().getBuildingManager().getById(args[2]);
-            if (building == null) {
-                fPlayer.sendMessage("Building not found.");
-                return;
-            }
-            ItemStack item = BuildingManager.getBuildingItemStack(building, faction, fPlayer.getPlayer());
-            fPlayer.getPlayer().getInventory().addItem(item);
-            fPlayer.sendMessage("Building " + building.getId() + " added.");
-        }
-        if (args[1].equalsIgnoreCase("remove")) {
-            Building building = Factions.get().getBuildingManager().getById(args[2]);
-            if (building == null) {
-                fPlayer.sendMessage("Building not found.");
-                return;
-            }
-            cache.get(fPlayer.getPlayer().getChunk().getChunkKey()).removeIf(b -> b.getBuilding().equals(building));
-            fPlayer.sendMessage("Building " + building.getId() + " removed.");
-        }
+        Player player = fPlayer.getPlayer();
+        BuildingSelectionGUI gui = new BuildingSelectionGUI(player);
+        gui.open(player);
     }
 }
