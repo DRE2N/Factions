@@ -19,6 +19,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -76,6 +77,15 @@ public class FPlayerListener implements Listener {
                 event.setCancelled(true);
             }
         }
+    }
+
+    @EventHandler
+    private void onPlayerJoin(PlayerJoinEvent event) {
+        FPlayer fPlayer = plugin.getFPlayerCache().getByPlayerIfCached(event.getPlayer());
+        if (fPlayer == null) {
+            return;
+        }
+        updateLastRegion(fPlayer, event.getPlayer().getLocation());
     }
 
     private void updateLastRegion(FPlayer fPlayer, Location to) {
