@@ -1,6 +1,7 @@
 package de.erethon.factions.war;
 
 import de.erethon.aergia.util.TickUtil;
+import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.Factions;
 import de.erethon.factions.event.WarPhaseChangeEvent;
@@ -48,37 +49,38 @@ public class WarPhaseManager extends EConfig {
 
     private void initializeMidnight() {
         ZonedDateTime now = FUtil.getMidnightDateTime();
-        if (now.getHour() >= 0 && now.getHour() < 1) { // In case anyone ever messes with the time
-            midnight = now.minusDays(1);
-        } else {
-            midnight = now;
+        // If we're within the first hour, treat it as part of the previous day.
+        midnight = (now.getHour() < 1) ? now.minusDays(1) : now;
+    }
+
+    private long getCurrentProgress() {
+        return System.currentTimeMillis() - midnight.toInstant().toEpochMilli();
+    }
+
+    private void rollOverDay() {
+        midnight = midnight.plusDays(1);
+        if (midnight.getDayOfWeek() == DayOfWeek.MONDAY) {
+            currentWeek++;
+            if (currentWeek > schedule.size()) {
+                currentWeek = 1;
+            }
         }
     }
 
     public void updateCurrentStage() {
+        MessageUtil.log("Updating current war phase stage...");
         cancelRunningTask();
 
-        if (currentStage == null) {
-            initializeStage();
-            scheduleNextPhaseSwitch();
-            return;
-        }
-
-        // Check if we need to roll over to a new day
         ZonedDateTime currentTime = ZonedDateTime.now(midnight.getZone());
         if (currentTime.isAfter(midnight.plusDays(1))) {
-            midnight = FUtil.getMidnightDateTime();
-            if (midnight.getDayOfWeek() == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
-                currentWeek = 1;
-            }
+            // Day has passed; roll over to the next day.
+            rollOverDay();
             currentStage = getFirstStageOfTheDay();
         } else {
-            WarPhaseStage nextStage = currentStage.getNextStage();
+            WarPhaseStage nextStage = (currentStage != null) ? currentStage.getNextStage() : null;
             if (nextStage == null) {
-                midnight = midnight.plusDays(1);
-                if (midnight.getDayOfWeek() == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
-                    currentWeek = 1;
-                }
+                // End of the day reached.
+                rollOverDay();
                 nextStage = getFirstStageOfTheDay();
             }
             transitionToNewPhase(nextStage);
@@ -88,8 +90,10 @@ public class WarPhaseManager extends EConfig {
         saveData(); // Persist state changes
     }
 
+
     private void scheduleNextPhaseSwitch() {
         if (debugMode) {
+            MessageUtil.log("Debug mode active. Skipping phase switch.");
             return;
         }
 
@@ -102,7 +106,8 @@ public class WarPhaseManager extends EConfig {
         }
 
         try {
-            new PhaseSwitchTask(this, (int) TimeUnit.MILLISECONDS.toMinutes(delay)).start();
+            MessageUtil.log("Scheduling phase switch to " + nextStage.getWarPhase().name() + " in " + delay + " ticks.");
+            runningTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, this::updateCurrentStage, delay);
         } catch (Exception e) {
             FLogger.ERROR.log("Failed to schedule phase switch task: " + e.getMessage());
             Bukkit.getScheduler().runTaskLater(plugin, this::updateCurrentStage, TickUtil.MINUTE);
@@ -122,21 +127,22 @@ public class WarPhaseManager extends EConfig {
     }
 
     private void initializeStage() {
-        final long currentProgress = System.currentTimeMillis() - midnight.toInstant().toEpochMilli();
+        long currentProgress = getCurrentProgress();
         currentStage = getFirstStageOfTheDay();
 
-        // Validate and find correct stage
+        // Validate and find the correct stage based on the current progress.
         while (currentStage != null && currentStage.getFullDuration() < currentProgress) {
             WarPhaseStage nextStage = currentStage.getNextStage();
+            MessageUtil.log("Skipping stage " + currentStage.getWarPhase().name() + " with duration " + currentStage.getFullDuration());
             if (nextStage == null) {
-                // We've reached the end of the day
-                midnight = midnight.plusDays(1);
-                if (midnight.getDayOfWeek() == DayOfWeek.MONDAY && ++currentWeek > schedule.size()) {
-                    currentWeek = 1;
-                }
+                MessageUtil.log("End of day reached. Moving to next day...");
+                rollOverDay();
                 currentStage = getFirstStageOfTheDay();
+                // Recalculate progress for the new day.
+                currentProgress = getCurrentProgress();
             } else {
                 currentStage = nextStage;
+                MessageUtil.log("Moving to next stage " + currentStage.getWarPhase().name() + " with duration " + currentStage.getFullDuration());
             }
         }
 
@@ -198,17 +204,14 @@ public class WarPhaseManager extends EConfig {
             return;
         }
 
-        // Find highest week number from ranges
         int maxWeek = schedule.keySet().stream()
                 .mapToInt(Integer::intValue)
                 .max()
                 .orElse(7);
 
-        // Ensure all weeks exist with proper days
         for (int week = 1; week <= maxWeek; week++) {
             Map<Integer, WarPhaseStage> days = schedule.computeIfAbsent(week, k -> new HashMap<>());
 
-            // Fill missing days with PEACE phase
             for (int day = 1; day <= 7; day++) {
                 if (!days.containsKey(day)) {
                     days.put(day, new WarPhaseStage(DAY_DURATION, 0, WarPhase.PEACE));
@@ -216,7 +219,6 @@ public class WarPhaseManager extends EConfig {
             }
         }
 
-        // Validate all stages have correct duration
         for (Map<Integer, WarPhaseStage> days : schedule.values()) {
             for (Map.Entry<Integer, WarPhaseStage> entry : days.entrySet()) {
                 WarPhaseStage stage = entry.getValue();
@@ -340,6 +342,7 @@ public class WarPhaseManager extends EConfig {
     public void cancelRunningTask()  {
         if (runningTask != null) {
             runningTask.cancel();
+            MessageUtil.log("Cancelled running warphase task.");
             runningTask = null;
         }
     }
