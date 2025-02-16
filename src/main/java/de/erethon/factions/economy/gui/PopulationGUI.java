@@ -1,17 +1,24 @@
 package de.erethon.factions.economy.gui;
 
+import de.erethon.bedrock.chat.MessageUtil;
+import de.erethon.factions.Factions;
 import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.faction.Faction;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class PopulationGUI extends EconomyGUI {
 
     public PopulationGUI(Player player, Faction faction) {
-        super(player, faction);
+        this.player = player;
+        this.faction = faction;
+        this.inventory = Bukkit.createInventory(this, 27, Component.translatable("factions.gui.economy.population.title"));
+        Bukkit.getPluginManager().registerEvents(this, Factions.get());
         initializeItems();
     }
 
@@ -38,8 +45,11 @@ public class PopulationGUI extends EconomyGUI {
                 Component.translatable("factions.gui.back")));
     }
 
-    @Override
-    public void handleClick(InventoryClickEvent event) {
+    @EventHandler
+    private void handleClick(InventoryClickEvent event) {
+        if (event.getInventory().getHolder() != this) {
+            return;
+        }
         event.setCancelled(true);
         if (event.getSlot() == 26) {
             new EconomyGUI(player, faction).open();

@@ -35,6 +35,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -198,15 +199,12 @@ public class BuildingManager implements Listener {
     public static ItemStack getBuildingItemStack(Building building, Faction faction, Player player) {
         ItemStack stack = hephaestus.getLibrary().get(ITEM_ID).rollRandomStack().getBukkitStack();
         stack.editMeta(meta -> {
-            Component title = GlobalTranslator.translator().translate(Component.translatable("factions.building.buildings." + building.getId() + ".name"), player.locale());
+            Component title = Component.translatable("factions.building.buildings." + building.getId() + ".name");
             meta.displayName(title);
             List<Component> lore = new ArrayList<>();
             for (int i = 1; i < 6; i++) {
                 String key = "factions.building.buildings." + building.getId() + ".description." + i;
-                Component line = GlobalTranslator.translator().translate(Component.translatable(key), player.locale());
-                if (line == null || line.equals(Component.empty()) || PlainTextComponentSerializer.plainText().serialize(line).equals(key)) {
-                    break;
-                }
+                Component line = Component.translatable(key);
                 lore.add(line);
             }
             meta.lore(lore);
@@ -234,13 +232,19 @@ public class BuildingManager implements Listener {
                     factionBuildings.add(site.getBuilding());
                 }
             }
-            /*for (String string : building.getRequiredBuildings()) {
-                Building required = Factions.get().getBuildingManager().getById(string);
-                if (!factionBuildings.contains(required)) {
-                    continue;
+            for (Map.Entry<String, Integer> entry : building.getRequiredBuildings().entrySet()) {
+                Building required = Factions.get().getBuildingManager().getById(entry.getKey());
+                int buildingsInFaction = 0;
+                for (Building factionBuilding : factionBuildings) {
+                    if (factionBuilding.getId().equals(required.getId())) {
+                        buildingsInFaction++;
+                    }
+                }
+                if (buildingsInFaction < entry.getValue()) {
+                    break;
                 }
                 available.add(building);
-            }*/
+            }
         }
         return available;
     }

@@ -113,12 +113,22 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
             return;
         }
         event.setCancelled(true);
-
-        Building building = buildingSlots.get(event.getSlot());
+        int slot = event.getSlot();
+        if (slot < 0 || slot >= inventory.getSize()) {
+            return;
+        }
+        Building building = buildingSlots.get(slot);
         if (building == null) {
             return;
         }
+        if (!building.checkRequirements(fPlayer.getPlayer(), faction, fPlayer.getPlayer().getLocation()).isEmpty()) {
+            fPlayer.sendMessage(Component.translatable("factions.building.requirements.unfulfilled"));
+            return;
+        }
         new BuildSitePlacer(building, fPlayer, region, faction);
+        fPlayer.getPlayer().closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+        HandlerList.unregisterAll(this);
+
     }
 
     @EventHandler

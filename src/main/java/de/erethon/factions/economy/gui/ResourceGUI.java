@@ -1,11 +1,14 @@
 package de.erethon.factions.economy.gui;
 
+import de.erethon.factions.Factions;
 import de.erethon.factions.economy.resource.Resource;
 import de.erethon.factions.economy.resource.ResourceCategory;
 import de.erethon.factions.faction.Faction;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -14,53 +17,69 @@ import java.util.List;
 
 public class ResourceGUI extends EconomyGUI {
 
+    private boolean showingCategories = true;
+    private ResourceCategory currentCategory;
+
     public ResourceGUI(Player player, Faction faction) {
-        super(player, faction);
+        this.player = player;
+        this.faction = faction;
+        this.inventory = Bukkit.createInventory(this, 27, Component.translatable("factions.gui.economy.resource.title"));
+        Bukkit.getPluginManager().registerEvents(this, Factions.get());
+        initializeItems();
     }
 
     @Override
     protected void initializeItems() {
-        int row = 1;
-        for (ResourceCategory category : ResourceCategory.values()) {
-            int slot = row * 9 + 1;
+        if (showingCategories) {
+            showCategories();
+        } else {
+            showResources(currentCategory);
+        }
+    }
 
-            // Create category label
+    private void showCategories() {
+        inventory.clear();
+        int slot = 11;
+        for (ResourceCategory category : ResourceCategory.values()) {
             ItemStack categoryLabel = createGuiItem(Material.BOOK,
                     Component.text(category.getName()),
                     Component.translatable("factions.gui.economy.resource.category.description"));
             inventory.setItem(slot++, categoryLabel);
+        }
+        ItemStack back = createGuiItem(Material.ARROW, Component.translatable("factions.gui.back"));
+        inventory.setItem(inventory.getSize() - 9, back);
+    }
 
-            // Add resources for this category
-            for (Resource resource : category.getResources()) {
-                ItemStack item = createResourceItem(resource);
-                if (slot % 9 == 8) {
-                    // Skip to next row if we're at the end
-                    row++;
-                    slot = row * 9 + 1;
-                }
-                inventory.setItem(slot++, item);
-            }
-            row++;
+    private void showResources(ResourceCategory category) {
+        inventory.clear();
+        int slot = 0;
+        ItemStack categoryLabel = createGuiItem(Material.BOOK,
+                Component.text(category.getName()),
+                Component.translatable("factions.gui.economy.resource.category.description"));
+        inventory.setItem(slot++, categoryLabel);
+
+        for (Resource resource : category.getResources()) {
+            ItemStack item = createResourceItem(resource);
+            inventory.setItem(slot++, item);
         }
 
-        // Add back button
-        ItemStack back = createGuiItem(Material.BARRIER,
-                Component.translatable("factions.gui.back"));
-        inventory.setItem(inventory.getSize() - 1, back);
+        ItemStack back = createGuiItem(Material.ARROW, Component.translatable("factions.gui.back"));
+        inventory.setItem(inventory.getSize() - 9, back);
     }
 
     private ItemStack createResourceItem(Resource resource) {
         Material material = getMaterialForResource(resource);
         int amount = faction.getStorage().getResource(resource);
+        int limit = faction.getStorage().getResourceLimit(resource);
 
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.translatable("factions.gui.economy.resource.amount", Component.text(String.valueOf(amount))));
+        Component storage = Component.translatable("factions.gui.economy.resource.amount", Component.text(amount),
+                Component.text(limit));
+        lore.add(storage);
 
-        ItemStack item = createGuiItem(material, resource.displayName(), lore.toArray(new Component[0]));
-        return item;
+        return createGuiItem(material, resource.displayName(), lore.toArray(new Component[0]));
     }
 
-    // Move this to custom models eventually
     private Material getMaterialForResource(Resource resource) {
         return switch (resource) {
             case GRAIN -> Material.WHEAT;
@@ -102,11 +121,29 @@ public class ResourceGUI extends EconomyGUI {
         };
     }
 
-    @Override
-    public void handleClick(InventoryClickEvent event) {
+    @EventHandler
+    private void handleClick(InventoryClickEvent event) {
+        if (event.getInventory().getHolder() != this) {
+            return;
+        }
         event.setCancelled(true);
-        if (event.getSlot() == inventory.getSize() - 1) {
-            new EconomyGUI(player, faction).open();
+        int slot = event.getSlot();
+        if (slot < 0 || slot >= inventory.getSize()) {
+            return;
+        }
+        if (showingCategories) {
+            if (slot < ResourceCategory.values().length + 11) {
+                currentCategory = ResourceCategory.values()[slot - 11];
+                showingCategories = false;
+                initializeItems();
+            } else if (slot == inventory.getSize() - 9) {
+                new EconomyGUI(player, faction).open();
+            }
+        } else {
+            if (slot == inventory.getSize() - 9) {
+                showingCategories = true;
+                initializeItems();
+            }
         }
     }
 }

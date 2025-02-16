@@ -99,23 +99,19 @@ public class Building {
         RegionManager board = plugin.getRegionManager();
         FPlayer fPlayer = playerCache.getByPlayer(player);
         if (faction == null) {
-            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_PLAYER_IS_NOT_IN_A_FACTION.message());
             fails.add(RequirementFail.NOT_IN_FACTION);
             return fails;
         }
         if (!faction.isPrivileged(fPlayer)) {
-            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_NO_PERMISSION.message());
             fails.add(RequirementFail.NO_PERMISSION);
         }
         Region rg = fPlayer.getLastRegion();
         if (rg == null) {
-            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
             fails.add(RequirementFail.NOT_IN_REGION);
             return fails;
         }
         // If the faction does not own the region and the building is not a war building
         if (rg.getOwner() != faction && !isWarBuilding()) {
-            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
             fails.add(RequirementFail.NOT_IN_REGION);
         }
         boolean isBorder = false;
@@ -145,32 +141,26 @@ public class Building {
         }
         // If the building overlaps with an existing building
         if (isInOtherBuilding && !(allowOverlap || overlappingSite.getBuilding().isAllowOverlap())) {
-            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_BLOCKED.message());
             fails.add(RequirementFail.OVERLAPPING_BUILDING);
         }
         // If the building is unique and the faction already has a build site for this building
         if (isUnique && hasBuildSiteAlready(faction)) {
-            MessageUtil.sendActionBarMessage(player, Component.translatable("factions.error.building.unique"));
             fails.add(RequirementFail.UNIQUE_BUILDING);
         }
         // If the region is not of the correct RegionType
         if (!hasRequiredType(rg)) {
-            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_REQUIRED_TYPE.message());
             fails.add(RequirementFail.WRONG_REGION_TYPE);
         }
         // If the building requires other buildings to be built first in this faction
         if (!hasRequiredBuildings(faction)) {
-            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_REQUIRED_FACTION.message());
             fails.add(RequirementFail.REQUIRED_BUILDING_MISSING);
         }
         // If the building requires a certain amount of population at a specific level
         if (!hasRequiredPopulation(rg)) {
-            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_POPULATION.message());
             fails.add(RequirementFail.REQUIRED_POPULATION);
         }
         // If the faction can not afford the unlock costs.
         if (!canPay(faction)) {
-            MessageUtil.sendActionBarMessage(player, FMessage.ERROR_BUILDING_NOT_ENOUGH_RESOURCES.message());
             fails.add(RequirementFail.NOT_ENOUGH_RESOURCES);
         }
         return fails;

@@ -55,10 +55,17 @@ public class BuildSitePlacer implements Listener {
                 }
                 return;
             }
-            building.build(event.getPlayer(), faction, region, event.getClickedBlock().getLocation());
+            Region rg = player.getLastRegion(); // Just in case the player moved
+            Faction faction = player.getFaction(); // Maybe someone leaves while trying to place a building
+            if (rg == null || faction == null || faction != this.faction) {
+                player.sendMessage(Component.translatable("factions.building.place.cancelled"));
+                return;
+            }
+            building.build(event.getPlayer(), faction, rg, event.getClickedBlock().getLocation());
             HandlerList.unregisterAll(this);
         }
         if (event.getAction().isRightClick()) { // Cancelled placement
+            player.sendMessage(Component.translatable("factions.building.place.cancelled"));
             HandlerList.unregisterAll(this);
         }
     }

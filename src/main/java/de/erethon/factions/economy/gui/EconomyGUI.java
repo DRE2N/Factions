@@ -1,30 +1,42 @@
 package de.erethon.factions.economy.gui;
 
 import de.erethon.bedrock.chat.MessageUtil;
+import de.erethon.factions.Factions;
 import de.erethon.factions.faction.Faction;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class EconomyGUI implements InventoryHolder {
-    protected final Faction faction;
-    protected final Player player;
-    protected final Inventory inventory;
+public class EconomyGUI implements InventoryHolder, Listener {
+
+    protected Faction faction;
+    protected Player player;
+    protected Inventory inventory;
+
+
+    public EconomyGUI(){
+    }
 
     public EconomyGUI(Player player, Faction faction) {
         this.player = player;
         this.faction = faction;
         this.inventory = Bukkit.createInventory(this, 27, Component.translatable("factions.gui.economy.title"));
+        Bukkit.getPluginManager().registerEvents(this, Factions.get());
         initializeItems();
     }
 
@@ -47,13 +59,20 @@ public class EconomyGUI implements InventoryHolder {
         ItemMeta meta = item.getItemMeta();
         meta.displayName(name);
         List<Component> loreList = new ArrayList<>();
-        Collections.addAll(loreList, lore);
+        for (Component component : lore) {
+            loreList.add(component.decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+        }
         meta.lore(loreList);
         item.setItemMeta(meta);
         return item;
     }
 
-    public void handleClick(InventoryClickEvent event) {
+    @EventHandler
+    private void handleClick(InventoryClickEvent event) {
+        if (event.getInventory().getHolder() != this) {
+            MessageUtil.sendMessage(player, "Not our inventory");
+            return;
+        }
         event.setCancelled(true);
         if (event.getSlot() == 11) {
             new PopulationGUI(player, faction).open();
@@ -63,11 +82,24 @@ public class EconomyGUI implements InventoryHolder {
     }
 
     public void open() {
+        if (faction == null || faction.getAlliance() == null) {
+            MessageUtil.sendMessage(player, "<red>Internal error. Faction or alliance not found.");
+            return;
+        }
         player.openInventory(inventory);
     }
 
+
+    @EventHandler
+    public void onClose(InventoryCloseEvent event) {
+        if (event.getInventory().getHolder() != this) {
+            return;
+        }
+        HandlerList.unregisterAll(this);
+    }
+
     @Override
-    public Inventory getInventory() {
+    public @NotNull Inventory getInventory() {
         return inventory;
     }
 }

@@ -64,6 +64,10 @@ public class FStorage {
         return resources.getOrDefault(resource, 0);
     }
 
+    public int getResourceLimit(@NotNull Resource resource) {
+        return resourceLimits.getOrDefault(resource, 0);
+    }
+
     public void setResourceLimit(@NotNull Resource resource, int amount) {
         resourceLimits.put(resource, amount);
     }

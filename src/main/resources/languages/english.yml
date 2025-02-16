@@ -597,6 +597,19 @@ general:
   wilderness: "Wilderness"
   yes: "<green>yes"
 gui:
+  economy:
+    title: "<dark_green><bold>Economy"
+    population:
+      title: "<!i><dark_green>Population"
+      description: "<!i><gray>View and manage your faction's population."
+    resources:
+      title: "<!i><b><yellow>Resources"
+      description: "<!i><gray>View and manage your faction's resources."
+    resource:
+      title: "<!i><b><yellow>Resources"
+      category:
+        description: "<!i><gray>Click to view resources in this category."
+      amount: "<!i><gray>Amount: <gold><arg:0> <dark_gray>/ <gold><arg:1>"
   poll:
     nextPage:
       name: "<gold>Next Page</gold>"
@@ -608,6 +621,12 @@ gui:
     titleClosed: "<st><green>Poll<dark_gray>:</dark_gray></green> <arg:0>"
     regionTypeDisplay: "<gold>Region Type<dark_gray>:</dark_gray></gold><gray> <arg:0></gray>"
     votesDisplay: "<gray><gold><arg:0></gold> votes</gray>"
+  population:
+    title: "<dark_green>Population"
+    count: "<!i><gray>Population: <gold><arg:0>"
+    happiness: "<!i><gray>Happiness: <gold><arg:0>"
+    housing: "<!i><gray>Housing: <gold><arg:0>"
+  back: "<!i><gray>Back"
 placeholder:
   allianceDisplay: "<gold>Alliance</gold><dark_gray>:</dark_gray> <gray><arg:0></gray>"
   factionDisplay: "<gold>Faction</gold><dark_gray>:</dark_gray> <gray><arg:0></gray>"

@@ -23,11 +23,7 @@ public class EconomyCommand extends FCommand {
         Player player = (Player) sender;
         FPlayer fPlayer = getFPlayer(player);
         Faction faction = getFaction(fPlayer);
-        if (args.length == 0) {
-            EconomyGUI gui = new EconomyGUI(player, faction);
-            gui.open();
-        } else {
-            // For future subcommands
-        }
+        EconomyGUI gui = new EconomyGUI(player, faction);
+        gui.open();
     }
 }
