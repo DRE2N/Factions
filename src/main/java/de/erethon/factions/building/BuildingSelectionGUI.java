@@ -1,10 +1,7 @@
-package de.erethon.factions.gui;
+package de.erethon.factions.building;
 
 import de.erethon.factions.Factions;
-import de.erethon.factions.building.BuildSitePlacer;
-import de.erethon.factions.building.Building;
-import de.erethon.factions.building.BuildingManager;
-import de.erethon.factions.building.RequirementFail;
+import de.erethon.factions.data.FMessage;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
@@ -32,7 +29,7 @@ import java.util.Set;
 
 public class BuildingSelectionGUI implements InventoryHolder, Listener {
 
-    private final Inventory inventory;
+    private Inventory inventory;
     private final Map<Integer, Building> buildingSlots = new HashMap<>();
     private final FPlayer fPlayer;
     private final Faction faction;
@@ -43,6 +40,10 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
         this.fPlayer = plugin.getFPlayerCache().getByPlayer(player);
         this.faction = fPlayer.getFaction();
         this.region = fPlayer.getLastRegion();
+        if (region == null || faction == null) {
+            player.sendMessage(FMessage.ERROR_REGION_NOT_FOUND.message());
+            return;
+        }
 
         inventory = Bukkit.createInventory(this, 54, Component.translatable("factions.building.selection"));
 
@@ -65,20 +66,13 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
     private ItemStack createBuildingIcon(Building building) {
         ItemStack icon = new ItemStack(building.getIcon());
         ItemMeta meta = icon.getItemMeta();
+        Component name = Component.translatable("factions.building.buildings." + building.getId() + ".name");
 
-        // Translate building name
-        Component name = GlobalTranslator.translator().translate(
-                Component.translatable("factions.building.buildings." + building.getId() + ".name"),
-                fPlayer.getPlayer().locale()
-        );
-
-        // Get requirements status
         Set<RequirementFail> fails = building.checkRequirements(fPlayer.getPlayer(), faction, fPlayer.getPlayer().getLocation());
         boolean canBuild = fails.isEmpty();
         name = name.color(canBuild ? NamedTextColor.GREEN : NamedTextColor.RED);
         meta.displayName(name);
 
-        // Add translated description
         List<Component> lore = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
             String key = "factions.building.buildings." + building.getId() + ".description." + i;

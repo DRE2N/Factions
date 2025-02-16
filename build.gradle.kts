@@ -90,7 +90,7 @@ tasks {
         // \/ Comment this out in case you are offline, will fail to start otherwise \/
         uri("https://github.com/DRE2N/Papyrus/releases/download/latest/papyrus-paperclip-$papyrusVersion-mojmap.jar").toURL().openStream().use { it.copyTo(f.outputStream()) }
         serverJar(f)
-        jvmArgs("--enable-preview")
+        runDirectory.set(file("C:\\Dev\\Erethon"))
     }
     shadowJar {
         // Shade everything for now

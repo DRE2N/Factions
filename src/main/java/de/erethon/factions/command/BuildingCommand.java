@@ -1,9 +1,10 @@
 package de.erethon.factions.command;
 
+import de.erethon.factions.building.BuildingSelectionGUI;
 import de.erethon.factions.command.logic.FCommand;
+import de.erethon.factions.data.FMessage;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.factions.gui.BuildingSelectionGUI;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -24,8 +25,8 @@ public class BuildingCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         FPlayer fPlayer = getFPlayerRaw(sender);
         Faction faction = fPlayer.getFaction();
-        if (faction.isPrivileged(fPlayer)) {
-            fPlayer.sendMessage(Component.translatable("factions.error.no_permission"));
+        if (!faction.isPrivileged(fPlayer)) {
+            fPlayer.sendMessage(FMessage.ERROR_NO_PERMISSION.message());
             return;
         }
         if (faction.getUnrestLevel() > 0) { // Can't build during unrest

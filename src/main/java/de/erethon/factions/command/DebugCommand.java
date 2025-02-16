@@ -1,6 +1,7 @@
 package de.erethon.factions.command;
 
 import de.erethon.bedrock.chat.MessageUtil;
+import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
@@ -13,6 +14,8 @@ import de.erethon.factions.war.structure.WarStructure;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.List;
 
 /**
  * @author Fyreum
@@ -57,6 +60,17 @@ public class DebugCommand extends FCommand {
             }
             faction.getEconomy().spawnRevolt(faction, Integer.parseInt(args[2]));
             MessageUtil.sendMessage(player, "Revolution!");
+            return;
+        }
+        if (args[1].equalsIgnoreCase("setfactionalliance")) {
+            Faction faction = getFPlayer(sender).getFaction();
+            Alliance alliance = getAlliance(args[2]);
+            if (faction == null || alliance == null) {
+                MessageUtil.sendMessage(sender, "Faction or alliance not found");
+                return;
+            }
+            faction.setAlliance(alliance);
+            MessageUtil.sendMessage(sender, "Set alliance to " + alliance.getName() + " for " + faction.getName());
             return;
         }
         if (args[1].equalsIgnoreCase("saveRegionSchematic")) {
@@ -107,4 +121,11 @@ public class DebugCommand extends FCommand {
         }
     }
 
+    @Override
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
+        if (args.length == 2) {
+            return List.of("spawnmob", "spawncrystal", "revolt", "setfactionalliance", "saveRegionSchematic", "pasteSlice", "pasteRegion");
+        }
+        return super.onTabComplete(sender, args);
+    }
 }

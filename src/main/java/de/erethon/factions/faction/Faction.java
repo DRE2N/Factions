@@ -376,7 +376,11 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     @Override
     protected void serializeData() {
-        config.set("alliance", alliance == null ? null : alliance.getId());
+        if (alliance == null) {
+            FLogger.ERROR.log("Unable to save factions without alliance. Faction '" + id + "' will not be saved.");
+            return;
+        }
+        config.set("alliance", alliance.getId());
         config.set("admin", admin.toString());
         config.set("mods", mods.serialize());
         config.set("members", members.serialize());

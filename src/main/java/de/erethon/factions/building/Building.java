@@ -72,7 +72,7 @@ public class Building {
     private final Set<String> requiredSections = new HashSet<>();
     private final Set<Material> blocksOfInterest = new HashSet<>();
     private FactionLevel requiredLevel = FactionLevel.HAMLET;
-    Material icon;
+    private Material icon = Material.CHEST;
 
     public Building(@NotNull File file) {
         this.file = file;
@@ -463,7 +463,7 @@ public class Building {
         if (config.contains("blocksOfInterest")) {
             List<String> list = config.getStringList("blocksOfInterest");
             for (String s : list) {
-                Material material = Material.getMaterial(s.toUpperCase(Locale.ROOT));
+                Material material = Material.getMaterial(s.toUpperCase());
                 if (material != null) {
                     blocksOfInterest.add(material);
                 }
@@ -472,7 +472,7 @@ public class Building {
         if (config.contains("requiredCategories")) {
             Set<String> cfgList = config.getConfigurationSection("requiredCategories").getKeys(false);
             for (String s : cfgList) {
-                FSetTag tag = FSetTag.valueOf(s);
+                FSetTag tag = FSetTag.valueOf(s.toUpperCase());
                 int amount = config.getInt("requiredCategories." + s);
                 requiredBlockTypes.put(tag, amount);
             }
@@ -488,7 +488,7 @@ public class Building {
         if (config.contains("unlockCost")) {
             Set<String> cfgList = config.getConfigurationSection("unlockCost").getKeys(false);
             for (String s : cfgList) {
-                Resource resource = Resource.getById(s);
+                Resource resource = Resource.getById(s.toUpperCase());
                 int mod = config.getInt("unlockCost." + s);
                 unlockCost.put(resource, mod);
             }
@@ -496,7 +496,7 @@ public class Building {
         if (config.contains("requiredPopulation")) {
             Set<String> cfgList = config.getConfigurationSection("requiredPopulation").getKeys(false);
             for (String s : cfgList) {
-                PopulationLevel level = PopulationLevel.valueOf(s);
+                PopulationLevel level = PopulationLevel.valueOf(s.toUpperCase());
                 int mod = config.getInt("requiredPopulation." + s);
                 requiredPopulation.put(level, mod);
             }
@@ -504,7 +504,7 @@ public class Building {
         if (config.contains("requiredRegionTypes")) {
             Set<String> cfgList = config.getConfigurationSection("requiredRegionTypes").getKeys(false);
             for (String s : cfgList) {
-                RegionType type = RegionType.valueOf(s);
+                RegionType type = RegionType.valueOf(s.toUpperCase());
                 requiredRegionTypes.add(type);
             }
         }
