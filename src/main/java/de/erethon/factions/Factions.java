@@ -423,14 +423,22 @@ public final class Factions extends EPlugin {
             return;
         }
         FLogger.WEB.log("Starting web application...");
-        regionHttpServer = new RegionHttpServer();
-        regionHttpServer.runServer();
+        try {
+            regionHttpServer = new RegionHttpServer();
+            regionHttpServer.start();
+        } catch (Exception e) {
+            FLogger.ERROR.log("Failed to start web application: " + e.getMessage());
+        }
     }
 
     public void stopWebApplication() {
         if (regionHttpServer != null) {
-            FLogger.WEB.log("Stopping web application...");
-            regionHttpServer.stopServer();
+            try {
+                FLogger.WEB.log("Stopping web application...");
+                regionHttpServer.stopServer();
+            } catch (Exception e) {
+                FLogger.ERROR.log("Failed to stop web application: " + e.getMessage());
+            }
         }
     }
 

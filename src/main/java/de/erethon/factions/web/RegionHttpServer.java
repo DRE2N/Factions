@@ -14,7 +14,7 @@ import java.net.InetSocketAddress;
 /**
  * @author Fyreum
  */
-public class RegionHttpServer implements HttpHandler {
+public class RegionHttpServer extends Thread implements HttpHandler {
 
     public static final String CONTEXT_PATH = "/v1/regions";
 
@@ -25,7 +25,8 @@ public class RegionHttpServer implements HttpHandler {
         this.cache = new RegionServerCache();
     }
 
-    public void runServer() {
+    @Override
+    public void run() {
         try {
             server = HttpServer.create(new InetSocketAddress(Factions.get().getFConfig().getWebPort()), 0);
             server.createContext(CONTEXT_PATH, this);
