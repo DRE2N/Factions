@@ -22,6 +22,7 @@ import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
 import java.util.Random;
 
 public class CaravanCarrier extends Ravager {
@@ -150,8 +151,11 @@ public class CaravanCarrier extends Ravager {
     @Override
     public void readAdditionalSaveData(CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
-        alliance = plugin.getAllianceCache().getById(nbt.getInt("factions-alliance-id"));
-        readyUp();
+        Optional<Integer> id = nbt.getInt("factions-alliance-id");
+        if (id.isPresent()) {
+            alliance = plugin.getAllianceCache().getById(id.get());
+            readyUp();
+        }
     }
 
     @Override

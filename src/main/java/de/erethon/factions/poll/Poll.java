@@ -329,7 +329,7 @@ public abstract class Poll<V> implements Listener {
         if (info != null) {
             meta.lore(List.of(info));
         }
-        meta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS, ItemFlag.HIDE_ATTRIBUTES);
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES);
         itemStack.setItemMeta(meta);
         return itemStack;
     }

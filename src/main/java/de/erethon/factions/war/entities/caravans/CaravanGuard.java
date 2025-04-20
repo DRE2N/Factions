@@ -108,6 +108,6 @@ public class CaravanGuard extends Vindicator {
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
-        nbt.putUUID("factions-caravan-uuid", carrier.getUUID());
+        nbt.putString("factions-caravan-uuid", carrier.getUUID().toString());
     }
 }

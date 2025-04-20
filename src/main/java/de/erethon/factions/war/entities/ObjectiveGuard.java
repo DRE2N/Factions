@@ -49,6 +49,7 @@ import org.bukkit.craftbukkit.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
+import java.util.Optional;
 
 public class ObjectiveGuard extends Vindicator {
 
@@ -152,8 +153,20 @@ public class ObjectiveGuard extends Vindicator {
     @Override
     public void readAdditionalSaveData(CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
-        region = plugin.getRegionManager().getRegionById(nbt.getInt("factions-region-id"));
-        alliance = plugin.getAllianceCache().getById(nbt.getInt("factions-alliance-id"));
+        Optional<Integer> regionId = nbt.getInt("factions-region-id");
+        regionId.ifPresent(id -> {
+            region = plugin.getRegionManager().getRegionById(id);
+            if (region == null) {
+                FLogger.WAR.log("Failed to load crystal charge carrier data at " + position().x + ", " + position().y + ", " + position().z);
+            }
+        });
+        Optional<Integer> allianceId = nbt.getInt("factions-alliance-id");
+        allianceId.ifPresent(id -> {
+            alliance = plugin.getAllianceCache().getById(id);
+            if (alliance == null) {
+                FLogger.WAR.log("Failed to load crystal charge carrier data at " + position().x + ", " + position().y + ", " + position().z);
+            }
+        });
     }
 
 

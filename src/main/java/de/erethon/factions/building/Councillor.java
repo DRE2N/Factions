@@ -18,6 +18,8 @@ import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 public class Councillor extends Villager {
 
     private final Factions plugin = Factions.get();
@@ -57,7 +59,8 @@ public class Councillor extends Villager {
     @Override
     public void readAdditionalSaveData(CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
-        faction = plugin.getFactionCache().getById(nbt.getInt("factions-region-id"));
+        Optional<Integer> factionId = nbt.getInt("factions-region-id");
+        factionId.ifPresent(integer -> faction = plugin.getFactionCache().getById(integer));
     }
 
     @Override

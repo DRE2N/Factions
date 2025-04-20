@@ -36,6 +36,8 @@ import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 public class CrystalChargeCarrier extends IronGolem {
 
     public static NamespacedKey CARRIER_KEY = new NamespacedKey(Factions.get(), "crystal-charge-carrier");
@@ -123,8 +125,20 @@ public class CrystalChargeCarrier extends IronGolem {
     @Override
     public void readAdditionalSaveData(CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
-        region = plugin.getRegionManager().getRegionById(nbt.getInt("factions-region-id"));
-        alliance = plugin.getAllianceCache().getById(nbt.getInt("factions-alliance-id"));
+        Optional<Integer> regionId = nbt.getInt("factions-region-id");
+        regionId.ifPresent(id -> {
+            region = plugin.getRegionManager().getRegionById(id);
+            if (region == null) {
+                FLogger.WAR.log("Failed to load crystal charge carrier data at " + position().x + ", " + position().y + ", " + position().z);
+            }
+        });
+        Optional<Integer> allianceId = nbt.getInt("factions-alliance-id");
+        allianceId.ifPresent(id -> {
+            alliance = plugin.getAllianceCache().getById(id);
+            if (alliance == null) {
+                FLogger.WAR.log("Failed to load crystal charge carrier data at " + position().x + ", " + position().y + ", " + position().z);
+            }
+        });
     }
 
     @Override
