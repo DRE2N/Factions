@@ -46,6 +46,7 @@ public class Citizen extends Villager {
         goalSelector.addGoal(1, new RandomLookAroundGoal(this));
         goalSelector.addGoal(2, new OpenDoorGoal(this, true));
         setPersistenceRequired(false); // We just respawn them
+        persist = false;
     }
 
     public Citizen(Faction faction, Location location, PopulationLevel level) {

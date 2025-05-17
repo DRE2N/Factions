@@ -97,6 +97,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private final Set<FPlayer> invitedPlayers = new HashSet<>();
     private final Map<PopulationLevel, Double> populationHappiness = new HashMap<>();
     private double unrestLevel = 0;
+    private boolean ongoingRevolt = false;
 
     protected Faction(@NotNull FPlayer admin, @NotNull Region coreRegion, int id, String name, String description) {
         super(new File(Factions.FACTIONS, id + ".yml"), id, name, description);
@@ -372,6 +373,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.unrestLevel = config.getDouble("unrestLevel", unrestLevel);
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
         this.fStorage = new FStorage(this, config.getConfigurationSection("storage"));
+        this.ongoingRevolt = config.getBoolean("ongoingRevolt", false);
         this.discordTextChannelId = config.getLong("discordChannelId", discordTextChannelId);
         this.discordVoiceChannelId = config.getLong("discordVoiceChannelId", discordVoiceChannelId);
         this.discordRoleId = config.getLong("discordRoleId", discordRoleId);
@@ -404,6 +406,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         }
         config.set("unrestLevel", unrestLevel);
         config.set("storage", fStorage.save());
+        config.set("ongoingRevolt", ongoingRevolt);
         config.set("level", level.name());
         config.set("discordChannelId", discordTextChannelId);
         config.set("discordRoleId", discordRoleId);
@@ -759,6 +762,14 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public @NotNull FEconomy getEconomy() {
         return fEconomy;
+    }
+
+    public boolean hasOngoingRevolt() {
+        return ongoingRevolt;
+    }
+
+    public void setOngoingRevolt(boolean ongoingRevolt) {
+        this.ongoingRevolt = ongoingRevolt;
     }
 
     public @NotNull FactionLevel getLevel() {

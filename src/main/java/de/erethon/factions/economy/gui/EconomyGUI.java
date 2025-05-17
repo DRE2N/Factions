@@ -70,7 +70,6 @@ public class EconomyGUI implements InventoryHolder, Listener {
     @EventHandler
     private void handleClick(InventoryClickEvent event) {
         if (event.getInventory().getHolder() != this) {
-            MessageUtil.sendMessage(player, "Not our inventory");
             return;
         }
         event.setCancelled(true);
@@ -82,8 +81,12 @@ public class EconomyGUI implements InventoryHolder, Listener {
     }
 
     public void open() {
-        if (faction == null || faction.getAlliance() == null) {
-            MessageUtil.sendMessage(player, "<red>Internal error. Faction or alliance not found.");
+        if (faction == null) {
+            MessageUtil.sendMessage(player, "<red>Internal error. Faction  not found.");
+            return;
+        }
+        if (faction.getAlliance() == null) {
+            MessageUtil.sendMessage(player, "<red>Internal error. Alliance not found.");
             return;
         }
         player.openInventory(inventory);

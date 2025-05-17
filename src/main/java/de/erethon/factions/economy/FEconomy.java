@@ -45,14 +45,20 @@ import java.util.stream.Collectors;
 public class FEconomy {
 
     private final static double MONEY_PER_CITIZEN = 10.0;
-    private final static double UNREST_SPAWN_MULTIPLIER = 1.5; // How many revolutionaries spawn per unrest point
     private static final double VARIETY_BONUS_FACTOR = 0.01; // Bonus per distinct resource
-    private static final double REVOLT_THRESHOLD = 10.0; // Unrest level at which a revolt is triggered
     private static final double MAX_PERCENTAGE_TO_LEVEL_DOWN = 0.1; // Percentage of citizens that can level down in one cycle
     private static final double DEMOTION_EVENT_BASE_PENALTY_PER_CITIZEN = 0.1; // Base penalty for leveling down
     private static final double HAPPINESS_THRESHOLD_FOR_UNREST_DECAY = 0.6; // How high happiness needs to be to decay unrest
     private static final double BASE_UNREST_DECAY_RATE = 0.05; // Base decay rate
     private static final double ADDITIONAL_DECAY_BONUS_AT_MAX_HAPPINESS = 0.08; // Bonus decay rate at max happiness
+    private static final double MAX_UNREST_FOR_PENALTY_CALC = 50.0; // Unrest beyond this value doesn't increase the penalty
+    private static final double MAX_HAPPINESS_PENALTY_FROM_UNREST = 0.25; // Max happiness reduction (e.g., -0.25 happiness)
+    private static final double UNREST_PENALTY_EFFECTIVENESS_THRESHOLD = 1.0;
+    public static final double REVOLT_THRESHOLD = 25.0; // Unrest level at which a revolt is triggered
+    public final static double UNREST_SPAWN_MULTIPLIER = 1.2; // How many revolutionaries spawn per unrest point
+    private static final int REVOLT_HOTSPOT_RADIUS = 1;
+    private static final int MAX_REVOLT_EPICENTER_RETRIES = 10;
+    public final static double UNREST_REDUCTION_FOR_REVOLUTIONARY_DEATH = 1.0;
 
     private final Faction faction;
     private final FStorage storage;
@@ -193,6 +199,31 @@ public class FEconomy {
                 totalVarietyBonus = 0.0;
             }
             double rawHappiness = baseSatisfaction + additionalModifiers + totalVarietyBonus;
+
+            double currentFactionUnrest = faction.getUnrestLevel();
+            if (currentFactionUnrest > UNREST_PENALTY_EFFECTIVENESS_THRESHOLD) {
+                double effectiveUnrest = Math.min(currentFactionUnrest, MAX_UNREST_FOR_PENALTY_CALC) - UNREST_PENALTY_EFFECTIVENESS_THRESHOLD;
+                double effectiveRange = MAX_UNREST_FOR_PENALTY_CALC - UNREST_PENALTY_EFFECTIVENESS_THRESHOLD;
+
+                double unrestFactor = 0.0;
+                if (effectiveRange > 0) {
+                    unrestFactor = Math.max(0.0, effectiveUnrest / effectiveRange);
+                } else if (effectiveUnrest > 0) { // If threshold == max, any unrest above threshold gives full penalty
+                    unrestFactor = 1.0;
+                }
+
+                double unrestHappinessPenalty = unrestFactor * MAX_HAPPINESS_PENALTY_FROM_UNREST;
+
+                if (!Double.isNaN(rawHappiness)) {
+                    rawHappiness -= unrestHappinessPenalty;
+                }
+
+                if (unrestHappinessPenalty > 0) {
+                    FLogger.ECONOMY.log(String.format("[%s] Applied unrest happiness penalty of %.3f to %s (Faction Unrest: %.2f)",
+                            faction.getName(), unrestHappinessPenalty, level.name(), currentFactionUnrest));
+                }
+            }
+
             double finalHappiness = Math.max(0.0, Math.min(1.0, rawHappiness));
 
             double currentHappiness = faction.getHappiness(level);
@@ -441,11 +472,17 @@ public class FEconomy {
         if (totalUnrest > REVOLT_THRESHOLD) {
             int revoltAttempts = (int) Math.ceil(totalUnrest * UNREST_SPAWN_MULTIPLIER);
             if (revoltAttempts > 0) {
-                FLogger.ECONOMY.log("[" + faction.getName() + "] High unrest (%.2f), attempting to spawn revolt with %d attempts." + faction.getName() + totalUnrest + revoltAttempts);
+                FLogger.ECONOMY.log(String.format("[%s] High unrest (%.2f), attempting to spawn revolt with %d attempts.",
+                        faction.getName(),
+                        totalUnrest,
+                        revoltAttempts));
                 spawnRevolt(faction, revoltAttempts);
             }
         } else if (totalUnrest > 0) {
-            FLogger.ECONOMY.log("[" + faction.getName() + "] Current unrest level is %.2f (below revolt threshold of %.2f)." + faction.getName() + totalUnrest + REVOLT_THRESHOLD);
+            FLogger.ECONOMY.log(String.format("[%s] Current unrest level is %.2f (below revolt threshold of %.2f).",
+                    faction.getName(),
+                    totalUnrest,
+                    REVOLT_THRESHOLD));
         }
     }
 
@@ -555,36 +592,117 @@ public class FEconomy {
      * @param attempts The number of attempts (chunks) to try spawning revolutionaries.
      */
     public void spawnRevolt(Faction faction, int attempts) {
-        MessageUtil.log("Spawning revolt for " + faction.getName());
-        World world = faction.getCoreRegion().getWorld();
-        Random random = new Random();
-        int maxX = Integer.MIN_VALUE;
-        int minX = Integer.MAX_VALUE;
-        int maxZ = Integer.MIN_VALUE;
-        int minZ = Integer.MAX_VALUE;
-        for (LazyChunk chunk : faction.getCoreRegion().getChunks()) {
-            maxX = Math.max(maxX, chunk.getX());
-            minX = Math.min(minX, chunk.getX());
-            maxZ = Math.max(maxZ, chunk.getZ());
-            minZ = Math.min(minZ, chunk.getZ());
+        MessageUtil.log("Spawning revolt for " + faction.getName() + " with " + attempts + " spawn groups.");
+        if (faction.hasOngoingRevolt()) {
+            FLogger.ECONOMY.log("[" + faction.getName() + "] Cannot spawn revolt, already has an ongoing revolt.");
+            return;
         }
-        MessageUtil.log("minX: " + minX + ", maxX: " + maxX + ", minZ: " + minZ + ", maxZ: " + maxZ);
-        for (int i = 0; i < attempts; i++) {
-            int x = random.nextInt(minX, maxX + 1);
-            int z = random.nextInt(minZ, maxZ + 1);
-            MessageUtil.log("Chunk: " + x + ", " + z);
-            if (world.isChunkLoaded(x, z)) {
-                int amount = random.nextInt(2, 8);
-                for (int j = 0; j < amount; j++) {
-                    int xInChunk = random.nextInt(16);
-                    int zInChunk = random.nextInt(16);
-                    int xInWorld = x * 16 + xInChunk;
-                    int zInWorld = z * 16 + zInChunk;
-                    Revolutionary rev = new Revolutionary(faction, world.getHighestBlockAt(xInWorld, zInWorld).getLocation());
-                    ((org.bukkit.craftbukkit.CraftWorld) world).getHandle().addFreshEntity(rev);
-                    MessageUtil.log("Spawned revolutionary at " + x + ", " + z);
+        World world = faction.getCoreRegion().getWorld();
+        if (world == null) {
+            FLogger.ECONOMY.log("[" + faction.getName() + "] Cannot spawn revolt, world is null for core region.");
+            return;
+        }
+        Random random = new Random();
+
+        Set<LazyChunk> coreChunks = faction.getCoreRegion().getChunks();
+        if (coreChunks.isEmpty()) {
+            FLogger.ECONOMY.log("[" + faction.getName() + "] Cannot spawn revolt, faction has no core chunks.");
+            return;
+        }
+
+        LazyChunk epicenterChunk = null;
+        Set<LazyChunk> potentialSpawnChunksInHotspot = new HashSet<>();
+        int epicenterX = 0;
+        int epicenterZ = 0;
+        int retriesForEpicenter = 0;
+        while (retriesForEpicenter < MAX_REVOLT_EPICENTER_RETRIES) {
+            potentialSpawnChunksInHotspot.clear();
+            epicenterChunk = coreChunks.stream().skip(random.nextInt(coreChunks.size())).findFirst().orElse(null);
+            if (epicenterChunk == null) {
+                FLogger.ECONOMY.log("[" + faction.getName() + "] Could not select an epicenter chunk candidate.");
+                return;
+            }
+
+            if (!world.isChunkLoaded(epicenterChunk.getX(), epicenterChunk.getZ())) {
+                FLogger.ECONOMY.log("[" + faction.getName() + "] Epicenter candidate chunk " + epicenterChunk.getX() + "," + epicenterChunk.getZ() + " is not loaded. Retrying...");
+                retriesForEpicenter++;
+                epicenterChunk = null;
+                continue;
+            }
+
+            epicenterX = epicenterChunk.getX();
+            epicenterZ = epicenterChunk.getZ();
+            FLogger.ECONOMY.log("[" + faction.getName() + "] Revolt epicenter chosen at loaded chunk: " + epicenterX + ", " + epicenterZ);
+
+            for (LazyChunk coreChunk : coreChunks) {
+                int dx = Math.abs(coreChunk.getX() - epicenterX);
+                int dz = Math.abs(coreChunk.getZ() - epicenterZ);
+                if (dx <= REVOLT_HOTSPOT_RADIUS && dz <= REVOLT_HOTSPOT_RADIUS) {
+                    potentialSpawnChunksInHotspot.add(coreChunk);
                 }
             }
+
+            boolean hotspotHasLoadedChunk = false;
+            for (LazyChunk hotspotChunk : potentialSpawnChunksInHotspot) {
+                if (world.isChunkLoaded(hotspotChunk.getX(), hotspotChunk.getZ())) {
+                    hotspotHasLoadedChunk = true;
+                    break;
+                }
+            }
+
+            if (hotspotHasLoadedChunk) {
+                break;
+            } else {
+                FLogger.ECONOMY.log("[" + faction.getName() + "] Epicenter " + epicenterX + "," + epicenterZ + " is loaded, but no chunks in its hotspot are loaded (or hotspot is empty). Retrying epicenter...");
+                retriesForEpicenter++;
+                epicenterChunk = null;
+            }
+        }
+
+        if (epicenterChunk == null || potentialSpawnChunksInHotspot.isEmpty()) {
+            FLogger.ECONOMY.log("[" + faction.getName() + "] Could not find a suitable loaded epicenter/hotspot after " + retriesForEpicenter + " retries. Aborting revolt spawn.");
+            return;
+        }
+
+        FLogger.ECONOMY.log("[" + faction.getName() + "] Found " + potentialSpawnChunksInHotspot.size() + " potential chunks in the hotspot for spawning around epicenter " + epicenterX + "," + epicenterZ);
+
+        int spawnedGroups = 0;
+        for (int i = 0; i < attempts; i++) {
+            if (potentialSpawnChunksInHotspot.isEmpty()) break;
+
+            LazyChunk targetChunk = potentialSpawnChunksInHotspot.stream()
+                    .skip(random.nextInt(potentialSpawnChunksInHotspot.size()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (targetChunk == null) continue;
+
+            int chunkX = targetChunk.getX();
+            int chunkZ = targetChunk.getZ();
+
+            if (world.isChunkLoaded(chunkX, chunkZ)) {
+                int amount = random.nextInt(2, 8);
+                FLogger.ECONOMY.log("[" + faction.getName() + "] Attempting to spawn " + amount + " revolutionaries in loaded chunk: " + chunkX + ", " + chunkZ);
+                for (int j = 0; j < amount; j++) {
+                    int xInChunkBlocks = random.nextInt(16);
+                    int zInChunkBlocks = random.nextInt(16);
+                    int xInWorld = chunkX * 16 + xInChunkBlocks;
+                    int zInWorld = chunkZ * 16 + zInChunkBlocks;
+                    org.bukkit.Location spawnLocation = world.getHighestBlockAt(xInWorld, zInWorld).getLocation().add(0.5, 0, 0.5); // Center on block
+
+                    Revolutionary rev = new Revolutionary(faction, spawnLocation);
+                    ((org.bukkit.craftbukkit.CraftWorld) world).getHandle().addFreshEntity(rev);
+                    FLogger.ECONOMY.log("[" + faction.getName() + "] Spawned revolutionary at world coords: " + spawnLocation.getX() + ", " + spawnLocation.getY() + ", " + spawnLocation.getZ() + " (Chunk: " + chunkX + "," + chunkZ + ")");
+                }
+                spawnedGroups++;
+            } else {
+                FLogger.ECONOMY.log("[" + faction.getName() + "] Chunk " + chunkX + ", " + chunkZ + " in hotspot is not loaded. Skipping spawn for this chunk.");
+            }
+        }
+        if (spawnedGroups == 0 && attempts > 0) {
+            FLogger.ECONOMY.log("[" + faction.getName() + "] Revolt attempted with " + attempts + " groups, but no revolutionaries were spawned (likely no loaded chunks in hotspot).");
+        } else {
+            faction.setOngoingRevolt(true);
         }
     }
 
