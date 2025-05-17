@@ -19,6 +19,7 @@ import de.erethon.factions.economy.FEconomy;
 import de.erethon.factions.economy.FStorage;
 import de.erethon.factions.economy.FactionLevel;
 import de.erethon.factions.economy.population.PopulationLevel;
+import de.erethon.factions.economy.population.entities.Councillor;
 import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.entity.ShortableNamed;
@@ -28,6 +29,7 @@ import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.policy.FPolicy;
 import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.PollContainer;
+import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FException;
@@ -106,11 +108,13 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.regions.add(coreRegion);
         this.coreRegion = coreRegion;
         this.coreRegion.setOwner(this);
+        this.fHome = admin.getPlayer().getLocation();
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
         this.fStorage = new FStorage(this);
         this.fEconomy = new FEconomy(this, fStorage);
         this.alliance.addFaction(this);
         saveData();
+        spawnNPC(); // Spawn the councillor NPC
     }
 
     protected Faction(@NotNull File file) throws NumberFormatException {
@@ -405,7 +409,17 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         config.set("discordRoleId", discordRoleId);
     }
 
-    public void spawnNPC() {}
+    public void spawnNPC() {
+        Location fHome = getFHome();
+        if (fHome == null) {
+            return;
+        }
+        int chunkX = fHome.getBlockX() >> 4;
+        int chunkZ = fHome.getBlockZ() >> 4;
+        if (fHome.getWorld().isChunkLoaded(chunkX, chunkZ)) {
+            new Councillor(this, fHome);
+        }
+    }
 
     /* Permission stuff */
 
@@ -522,6 +536,12 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public @Nullable Location getFHome() {
         return fHome;
+    }
+
+    public LazyChunk getFHomeChunk() {
+        int chunkX = fHome.getBlockX() >> 4;
+        int chunkZ = fHome.getBlockZ() >> 4;
+        return new LazyChunk(chunkX, chunkZ);
     }
 
     public void setFHome(@Nullable Location fHome) {

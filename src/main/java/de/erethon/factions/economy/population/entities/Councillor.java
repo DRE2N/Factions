@@ -1,4 +1,4 @@
-package de.erethon.factions.building;
+package de.erethon.factions.economy.population.entities;
 
 import com.google.common.base.Predicates;
 import de.erethon.factions.Factions;
@@ -35,8 +35,11 @@ public class Councillor extends Villager {
 
     public Councillor(Faction faction, Location location) {
         super(EntityType.VILLAGER, ((CraftWorld) location.getWorld()).getHandle());
-        setCustomName(Component.translatable("factions.building.councillor.name"));
+        setCustomName(Component.translatable("factions.economy.councillor.name"));
         setCustomNameVisible(true);
+        setPos(location.getX(), location.getY(), location.getZ());
+        level().addFreshEntity(this);
+        setPersistenceRequired(false);
     }
 
     @Override

@@ -5,6 +5,7 @@ import de.erethon.bedrock.misc.FileUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
 import de.erethon.hephaestus.Hephaestus;
@@ -183,6 +184,22 @@ public class BuildingManager implements Listener {
             }
         };
         loadTask.runTaskAsynchronously(plugin);
+        // Check if we need to spawn any NPCs
+        Region region = plugin.getRegionManager().getRegionByChunk(event.getChunk());
+        if (region == null) {
+            return;
+        }
+        if (region.getOwner() == null) {
+            return;
+        }
+        Faction owner = region.getOwner();
+        if (owner.getCoreRegion() != region) {
+            return;
+        }
+        LazyChunk lazyChunk = new LazyChunk(event.getChunk());
+        if (lazyChunk.equals(owner.getFHomeChunk())) {
+            owner.spawnNPC();
+        }
     }
 
     @EventHandler
