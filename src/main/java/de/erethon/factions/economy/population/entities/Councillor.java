@@ -40,6 +40,8 @@ public class Councillor extends Villager {
         setPos(location.getX(), location.getY(), location.getZ());
         level().addFreshEntity(this);
         setPersistenceRequired(false);
+        persist = false;
+        this.faction = faction;
     }
 
     @Override
@@ -62,7 +64,7 @@ public class Councillor extends Villager {
     @Override
     public void readAdditionalSaveData(CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
-        Optional<Integer> factionId = nbt.getInt("factions-region-id");
+        Optional<Integer> factionId = nbt.getInt("factions-faction-id");
         factionId.ifPresent(integer -> faction = plugin.getFactionCache().getById(integer));
     }
 
@@ -71,9 +73,11 @@ public class Councillor extends Villager {
         super.addAdditionalSaveData(nbt);
         try { // Just in case the Factions side of things is broken.
             nbt.putString("papyrus-entity-id", "factions_councillor");
-            nbt.putInt("factions-region-id", faction.getId());
+            nbt.putInt("factions-faction-id", faction.getId());
         } catch (Exception e) {
             FLogger.WAR.log("Failed to save councillor NPC data at " + position().x + ", " + position().y + ", " + position().z);
+            persist = false;
+            remove(RemovalReason.DISCARDED);
             e.printStackTrace();
         }
     }
