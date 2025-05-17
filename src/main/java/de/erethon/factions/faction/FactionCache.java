@@ -11,6 +11,7 @@ import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FException;
 import de.erethon.factions.util.FLogger;
+import de.erethon.hecate.Hecate;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitTask;
@@ -83,6 +84,11 @@ public class FactionCache extends FEntityCache<Faction> {
      * Kick inactive players out of their faction and disband factions without other members left.
      */
     public void kickInactivePlayers() {
+        Hecate hecate = Hecate.getInstance();
+        if (hecate == null) {
+            FLogger.INFO.log("Hecate is not present, skipping inactive player kick");
+            return;
+        }
         FLogger.FACTION.log("Kicking inactive faction members...");
         FConfig fConfig = plugin.getFConfig();
         long kickAdminAfter = fConfig.getInactiveAdminKickDuration();
@@ -90,8 +96,8 @@ public class FactionCache extends FEntityCache<Faction> {
 
         for (Faction faction : cache.values()) {
             for (UUID uuid : faction.getMembers()) {
-                OfflinePlayer member = Bukkit.getOfflinePlayer(uuid);
-                if (member.getLastSeen() + (faction.isAdmin(uuid) ? kickAdminAfter : kickAfter) > System.currentTimeMillis()) {
+                long lastSeen = hecate.getDatabaseManager().getLastSeen(uuid);
+                if (lastSeen + (faction.isAdmin(uuid) ? kickAdminAfter : kickAfter) > System.currentTimeMillis()) {
                     continue;
                 }
                 FPlayer fPlayer = plugin.getFPlayerCache().getByUniqueId(uuid);

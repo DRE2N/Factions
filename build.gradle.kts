@@ -24,10 +24,11 @@ repositories {
 
 dependencies {
     paperweight.devBundle("de.erethon.papyrus", papyrusVersion) { isChanging = true }
-    implementation("de.erethon:bedrock:1.4.0")
+    implementation("de.erethon:bedrock:1.5.7")
     //implementation("de.erethon.lectern:Lectern:1.0-SNAPSHOT") //not ready yet
     compileOnly("de.erethon.aergia:Aergia:1.0.1")
     compileOnly("de.erethon.hephaestus:Hephaestus:1.0-SNAPSHOT")
+    compileOnly("de.erethon.hecate:Hecate:1.0-SNAPSHOT")
     compileOnly("org.jetbrains:annotations:23.1.0")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") { isTransitive = false }
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
