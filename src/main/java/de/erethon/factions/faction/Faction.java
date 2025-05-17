@@ -105,7 +105,6 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.members.add(admin);
         this.regions.add(coreRegion);
         this.coreRegion = coreRegion;
-        this.fHome = admin.getPlayer().getLocation();
         this.coreRegion.setOwner(this);
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
         this.fStorage = new FStorage(this);
@@ -405,6 +404,8 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         config.set("discordChannelId", discordTextChannelId);
         config.set("discordRoleId", discordRoleId);
     }
+
+    public void spawnNPC() {}
 
     /* Permission stuff */
 

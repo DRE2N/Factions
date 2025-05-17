@@ -15,7 +15,7 @@ import de.erethon.bedrock.plugin.EPluginSettings;
 import de.erethon.factions.alliance.AllianceCache;
 import de.erethon.factions.building.BuildSiteCache;
 import de.erethon.factions.building.BuildingManager;
-import de.erethon.factions.building.Councillor;
+import de.erethon.factions.economy.population.entities.Councillor;
 import de.erethon.factions.command.logic.FCommandCache;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
@@ -175,7 +175,7 @@ public final class Factions extends EPlugin {
         }
         loadWarHistory();
         war = new War();
-        if (Bukkit.getPluginManager().getPlugin("PrometheusExporter") != null) {
+        if (Bukkit.getPluginManager().isPluginEnabled("PrometheusExporter")) {
             FStatistics.initialize();
         }
         runWebApplication();
@@ -272,7 +272,9 @@ public final class Factions extends EPlugin {
         }
         runSaveDataTask();
         runBackupTask();
-        updateStatisticsTask();
+        if (Bukkit.getPluginManager().isPluginEnabled("PrometheusExporter")) {
+            updateStatisticsTask();
+        }
         if (fConfig.isWebEnabled()) {
             runWebCacheUpdateTask();
         }
