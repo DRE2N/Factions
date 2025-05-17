@@ -424,6 +424,13 @@ economy:
       town: "Town"
       city: "City"
       metropolis: "Metropolis"
+  gossip:
+    veryUnhappy: "<gray>Its truly terrible here. I am desperate for <arg:0>."
+    unhappy: "<gray>The living conditions could be better. I am lacking <arg:0>."
+    neutral: "<gray>Life is alright, I guess. I wish I had more <arg:0> though."
+    happy: "<gray>I enjoy living here. Some more <arg:0> would be great however."
+    veryHappy: "<gray>This faction truly is great."
+    extremelyHappy: "<gray>Life couldn't be better!"
   population:
     level:
       beggar: "Beggar"
@@ -537,6 +544,7 @@ error:
   targetIsNotInAFaction: "<red>The player <gold><arg:0></gold> is not in any faction."
   targetIsNotInThisFaction: "<red>The player <gold><arg:0></gold> is not in faction <gold><arg:1></gold>."
   textIsTooLong: "<red>The specified text exceeds the maximum length of <gold><arg:0></gold> characters."
+  unrest: "<red>You can not perform this action while your faction is at unrest. Quell the uprising first!"
   warObjectiveNotFound: "<red>The war objective <gold><arg:0></gold> could not be found."
   warObjectiveTypeNotFound: "<red>The war objective type <gold><arg:0></gold> could not be found."
   warObjectiveWrongArgFormat: "<red>Additional settings must be specified as follows: <gold>NAME</gold><gold>:</gold><gold>VALUE</gold>."
