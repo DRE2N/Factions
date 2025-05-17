@@ -59,6 +59,8 @@ public class Citizen extends Villager {
             default -> getVillagerData().withType(level().registryAccess(), VillagerType.PLAINS).withProfession(level().registryAccess(), VillagerProfession.NITWIT);
         };
         setVillagerData(villagerData);
+        setPos(location.getX(), location.getY(), location.getZ());
+        level().addFreshEntity(this);
     }
 
     @Override

@@ -70,6 +70,12 @@ public class BuildingEffect {
     public void onPayday() {
     }
 
+    public void onChunkLoad() {
+    }
+
+    public void onChunkUnload() {
+    }
+
     public @NotNull BuildSite getSite() {
         return site;
     }

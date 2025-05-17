@@ -71,6 +71,7 @@ public class BuildSiteCache {
                 FLogger.BUILDING.log("Failed to save build site " + site.getUuid() + " for chunk " + chunk + ": " + e.getMessage());
             }
             builder.append(site.getUuid().toString()).append(";");
+            site.onChunkUnload();
             i++;
         }
         FLogger.BUILDING.log("Saved " + i + " build sites for " + chunk);
@@ -97,6 +98,7 @@ public class BuildSiteCache {
             }
             BuildSite site = new BuildSite(file);
             sites.add(site);
+            site.onChunkLoad();
             i++;
         }
         MessageUtil.log("Loaded " + i + " build sites for " + chunk);

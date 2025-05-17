@@ -638,6 +638,24 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         }
     }
 
+    public void onChunkLoad() {
+        if (!active) {
+            return;
+        }
+        for (BuildingEffect effect : buildingEffects) {
+            effect.onChunkLoad();
+        }
+    }
+
+    public void onChunkUnload() {
+        if (!active) {
+            return;
+        }
+        for (BuildingEffect effect : buildingEffects) {
+            effect.onChunkUnload();
+        }
+    }
+
     //
     // Serialization
     //
