@@ -35,9 +35,10 @@ public class TaxManager {
     }
 
     // This method is called each day at 12:00h.
-    private void taxFactions() {
+    public void taxFactions() {
         for (Faction faction : plugin.getFactionCache()) {
             if (!faction.hasAlliance()) {
+                FLogger.ECONOMY.log("Faction " + faction.getName() + " has no alliance, skipped.");
                 continue;
             }
             Alliance alliance = faction.getAlliance();

@@ -1,6 +1,7 @@
 package de.erethon.factions.data;
 
 import de.erethon.aergia.util.TickUtil;
+import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.Factions;
 import de.erethon.factions.building.Building;
@@ -137,9 +138,11 @@ public class FConfig extends EConfig {
     public void lateInit() { // Config values that depend on FConfig already being initialized
         for (FactionLevel factionLevel : FactionLevel.values()) {
             for (PopulationLevel populationLevel : PopulationLevel.values()) {
-                initValue("requiredPopulation." + factionLevel.name() + "." + populationLevel.name(), 0);
+                initValue("requiredPopulation." + factionLevel.name() + "." + populationLevel.name(), 1);
             }
         }
+        MessageUtil.log("Initialised pop levels");
+        save();
     }
 
     @Override

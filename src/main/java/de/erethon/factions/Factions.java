@@ -170,9 +170,7 @@ public final class Factions extends EPlugin {
         loadFMessages();
         initializeCaches();
         loadCaches();
-        if (hasEconomyProvider()) {
-            loadTaxManager();
-        }
+        loadTaxManager();
         loadWarHistory();
         war = new War();
         if (Bukkit.getPluginManager().isPluginEnabled("PrometheusExporter")) {

@@ -10,10 +10,6 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
 import de.erethon.hephaestus.Hephaestus;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.kyori.adventure.translation.GlobalTranslator;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -32,7 +28,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -67,7 +62,12 @@ public class BuildingManager implements Listener {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::tickBuildingEffects, 0, plugin.getFConfig().getTicksPerBuildingTick());
         if (!hephaestus.getLibrary().has(ITEM_ID)) {
             ItemStack stack = new ItemStack(Material.PAPER);
-            hephaestus.getLibrary().register(stack, ITEM_ID);
+            try {
+                hephaestus.getLibrary().register(stack, ITEM_ID);
+            } catch (Exception ex) {
+                FLogger.ERROR.log("Failed to register building item: " + ex.getMessage());
+                return;
+            }
             FLogger.BUILDING.log("Registered building item forwith key " + ITEM_ID + " as it previously didn't exist.");
         }
     }

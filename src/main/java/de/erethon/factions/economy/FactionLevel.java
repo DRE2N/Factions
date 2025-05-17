@@ -44,6 +44,9 @@ public enum FactionLevel {
         if (this == METROPOLIS) {
             return false; // Max level
         }
+        if (requiredPopulation == null) {
+            return false;
+        }
         for (PopulationLevel level : requiredPopulation.keySet()) {
             if (faction.getPopulation(level) < requiredPopulation.get(level)) {
                 return false;
