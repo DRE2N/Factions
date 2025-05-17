@@ -50,6 +50,9 @@ public class FEconomy {
     private static final double REVOLT_THRESHOLD = 10.0; // Unrest level at which a revolt is triggered
     private static final double MAX_PERCENTAGE_TO_LEVEL_DOWN = 0.1; // Percentage of citizens that can level down in one cycle
     private static final double DEMOTION_EVENT_BASE_PENALTY_PER_CITIZEN = 0.1; // Base penalty for leveling down
+    private static final double HAPPINESS_THRESHOLD_FOR_UNREST_DECAY = 0.6; // How high happiness needs to be to decay unrest
+    private static final double BASE_UNREST_DECAY_RATE = 0.05; // Base decay rate
+    private static final double ADDITIONAL_DECAY_BONUS_AT_MAX_HAPPINESS = 0.08; // Bonus decay rate at max happiness
 
     private final Faction faction;
     private final FStorage storage;
@@ -404,6 +407,10 @@ public class FEconomy {
         totalUnrest = totalUnrest * faction.getAttributeValue("unrest_multiplier", 1.0); // Apply faction-wide unrest modifier
         faction.setUnrestLevel(totalUnrest);
 
+        // Decay after calculating the new unrest level
+        applyUnrestDecay();
+        totalUnrest = faction.getUnrestLevel();
+
         // Spawn Revolt if unrest is significant
         if (totalUnrest > REVOLT_THRESHOLD) {
             int revoltAttempts = (int) Math.ceil(totalUnrest * UNREST_SPAWN_MULTIPLIER);
@@ -413,6 +420,56 @@ public class FEconomy {
             }
         } else if (totalUnrest > 0) {
             FLogger.ECONOMY.log("[" + faction.getName() + "] Current unrest level is %.2f (below revolt threshold of %.2f)." + faction.getName() + totalUnrest + REVOLT_THRESHOLD);
+        }
+    }
+
+    /**
+     * Applies decay to the faction's unrest level if average happiness is high enough.
+     * Unrest decays by a percentage of its current value, influenced by overall happiness.
+     */
+    private void applyUnrestDecay() {
+        double currentUnrest = faction.getUnrestLevel();
+        if (currentUnrest <= 0) {
+            return;
+        }
+
+        double totalHappinessSum = 0;
+        int populatedLevelsCount = 0;
+        for (PopulationLevel pLevel : PopulationLevel.values()) {
+            if (faction.getPopulation(pLevel) > 0) {
+                totalHappinessSum += faction.getHappiness(pLevel);
+                populatedLevelsCount++;
+            }
+        }
+
+        if (populatedLevelsCount == 0) {
+            return;
+        }
+        double averageHappiness = totalHappinessSum / populatedLevelsCount;
+
+        if (averageHappiness > HAPPINESS_THRESHOLD_FOR_UNREST_DECAY) {
+            // If threshold is 0.6, averageHappiness 0.8 -> happinessEffectiveness is (0.8-0.6)/(1.0-0.6) = 0.2/0.4 = 0.5
+            double happinessEffectiveness = (averageHappiness - HAPPINESS_THRESHOLD_FOR_UNREST_DECAY) / (1.0 - HAPPINESS_THRESHOLD_FOR_UNREST_DECAY);
+            happinessEffectiveness = Math.max(0, Math.min(1.0, happinessEffectiveness)); // Clamp between 0 and 1
+
+            double decayRate = BASE_UNREST_DECAY_RATE + (ADDITIONAL_DECAY_BONUS_AT_MAX_HAPPINESS * happinessEffectiveness);
+
+            decayRate *= faction.getAttributeValue("unrest_decay_modifier", 1.0);
+
+            double amountToDecay = currentUnrest * decayRate;
+            double newUnrest = Math.max(0, currentUnrest - amountToDecay); // Ensure unrest doesn't go negative
+
+            if (newUnrest < currentUnrest) {
+                faction.setUnrestLevel(newUnrest);
+                FLogger.ECONOMY.log(String.format("[%s] Unrest decayed by %.2f due to happiness (Avg: %.2f). New unrest: %.2f",
+                        faction.getName(),
+                        (currentUnrest - newUnrest),
+                        averageHappiness,
+                        newUnrest));
+            }
+        } else {
+            FLogger.ECONOMY.log(String.format("[%s] Unrest did not decay. Average happiness (%.2f) is below threshold (%.2f).",
+                    faction.getName(), averageHappiness, HAPPINESS_THRESHOLD_FOR_UNREST_DECAY));
         }
     }
 
