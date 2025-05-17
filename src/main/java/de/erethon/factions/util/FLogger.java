@@ -5,7 +5,9 @@ import de.erethon.factions.Factions;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +24,7 @@ public enum FLogger {
     DEBUG(false),
     ALLIANCE(false),
     BUILDING(false),
-    ECONOMY(false),
+    ECONOMY(true),
     FACTION(true),
     REGION(false),
     PLAYER(true),
@@ -56,10 +58,13 @@ public enum FLogger {
         if (!isEnabled()) {
             return;
         }
+        debugWriter.println(msg);
         if (color != null) {
             MessageUtil.log(Factions.get(), Component.text().color(color).content("[" + name() + "] " + msg).build());
+            sendToAdminsInGame(Component.text().color(color).content("[" + name() + "] " + msg).build());
         } else {
             MessageUtil.log(Factions.get(), "[" + name() + "] " + msg);
+            sendToAdminsInGame(Component.text("[" + name() + "] ").append(Component.text(msg)));
         }
     }
 
@@ -68,16 +73,25 @@ public enum FLogger {
     }
 
     public void log(Supplier<Component> msg) {
-        Component comp = msg.get();
-        debugWriter.println("[" + name() + "] " + MessageUtil.serializePlain(comp));
-
         if (!isEnabled()) {
             return;
         }
+        Component comp = msg.get();
+        debugWriter.println("[" + name() + "] " + MessageUtil.serializePlain(comp));
         if (color != null) {
             MessageUtil.log(Factions.get(), Component.text().color(color).content("[" + name() + "] ").append(comp).build());
+            sendToAdminsInGame(Component.text().color(color).content("[" + name() + "] ").append(comp).build());
         } else {
             MessageUtil.log(Factions.get(), Component.text("[" + name() + "] ").append(comp));
+            sendToAdminsInGame(Component.text("[" + name() + "] ").append(comp));
+        }
+    }
+
+    private void sendToAdminsInGame(Component msg) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.hasPermission("factions.admin") || player.isOp()) {
+                MessageUtil.sendMessage(player, msg);
+            }
         }
     }
 
