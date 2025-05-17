@@ -3,6 +3,7 @@ package de.erethon.factions.building;
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.misc.FileUtil;
 import de.erethon.factions.Factions;
+import de.erethon.factions.economy.FEconomy;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.LazyChunk;
@@ -199,6 +200,17 @@ public class BuildingManager implements Listener {
         LazyChunk lazyChunk = new LazyChunk(event.getChunk());
         if (lazyChunk.equals(owner.getFHomeChunk())) {
             owner.spawnNPC();
+        }
+        // If the revolt started and no chunks were found, we try again
+        if (owner.getUnrestLevel() > FEconomy.REVOLT_THRESHOLD && !owner.hasOngoingRevolt()) {
+            int revoltAttempts = (int) Math.ceil(owner.getUnrestLevel()  * FEconomy.UNREST_SPAWN_MULTIPLIER);
+            if (revoltAttempts > 0) {
+                FLogger.ECONOMY.log(String.format("[%s] High unrest (%.2f) on chunk load, attempting to spawn revolt with %d attempts.",
+                        owner.getName(),
+                        owner.getUnrestLevel(),
+                        revoltAttempts));
+                owner.getEconomy().spawnRevolt(owner, revoltAttempts);
+            }
         }
     }
 
