@@ -137,7 +137,7 @@ public class FEconomy {
                 storage.removeResource(resource, (int) Math.min(available, required));
                 FLogger.ECONOMY.log("[" + faction.getName() + "] Consumed " + Math.min(available, required)
                         + " of " + resource.name() + " for " + currentPop + " " + level.name()
-                        + " population. Satisfaction: " + satisfaction);
+                        + " population. Satisfaction: " + satisfaction + " Available: " + available + " / Required: " + required);
             }
             resourceSatisfaction.put(level, satisfactionMap);
         }
@@ -162,6 +162,11 @@ public class FEconomy {
      */
     private void calculatePopulationHappiness() {
         for (PopulationLevel level : PopulationLevel.values()) {
+            if (faction.getPopulation(level) == 0) {
+                faction.setHappiness(level, 0.0); // Just so there is always a value here
+                resourceSatisfaction.put(level, new HashMap<>());
+                continue;
+            }
             Map<Resource, Double> satisfactionMap = resourceSatisfaction.getOrDefault(level, new HashMap<>());
             double weightedSum = 0;
             double totalWeight = 0;
@@ -173,12 +178,20 @@ public class FEconomy {
             }
             // Will be between 0.0 and 1.0
             double baseSatisfaction = (totalWeight > 0) ? weightedSum / totalWeight : 1.0;
+            if (Double.isNaN(baseSatisfaction)) {
+                FLogger.ECONOMY.log(String.format("[%s] WARNING: Base satisfaction for %s is NaN. Defaulting to 0.", faction.getName(), level.name()));
+                baseSatisfaction = 0.0;
+            }
 
             double additionalModifiers = 0;
             for (HappinessModifier modifier : happinessModifiers) {
                 additionalModifiers += modifier.getModifier(level);
             }
             double totalVarietyBonus = calculateVarietyBonus(level, satisfactionMap);
+            if (Double.isNaN(totalVarietyBonus)) {
+                FLogger.ECONOMY.log(String.format("[%s] WARNING: Variety bonus for %s is NaN. Defaulting to 0.", faction.getName(), level.name()));
+                totalVarietyBonus = 0.0;
+            }
             double rawHappiness = baseSatisfaction + additionalModifiers + totalVarietyBonus;
             double finalHappiness = Math.max(0.0, Math.min(1.0, rawHappiness));
 
@@ -212,11 +225,20 @@ public class FEconomy {
         for (PopulationLevel level : PopulationLevel.values()) {
             int population = faction.getPopulation(level);
             double happinessForTax = faction.getHappiness(level);
+            if (Double.isNaN(happinessForTax)) {
+                FLogger.ECONOMY.log(String.format("[%s] Happiness for tax calculation for %s is NaN. Tax revenue for this level will be 0.", faction.getName(), level.name()));
+                happinessForTax = 0.0;
+            }
 
             double revenue = population * MONEY_PER_CITIZEN * happinessForTax;
             totalTaxRevenue += revenue;
+            if (Double.isNaN(totalTaxRevenue)) {
+                FLogger.ECONOMY.log(String.format("[%s] Total tax revenue became NaN. Setting to 0.", faction.getName()));
+                totalTaxRevenue = 0.0;
+            }
 
-            FLogger.ECONOMY.log(String.format("[%s] Population level %s: Pop=%d, Happiness=%.3f -> Tax Revenue=%.2f",
+
+            FLogger.ECONOMY.log(String.format("[%s] Taxation: Population level %s: Pop=%d, Happiness=%.3f -> Tax Revenue=%.2f",
                     faction.getName(),
                     level.name(),
                     population,
@@ -240,7 +262,11 @@ public class FEconomy {
                 long varietyCount = levelCategoryResources.stream()
                         .filter(res -> satisfactionMap.getOrDefault(res, 0.0) > 0)
                         .count();
-                double varietyRatio = Math.min(1.0, (double) varietyCount / level.getMinimumVariety());
+                double minVarietyForLevel = level.getMinimumVariety();
+                double varietyRatio = 0.0;
+                if (minVarietyForLevel > 0) { // Only calculate a ratio if a minimum is defined
+                    varietyRatio = Math.min(1.0, (double) varietyCount / minVarietyForLevel);
+                }
                 double categoryBonus = varietyRatio * VARIETY_BONUS_FACTOR;
                 totalVarietyBonus += categoryBonus;
             }
@@ -512,6 +538,10 @@ public class FEconomy {
      */
     public void removeHappinessModifier(HappinessModifier modifier) {
         happinessModifiers.remove(modifier);
+    }
+
+    public  Map<PopulationLevel, Map<Resource, Double>> getResourceSatisfaction() {
+        return  resourceSatisfaction;
     }
 
     /**

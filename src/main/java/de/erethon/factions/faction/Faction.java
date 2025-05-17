@@ -806,7 +806,8 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     }
 
     public void setHappiness(@NotNull PopulationLevel level, double happiness) {
-        populationHappiness.put(level, populationHappiness.getOrDefault(level, 0.0) + happiness);
+        double clampedHappiness = Math.max(0.0, Math.min(1.0, happiness));
+        populationHappiness.put(level, clampedHappiness);
     }
 
     public long getDiscordTextChannelId() {
