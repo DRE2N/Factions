@@ -71,11 +71,17 @@ public class ResourceGUI extends EconomyGUI {
         Material material = getMaterialForResource(resource);
         int amount = faction.getStorage().getResource(resource);
         int limit = faction.getStorage().getResourceLimit(resource);
+        double lastProduction = faction.getEconomy().getLastProduction(resource);
+        double lastTotalConsumption = faction.getEconomy().getLastTotalConsumption(resource);
 
         List<Component> lore = new ArrayList<>();
-        Component storage = Component.translatable("factions.gui.economy.resource.amount", Component.text(amount),
-                Component.text(limit));
+        Component storage = Component.translatable("factions.gui.economy.resource.amount", Component.text(amount), Component.text(limit));
+        Component production = Component.translatable("factions.gui.economy.resource.production", Component.text(lastProduction));
+        Component consumption = Component.translatable("factions.gui.economy.resource.totalConsumption", Component.text(lastTotalConsumption));
         lore.add(storage);
+        lore.add(Component.empty());
+        lore.add(production);
+        lore.add(consumption);
 
         return createGuiItem(material, resource.displayName(), lore.toArray(new Component[0]));
     }

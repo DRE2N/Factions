@@ -52,6 +52,11 @@ public class PopulationGUI extends EconomyGUI {
             for (Resource resource : happyResources) {
                 happy = happy.append(resource.displayName()).append(Component.text(", "));
             }
+            Component consumption = Component.empty();
+            for (Resource resource : faction.getEconomy().getAllConsumedResourcesForLevel(level)) {
+                consumption = consumption.append(resource.displayName()).append(Component.text(": "));
+                consumption = consumption.append(Component.text(faction.getEconomy().getLastConsumption(level, resource))).append(Component.text(", "));
+            }
 
             ItemStack item = createGuiItem(Material.PLAYER_HEAD,
                     level.displayName(),
@@ -61,7 +66,8 @@ public class PopulationGUI extends EconomyGUI {
                     Component.translatable("factions.gui.population.housing", Component.text(faction.getAttributeValue("housing_" + level.name().toLowerCase(), 0))),
                     Component.empty(),
                     Component.translatable("factions.economy.population.resources.satisfied", happy),
-                    Component.translatable("factions.economy.population.resources.dissatisfied", missing)
+                    Component.translatable("factions.economy.population.resources.dissatisfied", missing),
+                    consumption
             );
 
             inventory.setItem(slot++, item);

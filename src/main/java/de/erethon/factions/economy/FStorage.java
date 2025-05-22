@@ -1,5 +1,6 @@
 package de.erethon.factions.economy;
 
+import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.economy.resource.Resource;
@@ -28,31 +29,37 @@ public class FStorage {
     public FStorage(@NotNull Faction faction, @NotNull ConfigurationSection section) {
         this.faction = faction;
         resourceLimits = Factions.get().getFConfig().getDefaultResourceLimits();
-        /*for (String key : section.getKeys(false)) {
+        for (String key : section.getKeys(false)) {
             Resource resource = Resource.getById(key);
             if (resource == null) {
                 continue;
             }
             resources.put(resource, section.getInt(key));
-        } Doesn't work */
+        }
     }
 
     public boolean addResource(@NotNull Resource resource, int amount) {
         int current = resources.getOrDefault(resource, 0);
         int limit = resourceLimits.getOrDefault(resource, 0);
-        if (current >= limit) {
+        int spaceToLimit = limit - current;
+        if (spaceToLimit <= 0) {
             return false;
         }
+        if (amount > spaceToLimit) {
+            amount = spaceToLimit;
+        }
         resources.put(resource, Math.min(current + amount, limit));
+        MessageUtil.log("Storage: " + Math.min(current + amount, limit) + " of " + resource.getId() + " for " + faction.getName() + " (added " + amount + ")");
         return true;
     }
 
     public boolean removeResource(@NotNull Resource resource, int amount) {
         int current = resources.getOrDefault(resource, 0);
-        if (current - amount < 0) {
+        if (current < amount) {
             return false;
         }
         resources.put(resource, current - amount);
+        MessageUtil.log("Storage: " + (current - amount) + " of " + resource.getId() + " for " + faction.getName() + " (removed " + amount + ")");
         return true;
     }
 
