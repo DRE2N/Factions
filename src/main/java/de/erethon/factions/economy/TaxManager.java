@@ -34,7 +34,7 @@ public class TaxManager {
             taxTime = taxTime.plusDays(1);
         }
         long delay = taxTime.toInstant().toEpochMilli() - now.toInstant().toEpochMilli();
-        factionTaxTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, this::runFactionTaxTask, delay);
+        factionTaxTask = Bukkit.getScheduler().runTaskLater(plugin, this::runFactionTaxTask, delay); // Run this on the main thread, as effects might spawn entities, access blocks, etc.
     }
 
     // This method is called each day at 12:00h.

@@ -27,7 +27,7 @@ public class BuildingTicketCommand extends FCommand {
         setCommand("buildingticket");
         setAliases("ticket", "tickets");
         setMinArgs(0);
-        setMaxArgs(-1);
+        setMaxArgs(99);
         setPermissionFromName();
         setPlayerCommand(true);
         setConsoleCommand(false);

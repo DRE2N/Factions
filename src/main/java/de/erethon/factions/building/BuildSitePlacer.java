@@ -40,6 +40,9 @@ public class BuildSitePlacer implements Listener {
 
     @EventHandler
     private void onMove(PlayerMoveEvent event) {
+        if (!event.getPlayer().equals(player.getPlayer())) {
+            return;
+        }
         Block targetBlock = event.getPlayer().getTargetBlockExact(16);
         if (targetBlock == null) return;
         boolean isAllowed = building.checkRequirements(player.getPlayer(), faction, targetBlock.getLocation()).isEmpty();
@@ -57,6 +60,7 @@ public class BuildSitePlacer implements Listener {
         if (event.getHand() == EquipmentSlot.OFF_HAND) {
             return;
         }
+        event.setCancelled(true);
         if (event.getAction().isLeftClick()) { // Confirmed placement
             if (!building.checkRequirements(player.getPlayer(), faction, event.getClickedBlock().getLocation()).isEmpty()) {
                 player.sendMessage(Component.translatable("factions.building.place.requirements"));

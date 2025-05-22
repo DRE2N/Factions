@@ -252,11 +252,10 @@ building:
     radar:
       enemiesDetected: "<dark_red>Enemies detected!"
       enemiesInfo: "<red>Detected <gold><arg:0> <red>enemies near <gold><arg:1>"
-  placement:
-    startHint: "<gray>Right click to place the building, left click to cancel."
-    clickAgain: "<gray>Click again to confirm the placement."
-    success: "<green>The building has been placed."
-    cancelled: "<red>The building placement has been cancelled."
+  place:
+    cancelled: "<red>Building placement has been cancelled."
+    title: "<gray>Right click to place the building, left click to cancel."
+    requirements: "<red>The following requirements are not fulfilled:"
   status:
     accepted: "<green>A <gold><arg:0> <green>in <gold><arg:1> <green>has been accepted. The effects will now be applied."
     completed:
@@ -265,7 +264,7 @@ building:
     destroyed: "<red>A <gold><arg:0> <red>in <gold><arg:1> <red>was destroyed!"
     problem: "<red>Issue:"
   selection: "Building Selection"
-  requirements:
+  requirement:
     fulfilled: "Requirements fulfilled"
     unfulfilled: "Missing requirements:"
     no_permission: "You don't have permission to build this"
@@ -274,6 +273,10 @@ building:
     required_building_missing: "Required building not constructed"
     required_population: "Not enough population"
     wrong_region_type: "Wrong region type"
+    not_enough_resources: "Not enough resources"
+    unique_building: "Building already exists"
+    not_in_faction: "You are not in a faction"
+    not_in_region: "You are not in a region owned by your faction"
   storage:
     title: "<gold>Building Storage"
 cmd:

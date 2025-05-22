@@ -299,7 +299,6 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                         blocksOfInterest.getOrDefault(type, new HashSet<>()).add(new BuildSiteCoordinate(block.getX(), block.getY(), block.getZ()));
                     }
                 }
-                FLogger.BUILDING.log("-------------------");
                 FLogger.BUILDING.log(placed.toString());
                 placedBlocks = placed;
                 complete.runTask(plugin);
@@ -384,7 +383,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     }
 
     public Set<BuildSiteCoordinate> getCoordinatesFor(Material material) {
-        return blocksOfInterest.get(material);
+        return blocksOfInterest.getOrDefault(material, new HashSet<>());
     }
 
     public Set<String> getMissingSections() {
