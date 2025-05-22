@@ -53,8 +53,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -120,8 +122,6 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     protected Faction(@NotNull File file) throws NumberFormatException {
         super(file);
-        this.fStorage = new FStorage(this);
-        this.fEconomy = new FEconomy(this, fStorage);
     }
 
     @Override
@@ -373,6 +373,16 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.unrestLevel = config.getDouble("unrestLevel", unrestLevel);
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
         this.fStorage = new FStorage(this, config.getConfigurationSection("storage"));
+        this.fEconomy = new FEconomy(this, fStorage);
+        List<String> buildSiteUUIDs = config.getStringList("buildSites");
+        for (String uuid : buildSiteUUIDs) {
+            BuildSite buildSite = plugin.getBuildSiteCache().loadFromUUID(uuid);
+            if (buildSite == null) {
+                FLogger.ERROR.log("Unknown build site UUID in faction '" + id + "' found: " + uuid);
+                continue;
+            }
+            this.buildSites.add(buildSite);
+        }
         this.ongoingRevolt = config.getBoolean("ongoingRevolt", false);
         this.discordTextChannelId = config.getLong("discordChannelId", discordTextChannelId);
         this.discordVoiceChannelId = config.getLong("discordVoiceChannelId", discordVoiceChannelId);
@@ -408,6 +418,14 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         config.set("storage", fStorage.save());
         config.set("ongoingRevolt", ongoingRevolt);
         config.set("level", level.name());
+        List<String> buildSiteUUIDs = new ArrayList<>();
+        int i = 0;
+        for (BuildSite site : buildSites) {
+            buildSiteUUIDs.add(site.getUUIDString());
+            i++;
+        }
+        FLogger.FACTION.log("Saved " + i + " build sites for faction '" + name);
+        config.set("buildSites", buildSiteUUIDs);
         config.set("discordChannelId", discordTextChannelId);
         config.set("discordRoleId", discordRoleId);
     }

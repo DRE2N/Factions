@@ -46,8 +46,8 @@ import java.util.Set;
  */
 public class Building {
 
-    Factions plugin = Factions.get();
-    BuildingManager manager = plugin.getBuildingManager();
+    private final Factions plugin = Factions.get();
+    private  BuildingManager manager;
 
     public static final String YAML = ".yml";
 
@@ -74,8 +74,9 @@ public class Building {
     private FactionLevel requiredLevel = FactionLevel.HAMLET;
     private Material icon = Material.CHEST;
 
-    public Building(@NotNull File file) {
+    public Building(@NotNull File file, BuildingManager manager) {
         this.file = file;
+        this.manager = manager;
         if (!file.exists()) {
             try {
                 file.createNewFile();
@@ -105,7 +106,7 @@ public class Building {
         if (!faction.isPrivileged(fPlayer)) {
             fails.add(RequirementFail.NO_PERMISSION);
         }
-        Region rg = fPlayer.getLastRegion();
+        Region rg = fPlayer.getCurrentRegion();
         if (rg == null) {
             fails.add(RequirementFail.NOT_IN_REGION);
             return fails;
@@ -133,6 +134,10 @@ public class Building {
         }
         boolean isInOtherBuilding = false;
         BuildSite overlappingSite = null;
+        if (manager == null) {
+            MessageUtil.log("BuildingManager is null somehow. Plugin: " + plugin);
+            return fails;
+        }
         for (BuildSite site : rg.getBuildSites()) {
             if (manager.hasOverlap(getCorner1(loc), getCorner2(loc), site)) {
                 isInOtherBuilding = true;
@@ -232,7 +237,7 @@ public class Building {
     }
 
     public boolean hasRequiredType(@NotNull Region region) {
-        return requiredRegionTypes.contains(region.getType());
+        return requiredRegionTypes.contains(region.getType()) || requiredRegionTypes.isEmpty();
     }
 
     /**
@@ -242,57 +247,44 @@ public class Building {
      * @param allowed true/false = green/red
      */
     public void displayFrame(@NotNull Player player, @NotNull Location center, boolean allowed) {
-        BukkitRunnable particleTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                List<Location> result = new ArrayList<>();
-                World world = center.getWorld();
-                int radius = getSize();
-                int cx = center.getBlockX() + radius;
-                int cy = center.getBlockY() + (radius * 2);
-                int cz = center.getBlockZ() + radius;
-                int cx2 = center.getBlockX() - radius;
-                int cy2 = center.getBlockY() - (radius / 2); // don't go underground too much.
-                int cz2 = center.getBlockZ() - radius;
-                Location corner1 = new Location(world, cx, cy, cz);
-                Location corner2 = new Location(world, cx2, cy2, cz2);
-                double minX = Math.min(corner1.getX(), corner2.getX());
-                double minY = Math.min(corner1.getY(), corner2.getY());
-                double minZ = Math.min(corner1.getZ(), corner2.getZ());
-                double maxX = Math.max(corner1.getX(), corner2.getX());
-                double maxY = Math.max(corner1.getY(), corner2.getY());
-                double maxZ = Math.max(corner1.getZ(), corner2.getZ());
+        List<Location> result = new ArrayList<>();
+        World world = center.getWorld();
+        int radius = getSize();
+        int cx = center.getBlockX() + radius;
+        int cy = center.getBlockY() + (radius * 2);
+        int cz = center.getBlockZ() + radius;
+        int cx2 = center.getBlockX() - radius;
+        int cy2 = center.getBlockY() - (radius / 2); // don't go underground too much.
+        int cz2 = center.getBlockZ() - radius;
+        Location corner1 = new Location(world, cx, cy, cz);
+        Location corner2 = new Location(world, cx2, cy2, cz2);
+        double minX = Math.min(corner1.getX(), corner2.getX());
+        double minY = Math.min(corner1.getY(), corner2.getY());
+        double minZ = Math.min(corner1.getZ(), corner2.getZ());
+        double maxX = Math.max(corner1.getX(), corner2.getX());
+        double maxY = Math.max(corner1.getY(), corner2.getY());
+        double maxZ = Math.max(corner1.getZ(), corner2.getZ());
 
-                for (double x = minX; x <= maxX; x+=1) {
-                    for (double y = minY; y <= maxY; y+=1) {
-                        for (double z = minZ; z <= maxZ; z+=1) {
-                            int components = 0;
-                            if (x == minX || x == maxX) components++;
-                            if (y == minY || y == maxY) components++;
-                            if (z == minZ || z == maxZ) components++;
-                            if (components >= 2) {
-                                result.add(new Location(world, x, y, z));
-                            }
-                        }
-                    }
-                }
-                for (Location loc : result) {
-                    if (allowed) {
-                        player.spawnParticle(Particle.DUST, loc, 5, new Particle.DustOptions(Color.LIME, 3));
-                    } else {
-                        player.spawnParticle(Particle.DUST, loc, 5, new Particle.DustOptions(Color.RED, 3));
+        for (double x = minX; x <= maxX; x+=1) {
+            for (double y = minY; y <= maxY; y+=1) {
+                for (double z = minZ; z <= maxZ; z+=1) {
+                    int components = 0;
+                    if (x == minX || x == maxX) components++;
+                    if (y == minY || y == maxY) components++;
+                    if (z == minZ || z == maxZ) components++;
+                    if (components >= 2) {
+                        result.add(new Location(world, x, y, z));
                     }
                 }
             }
-        };
-        particleTask.runTaskTimer(plugin, 0, 20);
-        BukkitRunnable cancel = new BukkitRunnable() {
-            @Override
-            public void run() {
-                particleTask.cancel();
+        }
+        for (Location loc : result) {
+            if (allowed) {
+                player.spawnParticle(Particle.DUST, loc, 5, new Particle.DustOptions(Color.LIME, 1));
+            } else {
+                player.spawnParticle(Particle.DUST, loc, 5, new Particle.DustOptions(Color.RED, 1));
             }
-        };
-        cancel.runTaskLater(plugin, 200);
+        }
     }
 
     public @NotNull Location getCorner1(@NotNull Location center) {
@@ -499,16 +491,22 @@ public class Building {
             }
         }
         if (config.contains("effects")) {
-           for (String id : config.getConfigurationSection("effects").getKeys(false)) {
-               try {
-                   BuildingEffectData effect = new BuildingEffectData(config.getConfigurationSection("effects." + id), id);
-                   effects.add(effect);
-               }
-                catch (Exception e) {
-                     FLogger.ERROR.log("Failed to load effect " + id + " for building " + this.id + ": " + e.getMessage());
-                     e.printStackTrace();
+            ConfigurationSection effectsParentSection = config.getConfigurationSection("effects");
+            if (effectsParentSection != null) {
+                for (String effectKey : effectsParentSection.getKeys(false)) {
+                    try {
+                        ConfigurationSection section = effectsParentSection.getConfigurationSection(effectKey);
+                        BuildingEffectData effect = new BuildingEffectData(section, effectKey);
+                        FLogger.BUILDING.log("Loaded effect data " + effect + " with parentSection " + effectsParentSection.getCurrentPath() + " and key " + effectKey);
+                        effects.add(effect);
+                    } catch (Exception e) {
+                        FLogger.ERROR.log("Failed to load effect data for '" + effectKey + "' in building " + this.id + ": " + e.getMessage());
+                        e.printStackTrace();
+                    }
                 }
-           }
+            } else {
+                FLogger.BUILDING.log("Building " + this.id + " has an 'effects' key, but it's not a valid section or is empty.");
+            }
         }
         FLogger.BUILDING.log("Loaded building with size " + size);
         FLogger.BUILDING.log("Blocks: " + requiredBlocks.toString());

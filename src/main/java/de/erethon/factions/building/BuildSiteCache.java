@@ -5,106 +5,110 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.util.FLogger;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Malfrador
  */
-public class BuildSiteCache {
-
-    public static final NamespacedKey KEY = new NamespacedKey(Factions.get(), "build_sites");
+public class BuildSiteCache implements Listener {
 
     private final File cacheFolder;
 
-    private final ConcurrentHashMap<Long, Set<BuildSite>> loaded = new ConcurrentHashMap<>();
+    private final HashMap<String, BuildSite> sites = new HashMap<>();
+    private final HashMap<Long, Set<BuildSite>> chunkCache = new HashMap<>();
 
     public BuildSiteCache(File cacheFolder) {
         this.cacheFolder = cacheFolder;
+        if (!cacheFolder.exists()) {
+            cacheFolder.mkdirs();
+        }
+        Bukkit.getPluginManager().registerEvents(this, Factions.get());
+    }
+
+    public BuildSite loadFromUUID(String uuid) {
+        File file = new File(cacheFolder, uuid + ".yml");
+        if (!file.exists()) {
+            return null;
+        }
+        if (sites.containsKey(uuid)) {
+            return sites.get(uuid);
+        }
+        BuildSite loaded;
+        try {
+            loaded = new BuildSite(file);
+        } catch (Exception e) {
+            FLogger.ERROR.log("Failed to load build site from file: " + file.getName());
+            return null;
+        }
+        sites.put(uuid, loaded);
+        return loaded;
+    }
+
+    public void addBuildSite(BuildSite site) {
+        sites.put(site.getUUIDString(), site);
+        long chunkKey = site.getInteractive().getChunk().getChunkKey();
+        Set<BuildSite> chunkSites = chunkCache.computeIfAbsent(chunkKey, k -> new HashSet<>());
+        chunkSites.add(site);
+    }
+
+    public void addToChunkCache(BuildSite site) {
+        long chunkKey = site.getInteractive().getChunk().getChunkKey();
+        Set<BuildSite> chunkSites = chunkCache.computeIfAbsent(chunkKey, k -> new HashSet<>());
+        chunkSites.add(site);
     }
 
     public Set<BuildSite> get(long chunkKey) {
-        return loaded.get(chunkKey);
+        return chunkCache.getOrDefault(chunkKey, new HashSet<>());
     }
 
-    public void add(BuildSite site, Chunk chunk) {
-        if (!loaded.containsKey(chunk.getChunkKey())) {
-            loaded.put(chunk.getChunkKey(), new HashSet<>());
-        }
-        loaded.get(chunk.getChunkKey()).add(site);
+    public boolean isInCache(UUID uuid) {
+        return sites.containsKey(uuid.toString());
     }
 
-    public void remove(BuildSite site, Chunk chunk) {
-        if (!loaded.containsKey(chunk.getChunkKey())) {
-            return;
-        }
-        loaded.get(chunk.getChunkKey()).remove(site);
-    }
-
-    public void saveAllPendingChunks() {
-        for (Long key : loaded.keySet()) {
-            saveForChunk(Bukkit.getWorlds().get(0).getChunkAt(key));
-        }
-    }
-
-    public boolean isLoaded(BuildSite site) {
-        return loaded.containsKey(site.getChunkKey());
-    }
-
-    public void saveForChunk(Chunk chunk) {
-        Set<BuildSite> sites = loaded.get(chunk.getChunkKey());
-        if (sites == null) {
-            return;
-        }
-        StringBuilder builder = new StringBuilder();
-        int i = 0;
-        for (BuildSite site : sites) {
-            try {
-                site.save(new File(cacheFolder, site.getUuid().toString() + ".yml"));
-            } catch (IOException e) {
-                FLogger.BUILDING.log("Failed to save build site " + site.getUuid() + " for chunk " + chunk + ": " + e.getMessage());
+    @EventHandler
+    private void onChunkLoad(ChunkLoadEvent event) {
+        long chunkKey = event.getChunk().getChunkKey();
+        Set<BuildSite> sites = chunkCache.get(chunkKey);
+        if (sites != null) {
+            for (BuildSite site : sites) {
+                site.onChunkLoad();
             }
-            builder.append(site.getUuid().toString()).append(";");
-            site.onChunkUnload();
-            i++;
         }
-        FLogger.BUILDING.log("Saved " + i + " build sites for " + chunk);
-        chunk.getPersistentDataContainer().set(KEY, PersistentDataType.STRING, builder.toString());
-        loaded.remove(chunk.getChunkKey());
     }
 
-
-    public void loadForChunk(Chunk chunk) {
-        if (!chunk.getPersistentDataContainer().has(KEY, PersistentDataType.STRING)) {
-            return;
-        }
-        String data = chunk.getPersistentDataContainer().get(KEY, PersistentDataType.STRING);
-        if (data == null) {
-            return;
-        }
-        String[] split = data.split(";");
-        Set<BuildSite> sites = new HashSet<>();
-        int i = 0;
-        for (String s : split) {
-            File file = new File(cacheFolder, s + ".yml");
-            if (!file.exists()) {
-                continue;
+    @EventHandler
+    private void onEntitiesLoad(EntitiesLoadEvent event) {
+        long chunkKey = event.getChunk().getChunkKey();
+        Set<BuildSite> sites = chunkCache.get(chunkKey);
+        if (sites != null) {
+            for (BuildSite site : sites) {
+                site.updateHolo();
             }
-            BuildSite site = new BuildSite(file);
-            sites.add(site);
-            site.onChunkLoad();
-            i++;
         }
-        MessageUtil.log("Loaded " + i + " build sites for " + chunk);
-        loaded.put(chunk.getChunkKey(), sites);
-        Factions.get().getRegionManager().getRegionByChunk(chunk).getBuildSites().addAll(sites);
     }
 
-
+    @EventHandler
+    private void onChunkUnload(ChunkLoadEvent event) {
+        long chunkKey = event.getChunk().getChunkKey();
+        Set<BuildSite> sites = chunkCache.get(chunkKey);
+        if (sites != null) {
+            for (BuildSite site : sites) {
+                site.onChunkUnload();
+            }
+        }
+    }
 }

@@ -42,7 +42,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,6 +61,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     private UUID uuid;
 
+    private File file;
     private Building building;
     private Region region;
     private Location corner;
@@ -94,46 +94,46 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     public BuildSite(@NotNull Building building, @NotNull Region region, @NotNull Location loc1, @NotNull Location loc2, @NotNull Location center) {
         this.building = building;
         this.region = region;
+        if (region.getOwner() == null) {
+            FLogger.BUILDING.log("Region owner is null for " + region.getName());
+            return;
+        }
         finished = false;
         corner = loc1;
         otherCorner = loc2;
-        interactive = center;
+        interactive = center.add(0, 1.5, 0);
         chunkKey = center.getChunk().getChunkKey();
         FLogger.BUILDING.log("Created new building site in " + this.region.getName() + ". Building type: " + building.getId());
         region.getBuildSites().add(this);
+        region.getOwner().getFactionBuildings().add(this);
         uuid = UUID.randomUUID();
-        plugin.getBuildSiteCache().add(this, center.getChunk());
         updateHolo();
-        if (region.getOwner() == null) {
-            FLogger.BUILDING.log("Region owner is null for " + region.getName());
+        BuildSiteCache cache = plugin.getBuildSiteCache();
+        if (!cache.isInCache(uuid)) {
+            cache.addBuildSite(this);
         }
     }
 
     public BuildSite(File file) {
-        try {
-            load(file);
-        } catch (IOException | InvalidConfigurationException | NullPointerException e) {
-            FLogger.BUILDING.log("Failed to load build site from file " + file.getName() + ". Error: " + e.getMessage());
-        }
+        this.file = file;
     }
 
     public void updateHolo() {
         if (progressHoloUUID != null) {
-            BukkitRunnable run = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    progressHolo = (TextDisplay) Bukkit.getEntity(progressHoloUUID);
-                }
-            };
-            run.runTask(plugin); // This is otherwise called on the chunk loading thread and throws an exception.
+            progressHolo = (TextDisplay) Bukkit.getEntity(progressHoloUUID);
         } else {
             progressHolo = interactive.getWorld().spawn(interactive, TextDisplay.class);
             progressHoloUUID = progressHolo.getUniqueId();
         }
+        if (progressHolo == null) {
+            progressHolo = interactive.getWorld().spawn(interactive, TextDisplay.class);
+            progressHoloUUID = progressHolo.getUniqueId();
+            return;
+        }
         progressHolo.setBillboard(Display.Billboard.CENTER);
         progressHolo.setDefaultBackground(false);
         progressHolo.setBackgroundColor(Color.fromARGB(0,0,0,0));
-        Component content = Component.translatable("building.buildings" + building.getId() + ".name").color(NamedTextColor.GOLD);
+        Component content = Component.translatable("building.buildings." + building.getId() + ".name").color(NamedTextColor.GOLD);
         content = content.append(Component.newline());
         if (!finished) {
             for (Material material : building.getRequiredBlocks().keySet()) {
@@ -153,13 +153,39 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
 
     public void finishBuilding() {
-        for (BuildingEffectData effect : building.getEffects()) {
-            getRegion().getOwner().getBuildingEffects().add(new BuildingEffect(effect, this));
+        this.buildingEffects.clear();
+        FLogger.BUILDING.log("Finishing building " + building.getId() + " for faction " + (getFaction() != null ? getFaction().getName() : "N/A") + " in region " + region.getName() + ". Instantiating effects.");
+
+        if (getFaction() == null) {
+            FLogger.BUILDING.log("Cannot finish building " + building.getId() + ": Faction owner is null for region " + region.getName());
+            this.problemMessage = "Cannot activate: No owning faction. Disbanded?";
+            this.hasTicket = true;
+            updateHolo();
+            return;
         }
+
+        if (building != null && building.getEffects() != null) {
+            for (BuildingEffectData effectData : building.getEffects()) {
+                BuildingEffect newEffectInstance = effectData.newEffect(this);
+                if (newEffectInstance != null) {
+                    this.buildingEffects.add(newEffectInstance);
+                    FLogger.BUILDING.log("Instantiated and added effect " + newEffectInstance.getClass().getSimpleName() + " for finished building " + building.getId());
+                } else {
+                    FLogger.BUILDING.log("Failed to instantiate effect from data: " + effectData.getId() + " for finished building " + building.getId());
+                }
+            }
+        }  else {
+            FLogger.BUILDING.log("Building or building effects list is null while finishing build site " + uuid + ". No effects instantiated.");
+        }
+
         finished = true;
         problemMessage = null;
         hasTicket = false;
+
+        setActive(true); // Activate the newly added effects
+
         getRegion().getOwner().sendTranslatable("factions.building.status.accepted", Component.text(getBuilding().getId()), Component.text(getRegion().getName()));
+        updateHolo();
     }
 
     public void removeEffects() {
@@ -327,7 +353,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     public boolean isInBuildSite(@NotNull Player player) {
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
-        Region rg = fPlayer.getLastRegion();
+        Region rg = fPlayer.getCurrentRegion();
         if (rg == null) {
             return false;
         }
@@ -659,9 +685,12 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     //
     // Serialization
     //
-    @Override
-    public void load(@NotNull File file) throws IOException, InvalidConfigurationException {
+    public void load() throws IOException, InvalidConfigurationException {
         super.load(file);
+        if (!file.exists()) {
+            FLogger.BUILDING.log("File " + file.getName() + " does not exist. Cannot load build site.");
+            return;
+        }
         uuid = UUID.fromString(file.getName().replace(".yml", ""));
         progressHoloUUID = UUID.fromString(getString("progressHoloUUID", "00000000-0000-0000-0000-000000000000"));
         building = buildingManager.getById(getString("building"));
@@ -672,6 +701,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         corner = Location.deserialize(getConfigurationSection("location.corner").getValues(false));
         otherCorner = Location.deserialize(getConfigurationSection("location.otherCorner").getValues(false));
         interactive = Location.deserialize(getConfigurationSection("location.interactable").getValues(false));
+        plugin.getBuildSiteCache().addToChunkCache(this);
         if (contains("sections")) {
             for (String id : getConfigurationSection("sections").getKeys(false)) {
                 ConfigurationSection section = getConfigurationSection("sections." + id);
@@ -732,14 +762,33 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         if (!finished) {
             scheduleProgressUpdate();
         }
-        plugin.getBuildSiteCache().add(this, interactive.getChunk());
-        for (BuildingEffectData data : building.getEffects()) {
-            data.newEffect(this);
+        FLogger.BUILDING.log("Loading effects for build site " + uuid + " (" + building.getId() + ")");
+        this.buildingEffects.clear();
+        if (building != null && building.getEffects() != null) {
+            for (BuildingEffectData data : building.getEffects()) {
+                try {
+                    FLogger.BUILDING.log("Loading effect " + data + " for " + uuid);
+                    BuildingEffect effect = data.newEffect(this);
+                    if (effect != null) {
+                        this.buildingEffects.add(effect);
+                        FLogger.BUILDING.log("Successfully loaded and added effect " + effect.getClass().getSimpleName() + " for " + uuid);
+                    } else {
+                        FLogger.BUILDING.log("Failed to create effect instance from data: " + data.getId() + " for " + uuid);
+                    }
+                } catch (Exception e) {
+                    FLogger.BUILDING.log("Failed to load building effect " + data.getId() + " for " + building.getId() + " in " + region.getName() + " (BuildSite UUID: " + uuid + ")");
+                }
+            }
+        } else {
+            FLogger.BUILDING.log("Building or building effects list is null for build site " + uuid + ". No effects loaded.");
         }
+
         if (finished && !isDestroyed()) {
+            FLogger.BUILDING.log("Build site " + uuid + " is finished and not destroyed, activating effects.");
             setActive(true);
+        } else {
+            FLogger.BUILDING.log("Build site " + uuid + " is not active (finished=" + finished + ", destroyed=" + isDestroyed() + "). Effects not activated by load().");
         }
-        updateHolo();
         FLogger.BUILDING.log("Loaded build site " + uuid + " for " + building.getId() + " in " + region.getName());
     }
 

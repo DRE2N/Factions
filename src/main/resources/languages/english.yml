@@ -618,6 +618,8 @@ gui:
       category:
         description: "<!i><gray>Click to view resources in this category."
       amount: "<!i><gray>Amount: <gold><arg:0> <dark_gray>/ <gold><arg:1>"
+      production: "<!i><gray>Production: <green>+<arg:0>"
+      totalConsumption: "<!i><gray>Total Consumption: <red>-<arg:0>"
   poll:
     nextPage:
       name: "<gold>Next Page</gold>"

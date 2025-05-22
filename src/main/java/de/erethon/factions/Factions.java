@@ -13,6 +13,7 @@ import de.erethon.bedrock.misc.Registry;
 import de.erethon.bedrock.plugin.EPlugin;
 import de.erethon.bedrock.plugin.EPluginSettings;
 import de.erethon.factions.alliance.AllianceCache;
+import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildSiteCache;
 import de.erethon.factions.building.BuildingManager;
 import de.erethon.factions.economy.population.entities.Councillor;
@@ -21,6 +22,7 @@ import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.TaxManager;
 import de.erethon.factions.economy.population.entities.Revolutionary;
+import de.erethon.factions.faction.Faction;
 import de.erethon.factions.faction.FactionCache;
 import de.erethon.factions.integrations.BoltIntegration;
 import de.erethon.factions.integrations.DiscordBotListener;
@@ -51,6 +53,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.minecraft.world.entity.EntityType;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitTask;
@@ -58,6 +61,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -246,6 +250,19 @@ public final class Factions extends EPlugin {
         regionManager.loadAll();
         portalManager.loadAll();
         fPlayerCache.loadAll();
+        FLogger.INFO.log("Loading building sites...");
+        for (Faction faction : factionCache.getCache().values()) {
+            int i = 0;
+            for (BuildSite site : faction.getFactionBuildings()) {
+                try {
+                    site.load();
+                    i++;
+                } catch (IOException | InvalidConfigurationException e) {
+                    FLogger.ERROR.log("Failed to load building site " + site.getUUIDString() + " for faction " + faction.getName() + ": " + e.getMessage());
+                }
+            }
+            FLogger.INFO.log("Loaded " + i + " building sites for faction " + faction.getName());
+        }
     }
 
     public void loadTaxManager() {
@@ -507,7 +524,6 @@ public final class Factions extends EPlugin {
         portalManager.saveAll();
         warHistory.saveAll();
         war.save();
-        buildSiteCache.saveAllPendingChunks();
         FLogger.save();
     }
 

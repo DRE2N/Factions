@@ -29,7 +29,7 @@ public class BuildingCommand extends FCommand {
             fPlayer.sendMessage(FMessage.ERROR_NO_PERMISSION.message());
             return;
         }
-        if (faction.getUnrestLevel() > 0) { // Can't build during unrest
+        if (faction.getUnrestLevel() > 0 && !fPlayer.isBypass()) { // Can't build during unrest
             fPlayer.sendMessage(Component.translatable("factions.error.unrest"));
             return;
         }

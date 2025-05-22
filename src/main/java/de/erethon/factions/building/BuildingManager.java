@@ -69,7 +69,7 @@ public class BuildingManager implements Listener {
                 FLogger.ERROR.log("Failed to register building item: " + ex.getMessage());
                 return;
             }
-            FLogger.BUILDING.log("Registered building item forwith key " + ITEM_ID + " as it previously didn't exist.");
+            FLogger.BUILDING.log("Registered building item for building with key " + ITEM_ID + " as it previously didn't exist.");
         }
     }
 
@@ -91,9 +91,9 @@ public class BuildingManager implements Listener {
             Building building;
             try {
                 if (file.getName().toLowerCase().contains("ploppable")) {
-                    building = new PloppableBuilding(file);
+                    building = new PloppableBuilding(file, this);
                 } else {
-                    building = new Building(file);
+                    building = new Building(file, this);
                 }
             }
             catch (Exception e) {
@@ -114,7 +114,7 @@ public class BuildingManager implements Listener {
     }
 
     public void deleteBuilding(@NotNull Player player) {
-        Region rg = plugin.getFPlayerCache().getByPlayer(player).getLastRegion();
+        Region rg = plugin.getFPlayerCache().getByPlayer(player).getCurrentRegion();
         if (rg == null) {
             MessageUtil.sendMessage(player, "&cNot in Region.");
             return;
@@ -178,13 +178,6 @@ public class BuildingManager implements Listener {
 
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent event) {
-        BukkitRunnable loadTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                plugin.getBuildSiteCache().loadForChunk(event.getChunk());
-            }
-        };
-        loadTask.runTaskAsynchronously(plugin);
         // Check if we need to spawn any NPCs
         Region region = plugin.getRegionManager().getRegionByChunk(event.getChunk());
         if (region == null) {
@@ -209,20 +202,9 @@ public class BuildingManager implements Listener {
                         owner.getName(),
                         owner.getUnrestLevel(),
                         revoltAttempts));
-                owner.getEconomy().spawnRevolt(owner, revoltAttempts);
+                owner.getEconomy().spawnRevolt(owner, Math.min(revoltAttempts, 10));
             }
         }
-    }
-
-    @EventHandler
-    public void onChunkUnload(ChunkUnloadEvent event) {
-        BukkitRunnable saveTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                plugin.getBuildSiteCache().saveForChunk(event.getChunk());
-            }
-        };
-        saveTask.runTaskAsynchronously(plugin);
     }
 
     public static ItemStack getBuildingItemStack(Building building, Faction faction, Player player) {
