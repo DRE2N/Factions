@@ -70,7 +70,7 @@ public class FPlayerListener implements Listener {
         if (fPlayer == null) {
             return;
         }
-        Region region = fPlayer.getLastRegion();
+        Region region = fPlayer.getCurrentRegion();
         if (region != null && (region.getType() == RegionType.WAR_ZONE || region.getType() == RegionType.CAPITAL)) {
             if (plugin.getFConfig().getCommandsDisabledInWarZone().contains(event.getMessage())) {
                 fPlayer.sendMessage(Component.translatable("factions.war.commandDisabled"));

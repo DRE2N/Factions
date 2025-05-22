@@ -75,7 +75,7 @@ public class EntityProtectionListener implements Listener {
             return;
         }
         Alliance dAlliance = fDefender.getAlliance();
-        Region defenderRegion = fDefender.getLastRegion();
+        Region defenderRegion = fDefender.getCurrentRegion();
         if (defenderRegion == null || defenderRegion.getAlliance() != dAlliance) {
             return;
         }

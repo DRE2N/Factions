@@ -408,7 +408,7 @@ public class Region extends FLegalEntity {
     public @NotNull Iterable<? extends Audience> audiences() {
         Set<Player> players = new HashSet<>();
         plugin.getFPlayerCache().forEach(player -> {
-            if (player.getLastRegion() == this) {
+            if (player.getCurrentRegion() == this) {
                 players.add(player.getPlayer());
             }
         });
@@ -418,7 +418,7 @@ public class Region extends FLegalEntity {
     public @NotNull Iterable<? extends Audience> friendlyAudiences() {
         Set<Player> players = new HashSet<>();
         plugin.getFPlayerCache().forEach(player -> {
-            if (player.getLastRegion() == this) {
+            if (player.getCurrentRegion() == this) {
                 if (player.getFaction() == null) {
                     return;
                 }

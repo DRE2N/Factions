@@ -45,7 +45,7 @@ public class WarListener implements Listener {
             return;
         }
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(event.getPlayer());
-        Region region = fPlayer.getLastRegion();
+        Region region = fPlayer.getCurrentRegion();
         if (region == null) {
             return;
         }
@@ -96,7 +96,7 @@ public class WarListener implements Listener {
         }
         FPlayer fKilled = plugin.getFPlayerCache().getByPlayer(event.getPlayer());
         FPlayer fKiller = plugin.getFPlayerCache().getByPlayer(killer);
-        if (fKilled.getLastRegion() != null && fKilled.getLastRegion().getType().isWarGround() && fKilled.getRelation(fKiller) != Relation.ENEMY) {
+        if (fKilled.getCurrentRegion() != null && fKilled.getCurrentRegion().getType().isWarGround() && fKilled.getRelation(fKiller) != Relation.ENEMY) {
             return;
         }
         // Update stats for the killed player

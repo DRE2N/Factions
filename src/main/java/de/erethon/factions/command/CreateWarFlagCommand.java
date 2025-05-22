@@ -42,7 +42,7 @@ public class CreateWarFlagCommand extends FCommand {
             if (!(sender instanceof Player player)) {
                 return null;
             }
-            Region region = plugin.getFPlayerCache().getByPlayer(player).getLastRegion();
+            Region region = plugin.getFPlayerCache().getByPlayer(player).getCurrentRegion();
             if (region == null) {
                 return null;
             }
