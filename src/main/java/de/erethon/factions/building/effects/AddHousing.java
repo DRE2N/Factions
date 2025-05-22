@@ -23,8 +23,8 @@ public class AddHousing extends BuildingEffect {
 
     public AddHousing(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
-        this.level = PopulationLevel.valueOf(data.getString("level", "NONE").toUpperCase());
-        attribute = faction.getOrCreateAttribute("housing_" + data.getString("level"), 0.0);
+        this.level = PopulationLevel.valueOf(data.getString("level", "PEASANT").toUpperCase());
+        attribute = faction.getOrCreateAttribute("housing_" + data.getString("level"), 1.0);
         modifier = new FactionAttributeModifier(data.getInt("amount", 0), AttributeModifier.Operation.ADD_NUMBER);
         citizenSpawnChance = data.getDouble("citizenSpawnChance", 0.1);
     }

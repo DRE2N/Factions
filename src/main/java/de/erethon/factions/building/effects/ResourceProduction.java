@@ -5,6 +5,8 @@ import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildingEffectData;
 import de.erethon.factions.building.attributes.FactionResourceAttribute;
 import de.erethon.factions.economy.resource.Resource;
+import de.erethon.factions.util.FLogger;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -16,9 +18,29 @@ public class ResourceProduction extends BuildingEffect {
 
     public ResourceProduction(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
-        for (String key : data.getConfigurationSection("production").getKeys(false)) {
-            Resource resource = Resource.valueOf(key.toUpperCase());
-            production.put(resource, data.getInt("production." + key));
+        if (!data.contains("production")) {
+            String errorMessage = "ResourceProduction effect is missing 'production' section in " + site.getBuilding().getId() +
+                    " for effect ID " + data.getId() + ". Config Data: " + data + " Path: " + data.getCurrentPath();
+            FLogger.ECONOMY.log(errorMessage);
+            for (String key : data.getKeys(false)) {
+                FLogger.ECONOMY.log(key + ": " + data.get(key));
+            }
+            throw new IllegalArgumentException(errorMessage);
+        }
+        ConfigurationSection productionConfig = data.getConfigurationSection("production");
+        if (productionConfig == null) {
+            String errorMessage = "ResourceProduction effect's 'production' section resolved to null in " + site.getBuilding().getId() +
+                    " for effect ID " + data.getId() + ". Config Data: " + data;
+            FLogger.ECONOMY.log(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+        for (String key : productionConfig.getKeys(false)) {
+            try {
+                Resource resource = Resource.valueOf(key.toUpperCase());
+                production.put(resource, productionConfig.getInt(key));
+            } catch (IllegalArgumentException e) {
+                FLogger.ECONOMY.log("Invalid resource key '" + key + "' in production section for " + site.getBuilding().getId() + ", effect " + data.getId());
+            }
         }
     }
 

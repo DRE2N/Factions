@@ -4,6 +4,7 @@ import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildingEffectData;
 import de.erethon.factions.building.attributes.FactionResourceAttribute;
 import de.erethon.factions.economy.resource.Resource;
+import de.erethon.factions.util.FLogger;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,6 +50,7 @@ public class BlockDependentResourceProduction extends ResourceProduction {
                     FactionResourceAttribute.class,
                     () -> new FactionResourceAttribute(entry.getKey(), 0.0)
             );
+            FLogger.ECONOMY.log("Adding " + entry.getKey().name() + " to " + attribute + " with amount " + entry.getValue() + " from " + site.getBuilding().getId());
             attribute.setBaseValue(attribute.getBaseValue() + entry.getValue());
         }
     }
