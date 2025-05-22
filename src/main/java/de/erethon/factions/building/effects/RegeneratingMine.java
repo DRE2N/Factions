@@ -37,7 +37,7 @@ public class RegeneratingMine extends BuildingEffect {
             }
         }
         loadEntriesFromConfig();
-        regenInterval = effect.getLong("regenInterval", 60) * 1000 * 60;
+        regenInterval = effect.getConfig().getLong("regenInterval", 60) * 1000 * 60;
         BukkitRunnable task = new BukkitRunnable() {
             @Override
             public void run() {

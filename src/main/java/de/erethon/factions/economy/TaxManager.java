@@ -24,6 +24,9 @@ public class TaxManager {
         if (factionTaxTask != null) {
             factionTaxTask.cancel();
         }
+        if (factionTaxTask == null) { // Only run it when its actually triggered by the scheduler
+            return;
+        }
         taxFactions();
         ZonedDateTime now = FUtil.getDateTime();
         ZonedDateTime taxTime = FUtil.getNoonDateTime();

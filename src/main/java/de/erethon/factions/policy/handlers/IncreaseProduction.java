@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class IncreaseProduction implements FPolicyHandler {
 
-    final FactionAttributeModifier modifier = new FactionAttributeModifier(0.2, AttributeModifier.Operation.ADD_NUMBER);
+    final FactionAttributeModifier modifier = new FactionAttributeModifier(0.2, AttributeModifier.Operation.ADD_NUMBER, true);
 
     @Override
     public void apply(@NotNull FLegalEntity entity) {

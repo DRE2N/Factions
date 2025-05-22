@@ -24,7 +24,7 @@ public class ChangeAttribute extends BuildingEffect {
         value = data.getInt("value", 1);
         attribute = faction.getOrCreateAttribute(data.getString("attribute"), value);
         AttributeModifier.Operation operation = AttributeModifier.Operation.valueOf(data.getString("operation", "ADD_NUMBER").toUpperCase());
-        modifier = new FactionAttributeModifier(UUID.randomUUID(), value, operation);
+        modifier = new FactionAttributeModifier(value, operation);
     }
 
     @Override

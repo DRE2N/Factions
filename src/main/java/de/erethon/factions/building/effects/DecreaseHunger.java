@@ -41,7 +41,7 @@ public class DecreaseHunger extends BuildingEffect implements Listener {
             return;
         }
         FPlayer fPlayer = Factions.get().getFPlayerCache().getByPlayer(player);
-        if (fPlayer.getFaction() != site.getRegion().getFaction() || fPlayer.getLastRegion() != site.getRegion()) {
+        if (fPlayer.getFaction() != site.getRegion().getFaction() || fPlayer.getCurrentRegion() != site.getRegion()) {
             return;
         }
         int from = player.getFoodLevel();

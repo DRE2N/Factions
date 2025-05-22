@@ -17,10 +17,10 @@ public class AddHappiness extends BuildingEffect {
     public AddHappiness(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
         HashMap<PopulationLevel, Double> levels = new HashMap<>();
-        for (String level : data.getConfigurationSection("levels").getKeys(false)) {
-            levels.put(PopulationLevel.valueOf(level), data.getDouble("levels." + level));
+        for (String level : data.getConfig().getConfigurationSection("levels").getKeys(false)) {
+            levels.put(PopulationLevel.valueOf(level), data.getConfig().getDouble("levels." + level));
         }
-        modifier = new HappinessModifier(data.getString("name") + site.getBuilding().getId(), Component.translatable("factions.buildings.building." + site.getBuilding().getId() + ".name"), levels);
+        modifier = new HappinessModifier(data.getConfig().getString("name") + site.getBuilding().getId(), Component.translatable("factions.buildings.building." + site.getBuilding().getId() + ".name"), levels);
     }
 
     @Override

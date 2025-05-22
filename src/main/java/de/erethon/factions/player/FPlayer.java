@@ -79,6 +79,9 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         super(Factions.getPlayerFile(uuid), CONFIG_VERSION);
         this.uuid = uuid;
         this.player = Bukkit.getPlayer(uuid);
+        if (player != null && plugin.getRegionManager().getRegionByPlayer(player) != null) {
+            this.lastRegion = plugin.getRegionManager().getRegionByPlayer(player);
+        }
         load();
     }
 
@@ -87,6 +90,9 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         this.player = player;
         this.uuid = player.getUniqueId();
         this.lastName = player.getName();
+        if (plugin.getRegionManager().getRegionByPlayer(player) != null) {
+            this.lastRegion = plugin.getRegionManager().getRegionByPlayer(player);
+        }
         load();
     }
 

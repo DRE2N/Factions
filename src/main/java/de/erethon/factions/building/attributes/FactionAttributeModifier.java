@@ -8,10 +8,14 @@ import java.util.UUID;
 /**
  * @author Malfrador
  */
-public record FactionAttributeModifier(@NotNull UUID uuid, double modifier, @NotNull AttributeModifier.Operation operation) implements Comparable<FactionAttributeModifier> {
+public record FactionAttributeModifier(@NotNull UUID uuid, double modifier, @NotNull AttributeModifier.Operation operation, boolean paydayPersistent) implements Comparable<FactionAttributeModifier> {
 
     public FactionAttributeModifier(double modifier, @NotNull AttributeModifier.Operation operation) {
-        this(UUID.randomUUID(), modifier, operation);
+        this(UUID.randomUUID(), modifier, operation, false);
+    }
+
+    public FactionAttributeModifier(double modifier, @NotNull AttributeModifier.Operation operation, boolean paydayPersistent) {
+        this(UUID.randomUUID(), modifier, operation, paydayPersistent);
     }
 
     public double apply(double value) {
@@ -22,6 +26,10 @@ public record FactionAttributeModifier(@NotNull UUID uuid, double modifier, @Not
             case MULTIPLY_SCALAR_1 -> newValue *= 1 + modifier;
         }
         return newValue;
+    }
+
+    public boolean isPaydayPersistent() {
+        return paydayPersistent;
     }
 
     @Override

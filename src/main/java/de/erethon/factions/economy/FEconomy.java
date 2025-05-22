@@ -3,6 +3,7 @@ package de.erethon.factions.economy;
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.attributes.FactionAttribute;
+import de.erethon.factions.building.attributes.FactionAttributeModifier;
 import de.erethon.factions.building.attributes.FactionResourceAttribute;
 import de.erethon.factions.economy.population.HappinessModifier;
 import de.erethon.factions.economy.population.PopulationLevel;
@@ -15,6 +16,7 @@ import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -69,6 +71,14 @@ public class FEconomy {
      * This is calculated during resource consumption.
      */
     private final Map<PopulationLevel, Map<Resource, Double>> resourceSatisfaction = new HashMap<>();
+    /**
+     * Stores the last consumption values for each population level. This is mostly for user feedback.
+     */
+    private final Map<PopulationLevel, Map<Resource, Double>> lastConsumption = new HashMap<>();
+    /**
+     * Stores the last production values for each resource. This is mostly for user feedback.
+     */
+    private final Map<Resource, Double> lastProduction = new HashMap<>();
 
     /**
      * Constructs the economy system for a given faction.
@@ -82,15 +92,30 @@ public class FEconomy {
     }
 
     public void doEconomyCalculations() {
+        // Reset all modifiers for the resources. Buildings will add their own modifiers in the payday cycle.
+        for (Map.Entry<String, FactionAttribute> entry : faction.getAttributes().entrySet()) {
+            if (entry.getValue() instanceof FactionResourceAttribute attribute) {
+                Set<FactionAttributeModifier> toRemove = new HashSet<>();
+                for (FactionAttributeModifier modifier : attribute.getModifiers()) {
+                    if (modifier.isPaydayPersistent()) {
+                        continue;
+                    }
+                    toRemove.add(modifier);
+                }
+                toRemove.forEach(attribute::removeModifier);
+            }
+        }
+
         doBuildingStuff();
 
-        // Produce resources from buildings
+        // Produce resources from buildings. We do this via modifiers so that we can have production chains
         for (Map.Entry<String, FactionAttribute> entry : faction.getAttributes().entrySet()) {
             if (entry.getValue() instanceof FactionResourceAttribute attribute) {
                 Resource resource = attribute.getResource();
                 double factor = faction.getAttributeValue("production_rate", 1.0);
                 double amount = attribute.apply().getValue() * factor;
                 storage.addResource(resource, (int) amount);
+                lastProduction.put(resource, amount);
                 FLogger.ECONOMY.log("[" + faction.getName() + "] Received/Lost " + amount + " of " + resource.name());
             }
         }
@@ -141,6 +166,7 @@ public class FEconomy {
                 satisfactionMap.put(resource, satisfaction);
                 // Consume resource up to the required amount
                 storage.removeResource(resource, (int) Math.min(available, required));
+                lastConsumption.computeIfAbsent(level, k -> new HashMap<>()).put(resource, Math.min(available, required));
                 FLogger.ECONOMY.log("[" + faction.getName() + "] Consumed " + Math.min(available, required)
                         + " of " + resource.name() + " for " + currentPop + " " + level.name()
                         + " population. Satisfaction: " + satisfaction + " Available: " + available + " / Required: " + required);
@@ -476,7 +502,7 @@ public class FEconomy {
                         faction.getName(),
                         totalUnrest,
                         revoltAttempts));
-                spawnRevolt(faction, revoltAttempts);
+                spawnRevolt(faction, Math.min(revoltAttempts, 100));
             }
         } else if (totalUnrest > 0) {
             FLogger.ECONOMY.log(String.format("[%s] Current unrest level is %.2f (below revolt threshold of %.2f).",
@@ -578,7 +604,12 @@ public class FEconomy {
     }
 
     public  Map<PopulationLevel, Map<Resource, Double>> getResourceSatisfaction() {
-        return  resourceSatisfaction;
+        if (resourceSatisfaction.isEmpty()) {
+            for (PopulationLevel level : PopulationLevel.values()) {
+                resourceSatisfaction.put(level, new HashMap<>());
+            }
+        }
+        return resourceSatisfaction;
     }
 
     /**
@@ -688,7 +719,7 @@ public class FEconomy {
                     int zInChunkBlocks = random.nextInt(16);
                     int xInWorld = chunkX * 16 + xInChunkBlocks;
                     int zInWorld = chunkZ * 16 + zInChunkBlocks;
-                    org.bukkit.Location spawnLocation = world.getHighestBlockAt(xInWorld, zInWorld).getLocation().add(0.5, 0, 0.5); // Center on block
+                    org.bukkit.Location spawnLocation = world.getHighestBlockAt(xInWorld, zInWorld).getLocation().add(0.5, 0, 0.5);
 
                     Revolutionary rev = new Revolutionary(faction, spawnLocation);
                     ((org.bukkit.craftbukkit.CraftWorld) world).getHandle().addFreshEntity(rev);
@@ -704,6 +735,36 @@ public class FEconomy {
         } else {
             faction.setOngoingRevolt(true);
         }
+    }
+
+    public double getLastProduction(Resource resource) {
+        return lastProduction.getOrDefault(resource, 0.0);
+    }
+
+    public double getLastConsumption(PopulationLevel level, Resource resource) {
+        return lastConsumption.getOrDefault(level, new HashMap<>()).getOrDefault(resource, 0.0);
+    }
+
+    public Set<Resource> getAllConsumedResourcesForLevel(PopulationLevel level) {
+        Map<Resource, Double> consumed = lastConsumption.get(level);
+        if (consumed == null) {
+            return Collections.emptySet();
+        }
+        Set<Resource> consumedResources = new HashSet<>();
+        for (Resource resource : consumed.keySet()) {
+            if (consumed.get(resource) > 0) {
+                consumedResources.add(resource);
+            }
+        }
+        return consumedResources;
+    }
+
+    public double getLastTotalConsumption(Resource resource) {
+        double totalConsumption = 0.0;
+        for (Map<Resource, Double> consumption : lastConsumption.values()) {
+            totalConsumption += consumption.getOrDefault(resource, 0.0);
+        }
+        return totalConsumption;
     }
 
     public Component getFittingCitizenGossip(PopulationLevel level) {

@@ -39,7 +39,7 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
         Factions plugin = Factions.get();
         this.fPlayer = plugin.getFPlayerCache().getByPlayer(player);
         this.faction = fPlayer.getFaction();
-        this.region = fPlayer.getLastRegion();
+        this.region = fPlayer.getCurrentRegion();
         if (region == null || faction == null) {
             player.sendMessage(FMessage.ERROR_REGION_NOT_FOUND.message());
             return;

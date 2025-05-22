@@ -11,7 +11,11 @@ import de.erethon.factions.region.schematic.SchematicSavable;
 import de.erethon.factions.war.entities.CrystalChargeCarrier;
 import de.erethon.factions.war.entities.CrystalMob;
 import de.erethon.factions.war.structure.WarStructure;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
+import net.minecraft.world.inventory.MenuType;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -51,15 +55,11 @@ public class DebugCommand extends FCommand {
             CrystalMob crystalMob = new CrystalMob(player.getWorld(), player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ());
             return;
         }
-        if (args[1].equalsIgnoreCase("revolt")) {
+        if (args[1].equalsIgnoreCase("test")) {
             Player player = (Player) sender;
-            Faction faction = getFPlayer(player).getFaction();
-            if (faction == null) {
-                MessageUtil.sendMessage(player, "no faction");
-                return;
-            }
-            faction.getEconomy().spawnRevolt(faction, Integer.parseInt(args[2]));
-            MessageUtil.sendMessage(player, "Revolution!");
+            ClientboundOpenScreenPacket packet = new ClientboundOpenScreenPacket(0, MenuType.GENERIC_9x1, Component.empty());
+            CraftPlayer craftPlayer = (CraftPlayer) player;
+            craftPlayer.getHandle().connection.send(packet);
             return;
         }
         if (args[1].equalsIgnoreCase("setfactionalliance")) {

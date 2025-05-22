@@ -20,11 +20,8 @@ public class ResourceProduction extends BuildingEffect {
         super(data, site);
         if (!data.contains("production")) {
             String errorMessage = "ResourceProduction effect is missing 'production' section in " + site.getBuilding().getId() +
-                    " for effect ID " + data.getId() + ". Config Data: " + data + " Path: " + data.getCurrentPath();
+                    " for effect ID " + data.getId() + ". Config Data: " + data + " Path: " + data.getConfig().getCurrentPath();
             FLogger.ECONOMY.log(errorMessage);
-            for (String key : data.getKeys(false)) {
-                FLogger.ECONOMY.log(key + ": " + data.get(key));
-            }
             throw new IllegalArgumentException(errorMessage);
         }
         ConfigurationSection productionConfig = data.getConfigurationSection("production");

@@ -26,8 +26,8 @@ public class PloppableBuilding extends Building {
     private boolean shouldUndo = false;
     private int time = 0;
 
-    public PloppableBuilding(File file) {
-        super(file);
+    public PloppableBuilding(File file, BuildingManager manager) {
+        super(file, manager);
     }
 
     public void paste(Player player) {

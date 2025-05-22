@@ -11,6 +11,7 @@ public class PaydayCommand extends FCommand {
         setDescription("Payday command for debugging mostly.");
         setUsage("/f payday");
         setAliases("pd");
+        setConsoleCommand(true);
         setPermissionFromName();
     }
     @Override

@@ -37,7 +37,7 @@ public class BuildingTicketCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         Player player = (Player) sender;
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
-        Region region = fPlayer.getLastRegion();
+        Region region = fPlayer.getCurrentRegion();
         if (region == null) {
             MessageUtil.sendMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
             return;
