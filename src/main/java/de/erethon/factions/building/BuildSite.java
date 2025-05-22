@@ -133,7 +133,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         progressHolo.setBillboard(Display.Billboard.CENTER);
         progressHolo.setDefaultBackground(false);
         progressHolo.setBackgroundColor(Color.fromARGB(0,0,0,0));
-        Component content = Component.translatable("building.buildings." + building.getId() + ".name").color(NamedTextColor.GOLD);
+        Component content = Component.translatable("factions.building.buildings." + building.getId() + ".name").color(NamedTextColor.GOLD);
         content = content.append(Component.newline());
         if (!finished) {
             for (Material material : building.getRequiredBlocks().keySet()) {

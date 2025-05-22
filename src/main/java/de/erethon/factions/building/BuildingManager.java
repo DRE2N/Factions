@@ -138,6 +138,16 @@ public class BuildingManager implements Listener {
         return null;
     }
 
+    public Set<BuildSite> getBuildSites(@NotNull Location loc, @NotNull Region region) {
+        Set<BuildSite> buildSites = new HashSet<>();
+        for (BuildSite buildSite : region.getBuildSites()) {
+            if (buildSite.isInBuildSite(loc)) {
+                buildSites.add(buildSite);
+            }
+        }
+        return buildSites;
+    }
+
     public boolean hasOverlap(@NotNull Location corner1, @NotNull Location corner2, @NotNull BuildSite existingSite) {
         return existingSite.isInBuildSite(corner1) || existingSite.isInBuildSite(corner2);
     }

@@ -17,6 +17,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class BuildingTicketCommand extends FCommand {
     Factions plugin = Factions.get();
@@ -26,7 +27,7 @@ public class BuildingTicketCommand extends FCommand {
         setCommand("buildingticket");
         setAliases("ticket", "tickets");
         setMinArgs(0);
-        setMaxArgs(3);
+        setMaxArgs(-1);
         setPermissionFromName();
         setPlayerCommand(true);
         setConsoleCommand(false);
@@ -68,30 +69,44 @@ public class BuildingTicketCommand extends FCommand {
         }
 
         if (args[1].equals("accept")) {
-            BuildSite site = buildingManager.getBuildSite(player.getLocation(), region);
-            if (site == null || site.isFinished()) {
-                MessageUtil.sendMessage(player, "&cDu stehst nicht in einem unfertigen Gebäude.");
+            Set<BuildSite> sites = buildingManager.getBuildSites(player.getLocation(), region);
+            for (BuildSite site : sites) {
+                if (site == null || site.isFinished()) {
+                    MessageUtil.sendMessage(player, "&cÜbersprungen: " + site.getBuilding().getId() + " ist bereits fertig.");
+                    continue;
+                }
+                if (!site.getMissingSections().isEmpty()) {
+                    MessageUtil.sendMessage(player, "&cFolgendem Gebäude fehlen Sektionen: " + site.getBuilding().getId());
+                    MessageUtil.sendMessage(player, "&cEs fehlen folgende: " + FUtil.stringArrayToString(site.getMissingSections().toArray(new String[0])));
+                    return;
+                }
+                site.finishBuilding();
+                plugin.getBuildingManager().getBuildingTickets().remove(site);
+                MessageUtil.sendMessage(player, "&aGebäude " + site.getBuilding().getId() + " erfolgreich angenommen.");
+                MessageUtil.log(player.getName() + " accepted a BuildSite ticket for " + site.getBuilding().getId() + " in " + site.getRegion().getName());
                 return;
             }
-            if (!site.getMissingSections().isEmpty()) {
-                MessageUtil.sendMessage(player, "&cEs fehlen folgende Sektionen: " + FUtil.stringArrayToString(site.getMissingSections().toArray(new String[0])));
-                return;
-            }
-            site.finishBuilding();
-            plugin.getBuildingManager().getBuildingTickets().remove(site);
-            MessageUtil.sendMessage(player, "&aGebäude akzeptiert.");
-            MessageUtil.log(player.getName() + " accepted a BuildSite ticket for " + site.getBuilding().getId() + " in " + site.getRegion().getName());
-            return;
         }
 
         if (args[1].equals("deny")) {
-            BuildSite site = buildingManager.getBuildSite(player.getLocation(), region);
-            if (site == null || site.isFinished()) {
-                MessageUtil.sendMessage(player, "&cDu stehst nicht in einem unfertigen Gebäude.");
+            if (args.length < 3) {
+                MessageUtil.sendMessage(player, "&cBitte gebe eine UUID an. /f ticket deny <UUID> <Nachricht>");
                 return;
             }
-            if (args.length < 3) {
-                MessageUtil.sendMessage(player, "&cBitte gebe eine Nachricht an. /f ticket deny <Nachricht>");
+            if (args.length < 4) {
+                MessageUtil.sendMessage(player, "&cBitte gebe eine Nachricht an. /f ticket deny <UUID> <Nachricht>");
+                return;
+            }
+            Set<BuildSite> sites = buildingManager.getBuildSites(player.getLocation(), region);
+            BuildSite site = null;
+            for (BuildSite s : sites) {
+                if (s.getUUIDString().equals(args[2])) {
+                    site = s;
+                    break;
+                }
+            }
+            if (site == null || site.isFinished()) {
+                MessageUtil.sendMessage(player, "&cDu stehst nicht in einem unfertigen Gebäude.");
                 return;
             }
             String msg = "";
@@ -112,8 +127,18 @@ public class BuildingTicketCommand extends FCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, String[] args) {
-        if (args.length == 1) {
+        if (args.length == 2) {
             return List.of("tp", "accept", "deny");
+        }
+        if (args[1].equals("deny")) {
+            Player player = (Player) sender;
+            FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
+            Region region = fPlayer.getCurrentRegion();
+            List<String> uuids = new ArrayList<>();
+            for (BuildSite site : buildingManager.getBuildSites(player.getLocation(), region)) {
+                uuids.add(site.getUUIDString());
+            }
+            return uuids;
         }
         return super.onTabComplete(sender, args);
     }

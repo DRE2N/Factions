@@ -30,7 +30,7 @@ public class BuildingSectionCommand extends FCommand {
         }
         Player player = (Player) sender;
         FPlayer fPlayer = getFPlayer(player);
-        switch (args[0].toLowerCase()) {
+        switch (args[3].toLowerCase()) {
             case "create" -> {
                 createSection(fPlayer, args);
             }

@@ -12,8 +12,6 @@ import org.bukkit.inventory.ItemStack;
 
 public class BuildingAdminCommand extends FCommand {
 
-    // TODO: Temp for testing until we have NPCs or GUIs something else for selecting buildings
-
     public BuildingAdminCommand() {
         setCommand("buildingadmin");
         setAliases("ba");
@@ -23,6 +21,7 @@ public class BuildingAdminCommand extends FCommand {
         setFUsage("/f buildingadmin");
         setDescription("...");
         addSubCommand(new BuildingSectionCommand());
+        setAllExecutionPrefixes();
     }
 
     @Override
@@ -33,7 +32,7 @@ public class BuildingAdminCommand extends FCommand {
             return;
         }
         if (args.length == 1) {
-            fPlayer.sendMessage("Usage: /f building <list|add|remove> <id>");
+            fPlayer.sendMessage("Usage: /f building <list|add|remove|section> <id>");
             return;
         }
         BuildSiteCache cache = Factions.get().getBuildSiteCache();
