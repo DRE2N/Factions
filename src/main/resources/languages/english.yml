@@ -689,6 +689,10 @@ region:
     owner: "<gray>Owner<dark_gray>:<gray> <arg:0><br>"
     description: "<gray>Description<dark_gray>:<gray> <arg:0><br>"
     buildings: "<gray>Buildings<dark_gray>:<gray> <arg:0><br>"
+tutorial:
+  building:
+    first_build_site: "<green>You have created your first build site! At the center, you will see the required blocks. Place them within the area to complete the build site."
+    first_site_completed: "Congrats, you completed your first build site. It is now waiting for approval. As soon as it has been approved, its effects will become active."
 ui:
   region:
     displayName: "<gold><arg:0></gold>"

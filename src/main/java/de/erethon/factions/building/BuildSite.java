@@ -5,6 +5,7 @@ import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.util.FTutorial;
 import de.erethon.factions.util.FUtil;
 import de.erethon.factions.util.IntRange;
 import io.papermc.paper.math.Position;
@@ -276,6 +277,9 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                     getRegion().getOwner().sendTranslatable("factions.building.status.completed.info", Component.text(getBuilding().getId()), Component.text(getRegion().getName()));
                     getRegion().getOwner().sendTranslatable("factions.building.status.completed.ticketHint");
                     FLogger.BUILDING.log("A new BuildSite ticket for " + getBuilding().getId() + " in " + getRegion().getName() + " was created.");
+                    for (Player player : interactive.getNearbyPlayers(16)) {
+                        FTutorial.showHint(player, "building.first_site_completed");
+                    }
                 }
             }
         };

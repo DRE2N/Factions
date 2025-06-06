@@ -15,6 +15,7 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.region.RegionType;
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.util.FTutorial;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -92,6 +93,7 @@ public class Building {
         pay(faction);
         new BuildSite(this, region, getCorner1(center), getCorner2(center), center);
         MessageUtil.sendMessage(player, FMessage.BUILDING_SITE_CREATED.getMessage());
+        FTutorial.showHint(player, "building.first_build_site");
     }
 
     public Set<RequirementFail> checkRequirements(@NotNull Player player, @Nullable Faction faction, @NotNull Location loc) {

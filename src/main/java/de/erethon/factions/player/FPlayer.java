@@ -41,9 +41,11 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -68,6 +70,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     private long lastAllianceJoinDate;
     private long lastFactionJoinDate;
     private WarStats warStats;
+    private List<String> seenHints = new ArrayList<>();
     /* Functionality */
     private final Set<WarStructure> activeWarStructures = new HashSet<>();
     private final AutomatedChunkManager automatedChunkManager = new AutomatedChunkManager(this);
@@ -108,6 +111,11 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         lastAllianceJoinDate = config.getLong("lastAllianceJoinDate", lastAllianceJoinDate);
         lastFactionJoinDate = config.getLong("lastFactionJoinDate", lastFactionJoinDate);
         warStats = new WarStats(config.getConfigurationSection("warStats"));
+        if (config.contains("seenHints")) {
+            seenHints = config.getStringList("seenHints");
+        } else {
+            seenHints = new ArrayList<>();
+        }
     }
 
     /* LoadableUser methods */
@@ -150,6 +158,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         config.set("lastAllianceJoinDate", lastAllianceJoinDate);
         config.set("lastFactionJoinDate", lastFactionJoinDate);
         config.set("warStats", warStats.serialize());
+        config.set("seenHints", seenHints);
         save();
     }
 
@@ -456,6 +465,16 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         if (permissionAttachment != null) {
             player.removeAttachment(permissionAttachment);
             permissionAttachment = null;
+        }
+    }
+
+    public boolean hasSeenHint(@NotNull String hint) {
+        return seenHints.contains(hint);
+    }
+
+    public void addSeenHint(@NotNull String hint) {
+        if (!seenHints.contains(hint)) {
+            seenHints.add(hint);
         }
     }
 
