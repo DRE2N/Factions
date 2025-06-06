@@ -301,6 +301,11 @@ cmd:
       deleted: "<green>You have removed section <dark_green><arg:0></dark_green> from the build site."
       list: "<green>Sections<dark_gray>:<gray> <arg:0>"
       renamed: "<green>You have renamed section <dark_green><arg:0></dark_green> to <dark_green><arg:1></dark_green>."
+  create:
+    alreadyPending: "<red>There is already a faction creation request pending. Please confirm it with <green>/f create confirm</green> or cancel it with <red>/f create cancel</red>."
+    cancel: "<red>The faction creation request has been cancelled."
+    confirm: "<gray>Type <green>/f create confirm</green> to confirm creating the faction <gold><arg:0></gold>. <newline><gray>Type <red>/f create cancel</red> to cancel creation."
+    notice: "<newline><gray><i>Please note that faction names must fit into the lore of the server. <newline><gray>Factions with inappropriate names will be forcefully renamed."
   createWarFlag:
     success: "<green>A war flag has been added to war object <dark_green><arg:0></dark_green>."
   decline:
