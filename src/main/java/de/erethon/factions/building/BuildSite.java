@@ -18,6 +18,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -33,6 +34,7 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -60,7 +62,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     Factions plugin = Factions.get();
     BuildingManager buildingManager = plugin.getBuildingManager();
 
-    private UUID uuid;
+        private UUID uuid;
 
     private File file;
     private Building building;
@@ -84,6 +86,8 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     private final Set<ItemStack> inputItems = new HashSet<>();
     private final Set<ItemStack> outputItems = new HashSet<>();
+    private boolean requiresInputChest = false;
+    private boolean requiresOutputChest = false;
     private final Set<Position> chestPositions = new HashSet<>();
     private final HashMap<String, String> additionalData = new HashMap<>();
 
@@ -91,6 +95,8 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     private int blockChangeCounter = 0;
     private TextDisplay progressHolo;
+    private Location inputChestLocation;
+    private Location outputChestLocation;
 
     public BuildSite(@NotNull Building building, @NotNull Region region, @NotNull Location loc1, @NotNull Location loc2, @NotNull Location center) {
         this.building = building;
@@ -433,6 +439,27 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     //
     // Event handlers
     //
+
+    @EventHandler
+    private void onInteract(PlayerInteractEvent event) {
+        if (event.getClickedBlock() == null || event.getClickedBlock().getType() != Material.TRAPPED_CHEST) {
+            return;
+        }
+        if (event.getClickedBlock().getLocation().equals(inputChestLocation)) {
+
+        }
+        if (event.getClickedBlock().getLocation().equals(outputChestLocation)) {
+            event.setCancelled(true);
+            createInventoryFromStorage();
+            Player player = event.getPlayer();
+            if (inventory == null) {
+                player.sendMessage(Component.translatable("factions.building.storage.error").color(NamedTextColor.RED));
+                return;
+            }
+            player.openInventory(inventory);
+        }
+    }
+
     @EventHandler
     private void onInventoryClick(InventoryClickEvent event) {
         if (event.getInventory().getHolder(false) != this) {
@@ -518,6 +545,10 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         return interactive;
     }
 
+    public World getWorld() {
+        return interactive.getWorld();
+    }
+
     public @NotNull Map<Material, Integer> getPlacedBlocks() {
         return placedBlocks;
     }
@@ -528,6 +559,14 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     public void setProblemMessage(@NotNull String msg) {
         problemMessage = msg;
+    }
+
+    public void setRequiresInputChest(boolean requiresInputChest) {
+        this.requiresInputChest = requiresInputChest;
+    }
+
+    public void setRequiresOutputChest(boolean requiresOutputChest) {
+        this.requiresOutputChest = requiresOutputChest;
     }
 
     /**
@@ -555,6 +594,23 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     }
 
     public Set<ItemStack> getInputItems() {
+        if (inputChestLocation == null) {
+            return new HashSet<>();
+        }
+        if ((inputChestLocation.getBlock().getType() != Material.TRAPPED_CHEST && inputChestLocation.getBlock().getType() != Material.CHEST)) {
+            FLogger.BUILDING.log("Input chest location is not a chest: " + inputChestLocation);
+            return new HashSet<>();
+        }
+        Chest inputChest = (Chest) inputChestLocation.getBlock().getState();
+        Inventory inv = inputChest.getInventory();
+        Set<ItemStack> items = new HashSet<>();
+        for (ItemStack item : inv.getContents()) {
+            if (item != null && item.getType() != Material.AIR) {
+                items.add(item);
+            }
+        }
+        inputItems.clear();
+        inputItems.addAll(items);
         return inputItems;
     }
 
@@ -564,6 +620,10 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     public Set<BuildingEffect> getEffects() {
         return buildingEffects;
+    }
+
+    public Set<Position> getChestLocations() {
+        return chestPositions;
     }
 
     public boolean isActive() {
@@ -580,6 +640,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
             for (BuildingEffect effect : buildingEffects) {
                 effect.apply();
             }
+            onChunkLoad(); // Create chests etc if they don't exist yet
         }
     }
 
@@ -674,6 +735,27 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         for (BuildingEffect effect : buildingEffects) {
             effect.onChunkLoad();
         }
+        if (inputChestLocation == null || outputChestLocation == null) {
+            Location interactiveLocation = getInteractive();
+            if (getNamedPositions().containsKey("input_chest")) {
+                inputChestLocation = getNamedPositions().get("input_chest").toLocation(getWorld());
+            } else if (requiresInputChest) {
+                inputChestLocation = interactiveLocation.clone().add(0, 0, 1);
+                inputChestLocation.getBlock().setType(Material.TRAPPED_CHEST);
+                Chest inputChest = (Chest) inputChestLocation.getBlock().getState();
+                inputChest.customName(Component.translatable("factions.building.common.input_chest"));
+                getNamedPositions().put("input_chest", inputChestLocation);
+            }
+            if (getNamedPositions().containsKey("output_chest")) {
+                outputChestLocation = getNamedPositions().get("output_chest").toLocation(getWorld());
+            } else if (requiresOutputChest) {
+                outputChestLocation = interactiveLocation.clone().add(0, 0, -1);
+                outputChestLocation.getBlock().setType(Material.CHEST);
+                Chest outputChest = (Chest) outputChestLocation.getBlock().getState();
+                outputChest.customName(Component.translatable("factions.building.common.output_chest"));
+                getNamedPositions().put("output_chest", outputChestLocation);
+            }
+        }
     }
 
     public void onChunkUnload() {
@@ -728,11 +810,6 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         if (contains("buildingStorage")) {
             for (String id : getStringList("buildingStorage")) {
                 buildingStorage.add(ItemStack.deserializeBytes(Base64.getDecoder().decode(id)));
-            }
-        }
-        if (contains("inputItems")) {
-            for (String id : getStringList("inputItems")) {
-                inputItems.add(ItemStack.deserializeBytes(Base64.getDecoder().decode(id)));
             }
         }
         if (contains("outputItems")) {
@@ -824,10 +901,6 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
             items.add(java.util.Base64.getEncoder().encodeToString(stack.serializeAsBytes()));
         }
         set("buildingStorage", items);
-        for (ItemStack stack : inputItems) {
-            items.add(java.util.Base64.getEncoder().encodeToString(stack.serializeAsBytes()));
-        }
-        set("inputItems", items);
         for (ItemStack stack : outputItems) {
             items.add(java.util.Base64.getEncoder().encodeToString(stack.serializeAsBytes()));
         }

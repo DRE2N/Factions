@@ -22,6 +22,9 @@ acm:
   transferredChunk: "Chunk <gold><arg:0></gold> has been transferred to <gold><arg:1></gold>."
   transferredChunks: "<gold><arg:0></gold> chunks have been transferred to <gold><arg:1></gold>."
 building:
+  common:
+    input_chest: "Input Chest"
+    output_chest: "Output Chest"
   buildings:
     apple_orchard:
       name: Apple Orchard

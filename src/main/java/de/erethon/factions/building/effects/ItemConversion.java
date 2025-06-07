@@ -21,6 +21,8 @@ public class ItemConversion extends BuildingEffect {
 
     public ItemConversion(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
+        site.setRequiresOutputChest(true);
+        site.setRequiresInputChest(true);
         buildingTicksPerItem = data.getInt("buildingTicksPerItem", 20);
     }
 

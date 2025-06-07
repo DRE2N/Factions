@@ -7,7 +7,11 @@ import de.erethon.factions.util.FLogger;
 import de.erethon.hephaestus.Hephaestus;
 import de.erethon.hephaestus.items.HItem;
 import de.erethon.hephaestus.items.HItemLibrary;
+import net.kyori.adventure.text.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
@@ -24,6 +28,7 @@ public class ItemProduction extends BuildingEffect {
 
     public ItemProduction(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
+        site.setRequiresOutputChest(true);
         for (String entry : data.getConfigurationSection("production").getKeys(false)) {
             ConfigurationSection section = data.getConfigurationSection("production." + entry);
             if (section == null) {
