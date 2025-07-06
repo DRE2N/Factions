@@ -1,8 +1,8 @@
 plugins {
     `java-library`
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.16"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.17"
     id("xyz.jpenilla.run-paper") version "1.0.6" // Adds runServer and runMojangMappedServer tasks for testing
-    id("io.github.goooler.shadow") version "8.1.5" // Use fork until shadow has updated to Java 21
+    id("io.github.goooler.shadow") version "8.1.5"
     id("maven-publish")
 }
 
@@ -10,7 +10,7 @@ group = "de.erethon.factions"
 version = "1.0-SNAPSHOT"
 description = "A Factions plugin"
 
-val papyrusVersion = "1.21.5-R0.1-SNAPSHOT"
+val papyrusVersion = "1.21.7-R0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -33,7 +33,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") { isTransitive = false }
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
-    implementation(platform("com.intellectualsites.bom:bom-newest:1.50"))
+    implementation(platform("com.intellectualsites.bom:bom-newest:1.52"))
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core")
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit") { isTransitive = false }
     compileOnly("io.prometheus:simpleclient:0.16.0")
@@ -89,7 +89,7 @@ tasks {
         }
         val f = File(project.buildDir, "server.jar");
         // \/ Comment this out in case you are offline, will fail to start otherwise \/
-        uri("https://github.com/DRE2N/Papyrus/releases/download/latest/papyrus-paperclip-$papyrusVersion-mojmap.jar").toURL().openStream().use { it.copyTo(f.outputStream()) }
+        //uri("https://github.com/DRE2N/Papyrus/releases/download/latest/papyrus-paperclip-$papyrusVersion-mojmap.jar").toURL().openStream().use { it.copyTo(f.outputStream()) }
         serverJar(f)
         runDirectory.set(file("C:\\Dev\\Erethon"))
     }
