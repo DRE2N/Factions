@@ -427,6 +427,17 @@ cmd:
     endDate: "<gold>War End</gold><dark_gray>: <gray><arg:0>"
     entry: "<arg:0> <dark_gray>-</dark_gray><gray> <arg:1>"
     winner: "<gold>Winner</gold><dark_gray>:</dark_gray><gray> <arg:0>"
+dialog:
+  edit_name:
+    title: "<dark_green>Edit Faction Name"
+    hint: "<gray>Enter the new name for your faction. <newline>Test"
+    input:
+      name: "Faction Name"
+      short_name: "Faction Abbreviation"
+      long_name: "Faction Full Name"
+    button:
+      save: "<green>Save changes</green>"
+    success: "<green>Saved name changes."
 economy:
   faction:
     level:

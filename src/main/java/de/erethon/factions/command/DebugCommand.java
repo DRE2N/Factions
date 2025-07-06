@@ -2,6 +2,7 @@ package de.erethon.factions.command;
 
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.alliance.Alliance;
+import de.erethon.factions.building.TechTree;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
@@ -98,6 +99,10 @@ public class DebugCommand extends FCommand {
             } else {
                 MessageUtil.sendMessage(sender, "Not a savable structure: " + struct.getClass().getSimpleName());
             }
+        }
+        if (args[1].equalsIgnoreCase("tech")) {
+            new TechTree().show((Player) sender);
+            MessageUtil.sendMessage(sender, "Tech tree?");
         }
         if (args[1].equalsIgnoreCase("pasteRegion")) {
             RegionStructure struct = plugin.getRegionManager().getRegionByPlayer((Player) sender).getStructureAt(((Player) sender).getLocation());

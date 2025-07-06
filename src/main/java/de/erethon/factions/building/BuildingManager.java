@@ -43,8 +43,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class BuildingManager implements Listener {
 
-    private static final Hephaestus hephaestus = Hephaestus.INSTANCE;
-    private static final NamespacedKey ITEM_ID = new NamespacedKey(Factions.get(), "building_item");
     private static final NamespacedKey BUILDING_ID = new NamespacedKey(Factions.get(), "building_id");
     private static final NamespacedKey FACTION_ID = new NamespacedKey(Factions.get(), "faction_id");
 
@@ -61,16 +59,6 @@ public class BuildingManager implements Listener {
         effectsPerTick = plugin.getFConfig().getEffectsPerTick();
         Bukkit.getPluginManager().registerEvents(this, plugin);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::tickBuildingEffects, 0, plugin.getFConfig().getTicksPerBuildingTick());
-        if (!hephaestus.getLibrary().has(ITEM_ID)) {
-            ItemStack stack = new ItemStack(Material.PAPER);
-            try {
-                hephaestus.getLibrary().register(stack, ITEM_ID);
-            } catch (Exception ex) {
-                FLogger.ERROR.log("Failed to register building item: " + ex.getMessage());
-                return;
-            }
-            FLogger.BUILDING.log("Registered building item for building with key " + ITEM_ID + " as it previously didn't exist.");
-        }
     }
 
     public @Nullable Building getById(@NotNull String id) {
@@ -218,7 +206,7 @@ public class BuildingManager implements Listener {
     }
 
     public static ItemStack getBuildingItemStack(Building building, Faction faction, Player player) {
-        ItemStack stack = hephaestus.getLibrary().get(ITEM_ID).rollRandomStack().getBukkitStack();
+        ItemStack stack = new ItemStack(Material.CHEST);
         stack.editMeta(meta -> {
             Component title = Component.translatable("factions.building.buildings." + building.getId() + ".name");
             meta.displayName(title);
