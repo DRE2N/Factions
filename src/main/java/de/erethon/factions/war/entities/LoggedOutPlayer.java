@@ -145,10 +145,4 @@ public class LoggedOutPlayer extends Vindicator {
         return dataPlayer.getEntityData();
     }
 
-
-    @Override
-    public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
-        super.addAdditionalSaveData(nbt);
-    }
-
 }

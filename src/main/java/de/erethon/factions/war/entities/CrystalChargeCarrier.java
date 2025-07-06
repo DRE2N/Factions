@@ -26,6 +26,8 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -123,16 +125,16 @@ public class CrystalChargeCarrier extends IronGolem {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag nbt) {
-        super.readAdditionalSaveData(nbt);
-        Optional<Integer> regionId = nbt.getInt("factions-region-id");
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        Optional<Integer> regionId = input.getInt("factions-region-id");
         regionId.ifPresent(id -> {
             region = plugin.getRegionManager().getRegionById(id);
             if (region == null) {
                 FLogger.WAR.log("Failed to load crystal charge carrier data at " + position().x + ", " + position().y + ", " + position().z);
             }
         });
-        Optional<Integer> allianceId = nbt.getInt("factions-alliance-id");
+        Optional<Integer> allianceId = input.getInt("factions-alliance-id");
         allianceId.ifPresent(id -> {
             alliance = plugin.getAllianceCache().getById(id);
             if (alliance == null) {
@@ -142,12 +144,12 @@ public class CrystalChargeCarrier extends IronGolem {
     }
 
     @Override
-    public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
-        super.addAdditionalSaveData(nbt);
+    public void addAdditionalSaveData(@NotNull ValueOutput output) {
+        super.addAdditionalSaveData(output);
         try { // Just in case the Factions side of things is broken.
-            nbt.putString("papyrus-entity-id", "factions_crystal_charge_carrier");
-            nbt.putInt("factions-region-id", region.getId());
-            nbt.putInt("factions-alliance-id", alliance.getId());
+            output.putString("papyrus-entity-id", "factions_crystal_charge_carrier");
+            output.putInt("factions-region-id", region.getId());
+            output.putInt("factions-alliance-id", alliance.getId());
         } catch (Exception e) {
             FLogger.WAR.log("Failed to save crystal charge carrier data at " + position().x + ", " + position().y + ", " + position().z);
             e.printStackTrace();

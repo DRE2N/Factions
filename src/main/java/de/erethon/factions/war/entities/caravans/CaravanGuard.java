@@ -31,6 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumSet;
@@ -106,8 +107,8 @@ public class CaravanGuard extends Vindicator {
 
 
     @Override
-    public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
-        super.addAdditionalSaveData(nbt);
-        nbt.putString("factions-caravan-uuid", carrier.getUUID().toString());
+    public void addAdditionalSaveData(@NotNull ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putString("factions-caravan-uuid", carrier.getUUID().toString());
     }
 }

@@ -11,6 +11,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.jetbrains.annotations.NotNull;
@@ -56,9 +58,9 @@ public class CrystalMob extends Slime {
     }
 
     @Override
-    public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
-        super.addAdditionalSaveData(nbt);
-        nbt.putString("papyrus-entity-id", "factions_crystal_mob");
+    public void addAdditionalSaveData(@NotNull ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putString("papyrus-entity-id", "factions_crystal_mob");
     }
 
     public @NotNull EndCrystal getDataCrystal() {

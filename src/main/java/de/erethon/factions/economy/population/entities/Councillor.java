@@ -14,6 +14,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.jetbrains.annotations.NotNull;
@@ -62,18 +64,18 @@ public class Councillor extends Villager {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag nbt) {
-        super.readAdditionalSaveData(nbt);
-        Optional<Integer> factionId = nbt.getInt("factions-faction-id");
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        Optional<Integer> factionId = input.getInt("factions-faction-id");
         factionId.ifPresent(integer -> faction = plugin.getFactionCache().getById(integer));
     }
 
     @Override
-    public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
-        super.addAdditionalSaveData(nbt);
+    public void addAdditionalSaveData(@NotNull ValueOutput output) {
+        super.addAdditionalSaveData(output);
         try { // Just in case the Factions side of things is broken.
-            nbt.putString("papyrus-entity-id", "factions_councillor");
-            nbt.putInt("factions-faction-id", faction.getId());
+            output.putString("papyrus-entity-id", "factions_councillor");
+            output.putInt("factions-faction-id", faction.getId());
         } catch (Exception e) {
             FLogger.WAR.log("Failed to save councillor NPC data at " + position().x + ", " + position().y + ", " + position().z);
             persist = false;

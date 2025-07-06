@@ -44,6 +44,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.jetbrains.annotations.NotNull;
@@ -93,7 +95,7 @@ public class ObjectiveGuard extends Vindicator {
         }
         level.addFreshEntity(this);
         Position pos = structure.getCenterPosition();
-        restrictTo(new BlockPos((int) pos.x(), (int) pos.y(), (int) pos.z()), 64);
+        setHomeTo(new BlockPos((int) pos.x(), (int) pos.y(), (int) pos.z()), 32);
     }
 
     private void createPlayerStuff(ServerLevel level) {
@@ -151,16 +153,16 @@ public class ObjectiveGuard extends Vindicator {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag nbt) {
-        super.readAdditionalSaveData(nbt);
-        Optional<Integer> regionId = nbt.getInt("factions-region-id");
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        Optional<Integer> regionId = input.getInt("factions-region-id");
         regionId.ifPresent(id -> {
             region = plugin.getRegionManager().getRegionById(id);
             if (region == null) {
                 FLogger.WAR.log("Failed to load crystal charge carrier data at " + position().x + ", " + position().y + ", " + position().z);
             }
         });
-        Optional<Integer> allianceId = nbt.getInt("factions-alliance-id");
+        Optional<Integer> allianceId = input.getInt("factions-alliance-id");
         allianceId.ifPresent(id -> {
             alliance = plugin.getAllianceCache().getById(id);
             if (alliance == null) {
@@ -171,12 +173,12 @@ public class ObjectiveGuard extends Vindicator {
 
 
     @Override
-    public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
-        super.addAdditionalSaveData(nbt);
-        nbt.putString("papyrus-entity-id", "factions_objective_guard");
+    public void addAdditionalSaveData(@NotNull ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putString("papyrus-entity-id", "factions_objective_guard");
         try { // Just in case the Factions side of things is broken.
-            nbt.putInt("factions-region-id", region.getId());
-            nbt.putInt("factions-alliance-id", alliance.getId());
+            output.putInt("factions-region-id", region.getId());
+            output.putInt("factions-alliance-id", alliance.getId());
         } catch (Exception e) {
             FLogger.WAR.log("Failed to save objective guard at " + position().x + ", " + position().y + ", " + position().z);
             e.printStackTrace();

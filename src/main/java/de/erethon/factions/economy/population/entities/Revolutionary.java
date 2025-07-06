@@ -34,6 +34,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -144,18 +146,18 @@ public class Revolutionary extends Vindicator {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag nbt) {
-        super.readAdditionalSaveData(nbt);
-        Optional<Integer> factionId = nbt.getInt("factions-faction-id");
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        Optional<Integer> factionId = input.getInt("factions-faction-id");
         factionId.ifPresent(integer -> faction = plugin.getFactionCache().getById(integer));
     }
 
     @Override
-    public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
-        super.addAdditionalSaveData(nbt);
+    public void addAdditionalSaveData(@NotNull ValueOutput output) {
+        super.addAdditionalSaveData(output);
         try { // Just in case the Factions side of things is broken.
-            nbt.putString("papyrus-entity-id", "factions_revolutionary");
-            nbt.putInt("factions-faction-id", faction.getId());
+            output.putString("papyrus-entity-id", "factions_revolutionary");
+            output.putInt("factions-faction-id", faction.getId());
         } catch (Exception e) {
             FLogger.WAR.log("Failed to save revolt NPC data at " + position().x + ", " + position().y + ", " + position().z);
             remove(RemovalReason.DISCARDED);

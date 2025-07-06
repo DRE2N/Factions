@@ -23,6 +23,7 @@ import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.jetbrains.annotations.NotNull;
@@ -93,15 +94,10 @@ public class Citizen extends Villager {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag nbt) {
-        super.readAdditionalSaveData(nbt);
-    }
-
-    @Override
-    public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
-        super.addAdditionalSaveData(nbt);
+    public void addAdditionalSaveData(@NotNull ValueOutput output) {
+        super.addAdditionalSaveData(output);
         try { // Just in case
-            nbt.putString("papyrus-entity-id", "factions_citizen");
+            output.putString("papyrus-entity-id", "factions_citizen");
         } catch (Exception e) {
             FLogger.WAR.log("Failed to save citizen NPC data at " + position().x + ", " + position().y + ", " + position().z);
             e.printStackTrace();

@@ -18,6 +18,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.jetbrains.annotations.NotNull;
@@ -149,9 +151,9 @@ public class CaravanCarrier extends Ravager {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag nbt) {
-        super.readAdditionalSaveData(nbt);
-        Optional<Integer> id = nbt.getInt("factions-alliance-id");
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        Optional<Integer> id = input.getInt("factions-alliance-id");
         if (id.isPresent()) {
             alliance = plugin.getAllianceCache().getById(id.get());
             readyUp();
@@ -159,11 +161,11 @@ public class CaravanCarrier extends Ravager {
     }
 
     @Override
-    public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
-        super.addAdditionalSaveData(nbt);
+    public void addAdditionalSaveData(@NotNull ValueOutput output) {
+        super.addAdditionalSaveData(output);
         try { // Just in case the Factions side of things is broken.
-            nbt.putString("papyrus-entity-id", "factions_caravan_carrier");
-            nbt.putInt("factions-alliance-id", alliance.getId());
+            output.putString("papyrus-entity-id", "factions_caravan_carrier");
+            output.putInt("factions-alliance-id", alliance.getId());
         } catch (Exception e) {
             FLogger.WAR.log("Failed to save crystal charge carrier data at " + position().x + ", " + position().y + ", " + position().z);
             e.printStackTrace();
