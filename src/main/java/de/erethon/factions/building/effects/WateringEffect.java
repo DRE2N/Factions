@@ -5,6 +5,8 @@ import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildSiteCoordinate;
 import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildingEffectData;
+import de.erethon.factions.region.RegionPOIContainer;
+import de.erethon.factions.region.RegionPOIType;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -33,6 +35,7 @@ public class WateringEffect extends BuildingEffect implements Listener {
     private final int maxDistance;
     private BukkitRunnable task;
     private final Set<Block> farmlandCache = new HashSet<>();
+    private RegionPOIContainer container;
 
     public WateringEffect(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
@@ -44,11 +47,14 @@ public class WateringEffect extends BuildingEffect implements Listener {
     @Override
     public void apply() {
         Bukkit.getPluginManager().registerEvents(this, plugin);
+        container = new RegionPOIContainer(site.getInteractive(), site);
+        site.getRegion().addPOI(RegionPOIType.WATERING_SOURCE, container);
     }
 
     @Override
     public void remove() {
         HandlerList.unregisterAll(this);
+        site.getRegion().removePOI(RegionPOIType.WATERING_SOURCE, container);
     }
 
     @EventHandler

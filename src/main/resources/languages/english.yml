@@ -439,6 +439,8 @@ dialog:
       save: "<green>Save changes</green>"
     success: "<green>Saved name changes."
 economy:
+  councillor:
+    name: "Councillor"
   faction:
     level:
       hamlet: "Hamlet"

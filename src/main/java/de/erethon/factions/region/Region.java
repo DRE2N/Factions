@@ -25,6 +25,7 @@ import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,6 +61,7 @@ public class Region extends FLegalEntity {
     private final RegionalWarTracker regionalWarTracker = new RegionalWarTracker(this);
     private final Map<String, RegionStructure> structures = new HashMap<>();
     private RegionType type = RegionType.BARREN;
+    private Map<RegionPOIType, Set<RegionPOIContainer>> poiMap = new HashMap<>(); // For quicker look-ups (e.g. "nearest enemy radar")
 
     protected Region(@NotNull RegionCache regionCache, @NotNull File file, int id, @NotNull String name, @Nullable String description) {
         super(file, id, name, description);
@@ -388,6 +390,66 @@ public class Region extends FLegalEntity {
         } else {
             plugin.getWar().unregisterRegion(regionalWarTracker);
         }
+    }
+
+    /**
+     * Returns a set of positions for the given POI type.
+     *
+     * @param type The type of POI
+     * @return A set of positions for the given POI type. May be empty.
+     */
+    public Set<RegionPOIContainer> getPOIs(@NotNull RegionPOIType type) {
+        return poiMap.computeIfAbsent(type, k -> new HashSet<>());
+    }
+
+    /**
+     * Adds a position to the POI set for the given type.
+     * If the type does not exist, it will be created.
+     * @param type The type of POI
+     * @param container The POI to add
+     */
+    public void addPOI(@NotNull RegionPOIType type, @NotNull RegionPOIContainer container) {
+        getPOIs(type).add(container);
+    }
+
+    /**
+     * Removes a position from the POI set for the given type.
+     * If the type does not exist, nothing happens.
+     *
+     * @param type The type of POI
+     * @param container The position to remove
+     */
+    public void removePOI(@NotNull RegionPOIType type, @NotNull RegionPOIContainer container) {
+        Set<RegionPOIContainer> containers = getPOIs(type);
+        if (containers != null) {
+            containers.remove(container);
+        }
+    }
+
+    /**
+     * Returns the nearest build site for the given type and position.
+     * If no POI of the given type exists, null is returned.
+     *
+     * @param type The type of POI
+     * @param position The position to search from
+     * @return The nearest POI build site or null if none exists
+     */
+    public BuildSite getNearestPOISite(RegionPOIType type, Position position) {
+        Set<RegionPOIContainer> containers = getPOIs(type);
+        if (containers.isEmpty()) {
+            return null;
+        }
+        RegionPOIContainer nearest = null;
+        Vector pos = position.toVector();
+        double nearestDistance = Double.MAX_VALUE;
+        for (RegionPOIContainer container : containers) {
+            double distance = container.pos().toVector().distance(pos);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearest = container;
+            }
+        }
+        return nearest == null ? null : nearest.buildSite();
     }
 
     @Override

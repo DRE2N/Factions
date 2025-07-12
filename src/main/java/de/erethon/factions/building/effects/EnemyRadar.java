@@ -7,6 +7,8 @@ import de.erethon.factions.building.BuildingEffectData;
 import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
+import de.erethon.factions.region.RegionPOIContainer;
+import de.erethon.factions.region.RegionPOIType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.entity.Player;
@@ -29,6 +31,7 @@ public class EnemyRadar extends BuildingEffect {
     private int ticks = 0;
     private final Set<FPlayer> detectedEnemies = new HashSet<>();
     private boolean isWaitingForAnnouncement = false;
+    private RegionPOIContainer container;
 
     public EnemyRadar(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
@@ -36,6 +39,20 @@ public class EnemyRadar extends BuildingEffect {
         tickRate = data.getInt("tickRate", 60);
         announcementDelay = data.getInt("announcementDelay", 300);
         locationFuzz = data.getInt("locationFuzz", 50);
+    }
+
+    @Override
+    public void apply() {
+        container = new RegionPOIContainer(site.getInteractive(), site);
+        site.getRegion().addPOI(RegionPOIType.ENEMY_RADAR, container);
+    }
+
+    @Override
+    public void remove() {
+        site.getRegion().removePOI(RegionPOIType.ENEMY_RADAR, container);
+        detectedEnemies.clear();
+        isWaitingForAnnouncement = false;
+        ticks = 0;
     }
 
     @Override
