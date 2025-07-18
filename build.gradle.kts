@@ -24,7 +24,6 @@ repositories {
 
 dependencies {
     paperweight.devBundle("de.erethon.papyrus", papyrusVersion) { isChanging = true }
-    implementation("de.erethon:bedrock:1.5.7")
     //implementation("de.erethon.lectern:Lectern:1.0-SNAPSHOT") //not ready yet
     compileOnly("de.erethon.aergia:Aergia:1.0.1")
     compileOnly("de.erethon.hephaestus:Hephaestus:1.0.3-SNAPSHOT")
@@ -97,10 +96,8 @@ tasks {
     shadowJar {
         // Shade everything for now
         dependencies {
-            include(dependency("de.erethon:bedrock:.*"))
             include(dependency("de.erethon.lectern:.*"))
         }
-        relocate("de.erethon.bedrock", "de.erethon.factions.bedrock")
         relocate("de.erethon.lectern", "de.erethon.factions.lectern")
     }
 }
