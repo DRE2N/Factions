@@ -699,6 +699,14 @@ region:
   pve: "PvE"
   sea: "Sea"
   warZone: "War Zone"
+  enteredSafe: "<gray>PvP <gradient:green:dark_green>disabled</gradient><gray>."
+  enteredPvP: "<gray>PvP <gradient:red:dark_red>enabled</gradient><gray>."
+  cannotLeavePvP: "<red>Cannot leave region while in combat.</red>"
+  mode:
+    pvp: "PvP"
+    pve: "PvE"
+    pvpve: "PvPvE"
+    safe_zone: "Safe Zone"
   info:
     header: "<dark_green>[</dark_green><green><arg:0></green><dark_green>]</dark_green><br>"
     type: "<gray>Type<dark_gray>:<gray> <arg:0><br>"

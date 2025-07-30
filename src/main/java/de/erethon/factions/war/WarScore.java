@@ -1,11 +1,7 @@
 package de.erethon.factions.war;
 
-import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
-import de.erethon.factions.entity.Relation;
-import de.erethon.factions.faction.Faction;
-import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
@@ -27,7 +23,7 @@ public class WarScore {
 
     private final Factions plugin = Factions.get();
     private static final int TICK_DURATION = (20 * 60) * 20; // 20 minutes, in ticks
-    private final Component HEADING = MiniMessage.miniMessage().deserialize("<gradient:red:dark_red><st>       </st></gradient><dark_gray>]<gray><st> </st> <red>⚔</red> <st> </st><dark_gray>[<gradient:dark_red:red><st>       </st></gradient>");
+    private final Component HEADING = MiniMessage.miniMessage().deserialize("<gradient:red:dark_red><st>       </st></gradient><dark_gray>]<gray><st> </st> <#ad1c11>⚔</#ad1c11> <st> </st><dark_gray>[<gradient:dark_red:red><st>       </st></gradient>");
 
     // Scoring
     private final HashMap<Alliance, Integer> totalScore = new HashMap<>();

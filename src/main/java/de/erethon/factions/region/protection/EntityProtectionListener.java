@@ -7,8 +7,9 @@ import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
-import de.erethon.factions.region.RegionType;
+import de.erethon.factions.region.RegionMode;
 import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.region.RegionType;
 import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.Material;
@@ -60,6 +61,16 @@ public class EntityProtectionListener implements Listener {
         }
         FPlayer fAttacker = plugin.getFPlayerCache().getByPlayer(attacker);
         FPlayer fDefender = plugin.getFPlayerCache().getByPlayer(damagedPlayer);
+        Region defenderRegion = fDefender.getCurrentRegion();
+
+        if (defenderRegion != null) {
+            RegionMode mode = defenderRegion.getMode();
+            if (mode == RegionMode.PVE || mode == RegionMode.SAFE_ZONE) {
+                event.setCancelled(true);
+                fAttacker.sendActionBarMessage(FMessage.PROTECTION_CANNOT_ATTACK_PLAYER.message(fDefender.getDisplayMembership()));
+                return;
+            }
+        }
         Relation relation = fAttacker.getRelation(fDefender);
         if (!relation.canAttack()) {
             event.setCancelled(true);
@@ -75,7 +86,6 @@ public class EntityProtectionListener implements Listener {
             return;
         }
         Alliance dAlliance = fDefender.getAlliance();
-        Region defenderRegion = fDefender.getCurrentRegion();
         if (defenderRegion == null || defenderRegion.getAlliance() != dAlliance) {
             return;
         }
@@ -182,7 +192,7 @@ public class EntityProtectionListener implements Listener {
         }
         List<RegionStructure> structures = region.getStructuresAt(target.getLocation());
         TriState structureState = TriState.NOT_SET;
-        // First structure that returns a state other than NOT_SET will be used.
+        // The First structure that returns a state other than NOT_SET will be used.
         for (RegionStructure structure : structures) {
             structureState = structure.canAttack(fAttacker, target);
             if (structureState != TriState.NOT_SET) {
@@ -198,12 +208,23 @@ public class EntityProtectionListener implements Listener {
             fAttacker.sendActionBarMessage((living && livingForbidMessage != null ? livingForbidMessage : forbidMessage).message(region.getDisplayOwner()));
             return;
         }
-        if (region.getType() == RegionType.WAR_ZONE && plugin.getCurrentWarPhase().isAllowPvP()) {
-            return;
-        }
+        RegionMode mode = region.getMode();
         Relation relation = fAttacker.getRelation(region);
-        if (living ? relation.canAttack() : region.getType().isAllowsBuilding() && relation.canBuild()) {
-            return;
+
+        if (living) {
+            if (mode == RegionMode.SAFE_ZONE) {
+                // fall through to cancel
+            } else if (mode == RegionMode.PVP || mode == RegionMode.PVPVE) {
+                return; // allow all PvE
+            } else if (mode == RegionMode.PVE) {
+                if (relation.canAttack()) {
+                    return; // allow PvE if relation allows
+                }
+            }
+        } else {
+            if (region.getType().isAllowsBuilding() && relation.canBuild()) {
+                return;
+            }
         }
         event.setCancelled(true);
         fAttacker.sendActionBarMessage((living && livingForbidMessage != null ? livingForbidMessage : forbidMessage).message(region.getDisplayOwner()));
@@ -218,11 +239,6 @@ public class EntityProtectionListener implements Listener {
             }
         }
         return null;
-    }
-
-    @EventHandler
-    private void onAnvil(PrepareAnvilEvent event) {
-        event.setResult(new ItemStack(Material.FEATHER));
     }
 
 }

@@ -61,6 +61,7 @@ public class Region extends FLegalEntity {
     private final RegionalWarTracker regionalWarTracker = new RegionalWarTracker(this);
     private final Map<String, RegionStructure> structures = new HashMap<>();
     private RegionType type = RegionType.BARREN;
+    private RegionMode mode = type.getDefaultMode();
     private Map<RegionPOIType, Set<RegionPOIContainer>> poiMap = new HashMap<>(); // For quicker look-ups (e.g. "nearest enemy radar")
 
     protected Region(@NotNull RegionCache regionCache, @NotNull File file, int id, @NotNull String name, @Nullable String description) {
@@ -143,6 +144,7 @@ public class Region extends FLegalEntity {
             }
         }
         type = RegionType.getByName(config.getString("type", type.name()), type);
+        mode = RegionMode.getByName(config.getString("mode", type.getDefaultMode().name()), type.getDefaultMode());
         if (type.isWarGround() && plugin.getWar() != null) {
             plugin.getWar().registerRegion(regionalWarTracker);
         }
@@ -163,6 +165,7 @@ public class Region extends FLegalEntity {
         structures.forEach((name, structure) -> serializedStructures.put(String.valueOf(serializedStructures.size()), structure.serialize()));
         config.set("structures", serializedStructures);
         config.set("type", type.name());
+        config.set("mode", mode.name());
         config.set("buildsites", buildSites.stream().map(BuildSite::getUUIDString).toList());
         for (BuildSite buildSite : buildSites) {
             try {
@@ -390,6 +393,14 @@ public class Region extends FLegalEntity {
         } else {
             plugin.getWar().unregisterRegion(regionalWarTracker);
         }
+    }
+
+    public @NotNull RegionMode getMode() {
+        return mode;
+    }
+
+    public void setMode(@NotNull RegionMode mode) {
+        this.mode = mode;
     }
 
     /**
