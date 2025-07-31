@@ -632,4 +632,12 @@ public final class Factions extends EPlugin {
         return instance;
     }
 
+    public static void log(String message) {
+        get().getLogger().info(message);
+    }
+
+    public static void log(Component message) {
+        get().getComponentLogger().info(message);
+    }
+
 }

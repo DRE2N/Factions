@@ -61,19 +61,19 @@ public class CaravanRouting implements Listener {
     public ActiveCaravanRoute newRouteFromStartToFinish(RegionStructure start, RegionStructure finish, int supplies) {
         Set<CaravanRoute> routes = byStart.get(start);
         if (routes == null) {
-            MessageUtil.log("No caravan routes from " + start + " found");
+            Factions.log("No caravan routes from " + start + " found");
             return null;
         }
         for (CaravanRoute route : routes) {
             if (route.end().equals(finish)) {
                 if (route.nodes().length == 0) {
-                    MessageUtil.log("Caravan route from " + start + " to " + finish + " has no nodes");
+                    Factions.log("Caravan route from " + start + " to " + finish + " has no nodes");
                     return null;
                 }
                 return new ActiveCaravanRoute(route, route.nodes()[0], supplies);
             }
         }
-        MessageUtil.log("No caravan route from " + start + " to " + finish + " found");
+        Factions.log("No caravan route from " + start + " to " + finish + " found");
         return null;
     }
 
@@ -140,23 +140,23 @@ public class CaravanRouting implements Listener {
         for (String start : cfg.getConfigurationSection("routes").getKeys(false)) {
             Region startRegion = plugin.getRegionManager().getRegionById(Integer.parseInt(start));
             if (startRegion == null) {
-                MessageUtil.log("Could not find region " + start + " for caravan route");
+                Factions.log("Could not find region " + start + " for caravan route");
                 continue;
             }
             RegionStructure startStructure = startRegion.getStructure(cfg.getString("routes." + start + ".startStructure"));
             if (startStructure == null) {
-                MessageUtil.log("Could not find structure " + cfg.getString("routes." + start + ".structure") + " for caravan route");
+                Factions.log("Could not find structure " + cfg.getString("routes." + start + ".structure") + " for caravan route");
                 continue;
             }
             for (String end : cfg.getConfigurationSection("routes." + start).getKeys(false)) {
                 Region endRegion = plugin.getRegionManager().getRegionById(Integer.parseInt(end));
                 if (endRegion == null) {
-                    MessageUtil.log("Could not find region " + end + " for caravan route");
+                    Factions.log("Could not find region " + end + " for caravan route");
                     continue;
                 }
                 RegionStructure endStructure = endRegion.getStructure(cfg.getString("routes." + start + "." + end + ".endStructure"));
                 if (endStructure == null) {
-                    MessageUtil.log("Could not find structure " + cfg.getString("routes." + start + "." + end + ".structure") + " for caravan route");
+                    Factions.log("Could not find structure " + cfg.getString("routes." + start + "." + end + ".structure") + " for caravan route");
                     continue;
                 }
                 CaravanRoute route = new CaravanRoute(startStructure, endStructure, deserializeNodes(cfg.getString("routes." + start + "." + end + ".nodes")));
@@ -182,7 +182,7 @@ public class CaravanRouting implements Listener {
         try {
             cfg.save(routeStorage);
         } catch (Exception e) {
-            MessageUtil.log("Failed to save caravan routes to file");
+            Factions.log("Failed to save caravan routes to file");
             e.printStackTrace();
         }
 

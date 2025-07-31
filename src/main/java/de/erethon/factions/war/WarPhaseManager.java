@@ -68,7 +68,7 @@ public class WarPhaseManager extends EConfig {
     }
 
     public void updateCurrentStage() {
-        MessageUtil.log("Updating current war phase stage...");
+        Factions.log("Updating current war phase stage...");
         cancelRunningTask();
 
         ZonedDateTime currentTime = ZonedDateTime.now(midnight.getZone());
@@ -93,7 +93,7 @@ public class WarPhaseManager extends EConfig {
 
     private void scheduleNextPhaseSwitch() {
         if (debugMode) {
-            MessageUtil.log("Debug mode active. Skipping phase switch.");
+            Factions.log("Debug mode active. Skipping phase switch.");
             return;
         }
 
@@ -106,7 +106,7 @@ public class WarPhaseManager extends EConfig {
         }
 
         try {
-            MessageUtil.log("Scheduling phase switch to " + nextStage.getWarPhase().name() + " in " + delay + " ticks.");
+            Factions.log("Scheduling phase switch to " + nextStage.getWarPhase().name() + " in " + delay + " ticks.");
             runningTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, this::updateCurrentStage, delay);
         } catch (Exception e) {
             FLogger.ERROR.log("Failed to schedule phase switch task: " + e.getMessage());
@@ -133,16 +133,16 @@ public class WarPhaseManager extends EConfig {
         // Validate and find the correct stage based on the current progress.
         while (currentStage != null && currentStage.getFullDuration() < currentProgress) {
             WarPhaseStage nextStage = currentStage.getNextStage();
-            MessageUtil.log("Skipping stage " + currentStage.getWarPhase().name() + " with duration " + currentStage.getFullDuration());
+            Factions.log("Skipping stage " + currentStage.getWarPhase().name() + " with duration " + currentStage.getFullDuration());
             if (nextStage == null) {
-                MessageUtil.log("End of day reached. Moving to next day...");
+                Factions.log("End of day reached. Moving to next day...");
                 rollOverDay();
                 currentStage = getFirstStageOfTheDay();
                 // Recalculate progress for the new day.
                 currentProgress = getCurrentProgress();
             } else {
                 currentStage = nextStage;
-                MessageUtil.log("Moving to next stage " + currentStage.getWarPhase().name() + " with duration " + currentStage.getFullDuration());
+                Factions.log("Moving to next stage " + currentStage.getWarPhase().name() + " with duration " + currentStage.getFullDuration());
             }
         }
 
@@ -342,7 +342,7 @@ public class WarPhaseManager extends EConfig {
     public void cancelRunningTask()  {
         if (runningTask != null) {
             runningTask.cancel();
-            MessageUtil.log("Cancelled running warphase task.");
+            Factions.log("Cancelled running warphase task.");
             runningTask = null;
         }
     }

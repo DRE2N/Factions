@@ -83,7 +83,7 @@ public class BuildingTicketCommand extends FCommand {
                 site.finishBuilding();
                 plugin.getBuildingManager().getBuildingTickets().remove(site);
                 MessageUtil.sendMessage(player, "&aGebäude " + site.getBuilding().getId() + " erfolgreich angenommen.");
-                MessageUtil.log(player.getName() + " accepted a BuildSite ticket for " + site.getBuilding().getId() + " in " + site.getRegion().getName());
+                Factions.log(player.getName() + " accepted a BuildSite ticket for " + site.getBuilding().getId() + " in " + site.getRegion().getName());
                 return;
             }
         }
@@ -121,7 +121,7 @@ public class BuildingTicketCommand extends FCommand {
             }
             site.setProblemMessage(msg);
             MessageUtil.sendMessage(player, "&aDas Gebäude wurde erfolgreich abgelehnt.\n&aNachricht: &7&o" + msg);
-            MessageUtil.log(player.getName() + " denied a BuildSite ticket for " + site.getBuilding().getId() + " in " + site.getRegion().getName());
+            Factions.log(player.getName() + " denied a BuildSite ticket for " + site.getBuilding().getId() + " in " + site.getRegion().getName());
         }
     }
 

@@ -137,7 +137,7 @@ public class Building {
         boolean isInOtherBuilding = false;
         BuildSite overlappingSite = null;
         if (manager == null) {
-            MessageUtil.log("BuildingManager is null somehow. Plugin: " + plugin);
+            Factions.log("BuildingManager is null somehow. Plugin: " + plugin);
             return fails;
         }
         for (BuildSite site : rg.getBuildSites()) {

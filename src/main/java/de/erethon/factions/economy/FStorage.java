@@ -49,7 +49,7 @@ public class FStorage {
             amount = spaceToLimit;
         }
         resources.put(resource, Math.min(current + amount, limit));
-        MessageUtil.log("Storage: " + Math.min(current + amount, limit) + " of " + resource.getId() + " for " + faction.getName() + " (added " + amount + ")");
+        Factions.log("Storage: " + Math.min(current + amount, limit) + " of " + resource.getId() + " for " + faction.getName() + " (added " + amount + ")");
         return true;
     }
 
@@ -59,7 +59,7 @@ public class FStorage {
             return false;
         }
         resources.put(resource, current - amount);
-        MessageUtil.log("Storage: " + (current - amount) + " of " + resource.getId() + " for " + faction.getName() + " (removed " + amount + ")");
+        Factions.log("Storage: " + (current - amount) + " of " + resource.getId() + " for " + faction.getName() + " (removed " + amount + ")");
         return true;
     }
 

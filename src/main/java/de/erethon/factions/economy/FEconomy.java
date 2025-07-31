@@ -1,6 +1,7 @@
 package de.erethon.factions.economy;
 
 import de.erethon.bedrock.chat.MessageUtil;
+import de.erethon.factions.Factions;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.attributes.FactionAttribute;
 import de.erethon.factions.building.attributes.FactionAttributeModifier;
@@ -623,7 +624,7 @@ public class FEconomy {
      * @param attempts The number of attempts (chunks) to try spawning revolutionaries.
      */
     public void spawnRevolt(Faction faction, int attempts) {
-        MessageUtil.log("Spawning revolt for " + faction.getName() + " with " + attempts + " spawn groups.");
+        Factions.log("Spawning revolt for " + faction.getName() + " with " + attempts + " spawn groups.");
         if (faction.hasOngoingRevolt()) {
             FLogger.ECONOMY.log("[" + faction.getName() + "] Cannot spawn revolt, already has an ongoing revolt.");
             return;

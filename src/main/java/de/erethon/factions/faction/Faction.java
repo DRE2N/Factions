@@ -268,7 +268,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     public void sendMessage(@NotNull Component msg, boolean prefix) {
         Component message = prefix ? FMessage.FACTION_INFO_PREFIX.message(name).append(msg) : msg;
         for (Player online : members.getOnlinePlayers()) {
-            MessageUtil.log(GsonComponentSerializer.gson().serialize(message));
+            Factions.log(GsonComponentSerializer.gson().serialize(message));
             online.sendMessage(message);
         }
     }

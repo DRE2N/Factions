@@ -15,10 +15,16 @@ import de.erethon.factions.war.structure.WarStructure;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.world.inventory.MenuType;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Transformation;
+import org.joml.AxisAngle4f;
+import org.joml.Vector3f;
 
 import java.util.List;
 
@@ -99,6 +105,55 @@ public class DebugCommand extends FCommand {
             } else {
                 MessageUtil.sendMessage(sender, "Not a savable structure: " + struct.getClass().getSimpleName());
             }
+        }
+        if (args[1].equalsIgnoreCase("cigar")) {
+            Player player = (Player) sender;
+            final Vector3f LOCAL_CIGAR_OFFSET = new Vector3f(0.1f, -0.25f, 0.3f);
+            final Vector3f CIGAR_SCALE = new Vector3f(0.2f, 0.2f, 0.7f);
+            BlockDisplay cigar = player.getWorld().spawn(player.getEyeLocation(), BlockDisplay.class);
+            cigar.setBlock(Material.OAK_LOG.createBlockData());
+            cigar.setInterpolationDuration(1);
+            cigar.setInterpolationDelay(-1);
+            cigar.setTeleportDuration(1);
+            Transformation transformation = new Transformation(
+                    new Vector3f(0, 0, 0),
+                    new AxisAngle4f(0, 0, 0, 1),
+                    CIGAR_SCALE,
+                    new AxisAngle4f(0, 0, 0, 1)
+            );
+            cigar.setTransformation(transformation);
+
+            BukkitRunnable runnable = new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Location eyeLocation = player.getEyeLocation();
+                    Vector3f forward = eyeLocation.getDirection().toVector3f();
+                    Vector3f worldUp = new Vector3f(0.0f, 1.0f, 0.0f);
+
+                    Vector3f right = new Vector3f();
+                    worldUp.cross(forward, right).normalize();
+
+                    if (Float.isNaN(right.x)) {
+                        Vector3f worldForward = new Vector3f(0.0f, 0.0f, 1.0f);
+                        worldForward.cross(forward, right).normalize();
+                    }
+
+                    Vector3f up = new Vector3f();
+                    forward.cross(right, up).normalize();
+
+                    Vector3f worldOffset = new Vector3f();
+                    worldOffset.add(right.mul(LOCAL_CIGAR_OFFSET.x()));
+                    worldOffset.add(up.mul(LOCAL_CIGAR_OFFSET.y()));
+                    worldOffset.add(forward.mul(LOCAL_CIGAR_OFFSET.z()));
+
+                    if (player.isSneaking()) {
+                        worldOffset.add(0, -0.3f, 0);
+                    }
+                    Location cigarLocation = eyeLocation.clone().add(worldOffset.x, worldOffset.y, worldOffset.z);
+                    cigar.teleport(cigarLocation);
+                }
+            };
+            runnable.runTaskTimer(plugin, 0L, 0L);
         }
         if (args[1].equalsIgnoreCase("tech")) {
             new TechTree().show((Player) sender);

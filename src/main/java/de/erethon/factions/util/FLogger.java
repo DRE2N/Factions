@@ -60,10 +60,10 @@ public enum FLogger {
         }
         debugWriter.println(msg);
         if (color != null) {
-            MessageUtil.log(Factions.get(), Component.text().color(color).content("[" + name() + "] " + msg).build());
+            Factions.log(Component.text().color(color).content("[" + name() + "] " + msg).build());
             sendToAdminsInGame(Component.text().color(color).content("[" + name() + "] " + msg).build());
         } else {
-            MessageUtil.log(Factions.get(), "[" + name() + "] " + msg);
+            Factions.log("[" + name() + "] " + msg);
             sendToAdminsInGame(Component.text("[" + name() + "] ").append(Component.text(msg)));
         }
     }
@@ -79,10 +79,10 @@ public enum FLogger {
         Component comp = msg.get();
         debugWriter.println("[" + name() + "] " + MessageUtil.serializePlain(comp));
         if (color != null) {
-            MessageUtil.log(Factions.get(), Component.text().color(color).content("[" + name() + "] ").append(comp).build());
+            Factions.log(Component.text().color(color).content("[" + name() + "] ").append(comp).build());
             sendToAdminsInGame(Component.text().color(color).content("[" + name() + "] ").append(comp).build());
         } else {
-            MessageUtil.log(Factions.get(), Component.text("[" + name() + "] ").append(comp));
+            Factions.log(Component.text("[" + name() + "] ").append(comp));
             sendToAdminsInGame(Component.text("[" + name() + "] ").append(comp));
         }
     }

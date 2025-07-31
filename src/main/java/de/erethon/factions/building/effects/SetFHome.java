@@ -1,6 +1,6 @@
 package de.erethon.factions.building.effects;
 
-import de.erethon.bedrock.chat.MessageUtil;
+import de.erethon.factions.Factions;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildingEffectData;
@@ -23,7 +23,7 @@ public class SetFHome extends BuildingEffect {
         if (site.getNamedPositions().containsKey("fhome")) {
             Position pos = site.getNamedPositions().get("fhome");
             if (pos == null) {
-                MessageUtil.log("SetFHome effect requires a named position 'fhome' in the build site " + site.getBuilding().getId() + ".");
+                Factions.log("SetFHome effect requires a named position 'fhome' in the build site " + site.getBuilding().getId() + ".");
                 return;
             }
             faction.setFHome(new Location(site.getInteractive().getWorld(), pos.x(), pos.y(), pos.z()));

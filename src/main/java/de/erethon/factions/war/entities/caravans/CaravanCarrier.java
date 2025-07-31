@@ -84,13 +84,13 @@ public class CaravanCarrier extends Ravager {
         if (nodes.length == 0) {
             routing.onCaravanArrived(route);
             remove(RemovalReason.DISCARDED);
-            MessageUtil.log("Caravan for " + alliance.getName() + " from " + route.route().start().getName() + " has arrived at " + route.route().end().getName() + " but had no nodes");
+            Factions.log("Caravan for " + alliance.getName() + " from " + route.route().start().getName() + " has arrived at " + route.route().end().getName() + " but had no nodes");
             return;
         }
         if (route.isAtEnd()) {
             routing.onCaravanArrived(route);
             remove(RemovalReason.DISCARDED);
-            MessageUtil.log("Caravan for " + alliance.getName() + " from " + route.route().start().getName() + " has arrived at " + route.route().end().getName());
+            Factions.log("Caravan for " + alliance.getName() + " from " + route.route().start().getName() + " has arrived at " + route.route().end().getName());
             return;
         }
         route.advance();

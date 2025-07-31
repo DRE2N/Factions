@@ -141,7 +141,7 @@ public class FConfig extends EConfig {
                 initValue("requiredPopulation." + factionLevel.name() + "." + populationLevel.name(), 1);
             }
         }
-        MessageUtil.log("Initialised pop levels");
+        Factions.log("Initialised pop levels");
         save();
     }
 

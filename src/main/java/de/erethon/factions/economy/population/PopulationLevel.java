@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
 public enum PopulationLevel {
 
     BEGGAR(new HashSet<>(), 0, 1.5),
-    PEASANT(new HashSet<>(Arrays.asList("Chapel")), 0, 1.3,
+    PEASANT(new HashSet<>(List.of("Chapel")), 0, 1.3,
             new PopulationResourceConsumption(Resource.GRAIN, 1, 0, 3, 1.2, 0.7),
             new PopulationResourceConsumption(Resource.FISH, 1, 0, 3, 1.2, 0.7)),
     CITIZEN(new HashSet<>(Arrays.asList("Chapel", "Courthouse")), 4, 1.2,

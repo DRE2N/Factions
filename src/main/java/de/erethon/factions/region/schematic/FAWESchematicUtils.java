@@ -45,7 +45,7 @@ public class FAWESchematicUtils {
         }
         Clipboard clipboard;
         try {
-            MessageUtil.log("Loading schematic " + schematicFile);
+            Factions.log("Loading schematic " + schematicFile);
             clipboard = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.load(schematicFile);
         } catch (Exception e) {
             Factions.getInstance().getLogger().warning("Error loading schematic " + schematicID);
@@ -58,13 +58,13 @@ public class FAWESchematicUtils {
             Region fullRegion = clipboard.getRegion();
             int maxY = fullRegion.getMaximumY();
             int y = Math.min(slice, maxY);
-            MessageUtil.log("Full region: " + fullRegion.getMinimumPoint() + " to " + fullRegion.getMaximumPoint());
+            Factions.log("Full region: " + fullRegion.getMinimumPoint() + " to " + fullRegion.getMaximumPoint());
             int locationY = fullRegion.getMinimumY() + y;
-            MessageUtil.log("Location Y: " + locationY);
+            Factions.log("Location Y: " + locationY);
             // Create the slice region
             Region regionToPaste = new CuboidRegion(fullRegion.getMinimumPoint().withY(locationY), fullRegion.getMaximumPoint().withY(locationY));
             BlockVector3 to = fullRegion.getMinimumPoint().withY(locationY);
-            MessageUtil.log("Slice: " + regionToPaste.getMinimumPoint() + " to " + regionToPaste.getMaximumPoint());
+            Factions.log("Slice: " + regionToPaste.getMinimumPoint() + " to " + regionToPaste.getMaximumPoint());
             // ForwardExtentCopy limited to the slice region
             ForwardExtentCopy copy = new ForwardExtentCopy(clipboard, regionToPaste, regionToPaste.getMinimumPoint(), session, to);
             Operations.complete(copy);
@@ -92,10 +92,10 @@ public class FAWESchematicUtils {
             builder.world(world);
             try (EditSession session = builder.build()) {
                 ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(session, region, clipboard, region.getMinimumPoint());
-                MessageUtil.log("Operation: " + forwardExtentCopy);
+                Factions.log("Operation: " + forwardExtentCopy);
                 Operations.complete(forwardExtentCopy);
                 try (ClipboardWriter writer = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(new FileOutputStream(schematicFile))) {
-                    MessageUtil.log("Writing schematic to " + schematicFile);
+                    Factions.log("Writing schematic to " + schematicFile);
                     writer.write(clipboard);
                 }
             }

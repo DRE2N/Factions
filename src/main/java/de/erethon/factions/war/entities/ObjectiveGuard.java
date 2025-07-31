@@ -146,7 +146,7 @@ public class ObjectiveGuard extends Vindicator {
     @Override
     public @NotNull SynchedEntityData getEntityData() {
         if (dataPlayer == null) {
-            MessageUtil.log("Tried to get entity data for an objective guard without a fake player");
+            Factions.log("Tried to get entity data for an objective guard without a fake player");
             return super.getEntityData();
         }
         return dataPlayer.getEntityData();
