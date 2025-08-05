@@ -144,6 +144,9 @@ public class FPlayerListener implements Listener {
         if (newRegion == oldRegion) {
             return false;
         }
+        if (newRegion == null || oldRegion == null) {
+            return false;
+        }
         if (newRegion.getMode().isSafe() && !oldRegion.getMode().isSafe()) {
             Player player = fPlayer.getPlayer();
             CraftPlayer craftPlayer = (CraftPlayer) player;
