@@ -771,6 +771,9 @@ public class FEconomy {
     public Component getFittingCitizenGossip(PopulationLevel level) {
         double happiness = faction.getHappiness(level);
         Set<Resource> unhappyResources = new HashSet<>();
+        if (resourceSatisfaction.get(level) == null) {
+            return Component.empty();
+        }
         for (Map.Entry<Resource, Double> entry : resourceSatisfaction.get(level).entrySet()) {
             if (entry.getValue() < 0.33) {
                 unhappyResources.add(entry.getKey());
@@ -778,22 +781,22 @@ public class FEconomy {
         }
         if (happiness < 0.1) {
             return Component.translatable("factions.economy.gossip.veryUnhappy",
-                    unhappyResources.stream().map(Resource::name).collect(Collectors.joining(", ")));
+                    Component.text(unhappyResources.stream().map(Resource::name).collect(Collectors.joining(", ")).toLowerCase()));
         } else if (happiness < 0.3) {
             return Component.translatable("factions.economy.gossip.unhappy",
-                    unhappyResources.stream().map(Resource::name).collect(Collectors.joining(", ")));
+                    Component.text(unhappyResources.stream().map(Resource::name).collect(Collectors.joining(", ")).toLowerCase()));
         } else if (happiness < 0.5) {
             return Component.translatable("factions.economy.gossip.neutral",
-                    unhappyResources.stream().map(Resource::name).collect(Collectors.joining(", ")));
+                    Component.text(unhappyResources.stream().map(Resource::name).collect(Collectors.joining(", ")).toLowerCase()));
         } else if (happiness < 0.7) {
             return Component.translatable("factions.economy.gossip.happy",
-                    unhappyResources.stream().map(Resource::name).collect(Collectors.joining(", ")));
+                    Component.text(unhappyResources.stream().map(Resource::name).collect(Collectors.joining(", ")).toLowerCase()));
         } else if (happiness < 0.9) {
             return Component.translatable("factions.economy.gossip.veryHappy",
-                    unhappyResources.stream().map(Resource::name).collect(Collectors.joining(", ")));
+                    Component.text(unhappyResources.stream().map(Resource::name).collect(Collectors.joining(", ")).toLowerCase()));
         } else {
             return Component.translatable("factions.economy.gossip.extremelyHappy",
-                    unhappyResources.stream().map(Resource::name).collect(Collectors.joining(", ")));
+                    Component.text(unhappyResources.stream().map(Resource::name).collect(Collectors.joining(", ")).toLowerCase()));
         }
     }
 }

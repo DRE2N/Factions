@@ -23,10 +23,13 @@ import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Optional;
 
 public class Citizen extends Villager {
 
@@ -53,6 +56,8 @@ public class Citizen extends Villager {
     public Citizen(Faction faction, Location location, PopulationLevel level) {
         super(EntityType.VILLAGER, ((CraftWorld) location.getWorld()).getHandle());
         randomName = randomCitizenName();
+        this.faction = faction;
+        this.populationLevel = level;
         setCustomName(Component.literal(randomName));
         VillagerData villagerData = switch (level) {
             case PEASANT -> getVillagerData().withType(level().registryAccess(), VillagerType.PLAINS).withProfession(level().registryAccess(), VillagerProfession.FARMER);
@@ -62,22 +67,32 @@ public class Citizen extends Villager {
         };
         setVillagerData(villagerData);
         setPos(location.getX(), location.getY(), location.getZ());
+        targetSelector.removeAllGoals(Predicates.alwaysTrue());
+        brain.removeAllBehaviors();
+        brain.getActiveActivities().clear();
+        goalSelector.removeAllGoals(Predicates.alwaysTrue());
+        // Some basic behaviors so they seem alive
+        goalSelector.addGoal(0, new RandomStrollGoal(this, 0.5D));
+        goalSelector.addGoal(1, new RandomLookAroundGoal(this));
+        goalSelector.addGoal(2, new OpenDoorGoal(this, true));
+        setPersistenceRequired(false); // We just respawn them
+        persist = false;
         level().addFreshEntity(this);
     }
 
     @Override
     protected void customServerAiStep(@NotNull ServerLevel level) {
+        if (faction == null) {
+            remove(RemovalReason.DISCARDED);
+            return;
+        }
         if (lastGossipTick > 0) {
             lastGossipTick--;
             return;
         }
         if (lastGossipTick == 0) {
             lastGossipTick = 500;
-            net.kyori.adventure.text.Component gossip = faction.getEconomy().getFittingCitizenGossip(populationLevel);
-            net.kyori.adventure.text.Component name = net.kyori.adventure.text.Component.text(randomName, NamedTextColor.GREEN);
-            for (org.bukkit.entity.Player player : getBukkitEntity().getLocation().getNearbyPlayers(4)) {
-                player.sendMessage(name.append(net.kyori.adventure.text.Component.text(": ", NamedTextColor.DARK_GRAY)).append(gossip));
-            }
+            gossip();
         }
     }
 
@@ -85,7 +100,7 @@ public class Citizen extends Villager {
     public @NotNull InteractionResult mobInteract(Player player, @NotNull InteractionHand hand) {
         PopulationGUI gui = new PopulationGUI((org.bukkit.entity.Player) player.getBukkitEntity(), faction);
         gui.open();
-        return InteractionResult.CONSUME;
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -93,14 +108,41 @@ public class Citizen extends Villager {
         return false;
     }
 
+    private void gossip() {
+        net.kyori.adventure.text.Component gossip = faction.getEconomy().getFittingCitizenGossip(populationLevel);
+        if (gossip == null || gossip.equals(Component.empty())) {
+            return; // No gossip to send
+        }
+        net.kyori.adventure.text.Component name = net.kyori.adventure.text.Component.text(randomName, NamedTextColor.GREEN);
+        for (org.bukkit.entity.Player player : getBukkitEntity().getLocation().getNearbyPlayers(3)) {
+            player.sendMessage(name.append(net.kyori.adventure.text.Component.text(": ", NamedTextColor.DARK_GRAY)).append(gossip));
+        }
+    }
+
     @Override
     public void addAdditionalSaveData(@NotNull ValueOutput output) {
         super.addAdditionalSaveData(output);
         try { // Just in case
             output.putString("papyrus-entity-id", "factions_citizen");
+            output.putInt("faction-id", faction.getId());
+            output.putString("population-level", populationLevel.name());
         } catch (Exception e) {
-            FLogger.WAR.log("Failed to save citizen NPC data at " + position().x + ", " + position().y + ", " + position().z);
+            FLogger.ECONOMY.log("Failed to save citizen NPC data at " + position().x + ", " + position().y + ", " + position().z);
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        Optional<Integer> id = input.getInt("papyrus-entity-id");
+        id.ifPresent(integer -> faction = plugin.getFactionCache().getById(integer));
+        Optional<String> level = input.getString("population-level");
+        level.ifPresent(s -> populationLevel = PopulationLevel.valueOf(s.toUpperCase()));
+        if (faction == null) {
+            FLogger.ECONOMY.log("Failed to load citizen NPC data at " + position().x + ", " + position().y + ", " + position().z + ". Faction not found for ID: " + input.getInt("faction-id"));
+            remove(RemovalReason.DISCARDED);
+            return;
         }
     }
 

@@ -525,6 +525,13 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         return otherCorner;
     }
 
+    public Location getCenter() {
+        return new Location(corner.getWorld(),
+                (corner.getX() + otherCorner.getX()) / 2,
+                (corner.getY() + otherCorner.getY()) / 2,
+                (corner.getZ() + otherCorner.getZ()) / 2);
+    }
+
     public @NotNull Set<BuildSiteSection> getSections() {
         return sections;
     }

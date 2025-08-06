@@ -1,5 +1,6 @@
 package de.erethon.factions.building.effects;
 
+import de.erethon.factions.Factions;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildingEffectData;
@@ -10,6 +11,7 @@ import de.erethon.factions.economy.population.entities.Citizen;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.entity.Villager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
@@ -44,10 +46,16 @@ public class AddHousing extends BuildingEffect {
         Random rand = new Random();
         if (rand.nextDouble() < citizenSpawnChance) {
             // Spawn at a random location in the site
-            int x = rand.nextInt((int) site.getCorner().distance(site.getOtherCorner()));
-            int z = rand.nextInt((int) site.getCorner().distance(site.getOtherCorner()));
-            Location highestBlock = new Location(site.getInteractive().getWorld(), x, 0, z).toHighestLocation(HeightMap.MOTION_BLOCKING_NO_LEAVES);
+            int x = rand.nextInt((int) site.getCorner().distance(site.getOtherCorner()) + 1) - (int) site.getCorner().distance(site.getOtherCorner()) / 2;
+            int z = rand.nextInt((int) site.getCorner().distance(site.getOtherCorner()) + 1) - (int) site.getCorner().distance(site.getOtherCorner()) / 2;
+            Location baseLocation = site.getCenter().add(x, 0, z);
+            int nearby = baseLocation.getNearbyEntitiesByType(Villager.class, 32).size();
+            if (nearby > 4) {
+                return;
+            }
+            Location highestBlock = baseLocation.toHighestLocation(HeightMap.MOTION_BLOCKING_NO_LEAVES);
             highestBlock.setY(highestBlock.getY() + 1);
+            Factions.log("Spawning citizen for faction " + faction.getName() + " at " + highestBlock + "(x + " + x + ", z + " + z + ")");
             new Citizen(faction, highestBlock, level);
         }
     }
