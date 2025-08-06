@@ -2,6 +2,7 @@ package de.erethon.factions.building;
 
 import com.destroystokyo.paper.MaterialSetTag;
 import com.destroystokyo.paper.MaterialTags;
+import de.erethon.factions.Factions;
 import org.bukkit.Material;
 
 import java.util.Arrays;
@@ -49,5 +50,27 @@ public enum FSetTag {
 
     public boolean hasBlock(Material block) {
         return materialSetTags.contains(block);
+    }
+
+    public static void printNicely() {
+        StringBuilder sb = new StringBuilder();
+        for (FSetTag tag : values()) {
+            sb.append("Tag ").append(tag.name()).append(": ").append("\n");
+            for (Material material : tag.getMaterials()) {
+                sb.append("  - ").append(material.name()).append("\n");
+            }
+            sb.append("\n");
+
+        }
+        Factions.log(sb.toString());
+    }
+
+    public static boolean isValidTag(String tagName) {
+        try {
+            FSetTag.valueOf(tagName.toUpperCase());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

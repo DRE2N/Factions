@@ -98,6 +98,8 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     private Location inputChestLocation;
     private Location outputChestLocation;
 
+    private Map<FSetTag, Integer> placedBlocksByTag = new HashMap<>();
+
     public BuildSite(@NotNull Building building, @NotNull Region region, @NotNull Location loc1, @NotNull Location loc2, @NotNull Location center) {
         this.building = building;
         this.region = region;
@@ -143,9 +145,24 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         Component content = Component.translatable("factions.building.buildings." + building.getId() + ".name").color(NamedTextColor.GOLD);
         content = content.append(Component.newline());
         if (!finished) {
-            for (Material material : building.getRequiredBlocks().keySet()) {
-                content = content.append(Component.translatable(material.translationKey(), NamedTextColor.GOLD).append(Component.text(": ", NamedTextColor.DARK_GRAY)).append(getProgressComponent(material))).append(Component.newline());
+            for (BlockRequirement req : building.getBlockRequirements()) {
+                if (req.isTagRequirement()) {
+                    content = content.append(Component.text(req.getTag().name(), NamedTextColor.GOLD)
+                            .append(Component.text(": ", NamedTextColor.DARK_GRAY))
+                            .append(getProgressComponentForTag(req.getTag(), req.getAmount())))
+                            .append(Component.newline());
+                }
+                if (req.isMaterialRequirement() && req.getMaterial() != null) {
+                    int placed = placedBlocks.getOrDefault(req.getMaterial(), 0);
+                    content = content.append(Component.text(req.getMaterial().name(), NamedTextColor.GOLD)
+                            .append(Component.text(": ", NamedTextColor.DARK_GRAY))
+                            .append(Component.text(placed, placed >= req.getAmount() ? NamedTextColor.GREEN : NamedTextColor.RED))
+                            .append(Component.text("/" + req.getAmount(), NamedTextColor.DARK_GRAY))
+                            .append(placed >= req.getAmount() ? Component.text(" ✔", NamedTextColor.GREEN) : Component.text(" ✘", NamedTextColor.RED)))
+                            .append(Component.newline());
+                }
             }
+
             progressHolo.text(content);
             return;
         }
@@ -250,11 +267,19 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     public boolean isDestroyed() {
         boolean damaged = false;
-        for (Material material : building.getRequiredBlocks().keySet()) {
-            if (getPlacedBlocks().get(material) < building.getRequiredBlocks().get(material)) {
-                damaged = true;
+        for (BlockRequirement req : building.getBlockRequirements()) {
+            if (req.isTagRequirement()) {
+                if (placedBlocksByTag.getOrDefault(req.getTag(), 0) < req.getAmount()) {
+                    damaged = true;
+                }
+            }
+            if (req.isMaterialRequirement()) {
+                if (placedBlocks.getOrDefault(req.getMaterial(), 0) < req.getAmount()) {
+                    damaged = true;
+                }
             }
         }
+
         return damaged;
     }
 
@@ -266,11 +291,19 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                 isBusy = false;
                 boolean fini = true;
                 updateHolo();
-                for (Material material : building.getRequiredBlocks().keySet()) {
-                    if (getPlacedBlocks().get(material) < building.getRequiredBlocks().get(material)) {
-                        fini = false;
+                for (BlockRequirement req : building.getBlockRequirements()) {
+                    if (req.isTagRequirement()) {
+                        if (placedBlocksByTag.getOrDefault(req.getTag(), 0) < req.getAmount()) {
+                            fini = false;
+                        }
+                    }
+                    if (req.isMaterialRequirement()) {
+                        if (placedBlocks.getOrDefault(req.getMaterial(), 0) < req.getAmount()) {
+                            fini = false;
+                        }
                     }
                 }
+
                 if (finished && !fini) {
                     finished = false;
                     getRegion().getOwner().sendTranslatable("factions.building.status.destroyed", Component.text(getBuilding().getId()), Component.text(getRegion().getName()));
@@ -289,47 +322,53 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                 }
             }
         };
+
         BukkitRunnable runAsync = new BukkitRunnable() {
             @Override
             public void run() {
                 Set<Block> blocks;
-                Map<Material, Integer> placed = new HashMap<>();
+                Map<Material, Integer> placedByBlock = new HashMap<>();
+                Map<FSetTag, Integer> placedByTag = new HashMap<>();
                 blocks = getBlocks(corner.getWorld());
-                FLogger.BUILDING.log(building.getRequiredBlocks().toString());
                 for (Block block : blocks) {
                     Material type = block.getType();
-                    if (building.getRequiredBlocks().containsKey(type)) {
-                        int amount = 0;
-                        if (placed.containsKey(type)) {
-                            amount = placed.get(type);
+                    for (BlockRequirement req : building.getBlockRequirements()) {
+                        if (req.isTagRequirement() && req.matches(type)) {
+                            FSetTag tag = req.getTag();
+                            int amount = placedByTag.getOrDefault(tag, 0);
+                            placedByTag.put(tag, amount + 1);
                         }
-                        placed.put(type, amount + 1);
+                        if (req.isMaterialRequirement() && req.matches(type)) {
+                            int amount = placedByBlock.getOrDefault(type, 0);
+                            placedByBlock.put(type, amount + 1);
+                        }
                     }
+
                     if (building.getBlocksOfInterest().contains(type)) {
-                        blocksOfInterest.getOrDefault(type, new HashSet<>()).add(new BuildSiteCoordinate(block.getX(), block.getY(), block.getZ()));
+                        blocksOfInterest.getOrDefault(type, new HashSet<>())
+                            .add(new BuildSiteCoordinate(block.getX(), block.getY(), block.getZ()));
                     }
                 }
-                FLogger.BUILDING.log(placed.toString());
-                placedBlocks = placed;
+
+                placedBlocks = placedByBlock;
+                placedBlocksByTag = placedByTag;
                 complete.runTask(plugin);
             }
         };
+
         runAsync.runTaskAsynchronously(plugin);
     }
 
-    public @NotNull Component getProgressComponent(@Nullable Material block) {
-        int total = 0;
-        if (building.getRequiredBlocks().get(block) != null) {
-            total = building.getRequiredBlocks().get(block);
+    public @NotNull Component getProgressComponentForTag(@NotNull FSetTag tag, int requiredAmount) {
+        int placed = placedBlocksByTag.getOrDefault(tag, 0);
+        if (placed >= requiredAmount) {
+            return Component.text(placed, NamedTextColor.GREEN)
+                    .append(Component.text("/" + requiredAmount, NamedTextColor.DARK_GRAY)
+                    .append(Component.text(" ✔", NamedTextColor.GREEN)));
         }
-        int placed = 0;
-        if (getPlacedBlocks().get(block) != null) {
-            placed = getPlacedBlocks().get(block);
-        }
-        if (placed >= total) {
-            return Component.text(placed, NamedTextColor.GREEN).append(Component.text("/" + total, NamedTextColor.DARK_GRAY).append(Component.text(" ✔", NamedTextColor.GREEN)));
-        }
-        return Component.text(placed, NamedTextColor.RED).append(Component.text("/" + total, NamedTextColor.DARK_GRAY).append(Component.text(" ✘", NamedTextColor.RED)));
+        return Component.text(placed, NamedTextColor.RED)
+                .append(Component.text("/" + requiredAmount, NamedTextColor.DARK_GRAY)
+                .append(Component.text(" ✘", NamedTextColor.RED)));
     }
 
     public boolean isInBuildSite(@NotNull Location location) {
@@ -914,6 +953,11 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         for (Map.Entry<Material, Integer> entry : placedBlocks.entrySet()) {
             set("placedBlocks." + entry.getKey().name(), entry.getValue());
         }
+
+        for (Map.Entry<FSetTag, Integer> entry : placedBlocksByTag.entrySet()) {
+            set("placedBlocksByTag." + entry.getKey().name(), entry.getValue());
+        }
+
         for (Material type : blocksOfInterest.keySet()) {
             YamlConfiguration section = new YamlConfiguration();
             List<String> coords = new ArrayList<>();
@@ -930,3 +974,4 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         super.save(file);
     }
 }
+

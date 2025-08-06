@@ -63,8 +63,7 @@ public class Building {
     private boolean isUnique;
     private int size;
     private Map<Resource, Integer> unlockCost = new HashMap<>();
-    private Map<Material, Integer> requiredBlocks = new HashMap<>();
-    private final Map<FSetTag, Integer> requiredBlockTypes = new HashMap<>();
+    private final List<BlockRequirement> requiredBlocks = new ArrayList<>();
     private final Map<PopulationLevel, Integer> requiredPopulation = new HashMap<>();
     private final Set<RegionType> requiredRegionTypes = new HashSet<>();
     private Biome requiredBiome;
@@ -343,16 +342,33 @@ public class Building {
         this.unlockCost = unlockCost;
     }
 
-    public @NotNull Map<Material, Integer> getRequiredBlocks() {
+    /**
+     * Adds a requirement for a specific Material.
+     *
+     * @param material The Material to require
+     * @param amount   The amount required
+     */
+    public void addRequiredBlocks(Material material, int amount) {
+        requiredBlocks.add(new BlockRequirement(material, amount));
+    }
+
+    /**
+     * Adds a requirement for blocks matching an FSetTag.
+     *
+     * @param tag    The FSetTag to require
+     * @param amount The amount required
+     */
+    public void addRequiredBlocks(FSetTag tag, int amount) {
+        requiredBlocks.add(new BlockRequirement(tag, amount));
+    }
+
+    /**
+     * Gets all block requirements for this building.
+     *
+     * @return The list of BlockRequirements
+     */
+    public List<BlockRequirement> getBlockRequirements() {
         return requiredBlocks;
-    }
-
-    public void setRequiredBlocks(@NotNull Map<Material, Integer> requiredBlocks) {
-        this.requiredBlocks = requiredBlocks;
-    }
-
-    public @NotNull Map<FSetTag, Integer> getRequiredBlockTypes() {
-        return requiredBlockTypes;
     }
 
     public @NotNull Map<PopulationLevel, Integer> getRequiredPopulation() {
@@ -453,20 +469,22 @@ public class Building {
                 }
             }
         }
-        if (config.contains("requiredCategories")) {
-            Set<String> cfgList = config.getConfigurationSection("requiredCategories").getKeys(false);
-            for (String s : cfgList) {
-                FSetTag tag = FSetTag.valueOf(s.toUpperCase());
-                int amount = config.getInt("requiredCategories." + s);
-                requiredBlockTypes.put(tag, amount);
-            }
-        }
         if (config.contains("requiredBlocks")) {
             Set<String> cfgList = config.getConfigurationSection("requiredBlocks").getKeys(false);
             for (String s : cfgList) {
+                if (FSetTag.isValidTag(s.toUpperCase())) {
+                    FSetTag tag = FSetTag.valueOf(s.toUpperCase());
+                    int amount = config.getInt("requiredBlocks." + s);
+                    requiredBlocks.add(new BlockRequirement(tag, amount));
+                    continue;
+                }
                 Material material = Material.getMaterial(s.toUpperCase());
+                if (material == null) {
+                    FLogger.ERROR.log("Invalid material in requiredBlocks for building " + id + ": " + s);
+                    continue;
+                }
                 int amount = config.getInt("requiredBlocks." + s);
-                requiredBlocks.put(material, amount);
+                requiredBlocks.add(new BlockRequirement(material, amount));
             }
         }
         if (config.contains("unlockCost")) {
@@ -520,3 +538,4 @@ public class Building {
     }
 
 }
+
