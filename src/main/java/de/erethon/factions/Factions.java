@@ -12,10 +12,12 @@ import de.erethon.bedrock.misc.FileUtil;
 import de.erethon.bedrock.misc.Registry;
 import de.erethon.bedrock.plugin.EPlugin;
 import de.erethon.bedrock.plugin.EPluginSettings;
+import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.alliance.AllianceCache;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildSiteCache;
 import de.erethon.factions.building.BuildingManager;
+import de.erethon.factions.building.FSetTag;
 import de.erethon.factions.economy.population.entities.Councillor;
 import de.erethon.factions.command.logic.FCommandCache;
 import de.erethon.factions.data.FConfig;
@@ -48,12 +50,19 @@ import de.erethon.factions.war.entities.CrystalChargeCarrier;
 import de.erethon.factions.war.entities.CrystalMob;
 import de.erethon.factions.war.entities.ObjectiveGuard;
 import de.erethon.factions.web.RegionHttpServer;
+import de.erethon.hecate.Hecate;
+import de.erethon.spellbook.Spellbook;
+import de.erethon.spellbook.teams.SpellbookTeam;
+import de.erethon.spellbook.teams.TeamManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.minecraft.world.entity.EntityType;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.command.Command;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitTask;
@@ -187,6 +196,7 @@ public final class Factions extends EPlugin {
         registerAergiaPlaceholders();
         registerCustomEntities();
         BoltIntegration.setup(this);
+        FSetTag.printNicely();
     }
 
     public void initFolders() {
@@ -298,6 +308,9 @@ public final class Factions extends EPlugin {
     public void loadCommands() {
         setCommandCache(fCommandCache = new FCommandCache(this));
         fCommandCache.register(this);
+        for (Map.Entry<String, Command> entry : Bukkit.getCommandMap().getKnownCommands().entrySet()) {
+            Factions.log("- " + entry.getKey() + " -> " + entry.getValue().getLabel());
+        }
     }
 
     public void registerListeners() {
@@ -530,6 +543,29 @@ public final class Factions extends EPlugin {
     public void updateWebCache() {
         FLogger.DEBUG.log("Updating web cache...");
         regionHttpServer.getCache().updateCache();
+    }
+
+    public void ensureTeamForPlayer(@NotNull Player player) {
+        if (Bukkit.getPluginManager().getPlugin("Hecate") == null) {
+            return;
+        }
+        TeamManager teamManager = Hecate.getInstance().getSpellbook().getTeamManager();
+        FPlayer fPlayer = fPlayerCache.getByPlayerIfCached(player);
+        if (fPlayer == null || fPlayer.getAlliance() == null) {
+            return;
+        }
+        Alliance alliance = fPlayer.getAlliance();
+        SpellbookTeam team = teamManager.getTeam(String.valueOf(alliance.getId()));
+        if (team == null) {
+            Color color = Color.fromRGB(alliance.getColor().red(), alliance.getColor().green(), alliance.getColor().blue());
+            teamManager.createTeam(String.valueOf(alliance.getId()), alliance.getName(), color);
+            team = teamManager.getTeam(String.valueOf(alliance.getId()));
+        }
+        if (teamManager.getTeam(player) == team) {
+            return;
+        }
+        teamManager.setTeam(player, team);
+        FLogger.WAR.log("Added player " + player.getName() + " to team " + team.name() + " (" + team.id() + ") for alliance " + alliance.getName() + " (" + alliance.getId() + ")");
     }
 
     /* Getters and setters */

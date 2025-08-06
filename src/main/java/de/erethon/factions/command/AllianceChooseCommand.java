@@ -37,6 +37,7 @@ public class AllianceChooseCommand extends FCommand {
         assure(fPlayer.setAlliance(alliance), FMessage.ERROR_CANNOT_CHOOSE_ALLIANCE);
         new FPlayerChangeAllianceEvent(fPlayer, old).callEvent();
         fPlayer.setLastAllianceJoinDate(System.currentTimeMillis());
+        plugin.ensureTeamForPlayer(fPlayer.getPlayer());
         sender.sendMessage(FMessage.CMD_ALLIANCE_CHOOSE_SUCCESS.message(alliance.getName()));
     }
 

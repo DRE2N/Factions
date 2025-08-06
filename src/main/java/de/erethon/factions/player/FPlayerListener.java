@@ -9,6 +9,9 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionMode;
 import de.erethon.factions.region.RegionType;
 import de.erethon.factions.war.entities.LoggedOutPlayer;
+import de.erethon.hecate.Hecate;
+import de.erethon.spellbook.api.SpellbookAPI;
+import de.erethon.spellbook.teams.TeamManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -36,6 +39,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class FPlayerListener implements Listener {
 
     final Factions plugin = Factions.get();
+    final Hecate hecate = Hecate.getInstance();
     final MiniMessage miniMessage = MiniMessage.miniMessage();
     final Component heading = miniMessage.deserialize("<gradient:red:dark_red><st>       </st></gradient><dark_gray>]<gray><st> </st> <#ad1c11>Erethon</#ad1c11> <st> </st><dark_gray>[<gradient:dark_red:red><st>       </st></gradient>");
 
@@ -94,6 +98,7 @@ public class FPlayerListener implements Listener {
             return;
         }
         updateLastRegion(fPlayer, event.getPlayer().getLocation());
+        plugin.ensureTeamForPlayer(event.getPlayer());
     }
 
     private boolean updateLastRegion(FPlayer fPlayer, Location to) {
