@@ -6,8 +6,3 @@ depend: [ Aergia ]
 softdepend: [ LWC, Bolt ]
 authors: [ Fyreum, Malfrador ]
 description: A Factions plugin
-commands:
-  factions:
-    aliases:
-      - f
-    description: Main faction command

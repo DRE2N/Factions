@@ -5,15 +5,19 @@ import de.erethon.bedrock.command.ECommandCache;
 import de.erethon.bedrock.plugin.EPlugin;
 import de.erethon.factions.command.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author Fyreum
  */
 public class FCommandCache extends ECommandCache {
 
     public static final String LABEL = "factions";
+    public static Set<String> ALIASES = Set.of("f", "fac", "faction", "factions");
 
     public FCommandCache(EPlugin plugin) {
-        super(LABEL, plugin);
+        super(LABEL, plugin, ALIASES, new HashSet<>());
         addCommand(new AdminCommand());
         addCommand(new AllianceCommand());
         addCommand(new AuthoriseCommand());

@@ -15,6 +15,7 @@ public class AllianceCommand extends FCommand {
         setAliases("a");
         setMinMaxArgs(0, Integer.MAX_VALUE);
         setConsoleCommand(true);
+        setRegisterSeparately(true);
         setPermissionFromName();
         setFUsage(getCommand() + " [...]");
         setDescription("Befehle rund um Allianzen");
