@@ -4,6 +4,7 @@ import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.misc.JavaUtil;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.economy.FEconomy;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import net.kyori.adventure.text.Component;
@@ -41,7 +42,7 @@ public class ShowCommand extends FCommand {
         sender.sendMessage(FMessage.CMD_SHOW_DESCRIPTION.message(faction.getDisplayDescription()));
         sender.sendMessage(FMessage.CMD_SHOW_ALLIANCE.message(faction.getAlliance().asComponent(fPlayer)));
         sender.sendMessage(FMessage.CMD_SHOW_LEVEL.message(faction.getLevel().displayName()));
-        sender.sendMessage(FMessage.CMD_SHOW_MONEY.message(faction.getFAccount().getFormatted(),
+        sender.sendMessage(FMessage.CMD_SHOW_MONEY.message(faction.getFAccount().getFormatted(faction.getFAccount().getBalance(FEconomy.TAX_CURRENCY)),
                 faction.hasCurrentTaxDebt() ? " (" + faction.getFAccount().getFormatted(faction.getCurrentTaxDebt()) + ")" : ""));
         sender.sendMessage(FMessage.CMD_SHOW_CORE_REGION.message(faction.getCoreRegion().asComponent(fPlayer)));
         sender.sendMessage(FMessage.CMD_SHOW_ADMIN.message(getDisplayName(faction, faction.getAdmin())));

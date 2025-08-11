@@ -1,7 +1,6 @@
 package de.erethon.factions.faction;
 
 import de.erethon.aergia.util.BroadcastUtil;
-import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.player.PlayerCollection;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
@@ -237,7 +236,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         for (Region region : regions) {
             region.setOwner(null);
         }
-        fAccount.setBalance(0);
+        fAccount.setBalance(0, FEconomy.TAX_CURRENCY);
         try {
             file.delete();
         } catch (SecurityException e) {

@@ -54,6 +54,8 @@ import de.erethon.hecate.Hecate;
 import de.erethon.spellbook.Spellbook;
 import de.erethon.spellbook.teams.SpellbookTeam;
 import de.erethon.spellbook.teams.TeamManager;
+import de.erethon.tyche.EconomyService;
+import de.erethon.tyche.TychePlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.minecraft.world.entity.EntityType;
@@ -106,6 +108,9 @@ public final class Factions extends EPlugin {
 
     /* Registries */
     private Registry<String, Function<ConfigurationSection, Poll<?>>> pollDeserializerRegistry;
+
+    /* Dependencies */
+    private EconomyService economyService;
 
     /* Configs */
     private FConfig fConfig;
@@ -162,6 +167,9 @@ public final class Factions extends EPlugin {
     public void onEnable() {
         super.onEnable();
         instance = this;
+        if (Bukkit.getPluginManager().isPluginEnabled("Tyche")) {
+            economyService = TychePlugin.getEconomyService();
+        }
         loadCore();
     }
 
@@ -655,7 +663,11 @@ public final class Factions extends EPlugin {
     }
 
     public boolean hasEconomyProvider() {
-        return getEconomyProvider() != null;
+        return economyService != null;
+    }
+
+    public EconomyService getEconomyService() {
+        return economyService;
     }
 
     /* Statics */

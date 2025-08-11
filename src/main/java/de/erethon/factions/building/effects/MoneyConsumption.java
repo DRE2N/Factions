@@ -3,6 +3,7 @@ package de.erethon.factions.building.effects;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildingEffectData;
+import de.erethon.factions.economy.FEconomy;
 import org.jetbrains.annotations.NotNull;
 
 public class MoneyConsumption extends BuildingEffect {
@@ -25,7 +26,7 @@ public class MoneyConsumption extends BuildingEffect {
             enableOtherEffects();
         }
         if (faction.getFAccount().canAfford(amount)) {
-            faction.getFAccount().withdraw(amount);
+            faction.getFAccount().withdraw(amount, FEconomy.TAX_CURRENCY, "Payday for " + site.getName(), site.getUuid());
         } else if (shouldDisableBuilding && !buildingIsDisabled) {
             disableOtherEffects();
             buildingIsDisabled = true;

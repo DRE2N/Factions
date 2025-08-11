@@ -5,6 +5,7 @@ import de.erethon.bedrock.misc.JavaUtil;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.economy.FEconomy;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
@@ -41,7 +42,7 @@ public class AllianceShowCommand extends FCommand {
         sender.sendMessage(FMessage.CMD_ALLIANCE_SHOW_SHORT_NAME.message(alliance.getDisplayShortName()));
         sender.sendMessage(FMessage.CMD_ALLIANCE_SHOW_LONG_NAME.message(alliance.getDisplayLongName()));
         sender.sendMessage(FMessage.CMD_ALLIANCE_SHOW_DESCRIPTION.message(alliance.getDisplayDescription()));
-        sender.sendMessage(FMessage.CMD_ALLIANCE_SHOW_MONEY.message(alliance.getFAccount().getFormatted()));
+        sender.sendMessage(FMessage.CMD_ALLIANCE_SHOW_MONEY.message(alliance.getFAccount().getFormatted(alliance.getFAccount().getBalance(FEconomy.TAX_CURRENCY))));
         sender.sendMessage(FMessage.CMD_ALLIANCE_SHOW_MEMBERS.message(Component.text(alliance.getFactions().size()), getFactionsComponent(alliance, getFPlayer(sender))));
         sender.sendMessage(Component.empty());
     }

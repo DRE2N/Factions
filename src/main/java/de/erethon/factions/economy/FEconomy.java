@@ -63,6 +63,8 @@ public class FEconomy {
     private static final int MAX_REVOLT_EPICENTER_RETRIES = 10;
     public final static double UNREST_REDUCTION_FOR_REVOLUTIONARY_DEATH = 1.0;
 
+    public final static String TAX_CURRENCY = "herone"; // The currency used for faction taxes
+
     private final Faction faction;
     private final FStorage storage;
     private final Set<HappinessModifier> happinessModifiers = new HashSet<>();
@@ -303,7 +305,7 @@ public class FEconomy {
                     happinessForTax,
                     revenue));
         }
-        faction.getFAccount().deposit((int) totalTaxRevenue);
+        faction.getFAccount().deposit((int) totalTaxRevenue, TAX_CURRENCY, "Tax revenue for " + faction.getName(), null);
         FLogger.ECONOMY.log(String.format("[%s] Collected %.2f money in taxes.",
                 faction.getName(),
                 totalTaxRevenue));

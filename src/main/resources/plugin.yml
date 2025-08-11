@@ -3,6 +3,6 @@ version: 1.0-SNAPSHOT
 main: de.erethon.factions.Factions
 api-version: 1.21
 depend: [ Aergia ]
-softdepend: [ LWC, Bolt ]
+softdepend: [ LWC, Bolt, Tyche ]
 authors: [ Fyreum, Malfrador ]
 description: A Factions plugin

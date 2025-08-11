@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
@@ -29,6 +30,7 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
     protected final Factions plugin = Factions.get();
 
     protected final int id;
+    protected final UUID uuid;
     protected String name;
     protected String description;
     protected final Map<String, FactionAttribute> attributes = new HashMap<>();
@@ -37,6 +39,7 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
     public FLegalEntity(@NotNull File file, int id, @NotNull String name, @Nullable String description) {
         super(file, CONFIG_VERSION);
         this.id = id;
+        this.uuid = UUID.randomUUID();
         this.name = name;
         this.description = description;
         addDefaultAttributes(); // Initialize default attributes
@@ -51,6 +54,7 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
     public FLegalEntity(@NotNull File file) throws NumberFormatException {
         super(file, CONFIG_VERSION);
         this.id = Integer.parseInt(file.getName().replace(".yml", ""));
+        this.uuid = UUID.fromString(config.getString("uuid", UUID.randomUUID().toString()));
         this.name = config.getString("name");
         this.description = config.getString("description");
 
@@ -95,6 +99,10 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
 
     public int getId() {
         return id;
+    }
+
+    public UUID getUniqueId() {
+        return uuid;
     }
 
     public @NotNull String getName() {

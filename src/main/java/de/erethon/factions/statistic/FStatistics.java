@@ -2,6 +2,7 @@ package de.erethon.factions.statistic;
 
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
+import de.erethon.factions.economy.FEconomy;
 import de.erethon.factions.util.FLogger;
 import io.prometheus.client.Gauge;
 
@@ -49,11 +50,11 @@ public class FStatistics {
     public static void update() {
         FLogger.DEBUG.log("Updating statistics...");
         for (Alliance alliance : plugin.getAllianceCache()) {
-            ALLIANCE_MONEY_AMOUNT.labels(String.valueOf(alliance.getId())).set(alliance.getFAccount().getBalance());
+            ALLIANCE_MONEY_AMOUNT.labels(String.valueOf(alliance.getId())).set(alliance.getFAccount().getBalance(FEconomy.TAX_CURRENCY));
         }
 
-        FACTIONS_AVERAGE_MONEY_AMOUNT.set(plugin.getFactionCache().getCache().values().stream().mapToDouble(f -> f.getFAccount().getBalance()).average().orElse(0));
-        FACTIONS_HIGHEST_MONEY_AMOUNT.set(plugin.getFactionCache().getCache().values().stream().mapToDouble(f -> f.getFAccount().getBalance()).max().orElse(0));
+        FACTIONS_AVERAGE_MONEY_AMOUNT.set(plugin.getFactionCache().getCache().values().stream().mapToDouble(f -> f.getFAccount().getBalance(FEconomy.TAX_CURRENCY)).average().orElse(0));
+        FACTIONS_HIGHEST_MONEY_AMOUNT.set(plugin.getFactionCache().getCache().values().stream().mapToDouble(f -> f.getFAccount().getBalance(FEconomy.TAX_CURRENCY)).max().orElse(0));
 
         REGIONS_PER_FACTION.set(plugin.getFactionCache().getCache().values().stream().mapToInt(f -> f.getRegions().size()).average().orElse(0));
     }

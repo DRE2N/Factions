@@ -3,6 +3,7 @@ package de.erethon.factions.command;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.economy.FAccount;
+import de.erethon.factions.economy.FEconomy;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
@@ -32,7 +33,7 @@ public class ClaimCommand extends FCommand {
         double price = region.calculatePriceFor(faction);
 
         assure(fAccount.canAfford(price), FMessage.ERROR_FACTION_HAS_NOT_ENOUGH_MONEY, fAccount.getFormatted(price));
-        fAccount.withdraw(price);
+        fAccount.withdraw(price, FEconomy.TAX_CURRENCY, "Claimed region " + region.getName() + " by " + fPlayer.getLastName(), fPlayer.getUniqueId());
 
         region.setOwner(faction);
         faction.addRegion(region);

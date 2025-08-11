@@ -3,6 +3,7 @@ package de.erethon.factions.building.effects;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.BuildingEffectData;
+import de.erethon.factions.economy.FEconomy;
 import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.faction.Faction;
 import org.jetbrains.annotations.NotNull;
@@ -47,7 +48,7 @@ public class PopulationTax extends BuildingEffect {
             if (total > maximumTotal) {
                 amount = maximumTotal;
             }
-            faction.getFAccount().deposit(Math.min(0, amount));
+            faction.getFAccount().deposit(Math.min(0, amount), FEconomy.TAX_CURRENCY, "Population tax for " + level.name().toLowerCase(), site.getUuid());
         }
     }
 }

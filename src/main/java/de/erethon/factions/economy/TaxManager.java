@@ -52,27 +52,27 @@ public class TaxManager {
             if (amount <= 0) {
                 continue;
             }
-            if (fAccount.getBalance() > 0 && faction.getCurrentTaxDebt() > 0) {
+            if (fAccount.getBalance(FEconomy.TAX_CURRENCY) > 0 && faction.getCurrentTaxDebt() > 0) {
                 if (fAccount.canAfford(faction.getCurrentTaxDebt())) {
-                    fAccount.withdraw(faction.getCurrentTaxDebt());
+                    fAccount.withdraw(faction.getCurrentTaxDebt(), FEconomy.TAX_CURRENCY, "Pay off tax debt for " + alliance.getName(), alliance.getUniqueId());
                     FLogger.ECONOMY.log("Faction '" + faction.getId() + "' paid off all their debt of " + faction.getCurrentTaxDebt());
                     faction.setCurrentTaxDebt(0);
                 } else {
-                    faction.removeCurrentTaxDebt(fAccount.getBalance());
-                    FLogger.ECONOMY.log("Faction '" + faction.getId() + "' partially paid off their debt of " + fAccount.getBalance() + ": Missing " + faction.getCurrentTaxDebt());
-                    fAccount.setBalance(0);
+                    faction.removeCurrentTaxDebt(fAccount.getBalance(FEconomy.TAX_CURRENCY));
+                    FLogger.ECONOMY.log("Faction '" + faction.getId() + "' partially paid off their debt of " + fAccount.getBalance(FEconomy.TAX_CURRENCY) + ": Missing " + faction.getCurrentTaxDebt());
+                    fAccount.setBalance(0, FEconomy.TAX_CURRENCY);
                 }
             }
             if (fAccount.canAfford(amount)) {
-                fAccount.withdraw(amount);
-                alliance.getFAccount().deposit(amount * plugin.getFConfig().getTaxConversionRate());
+                fAccount.withdraw(amount, FEconomy.TAX_CURRENCY, "Alliance taxes for " + alliance.getName(), alliance.getUniqueId());
+                alliance.getFAccount().deposit(amount * plugin.getFConfig().getTaxConversionRate(), FEconomy.TAX_CURRENCY, "Taxes from " + faction.getName(), faction.getUniqueId());
                 FLogger.ECONOMY.log("Faction '" + faction.getId() + "' was taxed " + amount);
                 faction.sendMessage(FMessage.FACTION_INFO_PAYED_DAILY_TAXES.message(fAccount.getFormatted(amount)));
                 continue;
             }
-            double missingAmount = amount - fAccount.getBalance();
-            alliance.getFAccount().deposit(fAccount.getBalance());
-            fAccount.setBalance(0);
+            double missingAmount = amount - fAccount.getBalance(FEconomy.TAX_CURRENCY);
+            alliance.getFAccount().deposit(fAccount.getBalance(FEconomy.TAX_CURRENCY), FEconomy.TAX_CURRENCY, "Partial taxes from " + faction.getName(), faction.getUniqueId());
+            fAccount.setBalance(0, FEconomy.TAX_CURRENCY);
             faction.addCurrentTaxDebt(missingAmount);
             FLogger.ECONOMY.log("Faction '" + faction.getId() + "' was not able to pay the taxed amount of " + amount + ": Missing " + missingAmount);
             alliance.sendMessage(FMessage.ALLIANCE_INFO_FACTION_CANNOT_AFFORD_DAILY_TAXES.message());
