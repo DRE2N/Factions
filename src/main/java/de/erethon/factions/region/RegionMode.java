@@ -36,6 +36,10 @@ public enum RegionMode {
         return this == SAFE_ZONE || this == PVE;
     }
 
+    public boolean isPvPScaling() {
+        return this == PVP;
+    }
+
     @Contract("_, !null -> !null")
     public static @Nullable RegionMode getByName(@NotNull String name, @Nullable RegionMode def) {
         for (RegionMode mode : values()) {

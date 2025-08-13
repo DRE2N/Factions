@@ -10,6 +10,7 @@ import de.erethon.factions.region.RegionMode;
 import de.erethon.factions.region.RegionType;
 import de.erethon.factions.war.entities.LoggedOutPlayer;
 import de.erethon.hecate.Hecate;
+import de.erethon.hecate.data.HCharacter;
 import de.erethon.spellbook.api.SpellbookAPI;
 import de.erethon.spellbook.teams.TeamManager;
 import net.kyori.adventure.text.Component;
@@ -132,6 +133,9 @@ public class FPlayerListener implements Listener {
                         Title.DEFAULT_TIMES
                 );
                 fPlayer.getPlayer().showTitle(title);
+                if (region.getMode().isPvPScaling()) {
+                    setScaledPvP(fPlayer.getPlayer(), true);
+                }
             }
         } else if (region != null && region.getMode().isSafe()) {
             Title title = Title.title(
@@ -140,6 +144,7 @@ public class FPlayerListener implements Listener {
                     Title.DEFAULT_TIMES
             );
             fPlayer.getPlayer().showTitle(title);
+            setScaledPvP(fPlayer.getPlayer(), false);
         }
         new FPlayerCrossRegionEvent(fPlayer, fPlayer.getLastRegion(), region).callEvent();
         return true;
@@ -174,6 +179,14 @@ public class FPlayerListener implements Listener {
             }
         }
         return false;
+    }
+
+    private void setScaledPvP(Player player, boolean scaledPvP) {
+        HCharacter character = hecate.getDatabaseManager().getCurrentCharacter(player);
+        if (character == null) {
+            return;
+        }
+        character.setScaledPvP(scaledPvP);
     }
 
 
