@@ -204,7 +204,6 @@ public final class Factions extends EPlugin {
         registerAergiaPlaceholders();
         registerCustomEntities();
         BoltIntegration.setup(this);
-        FSetTag.printNicely();
     }
 
     public void initFolders() {
@@ -316,9 +315,6 @@ public final class Factions extends EPlugin {
     public void loadCommands() {
         setCommandCache(fCommandCache = new FCommandCache(this));
         fCommandCache.register(this);
-        for (Map.Entry<String, Command> entry : Bukkit.getCommandMap().getKnownCommands().entrySet()) {
-            Factions.log("- " + entry.getKey() + " -> " + entry.getValue().getLabel());
-        }
     }
 
     public void registerListeners() {
