@@ -38,7 +38,13 @@ public class UIFactionsListener implements Listener {
                     if (region == null) {
                         return Component.text().color(NamedTextColor.GRAY).decorate(TextDecoration.BOLD).content(FMessage.GENERAL_WILDERNESS.getMessage()).build();
                     }
-                    return Component.text().color(region.hasAlliance() ? region.getAlliance().getColor() : NamedTextColor.GRAY).decorate(TextDecoration.BOLD).content(fPlayer.getDisplayRegionWithOwner()).build();
+                    int minLevel = region.getLowerLevelBound();
+                    int maxLevel = region.getUpperLevelBound();
+                    Component level = Component.empty();
+                    if (minLevel != -1 && maxLevel != -1) {
+                        level = Component.text().color(NamedTextColor.GRAY).decorate(TextDecoration.BOLD).content(" [" + minLevel + "-" + maxLevel + "] ").build();
+                    }
+                    return level.append(Component.text().color(region.hasAlliance() ? region.getAlliance().getColor() : NamedTextColor.GRAY).decorate(TextDecoration.BOLD).content(fPlayer.getDisplayRegionWithOwner()).build());
                 },
                 TickUtil.SECOND*6, REGION_DISPLAY_ID));
         uiUpdater.getActionBar().getCenter().add(UIComponent.reactivatable(p -> Component.empty(), TickUtil.SECOND * 4, FACTIONS_INFO_ID));

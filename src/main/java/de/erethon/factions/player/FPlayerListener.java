@@ -118,6 +118,10 @@ public class FPlayerListener implements Listener {
         }
         Component tabHeader = heading.appendNewline();
         if (region != null) {
+            if (region.getLowerLevelBound() != -1 && region.getUpperLevelBound() != -1) {
+                tabHeader = tabHeader.append(Component.text("Lv. " + region.getLowerLevelBound() + "-" + region.getUpperLevelBound()).color(NamedTextColor.YELLOW));
+                tabHeader = tabHeader.append(Component.text(": ").color(NamedTextColor.DARK_GRAY));
+            }
             tabHeader = tabHeader.append(Component.text(region.getName().replace("_", " ")).color(region.getType().getColor()));
             tabHeader = tabHeader.append(Component.text(" | ").color(NamedTextColor.DARK_GRAY));
             tabHeader = tabHeader.append(region.getMode().getName().color(region.getMode().getColor()));

@@ -63,6 +63,8 @@ public class Region extends FLegalEntity {
     private RegionType type = RegionType.BARREN;
     private RegionMode mode = type.getDefaultMode();
     private Map<RegionPOIType, Set<RegionPOIContainer>> poiMap = new HashMap<>(); // For quicker look-ups (e.g. "nearest enemy radar")
+    private int lowerLevelBound = -1;
+    private int upperLevelBound = -1;
 
     protected Region(@NotNull RegionCache regionCache, @NotNull File file, int id, @NotNull String name, @Nullable String description) {
         super(file, id, name, description);
@@ -127,6 +129,8 @@ public class Region extends FLegalEntity {
         lastClaimingPrice = config.getDouble("lastClaimingPrice", lastClaimingPrice);
         owner = plugin.getFactionCache().getById(config.getInt("owner", -1));
         regionalWarTracker.load(config.getConfigurationSection("warTracker"));
+        lowerLevelBound = config.getInt("lowerLevelBound", lowerLevelBound);
+        upperLevelBound = config.getInt("upperLevelBound", upperLevelBound);
 
         ConfigurationSection structuresSection = config.getConfigurationSection("structures");
         if (structuresSection != null) {
@@ -167,6 +171,8 @@ public class Region extends FLegalEntity {
         config.set("type", type.name());
         config.set("mode", mode.name());
         config.set("buildsites", buildSites.stream().map(BuildSite::getUUIDString).toList());
+        config.set("lowerLevelBound", lowerLevelBound);
+        config.set("upperLevelBound", upperLevelBound);
         for (BuildSite buildSite : buildSites) {
             try {
                 buildSite.save();
@@ -403,6 +409,19 @@ public class Region extends FLegalEntity {
         this.mode = mode;
     }
 
+    public void setMinMaxLevel(int lower, int upper) {
+        this.lowerLevelBound = lower;
+        this.upperLevelBound = upper;
+    }
+
+    public int getLowerLevelBound() {
+        return lowerLevelBound;
+    }
+
+    public int getUpperLevelBound() {
+        return upperLevelBound;
+    }
+
     /**
      * Returns a set of positions for the given POI type.
      *
@@ -467,7 +486,7 @@ public class Region extends FLegalEntity {
     public @NotNull Component asComponent(@NotNull FEntity viewer) {
         Component component = Component.text(getName());
         Component hoverMessage = Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName(true)));
-        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName(true))));
+        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName(true)), Component.text(lowerLevelBound == -1 ? "~" : lowerLevelBound + ""), Component.text(upperLevelBound == -1 ? "-" : upperLevelBound + ""))).append(Component.newline());
         hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.type","factions.region.info.type", Component.text(getType().getName())));
         hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.owner", "factions.region.info.owner", Component.text(getDisplayOwner())));
         hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.buildings", "factions.region.info.buildings", Component.text(buildSites.size())));
