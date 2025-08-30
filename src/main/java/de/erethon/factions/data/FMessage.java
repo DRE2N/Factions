@@ -309,15 +309,15 @@ public enum FMessage implements Message {
     /* Getters */
 
     public @NotNull Component itemMessage() {
-        return Component.text().decoration(TextDecoration.ITALIC, false).append(message()).build();
+        return Component.text().decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE).append(message()).build();
     }
 
     public @NotNull Component itemMessage(String... args) {
-        return Component.text().decoration(TextDecoration.ITALIC, false).append(message(args)).build();
+        return Component.text().decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE).append(message(args)).build();
     }
 
     public @NotNull Component itemMessage(Component... args) {
-        return Component.text().decoration(TextDecoration.ITALIC, false).append(message(args)).build();
+        return Component.text().decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE).append(message(args)).build();
     }
 
     @Override
