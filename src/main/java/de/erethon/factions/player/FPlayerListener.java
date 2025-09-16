@@ -69,12 +69,12 @@ public class FPlayerListener implements Listener {
         }
         Region region = fPlayer.getLastRegion();
         // If the player is in a warzone, spawn a LoggedOutPlayer entity so that the player can be killed
-        if (region != null && (region.getMode() == RegionMode.PVP || region.getMode() == RegionMode.PVPVE)) {
+        /*if (region != null && (region.getMode() == RegionMode.PVP || region.getMode() == RegionMode.PVPVE)) {
             CraftWorld world = (CraftWorld) region.getWorld();
             ServerLevel level = world.getHandle();
             LoggedOutPlayer loggedOutPlayer = new LoggedOutPlayer(level, player);
             level.addFreshEntity(loggedOutPlayer);
-        }
+        }*/
     }
 
     @EventHandler

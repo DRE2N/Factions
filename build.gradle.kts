@@ -10,7 +10,7 @@ group = "de.erethon.factions"
 version = "1.0-SNAPSHOT"
 description = "A Factions plugin"
 
-val papyrusVersion = "1.21.7-R0.1-SNAPSHOT"
+val papyrusVersion = "1.21.8-R0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -42,19 +42,6 @@ dependencies {
     compileOnly("net.dv8tion:JDA:5.0.0-beta.20")
 }
 
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            groupId = "${project.group}"
-            artifactId = "Factions"
-            version = "${project.version}"
-
-            from(components["java"])
-        }
-    }
-}
-
 tasks.withType(Test::class) {
     useJUnitPlatform()
 }
@@ -84,6 +71,10 @@ tasks {
     processResources {
         filteringCharset = Charsets.UTF_8.name()
     }
+    val sourcesJar by creating(Jar::class) {
+        archiveClassifier.set("sources")
+        from(sourceSets.main.get().allSource)
+    }
     runServer { // Automatically download & update Papyrus
         if (!project.buildDir.exists()) {
             project.buildDir.mkdir()
@@ -100,5 +91,28 @@ tasks {
             include(dependency("de.erethon.lectern:.*"))
         }
         relocate("de.erethon.lectern", "de.erethon.factions.lectern")
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "erethon"
+            url = uri("https://repo.erethon.de/snapshots/")
+            credentials(PasswordCredentials::class)
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "${project.group}"
+            artifactId = "Factions"
+            version = "${project.version}"
+
+            from(components["java"])
+            artifact(tasks["sourcesJar"])
+        }
     }
 }
