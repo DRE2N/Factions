@@ -15,9 +15,9 @@ public class War {
     private static final Factions plugin = Factions.get();
 
     // I hate it otherwise
-    public static final Alliance ALLIANCE_RED = plugin.getAllianceCache().getById(0);
-    public static final Alliance ALLIANCE_GREEN = plugin.getAllianceCache().getById(1);
-    public static final Alliance ALLIANCE_BLUE = plugin.getAllianceCache().getById(2);
+    public static Alliance ALLIANCE_RED;
+    public static Alliance ALLIANCE_GREEN;
+    public static Alliance ALLIANCE_BLUE;
 
     private WarPhaseManager phaseManager;
     private WarScore score;
@@ -85,5 +85,11 @@ public class War {
         } else {
             score = new WarScore(null);
         }
+    }
+
+    public static void initializeAlliances() {
+        ALLIANCE_RED = plugin.getAllianceCache().getById(0);
+        ALLIANCE_GREEN = plugin.getAllianceCache().getById(1);
+        ALLIANCE_BLUE = plugin.getAllianceCache().getById(2);
     }
 }

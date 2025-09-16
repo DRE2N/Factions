@@ -191,6 +191,7 @@ public final class Factions extends EPlugin {
         loadFMessages();
         initializeCaches();
         loadCaches();
+        War.initializeAlliances();
         loadTaxManager();
         loadWarHistory();
         war = new War();
