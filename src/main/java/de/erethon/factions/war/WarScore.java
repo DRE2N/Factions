@@ -38,6 +38,24 @@ public class WarScore {
     private BukkitRunnable displayTask;
 
     public WarScore(ConfigurationSection section) {
+        // Always initialize all three alliances first
+        potentialPointsNextTick.put(War.ALLIANCE_RED, 0);
+        potentialPointsNextTick.put(War.ALLIANCE_GREEN, 0);
+        potentialPointsNextTick.put(War.ALLIANCE_BLUE, 0);
+        totalScore.put(War.ALLIANCE_RED, 0);
+        totalScore.put(War.ALLIANCE_GREEN, 0);
+        totalScore.put(War.ALLIANCE_BLUE, 0);
+        objectiveScore.put(War.ALLIANCE_RED, 0);
+        objectiveScore.put(War.ALLIANCE_GREEN, 0);
+        objectiveScore.put(War.ALLIANCE_BLUE, 0);
+        playerKillScore.put(War.ALLIANCE_RED, 0);
+        playerKillScore.put(War.ALLIANCE_GREEN, 0);
+        playerKillScore.put(War.ALLIANCE_BLUE, 0);
+        currentOwnership.put(War.ALLIANCE_RED, new HashSet<>());
+        currentOwnership.put(War.ALLIANCE_GREEN, new HashSet<>());
+        currentOwnership.put(War.ALLIANCE_BLUE, new HashSet<>());
+
+        // If we have saved scores, load them on top
         if (section != null) {
             for (String key : section.getKeys(false)) {
                 Alliance alliance = plugin.getAllianceCache().getById(NumberConversions.toInt(key));
@@ -48,22 +66,6 @@ public class WarScore {
                 objectiveScore.put(alliance, section.getInt("objective." + key));
                 playerKillScore.put(alliance, section.getInt("playerKill." + key));
             }
-        } else {
-            potentialPointsNextTick.put(plugin.getAllianceCache().getById(0), 0);
-            potentialPointsNextTick.put(plugin.getAllianceCache().getById(1), 0);
-            potentialPointsNextTick.put(plugin.getAllianceCache().getById(2), 0);
-            totalScore.put(plugin.getAllianceCache().getById(0), 0);
-            totalScore.put(plugin.getAllianceCache().getById(1), 0);
-            totalScore.put(plugin.getAllianceCache().getById(2), 0);
-            objectiveScore.put(plugin.getAllianceCache().getById(0), 0);
-            objectiveScore.put(plugin.getAllianceCache().getById(1), 0);
-            objectiveScore.put(plugin.getAllianceCache().getById(2), 0);
-            playerKillScore.put(plugin.getAllianceCache().getById(0), 0);
-            playerKillScore.put(plugin.getAllianceCache().getById(1), 0);
-            playerKillScore.put(plugin.getAllianceCache().getById(2), 0);
-            currentOwnership.put(plugin.getAllianceCache().getById(0), new HashSet<>());
-            currentOwnership.put(plugin.getAllianceCache().getById(1), new HashSet<>());
-            currentOwnership.put(plugin.getAllianceCache().getById(2), new HashSet<>());
         }
         displayTask = new BukkitRunnable() {
             @Override
