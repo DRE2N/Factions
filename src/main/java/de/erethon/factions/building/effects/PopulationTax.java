@@ -48,7 +48,10 @@ public class PopulationTax extends BuildingEffect {
             if (total > maximumTotal) {
                 amount = maximumTotal;
             }
-            faction.getFAccount().deposit(Math.min(0, amount), FEconomy.TAX_CURRENCY, "Population tax for " + level.name().toLowerCase(), site.getUuid());
+            if (amount == 0) {
+                continue;
+            }
+            faction.getFAccount().deposit(Math.min(1, amount), FEconomy.TAX_CURRENCY, "Population tax for " + level.name().toLowerCase(), site.getUuid());
         }
     }
 }
