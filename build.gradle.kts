@@ -10,7 +10,7 @@ group = "de.erethon.factions"
 version = "1.0-SNAPSHOT"
 description = "A Factions plugin"
 
-val papyrusVersion = "1.21.8-R0.1-SNAPSHOT"
+val papyrusVersion = "1.21.9-R0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()

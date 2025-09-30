@@ -134,7 +134,7 @@ public class CaravanCarrier extends Ravager {
             double z = getZ() + random.nextInt(5) - 2;
             guard.setPos(x, y, z);
             if (getPassengers().isEmpty()) { // Lets put one of the guards on the carrier because it looks cool
-                guard.startRiding(this, true);
+                guard.startRiding(this, true, false);
             }
         }
     }

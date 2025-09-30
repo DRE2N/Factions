@@ -43,6 +43,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 import java.util.Random;
 
+import static net.minecraft.server.MinecraftServer.getServer;
+
 public class Revolutionary extends Vindicator {
 
     private final Factions plugin = Factions.get();
@@ -110,11 +112,6 @@ public class Revolutionary extends Vindicator {
     @Override
     public void dropPreservedEquipment(ServerLevel level) {
         // Not dropping anything
-    }
-
-    @Override
-    protected boolean shouldDropLoot() {
-        return false;
     }
 
     @Override
