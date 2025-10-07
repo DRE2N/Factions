@@ -292,6 +292,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
             return false;
         }
         this.alliance = alliance;
+        updateDisplayNames();
         return true;
     }
 
