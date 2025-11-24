@@ -4,6 +4,7 @@ import com.destroystokyo.paper.MaterialSetTag;
 import com.destroystokyo.paper.MaterialTags;
 import de.erethon.factions.Factions;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -30,11 +31,11 @@ public enum FSetTag {
     CROPS(MaterialSetTag.CROPS.getValues()),
     FENCES(MaterialSetTag.FENCES.getValues(),MaterialSetTag.FENCE_GATES.getValues(), MaterialSetTag.WALLS.getValues()),
     FARMING(CROPS.getMaterials(), FENCES.getMaterials()),
-    LIGHT(MaterialTags.TORCHES.getValues(), MaterialTags.LANTERNS.getValues(), new HashSet<>(Arrays.asList(Material.GLOWSTONE, Material.REDSTONE_LAMP, Material.SEA_LANTERN, Material.END_ROD))),
+    LIGHT(MaterialTags.TORCHES.getValues(), Tag.LANTERNS.getValues(), new HashSet<>(Arrays.asList(Material.GLOWSTONE, Material.REDSTONE_LAMP, Material.SEA_LANTERN, Material.END_ROD))),
     LIGHT_AND_WARMTH(WARMTH.getMaterials(), LIGHT.getMaterials()),
     FLOWERS(MaterialSetTag.FLOWERS.getValues()),
     ROOF(MaterialSetTag.STAIRS.getValues(), MaterialSetTag.SLABS.getValues()),
-    FURNITURE(MaterialSetTag.STAIRS.getValues(), MaterialTags.LANTERNS.getValues(), MaterialTags.TRAPDOORS.getValues(), MaterialTags.TORCHES.getValues(), MaterialSetTag.SIGNS.getValues(), MaterialSetTag.FLOWER_POTS.getValues(), MaterialSetTag.BANNERS.getValues(),
+    FURNITURE(MaterialSetTag.STAIRS.getValues(), Tag.LANTERNS.getValues(), MaterialSetTag.TRAPDOORS.getValues(), MaterialTags.TORCHES.getValues(), MaterialSetTag.SIGNS.getValues(), MaterialSetTag.FLOWER_POTS.getValues(), MaterialSetTag.BANNERS.getValues(),
             MaterialSetTag.WOOL_CARPETS.getValues(), MaterialSetTag.BEDS.getValues(), CRAFTING.getMaterials(), new HashSet<>(Arrays.asList(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL,Material.DISPENSER, Material.DROPPER,  Material.LADDER,
             Material.BELL, Material.NOTE_BLOCK, Material.REDSTONE_LAMP, Material.JUKEBOX, Material.END_ROD))),
     WOOD_FARM_STUFF(MaterialSetTag.SAPLINGS.getValues(), MaterialSetTag.LEAVES.getValues());

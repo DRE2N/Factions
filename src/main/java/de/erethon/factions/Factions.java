@@ -660,7 +660,7 @@ public final class Factions extends EPlugin {
     }
 
     public boolean hasEconomyProvider() {
-        return economyService != null;
+        return Bukkit.getPluginManager().isPluginEnabled("Tyche") && economyService != null;
     }
 
     public EconomyService getEconomyService() {

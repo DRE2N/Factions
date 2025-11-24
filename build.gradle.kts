@@ -30,7 +30,6 @@ dependencies {
     compileOnly("de.erethon.hecate:Hecate:1.2-SNAPSHOT")
     compileOnly("de.erethon.tyche:Tyche:1.0-SNAPSHOT")
     compileOnly("org.jetbrains:annotations:23.1.0")
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") { isTransitive = false }
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
     implementation(platform("com.intellectualsites.bom:bom-newest:1.52"))

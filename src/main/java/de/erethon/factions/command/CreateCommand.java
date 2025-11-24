@@ -4,8 +4,9 @@ import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
+import de.erethon.tyche.EconomyService;
+import de.erethon.tyche.models.OwnerType;
 import net.kyori.adventure.text.Component;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.command.CommandSender;
 
 import java.util.HashMap;
@@ -38,16 +39,41 @@ public class CreateCommand extends FCommand {
             assure(pendingCreations.containsKey(fPlayer), FMessage.ERROR_FACTION_NOT_FOUND);
             String factionName = pendingCreations.get(fPlayer);
             if (plugin.hasEconomyProvider()) {
-                Economy economy = plugin.getEconomyProvider();
+                EconomyService economy = plugin.getEconomyService();
                 double regionPrice = region.calculatePriceFor(null);
-                assure(economy.has(fPlayer.getPlayer(), regionPrice), FMessage.ERROR_NOT_ENOUGH_MONEY, economy.format(regionPrice));
-                plugin.getFactionCache().create(fPlayer, region, factionName);
-                economy.withdrawPlayer(fPlayer.getPlayer(), regionPrice);
-                region.setLastClaimingPrice(regionPrice);
+
+                economy.getBalance(fPlayer.getUniqueId(), OwnerType.PLAYER, "herone")
+                        .thenAccept(playerMoney -> {
+                            if (playerMoney < (long) regionPrice) {
+                                fPlayer.sendMessage(FMessage.ERROR_NOT_ENOUGH_MONEY.getMessage());
+                                pendingCreations.remove(fPlayer);
+                                return;
+                            }
+
+                            plugin.getFactionCache().create(fPlayer, region, factionName);
+
+                            economy.withdraw(fPlayer.getUniqueId(), OwnerType.PLAYER, "herone", (long) regionPrice, "Faction Creation", fPlayer.getUniqueId())
+                                    .thenRun(() -> {
+                                        region.setLastClaimingPrice(regionPrice);
+                                        pendingCreations.remove(fPlayer);
+                                    })
+                                    .exceptionally(throwable -> {
+                                        plugin.getLogger().severe("Failed to withdraw money for faction creation: " + throwable.getMessage());
+                                        fPlayer.sendMessage("<red>Error: Could not withdraw money for faction creation. Exception: " + throwable.getMessage());
+                                        pendingCreations.remove(fPlayer);
+                                        return null;
+                                    });
+                        })
+                        .exceptionally(throwable -> {
+                            plugin.getLogger().severe("Failed to get balance for faction creation: " + throwable.getMessage());
+                            fPlayer.sendMessage("<red>Error: Could not retrieve your balance. Exception: " + throwable.getMessage());
+                            pendingCreations.remove(fPlayer);
+                            return null;
+                        });
             } else {
                 plugin.getFactionCache().create(fPlayer, region, factionName);
+                pendingCreations.remove(fPlayer);
             }
-            pendingCreations.remove(fPlayer);
             return;
         }
         if (args[1].equalsIgnoreCase("cancel")) {
@@ -64,6 +90,7 @@ public class CreateCommand extends FCommand {
         int maximumChars = plugin.getFConfig().getMaximumNameChars();
         assure(args[1].length() <= maximumChars, FMessage.ERROR_TEXT_IS_TOO_LONG, String.valueOf(maximumChars));
         pendingCreations.put(fPlayer, args[1]);
+        plugin.getLogger().info("Player " + fPlayer.getName() + " is creating faction '" + args[1] + "'");
         fPlayer.sendMessage(Component.translatable("factions.cmd.create.notice"));
         fPlayer.sendMessage(Component.translatable("factions.cmd.create.confirm", args[1]));
     }
