@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonWriter;
 import de.erethon.factions.Factions;
+import de.erethon.factions.marker.Marker;
 import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionBorderCalculator;
@@ -32,6 +33,7 @@ public class RegionServerCache {
     protected String jsonString = "";
     protected Map<String, String> regionChunkStrings = Map.of();
     protected Map<String, String> regionBorderStrings = Map.of();
+    protected String markerJsonString = "";
 
     public RegionServerCache() {
         updateCache();
@@ -80,9 +82,15 @@ public class RegionServerCache {
         this.jsonString = toJsonString(json);
         this.regionChunkStrings = Collections.unmodifiableMap(regionMap);
         this.regionBorderStrings = Collections.unmodifiableMap(borderMap);
+
+        JsonArray markerArray = new JsonArray();
+        for (Marker marker : plugin.getMarkerCache()) {
+            markerArray.add(marker.toJson());
+        }
+        this.markerJsonString = toJsonString(markerArray);
     }
 
-    String toJsonString(JsonElement json) {
+    public String toJsonString(JsonElement json) {
         try {
             StringWriter stringWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonWriter(stringWriter);
@@ -119,6 +127,10 @@ public class RegionServerCache {
 
     public @NotNull Map<String, String> getRegionBorderStrings() {
         return regionBorderStrings;
+    }
+
+    public @NotNull String getMarkerJsonString() {
+        return markerJsonString;
     }
 
 }

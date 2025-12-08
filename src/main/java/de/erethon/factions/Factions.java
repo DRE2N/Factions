@@ -31,6 +31,7 @@ import de.erethon.factions.integrations.DiscordBotListener;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
 import de.erethon.factions.player.FPlayerListener;
+import de.erethon.factions.marker.MarkerCache;
 import de.erethon.factions.policy.FPolicyConfig;
 import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.polls.CapturedRegionsPoll;
@@ -100,6 +101,7 @@ public final class Factions extends EPlugin {
     public static File PORTALS;
     public static File WAR;
     public static File WAR_HISTORY;
+    public static File MARKERS;
 
     /* Files */
     private File debugFile;
@@ -126,6 +128,7 @@ public final class Factions extends EPlugin {
     private PortalManager portalManager;
     private FCommandCache fCommandCache;
     private BuildSiteCache buildSiteCache;
+    private MarkerCache markerCache;
 
     /* Instances */
     private BuildingManager buildingManager;
@@ -224,6 +227,7 @@ public final class Factions extends EPlugin {
         initFolder(PORTALS = new File(getDataFolder(), "portals"));
         initFolder(WAR = new File(getDataFolder(), "war"));
         initFolder(WAR_HISTORY = new File(WAR, "history"));
+        initFolder(MARKERS = new File(getDataFolder(), "markers"));
     }
 
     public void initFiles() {
@@ -265,6 +269,7 @@ public final class Factions extends EPlugin {
         fPlayerCache = new FPlayerCache(this);
         portalManager = new PortalManager(PORTALS);
         buildSiteCache = new BuildSiteCache(BUILD_SITES);
+        markerCache = new MarkerCache(MARKERS);
     }
 
     public void loadCaches() {
@@ -274,6 +279,7 @@ public final class Factions extends EPlugin {
         regionBorderCalculator.loadCache();
         portalManager.loadAll();
         fPlayerCache.loadAll();
+        markerCache.loadAll();
         FLogger.INFO.log("Loading building sites...");
         for (Faction faction : factionCache.getCache().values()) {
             int i = 0;
@@ -547,6 +553,7 @@ public final class Factions extends EPlugin {
         regionBorderCalculator.saveCache();
         fPlayerCache.saveAll();
         portalManager.saveAll();
+        markerCache.saveAll();
         warHistory.saveAll();
         war.save();
         FLogger.save();
@@ -628,6 +635,10 @@ public final class Factions extends EPlugin {
 
     public @NotNull BuildSiteCache getBuildSiteCache() {
         return buildSiteCache;
+    }
+
+    public @NotNull MarkerCache getMarkerCache() {
+        return markerCache;
     }
 
     public @NotNull WarHistory getWarHistory() {

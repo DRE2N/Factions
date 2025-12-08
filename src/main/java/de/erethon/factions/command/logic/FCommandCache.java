@@ -41,6 +41,7 @@ public class FCommandCache extends ECommandCache {
         addCommand(new LeaveCommand());
         addCommand(new LongNameCommand());
         addCommand(new NameCommand());
+        addCommand(new MarkerCommand());
         addCommand(new OccupyCommand());
         addCommand(new PaydayCommand());
         addCommand(new PortalCommand());

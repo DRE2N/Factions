@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import de.erethon.factions.Factions;
 import de.erethon.factions.util.FLogger;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -17,6 +18,8 @@ import java.net.InetSocketAddress;
 public class RegionHttpServer extends Thread implements HttpHandler {
 
     public static final String CONTEXT_PATH = "/v1/regions";
+    public static final String MARKERS_PATH = "/v1/markers";
+    public static final String PLAYER_POSITION_PATH = "/v1/player-position";
 
     private final RegionServerCache cache;
     private HttpServer server;
@@ -30,6 +33,8 @@ public class RegionHttpServer extends Thread implements HttpHandler {
         try {
             server = HttpServer.create(new InetSocketAddress(Factions.get().getFConfig().getWebPort()), 0);
             server.createContext(CONTEXT_PATH, this);
+            server.createContext(MARKERS_PATH, this::handleMarkers);
+            server.createContext(PLAYER_POSITION_PATH, this::handlePlayerPosition);
             server.setExecutor(null);
             server.start();
         } catch (Exception e) {
@@ -108,6 +113,47 @@ public class RegionHttpServer extends Thread implements HttpHandler {
     void respondNotFound(HttpExchange exchange) throws IOException {
         exchange.sendResponseHeaders(404, 0);
         exchange.getResponseBody().close();
+    }
+
+    void handleMarkers(HttpExchange exchange) throws IOException {
+        FLogger.WEB.log("Handling markers request from: " + exchange.getRemoteAddress());
+        String response = cache.getMarkerJsonString();
+        exchange.sendResponseHeaders(200, response.getBytes().length);
+        OutputStream os = exchange.getResponseBody();
+        os.write(response.getBytes());
+        os.close();
+    }
+
+    void handlePlayerPosition(HttpExchange exchange) throws IOException {
+        FLogger.WEB.log("Handling player position request from: " + exchange.getRemoteAddress());
+
+        String ipAddress = exchange.getRemoteAddress().getAddress().getHostAddress();
+
+        Player foundPlayer = null;
+        for (Player player : org.bukkit.Bukkit.getOnlinePlayers()) {
+            if (player.getAddress() != null && player.getAddress().getAddress().getHostAddress().equals(ipAddress)) {
+                foundPlayer = player;
+                break;
+            }
+        }
+
+        if (foundPlayer == null) {
+            respondNotFound(exchange);
+            return;
+        }
+
+        com.google.gson.JsonObject json = new com.google.gson.JsonObject();
+        json.addProperty("name", foundPlayer.getName());
+        json.addProperty("x", foundPlayer.getLocation().getBlockX());
+        json.addProperty("y", foundPlayer.getLocation().getBlockY());
+        json.addProperty("z", foundPlayer.getLocation().getBlockZ());
+        json.addProperty("world", foundPlayer.getWorld().getName());
+
+        String response = cache.toJsonString(json);
+        exchange.sendResponseHeaders(200, response.getBytes().length);
+        OutputStream os = exchange.getResponseBody();
+        os.write(response.getBytes());
+        os.close();
     }
 
     /* Getters */
