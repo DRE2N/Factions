@@ -17,9 +17,10 @@ import java.net.InetSocketAddress;
  */
 public class RegionHttpServer extends Thread implements HttpHandler {
 
-    public static final String CONTEXT_PATH = "/v1/regions";
-    public static final String MARKERS_PATH = "/v1/markers";
-    public static final String PLAYER_POSITION_PATH = "/v1/player-position";
+    public static final String CONTEXT_PATH = "/v1/regions"; // Specific region data
+    public static final String MARKERS_PATH = "/v1/markers"; // Get all markers
+    public static final String PLAYER_POSITION_PATH = "/v1/player-position"; // Get player position based on IP address
+    public static final String MAPDATA_PATH = "/v1/mapdata"; // Combined map data for all claimed or war regions, for easy map rendering
 
     private final RegionServerCache cache;
     private HttpServer server;
@@ -35,6 +36,7 @@ public class RegionHttpServer extends Thread implements HttpHandler {
             server.createContext(CONTEXT_PATH, this);
             server.createContext(MARKERS_PATH, this::handleMarkers);
             server.createContext(PLAYER_POSITION_PATH, this::handlePlayerPosition);
+            server.createContext(MAPDATA_PATH, this::handleMapData);
             server.setExecutor(null);
             server.start();
         } catch (Exception e) {
@@ -150,6 +152,15 @@ public class RegionHttpServer extends Thread implements HttpHandler {
         json.addProperty("world", foundPlayer.getWorld().getName());
 
         String response = cache.toJsonString(json);
+        exchange.sendResponseHeaders(200, response.getBytes().length);
+        OutputStream os = exchange.getResponseBody();
+        os.write(response.getBytes());
+        os.close();
+    }
+
+    void handleMapData(HttpExchange exchange) throws IOException {
+        FLogger.WEB.log("Handling mapdata request from: " + exchange.getRemoteAddress());
+        String response = cache.getMapDataJsonString();
         exchange.sendResponseHeaders(200, response.getBytes().length);
         OutputStream os = exchange.getResponseBody();
         os.write(response.getBytes());

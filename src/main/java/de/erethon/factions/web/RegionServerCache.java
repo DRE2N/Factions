@@ -11,6 +11,7 @@ import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionBorderCalculator;
 import de.erethon.factions.region.RegionCache;
+import de.erethon.factions.region.RegionType;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +35,7 @@ public class RegionServerCache {
     protected Map<String, String> regionChunkStrings = Map.of();
     protected Map<String, String> regionBorderStrings = Map.of();
     protected String markerJsonString = "";
+    protected String mapdataJsonString = "";
 
     public RegionServerCache() {
         updateCache();
@@ -88,6 +90,41 @@ public class RegionServerCache {
             markerArray.add(marker.toJson());
         }
         this.markerJsonString = toJsonString(markerArray);
+
+        // Generate combined regions with borders data. Mostly useful for map display purposes.
+        JsonArray regionsWithBordersArray = new JsonArray();
+        for (Region region : cache) {
+            // Include only claimed regions, or CAPITAL and WAR_ZONE types
+            if (!region.isOwned() && region.getType() != RegionType.CAPITAL
+                    && region.getType() != RegionType.WAR_ZONE) {
+                continue;
+            }
+
+            JsonObject regionData = new JsonObject();
+            regionData.addProperty("id", region.getId());
+            regionData.addProperty("name", region.getName());
+            regionData.addProperty("type", region.getType().name());
+
+            // Add owner faction info
+            if (region.getOwner() != null) {
+                regionData.addProperty("ownerName", region.getOwner().getName(true));
+                regionData.addProperty("ownerId", region.getOwner().getId());
+            } else {
+                regionData.addProperty("ownerName", (String) null);
+                regionData.addProperty("ownerId", -1);
+            }
+
+            // Add border polygon if available
+            if (worldBorderData != null) {
+                RegionBorderCalculator.RegionBorderData borderData = worldBorderData.regionData.get(region.getId());
+                if (borderData != null) {
+                    regionData.add("border", borderData.toJson());
+                }
+            }
+
+            regionsWithBordersArray.add(regionData);
+        }
+        this.mapdataJsonString = toJsonString(regionsWithBordersArray);
     }
 
     public String toJsonString(JsonElement json) {
@@ -131,6 +168,10 @@ public class RegionServerCache {
 
     public @NotNull String getMarkerJsonString() {
         return markerJsonString;
+    }
+
+    public @NotNull String getMapDataJsonString() {
+        return mapdataJsonString;
     }
 
 }
