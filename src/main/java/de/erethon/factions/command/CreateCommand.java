@@ -49,7 +49,8 @@ public class CreateCommand extends FCommand {
                                 pendingCreations.remove(fPlayer);
                                 return;
                             }
-
+                            plugin.getLogger().info("Creating faction '" + factionName + "' for player " + fPlayer.getName() +
+                                    " with region '" + region.getName() + "' at price " + regionPrice);
                             plugin.getFactionCache().create(fPlayer, region, factionName);
 
                             economy.withdraw(fPlayer.getUniqueId(), OwnerType.PLAYER, "herone", (long) regionPrice, "Faction Creation", fPlayer.getUniqueId())

@@ -36,6 +36,7 @@ import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.polls.CapturedRegionsPoll;
 import de.erethon.factions.portal.PortalManager;
 import de.erethon.factions.region.AutomatedChunkManager;
+import de.erethon.factions.region.RegionBorderCalculator;
 import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.region.protection.BlockProtectionListener;
 import de.erethon.factions.region.protection.EntityProtectionListener;
@@ -93,6 +94,7 @@ public final class Factions extends EPlugin {
     public static File BUILD_SITES;
     public static File FACTIONS;
     public static File REGIONS;
+    public static File REGION_BORDERS;
     public static File SCHEMATICS;
     public static File PLAYERS;
     public static File PORTALS;
@@ -130,6 +132,7 @@ public final class Factions extends EPlugin {
     private TaxManager taxManager;
     private WarHistory warHistory;
     private War war;
+    private RegionBorderCalculator regionBorderCalculator;
 
     /* Tasks */
     private BukkitTask backupTask;
@@ -215,6 +218,7 @@ public final class Factions extends EPlugin {
         initFolder(BUILD_SITES = new File(getDataFolder(), "sites"));
         initFolder(FACTIONS = new File(getDataFolder(), "factions"));
         initFolder(REGIONS = new File(getDataFolder(), "regions"));
+        initFolder(REGION_BORDERS = new File(getDataFolder(), "region_borders"));
         initFolder(SCHEMATICS = new File(getDataFolder(), "schematics"));
         initFolder(PLAYERS = new File(getDataFolder(), "players"));
         initFolder(PORTALS = new File(getDataFolder(), "portals"));
@@ -257,6 +261,7 @@ public final class Factions extends EPlugin {
         buildingManager = new BuildingManager(BUILDINGS);
         factionCache = new FactionCache(FACTIONS);
         regionManager = new RegionManager(REGIONS);
+        regionBorderCalculator = new RegionBorderCalculator(this, REGION_BORDERS);
         fPlayerCache = new FPlayerCache(this);
         portalManager = new PortalManager(PORTALS);
         buildSiteCache = new BuildSiteCache(BUILD_SITES);
@@ -266,6 +271,7 @@ public final class Factions extends EPlugin {
         allianceCache.loadAll();
         factionCache.loadAll();
         regionManager.loadAll();
+        regionBorderCalculator.loadCache();
         portalManager.loadAll();
         fPlayerCache.loadAll();
         FLogger.INFO.log("Loading building sites...");
@@ -538,6 +544,7 @@ public final class Factions extends EPlugin {
         allianceCache.saveAll();
         factionCache.saveAll();
         regionManager.saveAll();
+        regionBorderCalculator.saveCache();
         fPlayerCache.saveAll();
         portalManager.saveAll();
         warHistory.saveAll();
@@ -599,6 +606,10 @@ public final class Factions extends EPlugin {
         return regionManager;
     }
 
+    public @NotNull RegionBorderCalculator getRegionBorderCalculator() {
+        return regionBorderCalculator;
+    }
+
     public @NotNull FPlayerCache getFPlayerCache() {
         return fPlayerCache;
     }
@@ -657,6 +668,10 @@ public final class Factions extends EPlugin {
 
     public @NotNull WarListener getWarListener() {
         return warListener;
+    }
+
+    public @Nullable RegionHttpServer getRegionHttpServer() {
+        return regionHttpServer;
     }
 
     public boolean hasEconomyProvider() {

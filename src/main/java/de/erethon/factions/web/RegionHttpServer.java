@@ -72,6 +72,7 @@ public class RegionHttpServer extends Thread implements HttpHandler {
         // Switch, because we might want to add more subPaths in the future
         switch (subPath) {
             case "chunks", "chunks/" -> respondRegionChunks(exchange, regionId);
+            case "border", "border/" -> respondRegionBorder(exchange, regionId);
             default -> respondNotFound(exchange);
         }
     }
@@ -86,6 +87,18 @@ public class RegionHttpServer extends Thread implements HttpHandler {
 
     void respondRegionChunks(HttpExchange exchange, String regionId) throws IOException {
         String response = cache.getRegionChunkString(regionId);
+        exchange.sendResponseHeaders(200, response.getBytes().length);
+        OutputStream os = exchange.getResponseBody();
+        os.write(response.getBytes());
+        os.close();
+    }
+
+    void respondRegionBorder(HttpExchange exchange, String regionId) throws IOException {
+        String response = cache.getRegionBorderString(regionId);
+        if (response == null) {
+            respondNotFound(exchange);
+            return;
+        }
         exchange.sendResponseHeaders(200, response.getBytes().length);
         OutputStream os = exchange.getResponseBody();
         os.write(response.getBytes());

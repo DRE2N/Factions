@@ -21,7 +21,7 @@ public class RegionCommand extends FCommand {
         setHelpType(HelpType.LISTED);
         setListedHelpHeader("Regionsbefehle");
         addSubCommands(new RegionAddCommand(), new RegionAddNeighbourCommand(), new RegionAllianceCommand(),
-                new RegionAutoCommand(), new RegionCreateCommand(), new RegionDamageReductionCommand(),
+                new RegionAutoCommand(), new RegionCreateCommand(), new RegionBordersCommand(), new RegionDamageReductionCommand(),
                 new RegionDeleteCommand(), new RegionDescriptionCommand(), new RegionInfoCommand(),
                 new RegionNameCommand(), new RegionRemoveCommand(), new RegionRemoveNeighbourCommand(),
                 new RegionSplitCommand(), new RegionStatusCommand(), new RegionStructureCommand(),
