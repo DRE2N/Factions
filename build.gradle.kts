@@ -10,7 +10,7 @@ group = "de.erethon.factions"
 version = "1.0-SNAPSHOT"
 description = "A Factions plugin"
 
-val papyrusVersion = "1.21.10-R0.1-SNAPSHOT"
+val papyrusVersion = "1.21.11-R0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -26,7 +26,7 @@ dependencies {
     paperweight.devBundle("de.erethon.papyrus", papyrusVersion) { isChanging = true }
     //implementation("de.erethon.lectern:Lectern:1.0-SNAPSHOT") //not ready yet
     compileOnly("de.erethon.aergia:Aergia:1.0.1")
-    compileOnly("de.erethon.hephaestus:Hephaestus:1.0.3-SNAPSHOT")
+    compileOnly("de.erethon.hephaestus:Hephaestus:1.0.5-SNAPSHOT")
     compileOnly("de.erethon.hecate:Hecate:1.2-SNAPSHOT")
     compileOnly("de.erethon.tyche:Tyche:1.0-SNAPSHOT")
     compileOnly("org.jetbrains:annotations:23.1.0")

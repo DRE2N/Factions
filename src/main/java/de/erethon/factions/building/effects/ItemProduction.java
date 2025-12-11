@@ -8,7 +8,7 @@ import de.erethon.hephaestus.Hephaestus;
 import de.erethon.hephaestus.items.HItem;
 import de.erethon.hephaestus.items.HItemLibrary;
 import net.kyori.adventure.text.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Chest;
@@ -35,7 +35,7 @@ public class ItemProduction extends BuildingEffect {
                 FLogger.ERROR.log("Invalid item production effect for building " + site.getBuilding().getId() + ": " + entry);
                 continue;
             }
-            ResourceLocation id = ResourceLocation.tryParse(section.getString("id", "air"));
+            Identifier id = Identifier.tryParse(section.getString("id", "air"));
             if (id == null) {
                 FLogger.ERROR.log("Invalid item id in production effect for building " + site.getBuilding().getId() + ": " + section.getString("id"));
                 continue;

@@ -8,7 +8,7 @@ import de.erethon.factions.util.FLogger;
 import de.erethon.hephaestus.Hephaestus;
 import de.erethon.hephaestus.items.HItem;
 import de.erethon.hephaestus.items.HItemLibrary;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +28,7 @@ public class AdditionalEntityDrops extends BuildingEffect {
         super(data, site);
         for (String drop : data.getStringList("drops")) {
             String[] split = drop.split(";");
-            HItem item = itemLibrary.get(ResourceLocation.tryParse(split[0]));
+            HItem item = itemLibrary.get(Identifier.tryParse(split[0]));
             if (item == null) {
                 FLogger.ERROR.log("Item " + split[0] + " not found in item library for AdditionalEntityDrops effect in building " + site.getBuilding().getId());
                 continue;
