@@ -350,66 +350,78 @@ public class RegionBorderCalculator {
     private void traceContour(List<int[]> vertices, Set<String> visitedEdges,
                               ChunkGrid grid, int regionId, int startX, int startZ,
                               Set<LazyChunk> edgeChunks) {
-        // Direction: 0=right, 1=down, 2=left, 3=up
-        int[][] directions = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
 
         int x = startX;
         int z = startZ;
-        int dir = 0; // Start moving right along top edge
-
-        // Add starting vertex (top-left corner in block coords)
+        int edgeDir = 0;
         vertices.add(new int[]{x * 16, z * 16});
-
-        // The starting edge is the top edge of the starting chunk
-        int prevX = x;
-        int prevZ = z;
+        int startEdgeDir = edgeDir;
+        boolean firstMove = true;
 
         do {
-            // Try to turn right first (for clockwise traversal)
-            int rightDir = (dir + 1) % 4;
-            int leftDir = (dir + 3) % 4;
-
-            int[] rightDelta = directions[rightDir];
-            int[] forwardDelta = directions[dir];
-            int[] leftDelta = directions[leftDir];
-
-            // Check if we can turn right (there's region to our right)
-            int rightX = x + rightDelta[0];
-            int rightZ = z + rightDelta[1];
-
-            // Check forward
-            int forwardX = x + forwardDelta[0];
-            int forwardZ = z + forwardDelta[1];
-
-            // Determine next move based on what's around us
-            boolean rightIsRegion = grid.get(rightX, rightZ) == regionId;
-            boolean forwardIsRegion = grid.get(forwardX, forwardZ) == regionId;
-
-            if (rightIsRegion) {
-                // Turn right and move
-                dir = rightDir;
-                x = rightX;
-                z = rightZ;
-            } else if (forwardIsRegion) {
-                // Continue forward
-                x = forwardX;
-                z = forwardZ;
-            } else {
-                // Turn left (no move)
-                dir = leftDir;
-            }
-
-            // Add vertex at corners (when direction changes or at chunk boundaries)
-            String edgeKey = x + "," + z + "," + dir;
-            if (visitedEdges.contains(edgeKey)) {
-                break; // We've completed the loop
+            String edgeKey = x + "," + z + "," + edgeDir;
+            if (!firstMove && visitedEdges.contains(edgeKey)) {
+                break;
             }
             visitedEdges.add(edgeKey);
+            firstMove = false;
 
-            // Calculate the corner vertex based on current position and direction
-            int[] vertex = calculateVertex(x, z, dir);
-            if (vertices.isEmpty() || !arraysEqual(vertices.get(vertices.size() - 1), vertex)) {
-                vertices.add(vertex);
+            int nextX = x, nextZ = z;
+            int outsideX = x, outsideZ = z;
+
+            switch (edgeDir) {
+                case 0 -> { // Walking right along top edge
+                    nextX = x + 1; // Next chunk to the right
+                    outsideZ = z - 1; // Outside is above
+                }
+                case 1 -> { // Walking down along right edge
+                    nextZ = z + 1; // Next chunk below
+                    outsideX = x + 1; // Outside is to the right
+                }
+                case 2 -> { // Walking left along bottom edge
+                    nextX = x - 1; // Next chunk to the left
+                    outsideZ = z + 1; // Outside is below
+                }
+                case 3 -> { // Walking up along left edge
+                    nextZ = z - 1; // Next chunk above
+                    outsideX = x - 1; // Outside is to the left
+                }
+            }
+
+            boolean nextIsRegion = grid.get(nextX, nextZ) == regionId;
+            boolean outsideIsRegion = grid.get(outsideX, outsideZ) == regionId;
+
+            if (outsideIsRegion) {
+                int[] cornerVertex = getOuterCornerVertex(x, z, edgeDir);
+                if (!arraysEqual(vertices.getLast(), cornerVertex)) {
+                    vertices.add(cornerVertex);
+                }
+                x = outsideX;
+                z = outsideZ;
+                edgeDir = (edgeDir + 3) % 4; // Turn left
+            } else if (nextIsRegion) {
+                int[] cornerVertex = getOuterCornerVertex(x, z, edgeDir);
+                int nextOutsideX = nextX, nextOutsideZ = nextZ;
+                switch (edgeDir) {
+                    case 0 -> nextOutsideZ = nextZ - 1;
+                    case 1 -> nextOutsideX = nextX + 1;
+                    case 2 -> nextOutsideZ = nextZ + 1;
+                    case 3 -> nextOutsideX = nextX - 1;
+                }
+                boolean nextOutsideIsRegion = grid.get(nextOutsideX, nextOutsideZ) == regionId;
+                if (nextOutsideIsRegion) {
+                    if (!arraysEqual(vertices.getLast(), cornerVertex)) {
+                        vertices.add(cornerVertex);
+                    }
+                }
+                x = nextX;
+                z = nextZ;
+            } else {
+                int[] cornerVertex = getOuterCornerVertex(x, z, edgeDir);
+                if (!arraysEqual(vertices.getLast(), cornerVertex)) {
+                    vertices.add(cornerVertex);
+                }
+                edgeDir = (edgeDir + 1) % 4;
             }
 
             // Safety limit
@@ -418,20 +430,30 @@ public class RegionBorderCalculator {
                 break;
             }
 
-        } while (x != startX || z != startZ || vertices.size() < 4);
+        } while (x != startX || z != startZ || edgeDir != startEdgeDir);
+
+        if (!vertices.isEmpty() && !arraysEqual(vertices.getFirst(), vertices.getLast())) {
+            int[] finalVertex = getOuterCornerVertex(x, z, edgeDir);
+            if (!arraysEqual(vertices.getLast(), finalVertex) && !arraysEqual(vertices.getFirst(), finalVertex)) {
+                vertices.add(finalVertex);
+            }
+        }
     }
 
-    private int[] calculateVertex(int chunkX, int chunkZ, int direction) {
-        // Convert chunk coordinates to block coordinates for the appropriate corner
-        // Direction: 0=right (use top-right), 1=down (use bottom-right), 2=left (use bottom-left), 3=up (use top-left)
+    /**
+     * Gets the outer corner vertex for a chunk edge.
+     * This is the corner at the END of walking along that edge (clockwise).
+     */
+    private int[] getOuterCornerVertex(int chunkX, int chunkZ, int edgeDir) {
         int blockX = chunkX * 16;
         int blockZ = chunkZ * 16;
 
-        return switch (direction) {
-            case 0 -> new int[]{blockX + 16, blockZ};       // top-right
-            case 1 -> new int[]{blockX + 16, blockZ + 16};  // bottom-right
-            case 2 -> new int[]{blockX, blockZ + 16};       // bottom-left
-            case 3 -> new int[]{blockX, blockZ};            // top-left
+        // When walking clockwise, each edge ends at a specific outer corner:
+        return switch (edgeDir) {
+            case 0 -> new int[]{blockX + 16, blockZ};       // top edge ends at top-right
+            case 1 -> new int[]{blockX + 16, blockZ + 16};  // right edge ends at bottom-right
+            case 2 -> new int[]{blockX, blockZ + 16};       // bottom edge ends at bottom-left
+            case 3 -> new int[]{blockX, blockZ};            // left edge ends at top-left
             default -> new int[]{blockX, blockZ};
         };
     }
