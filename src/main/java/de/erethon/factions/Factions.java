@@ -37,10 +37,12 @@ import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.polls.CapturedRegionsPoll;
 import de.erethon.factions.portal.PortalManager;
 import de.erethon.factions.region.AutomatedChunkManager;
+import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionBorderCalculator;
 import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.region.protection.BlockProtectionListener;
 import de.erethon.factions.region.protection.EntityProtectionListener;
+import de.erethon.factions.region.schematic.RegionSchematicManager;
 import de.erethon.factions.integrations.UIFactionsListener;
 import de.erethon.factions.statistic.FStatistics;
 import de.erethon.factions.util.FLogger;
@@ -136,6 +138,7 @@ public final class Factions extends EPlugin {
     private WarHistory warHistory;
     private War war;
     private RegionBorderCalculator regionBorderCalculator;
+    private RegionSchematicManager regionSchematicManager;
 
     /* Tasks */
     private BukkitTask backupTask;
@@ -266,6 +269,7 @@ public final class Factions extends EPlugin {
         factionCache = new FactionCache(FACTIONS);
         regionManager = new RegionManager(REGIONS);
         regionBorderCalculator = new RegionBorderCalculator(this, REGION_BORDERS);
+        regionSchematicManager = new RegionSchematicManager(this);
         fPlayerCache = new FPlayerCache(this);
         portalManager = new PortalManager(PORTALS);
         buildSiteCache = new BuildSiteCache(BUILD_SITES);
@@ -292,6 +296,19 @@ public final class Factions extends EPlugin {
                 }
             }
             FLogger.INFO.log("Loaded " + i + " building sites for faction " + faction.getName());
+        }
+
+        Region region = regionManager.getRegionById(0);
+        if (region != null) {
+            int chunkCount = region.getChunks().size();
+            if (chunkCount == 0) {
+                getLogger().severe(" ");
+                getLogger().severe("Failed to load any chunks for region ID 0! The region files are likely corrupted (again).");
+                getLogger().severe("Please restore the region files from a backup.");
+                getLogger().severe(" ");
+                getLogger().severe("Shutting down the server to prevent griefing...");
+                Bukkit.shutdown();
+            }
         }
     }
 
@@ -643,6 +660,10 @@ public final class Factions extends EPlugin {
 
     public @NotNull WarHistory getWarHistory() {
         return warHistory;
+    }
+
+    public @NotNull RegionSchematicManager getRegionSchematicManager() {
+        return regionSchematicManager;
     }
 
     public @Nullable War getWar() {
