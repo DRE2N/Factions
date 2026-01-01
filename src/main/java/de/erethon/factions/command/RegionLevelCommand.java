@@ -4,6 +4,7 @@ import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.PvERegion;
 import de.erethon.factions.region.Region;
 import org.bukkit.command.CommandSender;
 
@@ -24,6 +25,8 @@ public class RegionLevelCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         FPlayer fPlayer = getFPlayerRaw(sender);
         Region region = getRegion(fPlayer);
+        assure(region instanceof PvERegion, FMessage.ERROR_REGION_IS_NOT_CLAIMABLE);
+        PvERegion pveRegion = (PvERegion) region;
         if (args.length > 3) {
             displayHelp(sender);
             return;
@@ -49,7 +52,7 @@ public class RegionLevelCommand extends FCommand {
             MessageUtil.sendMessage(sender, "<red>Das maximale Level muss größer als das minimale Level sein.");
             return;
         }
-        region.setMinMaxLevel(minLevel, maxLevel);
+        pveRegion.setMinMaxLevel(minLevel, maxLevel);
         MessageUtil.sendMessage(sender, "<green>Du hast das Level der Region auf " + minLevel + " - " + maxLevel + " gesetzt.");
     }
 

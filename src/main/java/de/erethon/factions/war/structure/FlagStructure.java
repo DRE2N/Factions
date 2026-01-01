@@ -3,8 +3,8 @@ package de.erethon.factions.war.structure;
 import com.destroystokyo.paper.MaterialSetTag;
 import com.destroystokyo.paper.MaterialTags;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.region.WarRegion;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.util.TriState;
@@ -64,11 +64,11 @@ public class FlagStructure extends RegionStructure {
         COLOR_TO_CONCRETE.put(NamedTextColor.WHITE, Material.WHITE_CONCRETE);
     }
 
-    public FlagStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public FlagStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config) {
         super(region, config);
     }
 
-    public FlagStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+    public FlagStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
     }
 

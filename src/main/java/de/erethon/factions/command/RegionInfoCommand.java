@@ -3,7 +3,9 @@ package de.erethon.factions.command;
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.region.WarRegion;
 import org.bukkit.command.CommandSender;
 
 import java.util.Iterator;
@@ -30,15 +32,15 @@ public class RegionInfoCommand extends FCommand {
         MessageUtil.sendCenteredMessage(sender, FMessage.CMD_REGION_INFO_HEADER.message(region.getName(true)));
         sender.sendMessage(FMessage.CMD_REGION_INFO_ID.message(String.valueOf(region.getId())));
         sender.sendMessage(FMessage.CMD_REGION_INFO_TYPE.message(region.getType().getName()));
-        if (region.getType().isWarGround()) {
-            sender.sendMessage(FMessage.CMD_REGION_INFO_WAR_VALUE.message(String.valueOf(region.getRegionalWarTracker().getRegionValue())));
+        if (region instanceof WarRegion warRegion) {
+            sender.sendMessage(FMessage.CMD_REGION_INFO_WAR_VALUE.message(String.valueOf(warRegion.getRegionalWarTracker().getRegionValue())));
         }
         sender.sendMessage(FMessage.CMD_REGION_INFO_CHUNKS.message(String.valueOf(region.getChunks().size())));
         sender.sendMessage(FMessage.CMD_REGION_INFO_ADJACENT_REGIONS.message(getAdjacentRegions(region)));
         if (region.isOwned()) {
             sender.sendMessage(FMessage.CMD_REGION_INFO_OWNER.message(region.getOwner().asComponent(getFPlayer(sender))));
-        } else {
-            sender.sendMessage(FMessage.CMD_REGION_INFO_PRICE.message(String.valueOf(region.calculatePriceFor(getFactionRaw(sender)))));
+        } else if (region instanceof ClaimableRegion claimable) {
+            sender.sendMessage(FMessage.CMD_REGION_INFO_PRICE.message(String.valueOf(claimable.calculatePriceFor(getFactionRaw(sender)))));
         }
         sender.sendMessage(FMessage.CMD_REGION_INFO_DESCRIPTION.message(region.getDisplayDescription()));
     }

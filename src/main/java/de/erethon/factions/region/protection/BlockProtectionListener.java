@@ -5,9 +5,11 @@ import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionType;
 import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.region.WarRegion;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
@@ -70,7 +72,7 @@ public class BlockProtectionListener implements Listener {
             return;
         }
         callEventForAllBuildingsInRegion(region, fPlayer, event);
-        List<RegionStructure> structures = region.getStructuresAt(block.getLocation());
+        List<RegionStructure> structures = region instanceof WarRegion wr ? wr.getStructuresAt(block.getLocation()) : List.of();
         TriState state = TriState.NOT_SET;
         // Loop until a structure dictates the following behaviour.
         for (RegionStructure structure : structures) {
@@ -118,8 +120,11 @@ public class BlockProtectionListener implements Listener {
     }
 
     private void callEventForAllBuildingsInRegion(Region region, FPlayer player, Cancellable cancellable) {
+        if (!(region instanceof ClaimableRegion claimable)) {
+            return;
+        }
         // Idk about the performance of this, guess we're going to have to see. Not really another way if an effect wants to add/remove drops or something though.
-        for (BuildSite site : region.getBuildSites()) {
+        for (BuildSite site : claimable.getBuildSites()) {
             if (site.isInBuildSite(player.getPlayer().getLocation())) {
                 if (cancellable instanceof BlockPlaceEvent place) {
                     site.onBlockPlaceInRegion(player, place.getBlock(), cancellable);

@@ -2,7 +2,7 @@ package de.erethon.factions.war.structure;
 
 import de.erethon.aergia.util.TickUtil;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.factions.region.Region;
+import de.erethon.factions.region.WarRegion;
 import io.papermc.paper.math.Position;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -19,11 +19,11 @@ public abstract class TickingWarStructure extends WarStructure {
     protected long tickInterval;
     protected BukkitTask task;
 
-    public TickingWarStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public TickingWarStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config) {
         super(region, config);
     }
 
-    public TickingWarStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+    public TickingWarStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
     }
 

@@ -8,6 +8,7 @@ import de.erethon.factions.poll.polls.CapturedRegionsPoll;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionCache;
 import de.erethon.factions.region.RegionType;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.structure.WarFortressStructure;
@@ -68,7 +69,10 @@ public enum WarPhase {
     private void foreachWarObjective(Predicate<WarStructure> filter, Consumer<WarStructure> consumer) {
         for (RegionCache cache : plugin.getRegionManager()) {
             for (Region region : cache) {
-                Map<String, WarStructure> structures = region.getStructures(WarStructure.class);
+                if (!(region instanceof WarRegion warRegion)) {
+                    continue;
+                }
+                Map<String, WarStructure> structures = warRegion.getStructures(WarStructure.class);
                 structures.forEach((name, obj) -> {
                     if (filter.test(obj)) {
                         consumer.accept(obj);
@@ -83,7 +87,9 @@ public enum WarPhase {
         FLogger.WAR.log("Awarding alliances relative to their captured regions...");
         for (Alliance alliance : plugin.getAllianceCache()) {
             for (Region region : alliance.getTemporaryRegions()) {
-                alliance.addWarScore(region.getRegionalWarTracker().getRegionValue());
+                if (region instanceof WarRegion warRegion) {
+                    alliance.addWarScore(warRegion.getRegionalWarTracker().getRegionValue());
+                }
             }
         }
     }
@@ -96,9 +102,12 @@ public enum WarPhase {
                 if (region.getType() != RegionType.WAR_ZONE) {
                     continue;
                 }
-                region.getRegionalWarTracker().reset(false);
+                if (!(region instanceof WarRegion warRegion)) {
+                    continue;
+                }
+                warRegion.getRegionalWarTracker().reset(false);
 
-                if (!region.hasAlliance() || !region.getStructures(WarFortressStructure.class).isEmpty()) {
+                if (!region.hasAlliance() || !warRegion.getStructures(WarFortressStructure.class).isEmpty()) {
                     continue;
                 }
                 if (region.hasAlliance()) {

@@ -2,8 +2,8 @@ package de.erethon.factions.war.structure;
 
 import de.erethon.factions.Factions;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.region.WarRegion;
 import io.papermc.paper.math.Position;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -27,11 +27,11 @@ public abstract class WarStructure extends RegionStructure {
     protected Map<FPlayer, Long> activePlayers = new HashMap<>();
     protected Set<FPlayer> activeSpectators = new HashSet<>();
 
-    public WarStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public WarStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config) {
         super(region, config);
     }
 
-    public WarStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+    public WarStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
     }
 

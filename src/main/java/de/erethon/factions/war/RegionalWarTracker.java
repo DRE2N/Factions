@@ -4,6 +4,7 @@ import de.erethon.bedrock.misc.NumberUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.WarMath;
 import de.erethon.factions.war.entities.CrystalChargeCarrier;
@@ -30,7 +31,7 @@ public class RegionalWarTracker {
 
     protected final Factions plugin = Factions.get();
 
-    private final Region region;
+    private final WarRegion region;
     private final Map<Alliance, Integer> kills = new HashMap<>();
     private final Map<Alliance, Double> scores = new HashMap<>();
     private final Set<Player> crystalCarriers = new HashSet<>();
@@ -39,7 +40,7 @@ public class RegionalWarTracker {
     private long cooldownDate = 0;
     private WarScore warScore;
 
-    public RegionalWarTracker(@NotNull Region region) {
+    public RegionalWarTracker(@NotNull WarRegion region) {
         this.region = region;
     }
 

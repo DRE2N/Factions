@@ -6,7 +6,7 @@ import de.erethon.factions.economy.FAccount;
 import de.erethon.factions.economy.FEconomy;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.factions.region.Region;
+import de.erethon.factions.region.ClaimableRegion;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -26,7 +26,7 @@ public class ClaimCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         FPlayer fPlayer = getFPlayerRaw(sender);
         Faction faction = getFaction(fPlayer);
-        Region region = args.length == 2 ? getClaimableRegion(args[1]) : getClaimableRegion(fPlayer);
+        ClaimableRegion region = args.length == 2 ? getClaimableRegion(args[1]) : getClaimableRegion(fPlayer);
         assureSameAlliance(region, fPlayer);
 
         FAccount fAccount = faction.getFAccount();

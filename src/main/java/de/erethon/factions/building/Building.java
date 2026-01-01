@@ -10,6 +10,7 @@ import de.erethon.factions.economy.resource.Resource;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionManager;
@@ -88,7 +89,7 @@ public class Building {
         load();
     }
 
-    public void build(@NotNull Player player, @NotNull Faction faction, @NotNull Region region, @NotNull Location center) {
+    public void build(@NotNull Player player, @NotNull Faction faction, @NotNull ClaimableRegion region, @NotNull Location center) {
         pay(faction);
         new BuildSite(this, region, getCorner1(center), getCorner2(center), center);
         MessageUtil.sendMessage(player, FMessage.BUILDING_SITE_CREATED.getMessage());
@@ -112,8 +113,12 @@ public class Building {
             fails.add(RequirementFail.NOT_IN_REGION);
             return fails;
         }
+        if (!(rg instanceof ClaimableRegion claimableRg)) {
+            fails.add(RequirementFail.NOT_IN_REGION);
+            return fails;
+        }
         // If the faction does not own the region and the building is not a war building
-        if (rg.getOwner() != faction && !isWarBuilding()) {
+        if (claimableRg.getOwner() != faction && !isWarBuilding()) {
             fails.add(RequirementFail.NOT_IN_REGION);
         }
         boolean isBorder = false;
@@ -139,7 +144,7 @@ public class Building {
             Factions.log("BuildingManager is null somehow. Plugin: " + plugin);
             return fails;
         }
-        for (BuildSite site : rg.getBuildSites()) {
+        for (BuildSite site : claimableRg.getBuildSites()) {
             if (manager.hasOverlap(getCorner1(loc), getCorner2(loc), site)) {
                 isInOtherBuilding = true;
                 overlappingSite = site;
@@ -411,7 +416,7 @@ public class Building {
         return icon;
     }
 
-    public boolean isBuilt(@NotNull Region region) {
+    public boolean isBuilt(@NotNull ClaimableRegion region) {
         for (BuildSite buildSite : region.getBuildSites()) {
             if (buildSite.getBuilding() == this && buildSite.isFinished() && !buildSite.isDestroyed()) {
                 return true;

@@ -26,16 +26,16 @@ import java.util.Map;
 public class RegionStructure {
 
     protected final Factions plugin = Factions.get();
-    protected final Region region;
+    protected final WarRegion region;
     protected final String name;
     protected final IntRange xRange, yRange, zRange;
 
-    public RegionStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public RegionStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config) {
         this(region, config, deserializePosition(config.getConfigurationSection("minPosition")),
                 deserializePosition(config.getConfigurationSection("maxPosition")));
     }
 
-    public RegionStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+    public RegionStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         this.region = region;
         this.name = config.getString("name", getClass().getSimpleName() + "_" + region.getStructures(getClass()).size());
         this.xRange = new IntRange(a.x(), b.x());
@@ -76,7 +76,7 @@ public class RegionStructure {
         return xRange.containsDouble(x) && yRange.containsDouble(y) && zRange.containsDouble(z);
     }
 
-    public @NotNull Region getRegion() {
+    public @NotNull WarRegion getRegion() {
         return region;
     }
 
@@ -123,7 +123,7 @@ public class RegionStructure {
         return serialized;
     }
 
-    public static @NotNull RegionStructure deserialize(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public static @NotNull RegionStructure deserialize(@NotNull WarRegion region, @NotNull ConfigurationSection config) {
         String typeName = config.getString("type");
         Class<?> type;
         try {
@@ -133,7 +133,7 @@ public class RegionStructure {
         }
         Constructor<?> constructor;
         try {
-            constructor = type.getDeclaredConstructor(Region.class, ConfigurationSection.class);
+            constructor = type.getDeclaredConstructor(WarRegion.class, ConfigurationSection.class);
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException("No matching constructor for region structure type '" + typeName + "' found: " + ConfigurationSection.class.getName());
         }

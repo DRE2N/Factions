@@ -6,6 +6,7 @@ import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.war.structure.ResourceStructure;
 import de.erethon.factions.war.structure.WarCastleStructure;
 import de.erethon.factions.util.FUtil;
@@ -50,17 +51,19 @@ public class RegionStructureCreateCommand extends FCommand {
 
         Region region = plugin.getRegionManager().getRegionByLocation(pos1);
         assure(region != null, FMessage.ERROR_SELECTION_IN_DIFFERENT_REGIONS);
+        assure(region instanceof WarRegion, FMessage.ERROR_REGION_IS_NOT_A_WARZONE);
+        WarRegion warRegion = (WarRegion) region;
         assure(FUtil.regionContainsAABB(region, pos1, pos2), FMessage.ERROR_SELECTION_IN_DIFFERENT_REGIONS);
 
         ConfigurationSection config = createConfig(args);
         RegionStructure structure = switch (args[1].toLowerCase()) {
-            case "castle" -> new WarCastleStructure(region, config, pos1, pos2);
-            case "crystal" -> new CrystalWarStructure(region, config, pos1, pos2).setAlliance(fPlayer.getAlliance());
-            case "occupy" -> new OccupyWarStructure(region, config, pos1, pos2);
-            case "resource" -> new ResourceStructure(region, config, pos1, pos2);
+            case "castle" -> new WarCastleStructure(warRegion, config, pos1, pos2);
+            case "crystal" -> new CrystalWarStructure(warRegion, config, pos1, pos2).setAlliance(fPlayer.getAlliance());
+            case "occupy" -> new OccupyWarStructure(warRegion, config, pos1, pos2);
+            case "resource" -> new ResourceStructure(warRegion, config, pos1, pos2);
             default -> throw new CommandFailedException(FMessage.ERROR_REGION_STRUCTURE_TYPE_NOT_FOUND, args[1]);
         };
-        region.getStructures().put(structure.getName(), structure);
+        warRegion.getStructures().put(structure.getName(), structure);
         sender.sendMessage(FMessage.CMD_REGION_STRUCTURE_CREATE_SUCCESS.message(structure.getName()));
     }
 

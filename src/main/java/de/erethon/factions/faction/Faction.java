@@ -28,6 +28,7 @@ import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.policy.FPolicy;
 import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.PollContainer;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FBroadcastUtil;
@@ -71,7 +72,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private PlayerCollection mods;
     private PlayerCollection members;
     private final Set<Region> regions = new HashSet<>();
-    private Region coreRegion;
+    private ClaimableRegion coreRegion;
     private Region occupiedRegion;
     private Location fHome;
     private double currentTaxDebt = 0;
@@ -100,7 +101,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     private double unrestLevel = 0;
     private boolean ongoingRevolt = false;
 
-    protected Faction(@NotNull FPlayer admin, @NotNull Region coreRegion, int id, String name, String description) {
+    protected Faction(@NotNull FPlayer admin, @NotNull ClaimableRegion coreRegion, int id, String name, String description) {
         super(new File(Factions.FACTIONS, id + ".yml"), id, name, description);
         this.alliance = admin.getAlliance();
         this.admin = admin.getUniqueId();
@@ -234,7 +235,9 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         mods.clear();
         members.clear();
         for (Region region : regions) {
-            region.setOwner(null);
+            if (region instanceof ClaimableRegion claimable) {
+                claimable.setOwner(null);
+            }
         }
         fAccount.setBalance(0, FEconomy.TAX_CURRENCY);
         try {
@@ -334,9 +337,11 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
             this.regions.add(region);
         }
         int coreRegionId = config.getInt("coreRegion");
-        this.coreRegion = plugin.getRegionManager().getRegionById(coreRegionId);
-        if (coreRegion == null) {
-            FLogger.ERROR.log("Unknown core region ID in faction '" + id + "' found: " + coreRegionId);
+        Region coreRegionRaw = plugin.getRegionManager().getRegionById(coreRegionId);
+        if (coreRegionRaw instanceof ClaimableRegion claimable) {
+            this.coreRegion = claimable;
+        } else {
+            FLogger.ERROR.log("Core region ID in faction '" + id + "' is not a ClaimableRegion: " + coreRegionId);
         }
         this.occupiedRegion = plugin.getRegionManager().getRegionById(config.getInt("occupiedRegion"));
         this.fHome = config.getLocation("home", null);
@@ -530,7 +535,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         return (int) getAttributeValue("max_players");
     }
 
-    public @NotNull Region getCoreRegion() {
+    public @NotNull ClaimableRegion getCoreRegion() {
         return coreRegion;
     }
 
@@ -538,7 +543,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         return coreRegion == region;
     }
 
-    public void setCoreRegion(@NotNull Region coreRegion) {
+    public void setCoreRegion(@NotNull ClaimableRegion coreRegion) {
         this.coreRegion = coreRegion;
     }
 
@@ -591,7 +596,9 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     public double calculateRegionTaxes() {
         double amount = 0;
         for (Region region : regions) {
-            amount += region.getLastClaimingPrice();
+            if (region instanceof ClaimableRegion claimable) {
+                amount += claimable.getLastClaimingPrice();
+            }
         }
         return amount * plugin.getFConfig().getRegionPriceTaxRate() * getAttributeValue("tax_rate", 1.0);
     }

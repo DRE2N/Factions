@@ -9,6 +9,7 @@ import de.erethon.factions.building.BuildingManager;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FUtil;
 import org.bukkit.Location;
@@ -38,11 +39,11 @@ public class BuildingTicketCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         Player player = (Player) sender;
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
-        Region region = fPlayer.getCurrentRegion();
-        if (region == null) {
-            MessageUtil.sendMessage(player, FMessage.ERROR_REGION_NOT_FOUND.message());
+        if (!(fPlayer.getCurrentRegion() instanceof ClaimableRegion claimableRegion)) {
+            MessageUtil.sendMessage(player, FMessage.ERROR_REGION_IS_NOT_CLAIMABLE.message());
             return;
         }
+        ClaimableRegion region = claimableRegion;
         List<String> tickets = new ArrayList<>();
         List<BuildSite> buildSites = plugin.getBuildingManager().getBuildingTickets();
         if (args.length == 1) {
@@ -135,7 +136,10 @@ public class BuildingTicketCommand extends FCommand {
             FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
             Region region = fPlayer.getCurrentRegion();
             List<String> uuids = new ArrayList<>();
-            for (BuildSite site : buildingManager.getBuildSites(player.getLocation(), region)) {
+            if (!(region instanceof ClaimableRegion claimableRegion)) {
+                return uuids;
+            }
+            for (BuildSite site : buildingManager.getBuildSites(player.getLocation(), claimableRegion)) {
                 uuids.add(site.getUUIDString());
             }
             return uuids;

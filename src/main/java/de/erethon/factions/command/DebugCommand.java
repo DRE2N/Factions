@@ -6,7 +6,9 @@ import de.erethon.factions.building.TechTree;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.region.schematic.FAWESchematicUtils;
 import de.erethon.factions.region.schematic.SchematicSavable;
 import de.erethon.factions.war.entities.CrystalChargeCarrier;
@@ -54,7 +56,7 @@ public class DebugCommand extends FCommand {
         if (args[1].equalsIgnoreCase("spawnmob")) {
             Player player = (Player) sender;
             FPlayer fPlayer = getFPlayer(player);
-            CrystalChargeCarrier carrier = new CrystalChargeCarrier(player.getWorld(), player.getLocation(), fPlayer.getCurrentRegion(), fPlayer.getAlliance());
+            CrystalChargeCarrier carrier = new CrystalChargeCarrier(player.getWorld(), player.getLocation(), (WarRegion) fPlayer.getCurrentRegion(), fPlayer.getAlliance());
             return;
         }
         if (args[1].equalsIgnoreCase("spawncrystal")) {
@@ -81,7 +83,12 @@ public class DebugCommand extends FCommand {
             return;
         }
         if (args[1].equalsIgnoreCase("saveRegionSchematic")) {
-            RegionStructure struct = plugin.getRegionManager().getRegionByPlayer((Player) sender).getStructureAt(((Player) sender).getLocation());
+            Region region = plugin.getRegionManager().getRegionByPlayer((Player) sender);
+            if (!(region instanceof WarRegion warRegion)) {
+                MessageUtil.sendMessage(sender, "Not in a war region");
+                return;
+            }
+            RegionStructure struct = warRegion.getStructureAt(((Player) sender).getLocation());
             if (struct == null) {
                 MessageUtil.sendMessage(sender, "No structure found");
                 return;
@@ -94,7 +101,12 @@ public class DebugCommand extends FCommand {
             }
         }
         if (args[1].equalsIgnoreCase("pasteSlice")) {
-            RegionStructure struct = plugin.getRegionManager().getRegionByPlayer((Player) sender).getStructureAt(((Player) sender).getLocation());
+            Region region = plugin.getRegionManager().getRegionByPlayer((Player) sender);
+            if (!(region instanceof WarRegion warRegion)) {
+                MessageUtil.sendMessage(sender, "Not in a war region");
+                return;
+            }
+            RegionStructure struct = warRegion.getStructureAt(((Player) sender).getLocation());
             if (struct == null) {
                 MessageUtil.sendMessage(sender, "No structure found");
                 return;
@@ -160,7 +172,12 @@ public class DebugCommand extends FCommand {
             MessageUtil.sendMessage(sender, "Tech tree?");
         }
         if (args[1].equalsIgnoreCase("pasteRegion")) {
-            RegionStructure struct = plugin.getRegionManager().getRegionByPlayer((Player) sender).getStructureAt(((Player) sender).getLocation());
+            Region region = plugin.getRegionManager().getRegionByPlayer((Player) sender);
+            if (!(region instanceof WarRegion warRegion)) {
+                MessageUtil.sendMessage(sender, "Not in a war region");
+                return;
+            }
+            RegionStructure struct = warRegion.getStructureAt(((Player) sender).getLocation());
             if (struct == null) {
                 MessageUtil.sendMessage(sender, "No structure found");
                 return;

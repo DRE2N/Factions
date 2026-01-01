@@ -4,6 +4,7 @@ import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.region.WarRegion;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -139,22 +140,22 @@ public class CaravanRouting implements Listener {
         }
         for (String start : cfg.getConfigurationSection("routes").getKeys(false)) {
             Region startRegion = plugin.getRegionManager().getRegionById(Integer.parseInt(start));
-            if (startRegion == null) {
+            if (startRegion == null || !(startRegion instanceof WarRegion warStartRegion)) {
                 Factions.log("Could not find region " + start + " for caravan route");
                 continue;
             }
-            RegionStructure startStructure = startRegion.getStructure(cfg.getString("routes." + start + ".startStructure"));
+            RegionStructure startStructure = warStartRegion.getStructure(cfg.getString("routes." + start + ".startStructure"));
             if (startStructure == null) {
                 Factions.log("Could not find structure " + cfg.getString("routes." + start + ".structure") + " for caravan route");
                 continue;
             }
             for (String end : cfg.getConfigurationSection("routes." + start).getKeys(false)) {
                 Region endRegion = plugin.getRegionManager().getRegionById(Integer.parseInt(end));
-                if (endRegion == null) {
+                if (endRegion == null || !(endRegion instanceof WarRegion warEndRegion)) {
                     Factions.log("Could not find region " + end + " for caravan route");
                     continue;
                 }
-                RegionStructure endStructure = endRegion.getStructure(cfg.getString("routes." + start + "." + end + ".endStructure"));
+                RegionStructure endStructure = warEndRegion.getStructure(cfg.getString("routes." + start + "." + end + ".endStructure"));
                 if (endStructure == null) {
                     Factions.log("Could not find structure " + cfg.getString("routes." + start + "." + end + ".structure") + " for caravan route");
                     continue;

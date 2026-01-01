@@ -4,6 +4,7 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.Region;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -33,14 +34,18 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
     private final Map<Integer, Building> buildingSlots = new HashMap<>();
     private final FPlayer fPlayer;
     private final Faction faction;
-    private final Region region;
+    private ClaimableRegion region;
 
     public BuildingSelectionGUI(@NotNull Player player) {
         Factions plugin = Factions.get();
         this.fPlayer = plugin.getFPlayerCache().getByPlayer(player);
         this.faction = fPlayer.getFaction();
-        this.region = fPlayer.getCurrentRegion();
-        if (region == null || faction == null) {
+        if (!(fPlayer.getCurrentRegion() instanceof ClaimableRegion claimableRegion)) {
+            player.sendMessage(FMessage.ERROR_REGION_NOT_FOUND.message());
+            return;
+        }
+        this.region = claimableRegion;
+        if (faction == null) {
             player.sendMessage(FMessage.ERROR_REGION_NOT_FOUND.message());
             return;
         }

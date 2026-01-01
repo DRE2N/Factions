@@ -2,6 +2,7 @@ package de.erethon.factions.war.structure;
 
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.region.WarRegion;
 import io.papermc.paper.math.Position;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitTask;
@@ -18,11 +19,11 @@ public class ResourceStructure extends RegionStructure {
 
     protected ResourceType resourceType;
 
-    public ResourceStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public ResourceStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config) {
         super(region, config);
     }
 
-    public ResourceStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+    public ResourceStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
     }
 
@@ -43,7 +44,10 @@ public class ResourceStructure extends RegionStructure {
             if (region.getAlliance() != neighbour.getAlliance()) {
                 continue;
             }
-            Map<String, WarCastleStructure> castles = neighbour.getStructures(WarCastleStructure.class);
+            if (!(neighbour instanceof WarRegion warNeighbour)) {
+                continue;
+            }
+            Map<String, WarCastleStructure> castles = warNeighbour.getStructures(WarCastleStructure.class);
             if (castles.isEmpty()) {
                 continue;
             }

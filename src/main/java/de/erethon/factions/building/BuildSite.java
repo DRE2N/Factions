@@ -3,6 +3,7 @@ package de.erethon.factions.building;
 import de.erethon.factions.Factions;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FTutorial;
@@ -66,7 +67,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     private File file;
     private Building building;
-    private Region region;
+    private ClaimableRegion region;
     private Location corner;
     private Location otherCorner;
     private final Set<BuildSiteSection> sections = new HashSet<>();
@@ -100,7 +101,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     private Map<FSetTag, Integer> placedBlocksByTag = new HashMap<>();
 
-    public BuildSite(@NotNull Building building, @NotNull Region region, @NotNull Location loc1, @NotNull Location loc2, @NotNull Location center) {
+    public BuildSite(@NotNull Building building, @NotNull ClaimableRegion region, @NotNull Location loc1, @NotNull Location loc2, @NotNull Location center) {
         this.building = building;
         this.region = region;
         if (region.getOwner() == null) {
@@ -548,7 +549,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         return building;
     }
 
-    public @NotNull Region getRegion() {
+    public @NotNull ClaimableRegion getRegion() {
         return region;
     }
 
@@ -828,7 +829,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         finished = getBoolean("finished");
         hasTicket = getBoolean("hasTicket");
         problemMessage = getString("problemMessage");
-        region = plugin.getRegionManager().getRegionById(getInt("region"));
+        region = (ClaimableRegion) plugin.getRegionManager().getRegionById(getInt("region"));
         corner = Location.deserialize(getConfigurationSection("location.corner").getValues(false));
         otherCorner = Location.deserialize(getConfigurationSection("location.otherCorner").getValues(false));
         interactive = Location.deserialize(getConfigurationSection("location.interactable").getValues(false));

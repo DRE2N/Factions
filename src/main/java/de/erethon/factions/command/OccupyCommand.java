@@ -4,6 +4,7 @@ import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.Region;
 import org.bukkit.command.CommandSender;
 
@@ -28,9 +29,11 @@ public class OccupyCommand extends FCommand {
         assureSenderHasModPerms(sender, faction);
         Region region = getRegion(fPlayer);
         assure(fPlayer.getAlliance().getTemporaryRegions().contains(region), FMessage.ERROR_REGION_IS_NOT_OCCUPIABLE, region.getName());
-        assure(region.getOwner() == null, FMessage.ERROR_REGION_ALREADY_OCCUPIED, region.getName());
+        assure(region instanceof ClaimableRegion, FMessage.ERROR_REGION_IS_NOT_CLAIMABLE);
+        ClaimableRegion claimable = (ClaimableRegion) region;
+        assure(claimable.getOwner() == null, FMessage.ERROR_REGION_ALREADY_OCCUPIED, region.getName());
         assure(faction.getOccupiedRegion() == null, FMessage.ERROR_FACTION_ALREADY_OCCUPIED_REGION, faction.getOccupiedRegion().getName());
-        region.setOwner(faction);
+        claimable.setOwner(faction);
         faction.setOccupiedRegion(region);
     }
 }

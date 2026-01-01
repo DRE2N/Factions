@@ -5,6 +5,7 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.event.FPlayerCrossRegionEvent;
 import de.erethon.factions.integrations.UIFactionsListener;
+import de.erethon.factions.region.PvERegion;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionMode;
 import de.erethon.factions.region.RegionType;
@@ -118,8 +119,8 @@ public class FPlayerListener implements Listener {
         }
         Component tabHeader = heading.appendNewline();
         if (region != null) {
-            if (region.getLowerLevelBound() != -1 && region.getUpperLevelBound() != -1) {
-                tabHeader = tabHeader.append(Component.text("Lv. " + region.getLowerLevelBound() + "-" + region.getUpperLevelBound()).color(NamedTextColor.YELLOW));
+            if (region instanceof PvERegion pve && pve.getLowerLevelBound() != -1 && pve.getUpperLevelBound() != -1) {
+                tabHeader = tabHeader.append(Component.text("Lv. " + pve.getLowerLevelBound() + "-" + pve.getUpperLevelBound()).color(NamedTextColor.YELLOW));
                 tabHeader = tabHeader.append(Component.text(": ").color(NamedTextColor.DARK_GRAY));
             }
             tabHeader = tabHeader.append(Component.text(region.getName().replace("_", " ")).color(region.getType().getColor()));

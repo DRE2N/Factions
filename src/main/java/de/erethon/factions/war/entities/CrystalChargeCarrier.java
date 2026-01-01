@@ -6,6 +6,7 @@ import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.policy.FPolicy;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.structure.CrystalWarStructure;
 import net.kyori.adventure.text.Component;
@@ -48,7 +49,7 @@ public class CrystalChargeCarrier extends IronGolem {
     public static final AttributeModifier CARRIER_BUFF = new AttributeModifier(CARRIER_KEY, Factions.get().getFConfig().getCrystalCarrierSpeedBuff(), AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.ANY);
 
     private final Factions plugin = Factions.get();
-    private Region region;
+    private WarRegion region;
     private Alliance alliance;
 
     // Required constructor for entity loading
@@ -56,11 +57,11 @@ public class CrystalChargeCarrier extends IronGolem {
         super(type, world);
     }
 
-    public CrystalChargeCarrier(World world, Location location, Region region, Alliance alliance) {
+    public CrystalChargeCarrier(World world, Location location, WarRegion region, Alliance alliance) {
         this(EntityType.IRON_GOLEM, ((CraftWorld) world).getHandle(), region, alliance, location.getX(), location.getY(), location.getZ());
     }
 
-    public CrystalChargeCarrier(EntityType<? extends IronGolem> type, Level world, Region region, Alliance alliance, double x, double y, double z) {
+    public CrystalChargeCarrier(EntityType<? extends IronGolem> type, Level world, WarRegion region, Alliance alliance, double x, double y, double z) {
         super(type, world);
         setPos(x, y, z);
         this.region = region;
@@ -129,8 +130,10 @@ public class CrystalChargeCarrier extends IronGolem {
         super.readAdditionalSaveData(input);
         Optional<Integer> regionId = input.getInt("factions-region-id");
         regionId.ifPresent(id -> {
-            region = plugin.getRegionManager().getRegionById(id);
-            if (region == null) {
+            Region r = plugin.getRegionManager().getRegionById(id);
+            if (r instanceof WarRegion wr) {
+                region = wr;
+            } else {
                 FLogger.WAR.log("Failed to load crystal charge carrier data at " + position().x + ", " + position().y + ", " + position().z);
             }
         });

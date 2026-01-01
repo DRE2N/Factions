@@ -6,15 +6,12 @@ import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.attributes.FactionAttribute;
 import de.erethon.factions.building.attributes.FactionAttributeModifier;
-import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.policy.FPolicy;
 import de.erethon.factions.util.FLogger;
-import de.erethon.factions.util.FUtil;
-import de.erethon.factions.war.RegionalWarTracker;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
@@ -23,48 +20,39 @@ import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
 /**
- * @author Fyreum
+ * Base region class containing core region functionality.
+ * Subclasses: {@link PvERegion}, {@link ClaimableRegion}, {@link WarRegion}, {@link CapitalRegion}
+ *
+ * @author Malfrador
  */
 public class Region extends FLegalEntity {
 
-    private final Factions plugin = Factions.get();
+    protected final Factions plugin = Factions.get();
 
-    private final RegionCache regionCache;
+    protected final RegionCache regionCache;
     /* Data */
     private final Set<Region> adjacentRegions = new HashSet<>();
-    private final Set<BuildSite> buildSites = new HashSet<>();
     private Alliance alliance;
     private final Set<LazyChunk> chunks = new HashSet<>();
-    private boolean claimable = true;
     private double damageReduction = 0.0;
-    private double lastClaimingPrice;
-    private Faction owner;
-    private final RegionalWarTracker regionalWarTracker = new RegionalWarTracker(this);
-    private final Map<String, RegionStructure> structures = new HashMap<>();
     private RegionType type = RegionType.BARREN;
     private RegionMode mode = type.getDefaultMode();
-    private Map<RegionPOIType, Set<RegionPOIContainer>> poiMap = new HashMap<>(); // For quicker look-ups (e.g. "nearest enemy radar")
-    private int lowerLevelBound = -1;
-    private int upperLevelBound = -1;
+    private Map<RegionPOIType, Set<RegionPOIContainer>> poiMap = new HashMap<>();
 
     protected Region(@NotNull RegionCache regionCache, @NotNull File file, int id, @NotNull String name, @Nullable String description) {
         super(file, id, name, description);
@@ -88,19 +76,12 @@ public class Region extends FLegalEntity {
      */
     public boolean delete() {
         FLogger.REGION.log("Deleting region '" + id + "'...");
+        Faction owner = getOwner();
         if (owner != null) {
             owner.removeRegion(this);
         }
         regionCache.removeRegion(this);
         return file.delete();
-    }
-
-    public double calculatePriceFor(@Nullable Faction faction) {
-        FConfig cfg = plugin.getFConfig();
-        double chunkIncrement = chunks.size() * cfg.getRegionPricePerChunk();
-        double regionIncrement = faction == null ? 0 : cfg.getRegionPricePerRegionFactor() * Math.sqrt(faction.getRegions().size()) * cfg.getRegionPricePerRegion();
-        double price = cfg.getRegionPriceBase() + chunkIncrement + regionIncrement;
-        return Math.round(price * cfg.getRegionPriceTotalMultiplier());
     }
 
     /* Serialization */
@@ -124,34 +105,9 @@ public class Region extends FLegalEntity {
                 FLogger.ERROR.log("Illegal chunk in region '" + id + "' found: '" + string + "'");
             }
         }
-        claimable = config.getBoolean("claimable", claimable);
         damageReduction = config.getDouble("damageReduction", damageReduction);
-        lastClaimingPrice = config.getDouble("lastClaimingPrice", lastClaimingPrice);
-        owner = plugin.getFactionCache().getById(config.getInt("owner", -1));
-        regionalWarTracker.load(config.getConfigurationSection("warTracker"));
-        lowerLevelBound = config.getInt("lowerLevelBound", lowerLevelBound);
-        upperLevelBound = config.getInt("upperLevelBound", upperLevelBound);
-
-        ConfigurationSection structuresSection = config.getConfigurationSection("structures");
-        if (structuresSection != null) {
-            for (String key : structuresSection.getKeys(false)) {
-                ConfigurationSection section = structuresSection.getConfigurationSection(key);
-                if (section == null) {
-                    FLogger.ERROR.log("Unknown region structure in region '" + id + "' found: " + key);
-                    continue;
-                }
-                RegionStructure structure = RegionStructure.deserialize(this, section);
-                structures.put(structure.getName(), structure);
-            }
-            if (!structures.isEmpty()) {
-                FLogger.REGION.log("Loaded " + structures.size() + " structures in region '" + id + "'");
-            }
-        }
         type = RegionType.getByName(config.getString("type", type.name()), type);
         mode = RegionMode.getByName(config.getString("mode", type.getDefaultMode().name()), type.getDefaultMode());
-        if (type.isWarGround() && plugin.getWar() != null) {
-            plugin.getWar().registerRegion(regionalWarTracker);
-        }
     }
 
     @Override
@@ -160,26 +116,9 @@ public class Region extends FLegalEntity {
         config.set("adjacentRegions", adjacentRegions.stream().map(Region::getId).toList());
         config.set("alliance", alliance == null ? null : alliance.getId());
         config.set("chunks", chunks.stream().map(LazyChunk::toString).toList());
-        config.set("claimable", claimable);
         config.set("damageReduction", damageReduction);
-        config.set("lastClaimingPrice", lastClaimingPrice);
-        config.set("owner", owner == null ? null : owner.getId());
-        config.set("warTracker", regionalWarTracker.serialize());
-        Map<String, Object> serializedStructures = new HashMap<>(structures.size());
-        structures.forEach((name, structure) -> serializedStructures.put(String.valueOf(serializedStructures.size()), structure.serialize()));
-        config.set("structures", serializedStructures);
         config.set("type", type.name());
         config.set("mode", mode.name());
-        config.set("buildsites", buildSites.stream().map(BuildSite::getUUIDString).toList());
-        config.set("lowerLevelBound", lowerLevelBound);
-        config.set("upperLevelBound", upperLevelBound);
-        for (BuildSite buildSite : buildSites) {
-            try {
-                buildSite.save();
-            } catch (IOException e) {
-                FLogger.REGION.log("Failed to save build site " + buildSite.getUuid() + " for region " + id + ": " + e.getMessage());
-            }
-        }
     }
 
     /* Getters and setters */
@@ -207,8 +146,10 @@ public class Region extends FLegalEntity {
             return false;
         }
         // Mark owning factions as adjacent.
-        if (owner != null && other.getOwner() != null) {
-            owner.addAdjacentFaction(other.getOwner());
+        Faction owner = getOwner();
+        Faction otherOwner = other.getOwner();
+        if (owner != null && otherOwner != null) {
+            owner.addAdjacentFaction(otherOwner);
         }
         return true;
     }
@@ -218,19 +159,28 @@ public class Region extends FLegalEntity {
             return false;
         }
         // Check whether another region ensures the adjacency and remove adjacent faction if not.
-        if (owner != null && other.getOwner() != null && !FUtil.isAdjacent(owner, other.getOwner())) {
-            owner.removeAdjacentFaction(other.getOwner());
+        Faction owner = getOwner();
+        Faction otherOwner = other.getOwner();
+        if (owner != null && otherOwner != null && !isAdjacentToFaction(owner, otherOwner)) {
+            owner.removeAdjacentFaction(otherOwner);
         }
         return true;
+    }
+
+    private boolean isAdjacentToFaction(@NotNull Faction a, @NotNull Faction b) {
+        for (Region region : a.getRegions()) {
+            for (Region adjacent : region.getAdjacentRegions()) {
+                if (adjacent.getOwner() == b) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public boolean isAdjacentRegion(@NotNull Region other) {
         assert other != this : "Region cannot be adjacent to itself";
         return adjacentRegions.contains(other);
-    }
-
-    public @NotNull Set<BuildSite> getBuildSites() {
-        return buildSites;
     }
 
     @Override
@@ -276,14 +226,6 @@ public class Region extends FLegalEntity {
         return false;
     }
 
-    public boolean isClaimable() {
-        return claimable;
-    }
-
-    public void setClaimable(boolean claimable) {
-        this.claimable = claimable;
-    }
-
     public double getDamageReduction() {
         return damageReduction;
     }
@@ -292,100 +234,32 @@ public class Region extends FLegalEntity {
         this.damageReduction = damageReduction;
     }
 
-    public double getLastClaimingPrice() {
-        return lastClaimingPrice;
-    }
-
-    public void setLastClaimingPrice(double lastClaimingPrice) {
-        this.lastClaimingPrice = lastClaimingPrice;
-    }
-
+    /**
+     * Gets the owner of this region. Override in subclasses that support ownership.
+     * @return the owning faction, or null if not owned or not ownable
+     */
     public @Nullable Faction getOwner() {
-        return owner;
+        return null;
     }
 
     @Override
     public @Nullable Faction getFaction() {
-        return owner;
+        return getOwner();
     }
 
+    /**
+     * @return true if this region has an owner
+     */
     public boolean isOwned() {
-        return owner != null;
+        return getOwner() != null;
     }
 
+    /**
+     * @return the display string for the owner
+     */
     public @NotNull String getDisplayOwner() {
-        return isOwned() ? owner.getName(true) : FMessage.GENERAL_WILDERNESS.getMessage() + (alliance == null ? "" : " (" + alliance.getName(true) + ")");
-    }
-
-    public void setOwner(@Nullable Faction owner) {
-        this.owner = owner;
-    }
-
-    public @NotNull RegionalWarTracker getRegionalWarTracker() {
-        return regionalWarTracker;
-    }
-
-    public @NotNull Map<String, RegionStructure> getStructures() {
-        return structures;
-    }
-
-    public <T extends RegionStructure> @NotNull Map<String, T> getStructures(@NotNull Class<T> type) {
-        Map<String, T> filtered = new HashMap<>();
-        for (RegionStructure structure : structures.values()) {
-            if (type.isInstance(structure)) {
-                filtered.put(structure.getName(), (T) structure);
-            }
-        }
-        return filtered;
-    }
-
-    public @Nullable RegionStructure getStructure(@NotNull String name) {
-        return structures.get(name);
-    }
-
-    public <T extends RegionStructure> @Nullable T getStructure(@NotNull String name, @NotNull Class<T> type) {
-        RegionStructure structure = getStructure(name);
-        return type.isInstance(structure) ? (T) structure : null;
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    public @Nullable RegionStructure getStructureAt(@NotNull Position position) {
-        for (RegionStructure structure : structures.values()) {
-            if (structure.containsPosition(position)) {
-                return structure;
-            }
-        }
-        return null;
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    public @NotNull List<RegionStructure> getStructuresAt(@NotNull Position position) {
-        List<RegionStructure> found = new ArrayList<>();
-        for (RegionStructure structure : structures.values()) {
-            if (structure.containsPosition(position)) {
-                found.add(structure);
-            }
-        }
-        return found;
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    public <T extends RegionStructure> @NotNull List<T> getStructuresAt(@NotNull Position position, @NotNull Class<T> type) {
-        List<T> found = new ArrayList<>();
-        for (RegionStructure structure : structures.values()) {
-            if (structure.containsPosition(position) && type.isInstance(structure)) {
-                found.add((T) structure);
-            }
-        }
-        return found;
-    }
-
-    public void addStructure(@NotNull RegionStructure structure) {
-        structures.put(structure.getName(), structure);
-    }
-
-    public void removeStructure(@NotNull RegionStructure structure) {
-        structures.remove(structure.getName());
+        Faction owner = getOwner();
+        return owner != null ? owner.getName(true) : FMessage.GENERAL_WILDERNESS.getMessage() + (alliance == null ? "" : " (" + alliance.getName(true) + ")");
     }
 
     public @NotNull RegionType getType() {
@@ -394,11 +268,6 @@ public class Region extends FLegalEntity {
 
     public void setType(@NotNull RegionType type) {
         this.type = type;
-        if (type.isWarGround()) {
-            plugin.getWar().registerRegion(regionalWarTracker);
-        } else {
-            plugin.getWar().unregisterRegion(regionalWarTracker);
-        }
     }
 
     public @NotNull RegionMode getMode() {
@@ -407,19 +276,6 @@ public class Region extends FLegalEntity {
 
     public void setMode(@NotNull RegionMode mode) {
         this.mode = mode;
-    }
-
-    public void setMinMaxLevel(int lower, int upper) {
-        this.lowerLevelBound = lower;
-        this.upperLevelBound = upper;
-    }
-
-    public int getLowerLevelBound() {
-        return lowerLevelBound;
-    }
-
-    public int getUpperLevelBound() {
-        return upperLevelBound;
     }
 
     /**
@@ -464,6 +320,7 @@ public class Region extends FLegalEntity {
      * @param position The position to search from
      * @return The nearest POI build site or null if none exists
      */
+    @SuppressWarnings("UnstableApiUsage")
     public BuildSite getNearestPOISite(RegionPOIType type, Position position) {
         Set<RegionPOIContainer> containers = getPOIs(type);
         if (containers.isEmpty()) {
@@ -486,10 +343,13 @@ public class Region extends FLegalEntity {
     public @NotNull Component asComponent(@NotNull FEntity viewer) {
         Component component = Component.text(getName());
         Component hoverMessage = Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName(true)));
+        int lowerLevelBound = this instanceof PvERegion pve ? pve.getLowerLevelBound() : -1;
+        int upperLevelBound = this instanceof PvERegion pve ? pve.getUpperLevelBound() : -1;
         hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.header", "factions.region.info.header", Component.text(getName(true)), Component.text(lowerLevelBound == -1 ? "~" : lowerLevelBound + ""), Component.text(upperLevelBound == -1 ? "-" : upperLevelBound + ""))).append(Component.newline());
         hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.type","factions.region.info.type", Component.text(getType().getName())));
         hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.owner", "factions.region.info.owner", Component.text(getDisplayOwner())));
-        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.buildings", "factions.region.info.buildings", Component.text(buildSites.size())));
+        int buildSiteCount = this instanceof ClaimableRegion cr ? cr.getBuildSites().size() : 0;
+        hoverMessage = hoverMessage.append(Component.translatable("factions.region.info.buildings", "factions.region.info.buildings", Component.text(buildSiteCount)));
         hoverMessage = hoverMessage.append(Component.translatable("factions.general.clickHints.region"));
         component = component.hoverEvent(HoverEvent.showText(hoverMessage));
         component = component.clickEvent(ClickEvent.runCommand("/f region info " + getId()));
@@ -525,6 +385,7 @@ public class Region extends FLegalEntity {
     @Override
     public double getAttributeValue(@NotNull String name, double def) {
         FactionAttribute attribute = getAttribute(name);
+        Faction owner = getOwner();
         if (alliance == null) {
             return attribute == null ? def : attribute.getValue();
         }
@@ -543,6 +404,7 @@ public class Region extends FLegalEntity {
         if (alliance != null && alliance.hasPolicy(policy)) {
             return true;
         }
+        Faction owner = getOwner();
         if (owner != null && owner.hasPolicy(policy)) {
             return true;
         }
@@ -572,10 +434,10 @@ public class Region extends FLegalEntity {
         json.addProperty("id", id);
         json.addProperty("name", name);
         json.addProperty("type", type.name());
+        Faction owner = getOwner();
         json.addProperty("owner", owner == null ? -1 : owner.getId());
         json.addProperty("alliance", alliance == null ? -1 : alliance.getId());
-        json.addProperty("claimable", claimable);
+        json.addProperty("claimable", this instanceof ClaimableRegion);
         return json;
     }
-
 }

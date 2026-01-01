@@ -12,8 +12,10 @@ import de.erethon.factions.entity.ShortableNamed;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.poll.Poll;
 import de.erethon.factions.poll.PollContainer;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FUtil;
@@ -76,7 +78,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         attributes.put("tax_rate", new FactionStatAttribute(1.0));
     }
 
-    public void temporaryOccupy(@NotNull Region region) {
+    public void temporaryOccupy(@NotNull WarRegion region) {
         FLogger.WAR.log("Region '" + region.getId() + "' was temporarily occupied by alliance '" + id + "'");
         if (region.hasAlliance()) {
             region.getAlliance().removeTemporaryRegion(region);
@@ -221,9 +223,9 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         }
         region.setAlliance(null);
 
-        if (region.hasFaction()) {
-            region.getOwner().setOccupiedRegion(null);
-            region.setOwner(null);
+        if (region.hasFaction() && region instanceof ClaimableRegion claimable) {
+            claimable.getOwner().setOccupiedRegion(null);
+            claimable.setOwner(null);
         }
         sendMessage(FMessage.ALLIANCE_INFO_REGION_LOST.message(region.getName()));
     }

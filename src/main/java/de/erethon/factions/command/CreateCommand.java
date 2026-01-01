@@ -3,7 +3,7 @@ package de.erethon.factions.command;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.factions.region.Region;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.tyche.EconomyService;
 import de.erethon.tyche.models.OwnerType;
 import net.kyori.adventure.text.Component;
@@ -33,7 +33,7 @@ public class CreateCommand extends FCommand {
         assurePlayerIsFactionless(fPlayer);
         assurePlayerHasAlliance(fPlayer);
 
-        Region region = getClaimableRegion(fPlayer);
+        ClaimableRegion region = getClaimableRegion(fPlayer);
         assureSameAlliance(region, fPlayer);
         if (args[1].equalsIgnoreCase("confirm")) {
             assure(pendingCreations.containsKey(fPlayer), FMessage.ERROR_FACTION_NOT_FOUND);

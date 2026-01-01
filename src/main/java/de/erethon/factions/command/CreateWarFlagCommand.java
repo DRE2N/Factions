@@ -4,6 +4,7 @@ import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.war.structure.FlagStructure;
 import de.erethon.factions.war.structure.OccupyWarStructure;
 import org.bukkit.command.CommandSender;
@@ -29,10 +30,12 @@ public class CreateWarFlagCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         FPlayer fPlayer = getFPlayerRaw(sender);
         Region region = getRegion(fPlayer);
+        assure(region instanceof WarRegion, FMessage.ERROR_REGION_IS_NOT_A_WARZONE);
+        WarRegion warRegion = (WarRegion) region;
         assure(fPlayer.hasSelection(), FMessage.ERROR_NO_SELECTION);
-        OccupyWarStructure objective = region.getStructure(args[1], OccupyWarStructure.class);
+        OccupyWarStructure objective = warRegion.getStructure(args[1], OccupyWarStructure.class);
         assure(objective != null, FMessage.ERROR_WAR_OBJECTIVE_NOT_FOUND, args[1]);
-        objective.getFlagStructures().add(new FlagStructure(region, new MemoryConfiguration(), fPlayer.getPos1(), fPlayer.getPos2()));
+        objective.getFlagStructures().add(new FlagStructure(warRegion, new MemoryConfiguration(), fPlayer.getPos1(), fPlayer.getPos2()));
         sender.sendMessage(FMessage.CMD_CREATE_WAR_FLAG_SUCCESS.message(objective.getName()));
     }
 
@@ -43,10 +46,10 @@ public class CreateWarFlagCommand extends FCommand {
                 return null;
             }
             Region region = plugin.getFPlayerCache().getByPlayer(player).getCurrentRegion();
-            if (region == null) {
+            if (region == null || !(region instanceof WarRegion warRegion)) {
                 return null;
             }
-            return getTabList(region.getStructures(OccupyWarStructure.class).keySet(), args[1]);
+            return getTabList(warRegion.getStructures(OccupyWarStructure.class).keySet(), args[1]);
         }
         return null;
     }

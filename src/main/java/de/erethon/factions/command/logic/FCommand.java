@@ -13,6 +13,7 @@ import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.portal.Portal;
 import de.erethon.factions.portal.PortalCondition;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionCache;
 import de.erethon.factions.util.FException;
@@ -146,18 +147,18 @@ public abstract class FCommand extends ECommand {
         return region;
     }
 
-    protected @NotNull Region getClaimableRegion(@NotNull String arg) {
+    protected @NotNull ClaimableRegion getClaimableRegion(@NotNull String arg) {
         Region region = getRegion(arg);
-        assureRegionIsUnowned(region);
         assureRegionIsClaimable(region);
-        return region;
+        assureRegionIsUnowned(region);
+        return (ClaimableRegion) region;
     }
 
-    protected @NotNull Region getClaimableRegion(@NotNull FPlayer fPlayer) {
+    protected @NotNull ClaimableRegion getClaimableRegion(@NotNull FPlayer fPlayer) {
         Region region = getRegion(fPlayer);
-        assureRegionIsUnowned(region);
         assureRegionIsClaimable(region);
-        return region;
+        assureRegionIsUnowned(region);
+        return (ClaimableRegion) region;
     }
 
     protected @NotNull Alliance getAlliance(@NotNull String arg) {
@@ -382,7 +383,7 @@ public abstract class FCommand extends ECommand {
     }
 
     protected void assureRegionIsClaimable(@NotNull Region region) {
-        assure(region.isClaimable(), FMessage.ERROR_REGION_IS_NOT_CLAIMABLE);
+        assure(region instanceof ClaimableRegion, FMessage.ERROR_REGION_IS_NOT_CLAIMABLE);
     }
 
     protected void assureSameAlliance(@NotNull FEntity a, @NotNull FEntity b) {

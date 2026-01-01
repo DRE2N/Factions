@@ -7,6 +7,7 @@ import de.erethon.factions.entity.Relation;
 import de.erethon.factions.event.FPlayerCrossRegionEvent;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.war.structure.CrystalWarStructure;
 import de.erethon.factions.war.structure.WarStructure;
 import net.minecraft.server.level.ServerPlayer;
@@ -46,10 +47,10 @@ public class WarListener implements Listener {
         }
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(event.getPlayer());
         Region region = fPlayer.getCurrentRegion();
-        if (region == null) {
+        if (region == null || !(region instanceof WarRegion warRegion)) {
             return;
         }
-        for (WarStructure objective : region.getStructures(WarStructure.class).values()) {
+        for (WarStructure objective : warRegion.getStructures(WarStructure.class).values()) {
             boolean inRange = objective.containsPosition(event.getTo());
             if (objective.isActive(fPlayer)) {
                 if (inRange) {
@@ -183,10 +184,10 @@ public class WarListener implements Listener {
 
     private CrystalWarStructure getCrystalObjective(org.bukkit.entity.Entity entity) {
         Region region = plugin.getRegionManager().getRegionByLocation(entity.getLocation());
-        if (region == null) {
+        if (region == null || !(region instanceof WarRegion warRegion)) {
             return null;
         }
         String name = entity.getPersistentDataContainer().get(WarStructure.NAME_KEY, PersistentDataType.STRING);
-        return name == null ? null : region.getStructure(name, CrystalWarStructure.class);
+        return name == null ? null : warRegion.getStructure(name, CrystalWarStructure.class);
     }
 }

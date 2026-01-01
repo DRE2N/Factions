@@ -9,6 +9,7 @@ import de.erethon.factions.entity.FEntityCache;
 import de.erethon.factions.event.FPlayerFactionLeaveEvent;
 import de.erethon.factions.event.FactionCreateEvent;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FException;
 import de.erethon.factions.util.FLogger;
@@ -47,7 +48,7 @@ public class FactionCache extends FEntityCache<Faction> {
         }
     }
 
-    public synchronized @NotNull Faction create(@NotNull FPlayer fPlayer, @NotNull Region coreRegion, @NotNull String name) throws FException {
+    public synchronized @NotNull Faction create(@NotNull FPlayer fPlayer, @NotNull ClaimableRegion coreRegion, @NotNull String name) throws FException {
         FException.throwIf(plugin.getFConfig().isNameForbidden(name), "Couldn't create faction: forbidden name", FMessage.ERROR_NAME_IS_FORBIDDEN, name);
         FException.throwIf(getByName(name) != null, "Couldn't create faction: name already in use", FMessage.ERROR_NAME_IN_USE, name);
         Faction faction = new Faction(fPlayer, coreRegion, generateId(), name, null);

@@ -3,6 +3,7 @@ package de.erethon.factions.building;
 import de.erethon.factions.Factions;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.Region;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
@@ -71,11 +72,11 @@ public class BuildSitePlacer implements Listener {
             }
             Region rg = player.getCurrentRegion(); // Just in case the player moved
             Faction faction = player.getFaction(); // Maybe someone leaves while trying to place a building
-            if (rg == null || faction == null || faction != this.faction) {
+            if (rg == null || faction == null || faction != this.faction || (!(rg instanceof ClaimableRegion claimableRegion))) {
                 player.sendMessage(Component.translatable("factions.building.place.cancelled"));
                 return;
             }
-            building.build(event.getPlayer(), faction, rg, event.getClickedBlock().getLocation());
+            building.build(event.getPlayer(), faction, claimableRegion, event.getClickedBlock().getLocation());
             HandlerList.unregisterAll(this);
         }
         if (event.getAction().isRightClick()) { // Cancelled placement

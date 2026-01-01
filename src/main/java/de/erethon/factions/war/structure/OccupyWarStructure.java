@@ -4,7 +4,7 @@ import de.erethon.aergia.util.TickUtil;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.factions.region.Region;
+import de.erethon.factions.region.WarRegion;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
@@ -37,11 +37,11 @@ public class OccupyWarStructure extends TickingWarStructure {
     protected int currentOccupiedProgress = 0;
     protected BossBar bossBar;
 
-    public OccupyWarStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public OccupyWarStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config) {
         super(region, config);
     }
 
-    public OccupyWarStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+    public OccupyWarStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
     }
 

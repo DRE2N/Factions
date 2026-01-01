@@ -8,6 +8,7 @@ import de.erethon.aergia.util.TickUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.PvERegion;
 import de.erethon.factions.region.Region;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -38,8 +39,8 @@ public class UIFactionsListener implements Listener {
                     if (region == null) {
                         return Component.text().color(NamedTextColor.GRAY).decorate(TextDecoration.BOLD).content(FMessage.GENERAL_WILDERNESS.getMessage()).build();
                     }
-                    int minLevel = region.getLowerLevelBound();
-                    int maxLevel = region.getUpperLevelBound();
+                    int minLevel = region instanceof PvERegion pve ? pve.getLowerLevelBound() : -1;
+                    int maxLevel = region instanceof PvERegion pve ? pve.getUpperLevelBound() : -1;
                     Component level = Component.empty();
                     if (minLevel != -1 && maxLevel != -1) {
                         level = Component.text().color(NamedTextColor.GRAY).decorate(TextDecoration.BOLD).content(" [" + minLevel + "-" + maxLevel + "] ").build();

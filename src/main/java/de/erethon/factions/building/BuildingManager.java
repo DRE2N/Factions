@@ -6,6 +6,7 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.economy.FEconomy;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.ClaimableRegion;
 import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
@@ -107,7 +108,11 @@ public class BuildingManager implements Listener {
             MessageUtil.sendMessage(player, "&cNot in Region.");
             return;
         }
-        BuildSite buildSite = getBuildSite(player.getTargetBlockExact(20), rg);
+        if (!(rg instanceof ClaimableRegion claimableRg)) {
+            MessageUtil.sendMessage(player, "&cRegion is not claimable.");
+            return;
+        }
+        BuildSite buildSite = getBuildSite(player.getTargetBlockExact(20), claimableRg);
         if (buildSite == null) {
             MessageUtil.sendMessage(player, "&cNot a build site.");
         }
@@ -117,7 +122,7 @@ public class BuildingManager implements Listener {
         MessageUtil.sendMessage(player, "&aBuildSite deleted.");
     }
 
-    public @Nullable BuildSite getBuildSite(@NotNull Location loc, @NotNull Region region) {
+    public @Nullable BuildSite getBuildSite(@NotNull Location loc, @NotNull ClaimableRegion region) {
         for (BuildSite buildSite : region.getBuildSites()) {
             if (buildSite.isInBuildSite(loc)) {
                 return buildSite;
@@ -126,7 +131,7 @@ public class BuildingManager implements Listener {
         return null;
     }
 
-    public Set<BuildSite> getBuildSites(@NotNull Location loc, @NotNull Region region) {
+    public Set<BuildSite> getBuildSites(@NotNull Location loc, @NotNull ClaimableRegion region) {
         Set<BuildSite> buildSites = new HashSet<>();
         for (BuildSite buildSite : region.getBuildSites()) {
             if (buildSite.isInBuildSite(loc)) {
@@ -141,7 +146,7 @@ public class BuildingManager implements Listener {
     }
 
     @Contract("null, _ -> null; !null, _ -> _")
-    public @Nullable BuildSite getBuildSite(@Nullable Block check, @NotNull Region region) {
+    public @Nullable BuildSite getBuildSite(@Nullable Block check, @NotNull ClaimableRegion region) {
         if (check == null) {
             return null;
         }
@@ -223,7 +228,7 @@ public class BuildingManager implements Listener {
         return stack;
     }
 
-    public static List<Building> getUnlockedBuildingsForPlacement(FPlayer fPlayer, Faction faction, Region region) {
+    public static List<Building> getUnlockedBuildingsForPlacement(FPlayer fPlayer, Faction faction, ClaimableRegion region) {
         List<Building> available = new ArrayList<>();
         for (Building building : Factions.get().getBuildingManager().getBuildings()) {
             if (building.getRequiredBuildings().isEmpty()) {

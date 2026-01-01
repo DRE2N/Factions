@@ -9,6 +9,7 @@ import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionMode;
 import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.entity.Entity;
@@ -186,7 +187,7 @@ public class EntityProtectionListener implements Listener {
         if (region == null) {
             return;
         }
-        List<RegionStructure> structures = region.getStructuresAt(target.getLocation());
+        List<RegionStructure> structures = region instanceof WarRegion wr ? wr.getStructuresAt(target.getLocation()) : List.of();
         TriState structureState = TriState.NOT_SET;
         // The First structure that returns a state other than NOT_SET will be used.
         for (RegionStructure structure : structures) {

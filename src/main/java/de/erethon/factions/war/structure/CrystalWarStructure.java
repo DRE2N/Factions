@@ -6,7 +6,7 @@ import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.policy.FPolicy;
 import de.erethon.factions.region.LazyChunk;
-import de.erethon.factions.region.Region;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.war.entities.CrystalChargeCarrier;
 import de.erethon.factions.war.entities.CrystalMob;
@@ -67,11 +67,11 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
     protected Set<CrystalChargeCarrier> carriers = new HashSet<>();
     protected boolean defenderCrystal;
 
-    public CrystalWarStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public CrystalWarStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config) {
         super(region, config);
     }
 
-    public CrystalWarStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+    public CrystalWarStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
     }
 

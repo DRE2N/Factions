@@ -2,8 +2,8 @@ package de.erethon.factions.war.structure;
 
 import de.erethon.factions.event.WarPhaseChangeEvent;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.region.schematic.SchematicSavable;
 import de.erethon.factions.util.FLogger;
 import io.papermc.paper.math.Position;
@@ -33,11 +33,11 @@ public class WarCastleStructure extends RegionStructure implements Listener, Sch
 
     private CrystalWarStructure crystalObjective;
 
-    public WarCastleStructure(@NotNull Region region, @NotNull ConfigurationSection config) {
+    public WarCastleStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config) {
         super(region, config);
     }
 
-    public WarCastleStructure(@NotNull Region region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
+    public WarCastleStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config, @NotNull Position a, @NotNull Position b) {
         super(region, config, a, b);
     }
 

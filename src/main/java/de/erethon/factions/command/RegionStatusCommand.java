@@ -5,6 +5,7 @@ import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.war.RegionalWarTracker;
 import org.bukkit.command.CommandSender;
 
@@ -25,8 +26,9 @@ public class RegionStatusCommand extends FCommand {
     @Override
     public void onExecute(CommandSender sender, String[] args) {
         Region region = args.length == 2 ? getRegion(args[1]) : getRegion(getFPlayer(sender));
-        assure(region.getType().isWarGround(), FMessage.ERROR_REGION_IS_NOT_A_WARZONE);
-        RegionalWarTracker tracker = region.getRegionalWarTracker();
+        assure(region instanceof WarRegion, FMessage.ERROR_REGION_IS_NOT_A_WARZONE);
+        WarRegion warRegion = (WarRegion) region;
+        RegionalWarTracker tracker = warRegion.getRegionalWarTracker();
 
         MessageUtil.sendCenteredMessage(sender, FMessage.CMD_REGION_STATUS_HEADER.message(region.getName()));
         Alliance leader = tracker.getLeader();
