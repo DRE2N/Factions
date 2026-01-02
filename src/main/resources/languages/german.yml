@@ -103,6 +103,21 @@ cmd:
       success: "<green>Chunk wurde aus der Region <gold><arg:0></gold> entfernt."
     removeNeighbour:
       success: "<green>Die Regionen <gold><arg:0></gold> und <gold><arg:1></gold> sind nun nicht mehr benachbart."
+    schematic:
+      delete:
+        success: "<green>Der Schematic-Zustand <dark_green><arg:1></dark_green> der Region <dark_green><arg:0></dark_green> wurde gelöscht."
+      list:
+        empty: "<gray>Die Region <gold><arg:0></gold> hat keine gespeicherten Schematic-Zustände."
+        entry: "<gray>  • <gold><arg:0></gold>"
+        header: "<green>Schematic-Zustände der Region <dark_green><arg:0></dark_green> (<arg:1>)<dark_gray>:</dark_gray>"
+      load:
+        started: "<yellow>Lade Schematic-Zustand <gold><arg:1></gold> der Region <gold><arg:0></gold>..."
+        success: "<green>Der Schematic-Zustand <dark_green><arg:1></dark_green> der Region <dark_green><arg:0></dark_green> wurde erfolgreich geladen."
+        failed: "<red>Fehler beim Laden des Schematic-Zustands <gold><arg:1></gold> der Region <gold><arg:0></gold>."
+      save:
+        started: "<yellow>Speichere Schematic-Zustand <gold><arg:1></gold> der Region <gold><arg:0></gold>..."
+        success: "<green>Der Schematic-Zustand <dark_green><arg:1></dark_green> der Region <dark_green><arg:0></dark_green> wurde erfolgreich gespeichert."
+        failed: "<red>Fehler beim Speichern des Schematic-Zustands <gold><arg:1></gold> der Region <gold><arg:0></gold>."
     split:
       success: "<green>Die Region wurde in zwei geteilt. Erstellte Region: <dark_green><arg:0></dark_green>."
     status:
@@ -194,6 +209,7 @@ error:
   regionIsNotClaimable: "<red>Die Region kann nicht beansprucht werden."
   regionIsNotOccupiable: "<red>Die Region kann nicht besetzt werden."
   regionNotFound: "<red>Die Region <gold><arg:0></gold> konnte nicht gefunden werden."
+  regionSchematicStateNotFound: "<red>Der Schematic-Zustand <gold><arg:0></gold> konnte nicht gefunden werden."
   regionStructureTypeNotFound: "<red>Der Reginsstrukturentyp <gold><arg:0></gold> konnte nicht gefunden werden."
   regionTypeNotFound: "<red>Der Gebietstyp <gold><arg:0></gold> konnte nicht gefunden werden."
   regionsAlreadyNeighbours: "<red>Die Regionen <gold><arg:0></gold> und <gold><arg:1></gold> sind bereits benachbart."

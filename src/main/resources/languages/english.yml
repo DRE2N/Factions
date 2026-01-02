@@ -376,6 +376,21 @@ cmd:
       success: "<green>Chunk has been removed from region <gold><arg:0></gold>."
     removeNeighbour:
       success: "<green>The regions <gold><arg:0></gold> and <gold><arg:1> are no longer neighbors."
+    schematic:
+      delete:
+        success: "<green>The schematic state <dark_green><arg:1></dark_green> of region <dark_green><arg:0></dark_green> has been deleted."
+      list:
+        empty: "<gray>The region <gold><arg:0></gold> has no saved schematic states."
+        entry: "<gray>  • <gold><arg:0></gold>"
+        header: "<green>Schematic states of region <dark_green><arg:0></dark_green> (<arg:1>)<dark_gray>:</dark_gray>"
+      load:
+        started: "<yellow>Loading schematic state <gold><arg:1></gold> of region <gold><arg:0></gold>..."
+        success: "<green>The schematic state <dark_green><arg:1></dark_green> of region <dark_green><arg:0></dark_green> has been loaded successfully."
+        failed: "<red>Failed to load schematic state <gold><arg:1></gold> of region <gold><arg:0></gold>."
+      save:
+        started: "<yellow>Saving schematic state <gold><arg:1></gold> of region <gold><arg:0></gold>..."
+        success: "<green>The schematic state <dark_green><arg:1></dark_green> of region <dark_green><arg:0></dark_green> has been saved successfully."
+        failed: "<red>Failed to save schematic state <gold><arg:1></gold> of region <gold><arg:0></gold>."
     split:
       success: "<green>The region has been split into two. Created region: <dark_green><arg:0></dark_green>."
     status:

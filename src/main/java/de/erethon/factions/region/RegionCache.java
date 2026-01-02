@@ -46,6 +46,7 @@ public class RegionCache extends FEntityCache<Region> {
 
     /**
      * Creates a region instance of the appropriate subclass based on the region type.
+     * Only CAPITAL and WAR_ZONE types get WarRegion instances, all others get ClaimableRegion.
      */
     private @NotNull Region createRegionForType(@NotNull RegionType type, @NotNull File file) {
         return switch (type) {

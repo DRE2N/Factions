@@ -11,6 +11,7 @@ import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.entity.FLegalEntity;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.policy.FPolicy;
+import de.erethon.factions.region.schematic.RegionSchematicManager;
 import de.erethon.factions.util.FLogger;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.audience.Audience;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Base region class containing core region functionality.
@@ -337,6 +339,93 @@ public class Region extends FLegalEntity {
             }
         }
         return nearest == null ? null : nearest.buildSite();
+    }
+
+    /* Schematic State Management */
+
+    /**
+     * Gets the schematic manager for region schematics.
+     *
+     * @return The region schematic manager
+     */
+    public @NotNull RegionSchematicManager getSchematicManager() {
+        return plugin.getRegionSchematicManager();
+    }
+
+    /**
+     * Gets all available schematic state IDs for this region.
+     *
+     * @return A set of available state IDs
+     */
+    public @NotNull Set<String> getAvailableSchematicStates() {
+        return getSchematicManager().getAvailableStates(this);
+    }
+
+    /**
+     * Checks if this region has a schematic state saved.
+     *
+     * @param stateId The state ID to check
+     * @return true if the state exists
+     */
+    public boolean hasSchematicState(@NotNull String stateId) {
+        return getSchematicManager().hasState(this, stateId);
+    }
+
+    /**
+     * Saves the current state of this region as a schematic asynchronously.
+     *
+     * @param stateId The state ID to save as
+     * @return A CompletableFuture that completes with true if successful
+     */
+    public @NotNull CompletableFuture<Boolean> saveSchematicStateAsync(@NotNull String stateId) {
+        return getSchematicManager().saveRegionState(this, stateId);
+    }
+
+    /**
+     * Loads a schematic state and pastes it into the world asynchronously.
+     *
+     * @param stateId The state ID to load
+     * @return A CompletableFuture that completes with true if successful
+     */
+    public @NotNull CompletableFuture<Boolean> loadSchematicStateAsync(@NotNull String stateId) {
+        return getSchematicManager().loadRegionState(this, stateId);
+    }
+
+    /**
+     * Deletes a schematic state for this region.
+     *
+     * @param stateId The state ID to delete
+     * @return true if the deletion was successful
+     */
+    public boolean deleteSchematicState(@NotNull String stateId) {
+        return getSchematicManager().deleteState(this, stateId);
+    }
+
+    /**
+     * Checks if this region has a rollback state saved.
+     *
+     * @return true if the rollback state exists
+     */
+    public boolean hasRollbackState() {
+        return getSchematicManager().hasRollbackState(this);
+    }
+
+    /**
+     * Saves the current state as the rollback state asynchronously.
+     *
+     * @return A CompletableFuture that completes with true if successful
+     */
+    public @NotNull CompletableFuture<Boolean> saveRollbackStateAsync() {
+        return getSchematicManager().saveRollbackState(this);
+    }
+
+    /**
+     * Restores this region to its rollback state asynchronously.
+     *
+     * @return A CompletableFuture that completes with true if successful
+     */
+    public @NotNull CompletableFuture<Boolean> rollbackAsync() {
+        return getSchematicManager().rollback(this);
     }
 
     @Override
