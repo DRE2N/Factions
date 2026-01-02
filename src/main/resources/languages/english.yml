@@ -366,6 +366,7 @@ cmd:
       description: "<green>Description<dark_gray>:<gray> <arg:0>"
       header: "<dark_green><b>[</b><green> <arg:0> </green><b>]</b>"
       id: "<green>ID<dark_gray>:<gray> <arg:0>"
+      influence: "<green>Influence"
       owner: "<green>Owner<dark_gray>:<gray> <arg:0>"
       price: "<green>Price<dark_gray>:<gray> <arg:0>"
       type: "<green>Type<dark_green>:<gray> <arg:0>"

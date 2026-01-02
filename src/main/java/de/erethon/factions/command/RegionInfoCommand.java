@@ -4,6 +4,7 @@ import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.region.ClaimableRegion;
+import de.erethon.factions.region.PvERegion;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.WarRegion;
 import org.bukkit.command.CommandSender;
@@ -30,7 +31,9 @@ public class RegionInfoCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         Region region = args.length == 2 ? getRegion(args[1]) : getRegion(getFPlayer(sender));
         MessageUtil.sendCenteredMessage(sender, FMessage.CMD_REGION_INFO_HEADER.message(region.getName(true)));
-        sender.sendMessage("Region class: " + region.getClass().getSimpleName() + " | Chunk counts: " + region.getChunks().size());
+        if (region instanceof PvERegion pveRegion) {
+            sender.sendMessage(pveRegion.getFormattedInfluence());
+        }
         sender.sendMessage(FMessage.CMD_REGION_INFO_ID.message(String.valueOf(region.getId())));
         sender.sendMessage(FMessage.CMD_REGION_INFO_TYPE.message(region.getType().getName()));
         if (region instanceof WarRegion warRegion) {

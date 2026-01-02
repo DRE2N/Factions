@@ -4,6 +4,7 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.util.WarMath;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -141,23 +142,9 @@ public class WarScore {
         Component vpIcon = Component.text("👑", NamedTextColor.GOLD);
         footer = footer.append(vpRed.append(vpIcon).append(Component.text(" | ", NamedTextColor.DARK_GRAY)).append(vpGreen).append(vpIcon).append(Component.text(" | ", NamedTextColor.DARK_GRAY)).append(vpBlue).append(vpIcon));
         footer = footer.append(Component.text("\n"));
-        Component bar = Component.text("");
         // Line that shows the current objective distribution with |||||| colored in the alliance color
         Map<Alliance, Double> distribution = getPotentialPointsDistribution();
-        Map<Alliance, String> result = new HashMap<>();
-        char c = '|';
-        int totalChars = 50;
-
-        for (Map.Entry<Alliance, Double> entry : distribution.entrySet()) {
-            StringBuilder sb = new StringBuilder();
-            int charCount = (int) Math.round((entry.getValue() / 100) * totalChars);
-            sb.append(String.valueOf(c).repeat(Math.max(0, charCount)));
-            result.put(entry.getKey(), sb.toString());
-        }
-        for (Alliance alliance : distribution.keySet()) {
-            bar = bar.append(Component.text(result.get(alliance), alliance.getColor()));
-        }
-        bar = bar.append(Component.text("\n"));
+        Component bar = WarMath.getAllianceInfluenceBar(distribution).append(Component.text("\n"));
 
         // Potential points
         Component pointsRed = Component.text(" +" + potentialPointsNextTick.get(War.ALLIANCE_RED), War.ALLIANCE_RED.getColor());

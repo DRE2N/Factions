@@ -157,8 +157,6 @@ public class RegionSchematicManager {
             BlockVector3 pos2 = BlockVector3.at(maxX, maxY, maxZ);
             CuboidRegion cuboidRegion = new CuboidRegion(pos1, pos2);
 
-            // Create clipboard with origin at the region's minimum point
-            // This ensures the schematic pastes back at the correct location
             BlockArrayClipboard clipboard = new BlockArrayClipboard(cuboidRegion);
             clipboard.setOrigin(pos1);
 
@@ -220,16 +218,11 @@ public class RegionSchematicManager {
                         .limitUnlimited()
                         .build()) {
 
-                    // Disable lighting updates for faster pasting
                     session.setSideEffectApplier(com.sk89q.worldedit.util.SideEffectSet.none());
 
-                    // Paste at the clipboard's origin (where it was saved from)
                     BlockVector3 origin = clipboard.getOrigin();
-
-                    // Use ClipboardHolder for proper pasting at original location
                     ClipboardHolder holder = new ClipboardHolder(clipboard);
 
-                    // Create operation to paste the clipboard at its original location
                     com.sk89q.worldedit.function.operation.Operation operation = holder
                             .createPaste(session)
                             .to(origin)

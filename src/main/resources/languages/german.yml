@@ -93,6 +93,7 @@ cmd:
       description: "<green>Beschreibung<dark_gray>:<gray> <arg:0>"
       header: "<dark_green><b>[</b><green> <arg:0> </green><b>]</b>"
       id: "<green>ID<dark_gray>:<gray> <arg:0>"
+      influence: "<green>Einfluss"
       owner: "<green>Besitzer<dark_gray>:<gray> <arg:0>"
       price: "<green>Preis<dark_gray>:<gray> <arg:0>"
       type: "<green>Typ<dark_green>:<gray> <arg:0>"
