@@ -19,7 +19,7 @@ import java.util.Map;
  *
  * @author Fyreum
  */
-public class WarRegion extends ClaimableRegion {
+public class WarRegion extends Region {
 
     private final RegionalWarTracker regionalWarTracker = new RegionalWarTracker(this);
     private final Map<String, RegionStructure> structures = new HashMap<>();

@@ -19,7 +19,7 @@ import java.util.Set;
  *
  * @author Malfrador
  */
-public class ClaimableRegion extends PvERegion {
+public class ClaimableRegion extends Region {
 
     private final Set<BuildSite> buildSites = new HashSet<>();
     private double lastClaimingPrice;
