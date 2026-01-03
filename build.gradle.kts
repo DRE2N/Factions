@@ -23,15 +23,16 @@ repositories {
 }
 
 dependencies {
+    // Erethon dependencies
     paperweight.devBundle("de.erethon.papyrus", papyrusVersion) { isChanging = true }
-    //implementation("de.erethon.lectern:Lectern:1.0-SNAPSHOT") //not ready yet
     compileOnly("de.erethon.aergia:Aergia:1.0.1")
     compileOnly("de.erethon.hephaestus:Hephaestus:1.0.5-SNAPSHOT")
     compileOnly("de.erethon.hecate:Hecate:1.2-SNAPSHOT")
     compileOnly("de.erethon.tyche:Tyche:1.0-SNAPSHOT")
+    compileOnly("de.erethon.questsxl:QuestsXL:1.0.5-SNAPSHOT")
+
+    // External dependencies
     compileOnly("org.jetbrains:annotations:23.1.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
     implementation(platform("com.intellectualsites.bom:bom-newest:1.52"))
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core")
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit") { isTransitive = false }
@@ -39,6 +40,10 @@ dependencies {
     compileOnly("org.popcraft:bolt-common:1.0.480")
     compileOnly("org.popcraft:bolt-bukkit:1.0.480")
     compileOnly("net.dv8tion:JDA:5.0.0-beta.20")
+
+    // Test dependencies
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
 }
 
 tasks.withType(Test::class) {

@@ -1,4 +1,4 @@
-package de.erethon.factions.integrations;
+package de.erethon.factions.integration;
 
 import de.erethon.aergia.player.EPlayer;
 import de.erethon.aergia.ui.UIComponent;

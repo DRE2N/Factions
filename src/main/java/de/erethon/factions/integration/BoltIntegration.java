@@ -1,4 +1,4 @@
-package de.erethon.factions.integrations;
+package de.erethon.factions.integration;
 
 import de.erethon.factions.Factions;
 import de.erethon.factions.faction.Faction;

@@ -20,7 +20,7 @@ import de.erethon.factions.poll.Poll;
 import de.erethon.factions.region.AutomatedChunkManager;
 import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
-import de.erethon.factions.integrations.UIFactionsListener;
+import de.erethon.factions.integration.UIFactionsListener;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.FPermissionUtil;
 import de.erethon.factions.war.WarStats;

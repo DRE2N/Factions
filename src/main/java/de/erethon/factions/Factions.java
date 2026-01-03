@@ -17,7 +17,6 @@ import de.erethon.factions.alliance.AllianceCache;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildSiteCache;
 import de.erethon.factions.building.BuildingManager;
-import de.erethon.factions.building.FSetTag;
 import de.erethon.factions.economy.population.entities.Councillor;
 import de.erethon.factions.command.logic.FCommandCache;
 import de.erethon.factions.data.FConfig;
@@ -26,8 +25,22 @@ import de.erethon.factions.economy.TaxManager;
 import de.erethon.factions.economy.population.entities.Revolutionary;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.faction.FactionCache;
-import de.erethon.factions.integrations.BoltIntegration;
-import de.erethon.factions.integrations.DiscordBotListener;
+import de.erethon.factions.integration.BoltIntegration;
+import de.erethon.factions.integration.DiscordBotListener;
+import de.erethon.factions.integration.qxl.action.PopulationHappinessAction;
+import de.erethon.factions.integration.qxl.condition.AllianceCondition;
+import de.erethon.factions.integration.qxl.condition.FactionBuildingCondition;
+import de.erethon.factions.integration.qxl.condition.FactionMoneyCondition;
+import de.erethon.factions.integration.qxl.condition.FactionRegionCondition;
+import de.erethon.factions.integration.qxl.condition.HasFactionCondition;
+import de.erethon.factions.integration.qxl.condition.PopulationCondition;
+import de.erethon.factions.integration.qxl.condition.UnrestCondition;
+import de.erethon.factions.integration.qxl.condition.WarPhaseCondition;
+import de.erethon.factions.integration.qxl.objective.ChangeAllianceObjective;
+import de.erethon.factions.integration.qxl.objective.FactionCreateObjective;
+import de.erethon.factions.integration.qxl.objective.FactionDisbandObjective;
+import de.erethon.factions.integration.qxl.objective.JoinFactionObjective;
+import de.erethon.factions.integration.qxl.objective.LeaveFactionObjective;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
 import de.erethon.factions.player.FPlayerListener;
@@ -43,7 +56,7 @@ import de.erethon.factions.region.RegionManager;
 import de.erethon.factions.region.protection.BlockProtectionListener;
 import de.erethon.factions.region.protection.EntityProtectionListener;
 import de.erethon.factions.region.schematic.RegionSchematicManager;
-import de.erethon.factions.integrations.UIFactionsListener;
+import de.erethon.factions.integration.UIFactionsListener;
 import de.erethon.factions.statistic.FStatistics;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.War;
@@ -55,7 +68,8 @@ import de.erethon.factions.war.entities.CrystalMob;
 import de.erethon.factions.war.entities.ObjectiveGuard;
 import de.erethon.factions.web.RegionHttpServer;
 import de.erethon.hecate.Hecate;
-import de.erethon.spellbook.Spellbook;
+import de.erethon.questsxl.QuestsXL;
+import de.erethon.questsxl.common.QRegistries;
 import de.erethon.spellbook.teams.SpellbookTeam;
 import de.erethon.spellbook.teams.TeamManager;
 import de.erethon.tyche.EconomyService;
@@ -65,7 +79,6 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.minecraft.world.entity.EntityType;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
-import org.bukkit.command.Command;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
@@ -213,6 +226,7 @@ public final class Factions extends EPlugin {
         registerListeners();
         registerAergiaPlaceholders();
         registerCustomEntities();
+        registerQXLComponents();
         BoltIntegration.setup(this);
     }
 
@@ -478,6 +492,31 @@ public final class Factions extends EPlugin {
         EntityType.customEntities.put("factions_objective_guard", Map.entry(this, ObjectiveGuard.class));
         EntityType.customEntities.put("factions_revolutionary", Map.entry(this, Revolutionary.class));
         EntityType.customEntities.put("factions_councillor", Map.entry(this, Councillor.class));
+    }
+
+    public void registerQXLComponents() {
+        QuestsXL qxl = QuestsXL.get();
+        if (qxl == null) {
+            return;
+        }
+        // Actions
+        qxl.registerComponent(QRegistries.ACTIONS, "population_happiness", PopulationHappinessAction::new);
+        // Conditions
+        qxl.registerComponent(QRegistries.CONDITIONS, "alliance", AllianceCondition::new);
+        qxl.registerComponent(QRegistries.CONDITIONS, "faction_building", FactionBuildingCondition::new);
+        qxl.registerComponent(QRegistries.CONDITIONS, "faction_money", FactionMoneyCondition::new);
+        qxl.registerComponent(QRegistries.CONDITIONS, "faction_region", FactionRegionCondition::new);
+        qxl.registerComponent(QRegistries.CONDITIONS, "has_faction", HasFactionCondition::new);
+        qxl.registerComponent(QRegistries.CONDITIONS, "faction_population", PopulationCondition::new);
+        qxl.registerComponent(QRegistries.CONDITIONS, "faction_unrest", UnrestCondition::new);
+        qxl.registerComponent(QRegistries.CONDITIONS, "war_phase", WarPhaseCondition::new);
+        // Objectives
+        qxl.registerComponent(QRegistries.OBJECTIVES, "change_alliance", ChangeAllianceObjective::new);
+        qxl.registerComponent(QRegistries.OBJECTIVES, "faction_create", FactionCreateObjective::new);
+        qxl.registerComponent(QRegistries.OBJECTIVES, "faction_disband", FactionDisbandObjective::new);
+        qxl.registerComponent(QRegistries.OBJECTIVES, "faction_region", FactionRegionCondition::new);
+        qxl.registerComponent(QRegistries.OBJECTIVES, "faction_join", JoinFactionObjective::new);
+        qxl.registerComponent(QRegistries.OBJECTIVES, "faction_leave", LeaveFactionObjective::new);
     }
 
     /* Web */

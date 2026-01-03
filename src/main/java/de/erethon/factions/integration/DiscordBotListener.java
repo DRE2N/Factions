@@ -1,4 +1,4 @@
-package de.erethon.factions.integrations;
+package de.erethon.factions.integration;
 
 import de.erethon.aergia.Aergia;
 import de.erethon.aergia.event.DiscordPlayerVerifiedEvent;
