@@ -1,81 +1,65 @@
 package de.erethon.factions.building;
 
-import com.destroystokyo.paper.MaterialSetTag;
-import com.destroystokyo.paper.MaterialTags;
-import de.erethon.factions.Factions;
 import org.bukkit.Material;
-import org.bukkit.Tag;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
 /**
+ * Represents a custom building tag that groups materials together.
+ * Tags are now loaded dynamically from buildingTags.yml configuration.
+ *
  * @author Malfrador
  */
-public enum FSetTag {
+public class FSetTag {
 
-    WALL(MaterialSetTag.STONE_BRICKS.getValues(), MaterialTags.COBBLESTONES.getValues(), MaterialSetTag.LOGS.getValues(), MaterialTags.SANDSTONES.getValues(), MaterialTags.RED_SANDSTONES.getValues(), MaterialSetTag.PLANKS.getValues(),
-            MaterialSetTag.WALLS.getValues(),
-            new HashSet<>(Arrays.asList(Material.BRICKS, Material.STONE, Material.ANDESITE, Material.POLISHED_ANDESITE, Material.DIORITE, Material.POLISHED_DIORITE, Material.GRANITE,
-                    Material.POLISHED_GRANITE, Material.SAND, Material.GRAVEL, Material.CLAY, Material.DEEPSLATE, Material.POLISHED_DEEPSLATE, Material.DEEPSLATE_BRICKS,
-                    Material.DEEPSLATE_TILES, Material.BLACKSTONE, Material.POLISHED_BLACKSTONE, Material.CHISELED_POLISHED_BLACKSTONE, Material.CHISELED_POLISHED_BLACKSTONE,
-                    Material.GILDED_BLACKSTONE, Material.POLISHED_BLACKSTONE_BRICKS, Material.CRACKED_DEEPSLATE_BRICKS, Material.CRACKED_DEEPSLATE_TILES,
-                    Material.CRACKED_POLISHED_BLACKSTONE_BRICKS))),
-    WINDOW(MaterialTags.GLASS.getValues(), MaterialTags.GLASS_PANES.getValues(), MaterialSetTag.WOODEN_FENCES.getValues()),
-    WARMTH(MaterialSetTag.CAMPFIRES.getValues(), new HashSet<>(Arrays.asList(Material.FURNACE, Material.BLAST_FURNACE, Material.FIRE))),
-    CRAFTING(new HashSet<>(Arrays.asList(Material.CRAFTING_TABLE, Material.FLETCHING_TABLE, Material.STONECUTTER, Material.FURNACE, Material.BLAST_FURNACE, Material.CARTOGRAPHY_TABLE, Material.SMITHING_TABLE, Material.ENCHANTING_TABLE, Material.LECTERN, Material.SMOKER,
-            Material.BREWING_STAND, Material.GRINDSTONE, Material.LOOM, Material.BEACON, Material.ANVIL, Material.CHIPPED_ANVIL, Material.DAMAGED_ANVIL, Material.BEEHIVE))),
-    MARKET(MaterialSetTag.WOOL.getValues(), MaterialSetTag.FENCES.getValues()),
-    DOORS(MaterialSetTag.DOORS.getValues()),
-    CROPS(MaterialSetTag.CROPS.getValues()),
-    FENCES(MaterialSetTag.FENCES.getValues(),MaterialSetTag.FENCE_GATES.getValues(), MaterialSetTag.WALLS.getValues()),
-    FARMING(CROPS.getMaterials(), FENCES.getMaterials()),
-    LIGHT(MaterialTags.TORCHES.getValues(), Tag.LANTERNS.getValues(), new HashSet<>(Arrays.asList(Material.GLOWSTONE, Material.REDSTONE_LAMP, Material.SEA_LANTERN, Material.END_ROD))),
-    LIGHT_AND_WARMTH(WARMTH.getMaterials(), LIGHT.getMaterials()),
-    FLOWERS(MaterialSetTag.FLOWERS.getValues()),
-    ROOF(MaterialSetTag.STAIRS.getValues(), MaterialSetTag.SLABS.getValues()),
-    FURNITURE(MaterialSetTag.STAIRS.getValues(), Tag.LANTERNS.getValues(), MaterialSetTag.TRAPDOORS.getValues(), MaterialTags.TORCHES.getValues(), MaterialSetTag.SIGNS.getValues(), MaterialSetTag.FLOWER_POTS.getValues(), MaterialSetTag.BANNERS.getValues(),
-            MaterialSetTag.WOOL_CARPETS.getValues(), MaterialSetTag.BEDS.getValues(), CRAFTING.getMaterials(), new HashSet<>(Arrays.asList(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL,Material.DISPENSER, Material.DROPPER,  Material.LADDER,
-            Material.BELL, Material.NOTE_BLOCK, Material.REDSTONE_LAMP, Material.JUKEBOX, Material.END_ROD))),
-    WOOD_FARM_STUFF(MaterialSetTag.SAPLINGS.getValues(), MaterialSetTag.LEAVES.getValues());
+    private final String name;
+    private final Set<Material> materials;
 
-    final Set<Material> materialSetTags = new HashSet<>();
-
-    @SafeVarargs // Shouldn't be able to cause heap pollution
-    FSetTag(Set<Material>... tags) {
-        for (Set<Material> set : tags) {
-            materialSetTags.addAll(set);
-        }
+    /**
+     * Creates a new building tag.
+     *
+     * @param name The name of the tag
+     * @param materials The set of materials this tag contains
+     */
+    public FSetTag(@NotNull String name, @NotNull Set<Material> materials) {
+        this.name = name;
+        this.materials = materials;
     }
 
+    /**
+     * Gets the name of this tag.
+     *
+     * @return The tag name
+     */
+    @NotNull
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Gets all materials in this tag.
+     *
+     * @return An unmodifiable set of materials
+     */
+    @NotNull
     public Set<Material> getMaterials() {
-        return materialSetTags;
+        return Collections.unmodifiableSet(materials);
     }
 
-    public boolean hasBlock(Material block) {
-        return materialSetTags.contains(block);
+    /**
+     * Checks if this tag contains the specified material.
+     *
+     * @param block The material to check
+     * @return true if this tag contains the material
+     */
+    public boolean hasBlock(@NotNull Material block) {
+        return materials.contains(block);
     }
 
-    public static void printNicely() {
-        StringBuilder sb = new StringBuilder();
-        for (FSetTag tag : values()) {
-            sb.append("Tag ").append(tag.name()).append(": ").append("\n");
-            for (Material material : tag.getMaterials()) {
-                sb.append("  - ").append(material.name()).append("\n");
-            }
-            sb.append("\n");
-
-        }
-        Factions.log(sb.toString());
-    }
-
-    public static boolean isValidTag(String tagName) {
-        try {
-            FSetTag.valueOf(tagName.toUpperCase());
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
+    @Override
+    public String toString() {
+        return "FSetTag{" + name + ", materials=" + materials.size() + "}";
     }
 }

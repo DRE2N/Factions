@@ -477,8 +477,9 @@ public class Building {
         if (config.contains("requiredBlocks")) {
             Set<String> cfgList = config.getConfigurationSection("requiredBlocks").getKeys(false);
             for (String s : cfgList) {
-                if (FSetTag.isValidTag(s.toUpperCase())) {
-                    FSetTag tag = FSetTag.valueOf(s.toUpperCase());
+                BuildingTagManager tagManager = plugin.getBuildingManager().getTagManager();
+                if (tagManager.isValidTag(s.toUpperCase())) {
+                    FSetTag tag = tagManager.getTag(s.toUpperCase());
                     int amount = config.getInt("requiredBlocks." + s);
                     requiredBlocks.add(new BlockRequirement(tag, amount));
                     continue;

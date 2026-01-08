@@ -1,0 +1,183 @@
+# Building Tags Configuration
+# This file defines custom block tags used in building requirements.
+# Tags can reference Minecraft/Bukkit/Paper tags, individual materials, or other custom tags.
+#
+# Configuration Structure:
+# tags:
+#   TAG_NAME:
+#     minecraftTags:      # List of Minecraft/Bukkit/Paper tag names
+#       - TAG_1
+#       - TAG_2
+#     materials:          # List of individual Material names
+#       - MATERIAL_1
+#       - MATERIAL_2
+#     references:         # List of other custom tags to include
+#       - OTHER_TAG_1
+#       - OTHER_TAG_2
+#
+# Note: Referenced tags must be defined BEFORE the tag that references them.
+
+tags:
+  # Building materials for walls and structures
+  WALL:
+    minecraftTags:
+      - STONE_BRICKS
+      - COBBLESTONES
+      - LOGS
+      - SANDSTONES
+      - RED_SANDSTONES
+      - PLANKS
+      - WALLS
+    materials:
+      - BRICKS
+      - STONE
+      - ANDESITE
+      - POLISHED_ANDESITE
+      - DIORITE
+      - POLISHED_DIORITE
+      - GRANITE
+      - POLISHED_GRANITE
+      - SAND
+      - GRAVEL
+      - CLAY
+      - DEEPSLATE
+      - POLISHED_DEEPSLATE
+      - DEEPSLATE_BRICKS
+      - DEEPSLATE_TILES
+      - BLACKSTONE
+      - POLISHED_BLACKSTONE
+      - CHISELED_POLISHED_BLACKSTONE
+      - GILDED_BLACKSTONE
+      - POLISHED_BLACKSTONE_BRICKS
+      - CRACKED_DEEPSLATE_BRICKS
+      - CRACKED_DEEPSLATE_TILES
+      - CRACKED_POLISHED_BLACKSTONE_BRICKS
+
+  # Glass blocks and window materials
+  WINDOW:
+    minecraftTags:
+      - GLASS
+      - GLASS_PANES
+      - WOODEN_FENCES
+
+  # Heat sources
+  WARMTH:
+    minecraftTags:
+      - CAMPFIRES
+    materials:
+      - FURNACE
+      - BLAST_FURNACE
+      - FIRE
+
+  # Crafting stations and workbenches
+  CRAFTING:
+    materials:
+      - CRAFTING_TABLE
+      - FLETCHING_TABLE
+      - STONECUTTER
+      - FURNACE
+      - BLAST_FURNACE
+      - CARTOGRAPHY_TABLE
+      - SMITHING_TABLE
+      - ENCHANTING_TABLE
+      - LECTERN
+      - SMOKER
+      - BREWING_STAND
+      - GRINDSTONE
+      - LOOM
+      - BEACON
+      - ANVIL
+      - CHIPPED_ANVIL
+      - DAMAGED_ANVIL
+      - BEEHIVE
+
+  # Market/trade related blocks
+  MARKET:
+    minecraftTags:
+      - WOOL
+      - FENCES
+
+  # All door types
+  DOORS:
+    minecraftTags:
+      - DOORS
+
+  # Agricultural crops
+  CROPS:
+    minecraftTags:
+      - CROPS
+
+  # Fences and barriers
+  FENCES:
+    minecraftTags:
+      - FENCES
+      - FENCE_GATES
+      - WALLS
+
+  # Combined farming tag (crops + fences)
+  FARMING:
+    references:
+      - CROPS
+      - FENCES
+
+  # Light sources
+  LIGHT:
+    minecraftTags:
+      - TORCHES
+      - LANTERNS
+    materials:
+      - GLOWSTONE
+      - REDSTONE_LAMP
+      - SEA_LANTERN
+      - END_ROD
+
+  # Combined light and heat
+  LIGHT_AND_WARMTH:
+    references:
+      - WARMTH
+      - LIGHT
+
+  # Flowers and plants
+  FLOWERS:
+    minecraftTags:
+      - FLOWERS
+
+  # Roofing materials
+  ROOF:
+    minecraftTags:
+      - STAIRS
+      - SLABS
+
+  # Interior furniture and decoration
+  FURNITURE:
+    minecraftTags:
+      - STAIRS
+      - LANTERNS
+      - TRAPDOORS
+      - TORCHES
+      - SIGNS
+      - FLOWER_POTS
+      - BANNERS
+      - WOOL_CARPETS
+      - BEDS
+    references:
+      - CRAFTING
+    materials:
+      - CHEST
+      - TRAPPED_CHEST
+      - BARREL
+      - DISPENSER
+      - DROPPER
+      - LADDER
+      - BELL
+      - NOTE_BLOCK
+      - REDSTONE_LAMP
+      - JUKEBOX
+      - END_ROD
+
+  # Tree farming materials
+  WOOD_FARM_STUFF:
+    minecraftTags:
+      - SAPLINGS
+      - LEAVES
+

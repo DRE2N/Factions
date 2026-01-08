@@ -148,7 +148,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         if (!finished) {
             for (BlockRequirement req : building.getBlockRequirements()) {
                 if (req.isTagRequirement()) {
-                    content = content.append(Component.text(req.getTag().name(), NamedTextColor.GOLD)
+                    content = content.append(Component.text(req.getTag().getName(), NamedTextColor.GOLD)
                             .append(Component.text(": ", NamedTextColor.DARK_GRAY))
                             .append(getProgressComponentForTag(req.getTag(), req.getAmount())))
                             .append(Component.newline());
@@ -956,7 +956,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         }
 
         for (Map.Entry<FSetTag, Integer> entry : placedBlocksByTag.entrySet()) {
-            set("placedBlocksByTag." + entry.getKey().name(), entry.getValue());
+            set("placedBlocksByTag." + entry.getKey().getName(), entry.getValue());
         }
 
         for (Material type : blocksOfInterest.keySet()) {

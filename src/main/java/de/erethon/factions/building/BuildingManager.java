@@ -49,6 +49,7 @@ public class BuildingManager implements Listener {
 
     Factions plugin = Factions.get();
 
+    private final BuildingTagManager tagManager;
     private final List<Building> buildings = new CopyOnWriteArrayList<>();
     private final List<BuildSite> buildingTickets = new ArrayList<>();
 
@@ -56,10 +57,24 @@ public class BuildingManager implements Listener {
     private int effectsPerTick = 5;
 
     public BuildingManager(@NotNull File dir) {
+        // Load tags first, before loading buildings
+        tagManager = new BuildingTagManager(plugin);
+        tagManager.load();
+
         load(dir);
         effectsPerTick = plugin.getFConfig().getEffectsPerTick();
         Bukkit.getPluginManager().registerEvents(this, plugin);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::tickBuildingEffects, 0, plugin.getFConfig().getTicksPerBuildingTick());
+    }
+
+    /**
+     * Gets the building tag manager.
+     *
+     * @return The tag manager instance
+     */
+    @NotNull
+    public BuildingTagManager getTagManager() {
+        return tagManager;
     }
 
     public @Nullable Building getById(@NotNull String id) {
