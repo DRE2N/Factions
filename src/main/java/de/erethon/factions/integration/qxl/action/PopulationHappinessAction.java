@@ -16,7 +16,8 @@ import de.erethon.questsxl.common.Quester;
                 "population_happiness:",
                 "  level: citizen",
                 "  happiness: 5.0",
-        })
+        }
+)
 public class PopulationHappinessAction extends FBaseAction {
 
     @QParamDoc(name = "level", description = "The population level to change the happiness of (e.g., citizen, beggar, patrician).", required = true)

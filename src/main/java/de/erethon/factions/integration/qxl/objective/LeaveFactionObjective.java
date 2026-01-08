@@ -12,7 +12,8 @@ import org.bukkit.entity.Player;
         shortExample = "faction_leave:",
         longExample = {
                 "faction_leave:"
-        })
+        }
+)
 public class LeaveFactionObjective extends FBaseObjective<FPlayerFactionLeaveEvent> {
 
     @Override

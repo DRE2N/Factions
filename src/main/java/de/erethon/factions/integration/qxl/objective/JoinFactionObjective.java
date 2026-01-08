@@ -12,7 +12,8 @@ import org.bukkit.entity.Player;
         shortExample = "faction_join:",
         longExample = {
                 "faction_join:"
-        })
+        }
+)
 public class JoinFactionObjective extends FBaseObjective<FPlayerFactionJoinEvent> {
 
     @Override

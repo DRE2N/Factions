@@ -19,7 +19,8 @@ import java.util.Map;
                 "  citizen: 300",
                 "  noblemen: 20",
                 "  patrician: 96",
-        })
+        }
+)
 public class PopulationCondition extends FBaseCondition {
 
     @QParamDoc(name = "<level> = amount", description = "Population levels are specified by using the level name as a key, e.g. `population: beggar=10; noblemen=5;` ", required = true)

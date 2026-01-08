@@ -15,7 +15,8 @@ import de.erethon.questsxl.common.Quester;
                 "faction_unrest:",
                 "  minimum: 10",
                 "  maximum: 50",
-        })
+        }
+)
 public class UnrestCondition extends FBaseCondition {
 
     @QParamDoc(name = "minimum", description = "The minimum unrest level (inclusive).")

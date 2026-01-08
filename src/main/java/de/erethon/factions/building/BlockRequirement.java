@@ -75,7 +75,7 @@ public class BlockRequirement {
         if (isMaterialRequirement()) {
             return material.name();
         } else {
-            return tag.name();
+            return tag.getName();
         }
     }
 }

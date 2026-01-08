@@ -19,7 +19,8 @@ import java.util.Set;
                 "faction_building:",
                 "  building: town_hall",
                 "  amount: 2"
-        })
+        }
+)
 public class FactionBuildingCondition extends FBaseCondition {
 
     @QParamDoc(name = "building", description = "The ID of the building to check for.")

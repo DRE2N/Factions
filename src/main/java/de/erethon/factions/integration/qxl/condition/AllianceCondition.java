@@ -14,7 +14,8 @@ import de.erethon.questsxl.common.Quester;
         longExample = {
                 "alliance:",
                 "  any: true",
-        })
+        }
+)
 public class AllianceCondition extends FBaseCondition {
 
     @QParamDoc(name = "alliance", description = "The ID of the alliance the player must be in.")

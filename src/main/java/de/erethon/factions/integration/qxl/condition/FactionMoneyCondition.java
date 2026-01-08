@@ -14,7 +14,8 @@ import de.erethon.questsxl.common.Quester;
         longExample = {
                 "faction_money:",
                 "  amount: 1000",
-        })
+        }
+        )
 public class FactionMoneyCondition extends FBaseCondition {
 
     @QParamDoc(name = "currency", description = "The currency to check the balance of.", def = "herone")
