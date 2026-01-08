@@ -1,6 +1,7 @@
 package de.erethon.factions.economy;
 
 import de.erethon.tyche.models.Transaction;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -16,9 +17,9 @@ public interface FAccount {
 
     boolean canAfford(double amount, String currencyId);
 
-    Transaction deposit(double amount, String currencyId, String logReason, UUID initiator);
+    @Nullable Transaction deposit(double amount, String currencyId, String logReason, UUID initiator);
 
-    Transaction withdraw(double amount, String currencyId, String logReason, UUID initiator);
+    @Nullable Transaction withdraw(double amount, String currencyId, String logReason, UUID initiator);
 
     double getBalance(String currencyId);
 

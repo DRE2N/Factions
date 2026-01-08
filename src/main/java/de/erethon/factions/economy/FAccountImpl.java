@@ -7,6 +7,7 @@ import de.erethon.tyche.EconomyService;
 import de.erethon.tyche.models.OwnerType;
 import de.erethon.tyche.models.Transaction;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -51,12 +52,24 @@ public class FAccountImpl implements FAccount {
     }
 
     @Override
-    public Transaction deposit(double amount, String currencyId, String logReason, UUID initiator) {
+    public @Nullable Transaction deposit(double amount, String currencyId, String logReason, UUID initiator) {
+        if (amount == 0) {
+            return null;
+        }
+        if (amount < 0) {
+            withdraw(amount, currencyId, logReason, initiator);
+        }
         return economyService.deposit(accountId, OwnerType.FACTION, currencyId, (long) amount, logReason, null).join();
     }
 
     @Override
-    public Transaction withdraw(double amount, String currencyId, String logReason, UUID initiator) {
+    public @Nullable Transaction withdraw(double amount, String currencyId, String logReason, UUID initiator) {
+        if (amount == 0) {
+            return null;
+        }
+        if (amount < 0) {
+            deposit(-amount, currencyId, logReason, initiator);
+        }
         return economyService.withdraw(accountId, OwnerType.FACTION, currencyId, (long) amount, logReason, null).join();
     }
 
