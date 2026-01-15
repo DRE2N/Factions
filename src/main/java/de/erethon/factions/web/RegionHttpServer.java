@@ -146,6 +146,7 @@ public class RegionHttpServer extends Thread implements HttpHandler {
 
         com.google.gson.JsonObject json = new com.google.gson.JsonObject();
         json.addProperty("name", foundPlayer.getName());
+        json.addProperty("uuid", foundPlayer.getUniqueId().toString());
         json.addProperty("x", foundPlayer.getLocation().getBlockX());
         json.addProperty("y", foundPlayer.getLocation().getBlockY());
         json.addProperty("z", foundPlayer.getLocation().getBlockZ());
