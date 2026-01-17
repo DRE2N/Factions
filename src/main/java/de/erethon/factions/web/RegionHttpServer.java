@@ -1,7 +1,6 @@
 package de.erethon.factions.web;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import de.erethon.factions.Factions;
 import de.erethon.factions.util.FLogger;
@@ -11,13 +10,17 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Fyreum
  */
-public class RegionHttpServer extends Thread implements HttpHandler {
+public class RegionHttpServer extends Thread {
 
-    public static final String CONTEXT_PATH = "/v1/regions"; // Specific region data
+    public static final String REGIONS_PATH = "/v1/regions"; // Specific region data
     public static final String MARKERS_PATH = "/v1/markers"; // Get all markers
     public static final String PLAYER_POSITION_PATH = "/v1/player-position"; // Get player position based on IP address
     public static final String MAPDATA_PATH = "/v1/mapdata"; // Combined map data for all claimed or war regions, for easy map rendering
@@ -33,7 +36,7 @@ public class RegionHttpServer extends Thread implements HttpHandler {
     public void run() {
         try {
             server = HttpServer.create(new InetSocketAddress(Factions.get().getFConfig().getWebPort()), 0);
-            server.createContext(CONTEXT_PATH, this);
+            server.createContext(REGIONS_PATH, this::handleRegions);
             server.createContext(MARKERS_PATH, this::handleMarkers);
             server.createContext(PLAYER_POSITION_PATH, this::handlePlayerPosition);
             server.createContext(MAPDATA_PATH, this::handleMapData);
@@ -48,12 +51,18 @@ public class RegionHttpServer extends Thread implements HttpHandler {
         server.stop(0);
     }
 
-    @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    public void handleRegions(HttpExchange exchange) throws IOException {
         if (exchange == null) {
             throw new NullPointerException("HttpExchange is null");
         }
         FLogger.WEB.log("Handling web request from: " + exchange.getRemoteAddress() + " for: " + exchange.getRequestURI().getPath());
+
+        Map<String, String> queryParams = decodeQueryParams(exchange);
+
+        if (!authenticateRequest(queryParams)) {
+            respondNotAuthenticated(exchange);
+            return;
+        }
 
         String path = exchange.getRequestURI().getPath();
         String cleanPath = path.replaceFirst("/v1/regions/?", "");
@@ -112,13 +121,31 @@ public class RegionHttpServer extends Thread implements HttpHandler {
         os.close();
     }
 
+    void respondStatusCode(HttpExchange exchange, int status) throws IOException {
+        exchange.sendResponseHeaders(status, 0);
+        exchange.getResponseBody().close();
+    }
+
     void respondNotFound(HttpExchange exchange) throws IOException {
-        exchange.sendResponseHeaders(404, 0);
+        respondStatusCode(exchange, 404);
+    }
+
+    void respondNotAuthenticated(HttpExchange exchange) throws IOException {
+        FLogger.WEB.log("Refusing web request from " + exchange.getRemoteAddress() + ": Unauthenticated access");
+        exchange.sendResponseHeaders(401, 0);
         exchange.getResponseBody().close();
     }
 
     void handleMarkers(HttpExchange exchange) throws IOException {
         FLogger.WEB.log("Handling markers request from: " + exchange.getRemoteAddress());
+
+        Map<String, String> queryParams = decodeQueryParams(exchange);
+
+        if (!authenticateRequest(queryParams)) {
+            respondNotAuthenticated(exchange);
+            return;
+        }
+
         String response = cache.getMarkerJsonString();
         exchange.sendResponseHeaders(200, response.getBytes().length);
         OutputStream os = exchange.getResponseBody();
@@ -129,7 +156,19 @@ public class RegionHttpServer extends Thread implements HttpHandler {
     void handlePlayerPosition(HttpExchange exchange) throws IOException {
         FLogger.WEB.log("Handling player position request from: " + exchange.getRemoteAddress());
 
-        String ipAddress = exchange.getRemoteAddress().getAddress().getHostAddress();
+        Map<String, String> queryParams = decodeQueryParams(exchange);
+
+        if (!authenticateRequest(queryParams)) {
+            respondNotAuthenticated(exchange);
+            return;
+        }
+
+        String ipAddress = queryParams.get("ip");
+
+        if (ipAddress == null || ipAddress.isEmpty()) {
+            respondStatusCode(exchange, 400);
+            return;
+        }
 
         Player foundPlayer = null;
         for (Player player : org.bukkit.Bukkit.getOnlinePlayers()) {
@@ -161,11 +200,38 @@ public class RegionHttpServer extends Thread implements HttpHandler {
 
     void handleMapData(HttpExchange exchange) throws IOException {
         FLogger.WEB.log("Handling mapdata request from: " + exchange.getRemoteAddress());
+
+        Map<String, String> queryParams = decodeQueryParams(exchange);
+
+        if (!authenticateRequest(queryParams)) {
+            respondNotAuthenticated(exchange);
+            return;
+        }
+
         String response = cache.getMapDataJsonString();
         exchange.sendResponseHeaders(200, response.getBytes().length);
         OutputStream os = exchange.getResponseBody();
         os.write(response.getBytes());
         os.close();
+    }
+
+    private Map<String, String> decodeQueryParams(HttpExchange exchange) {
+        Map<String, String> queryParams = new HashMap<>();
+        String[] pairs = exchange.getRequestURI().getQuery().split("&");
+
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            queryParams.put(
+                    URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8),
+                    URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8)
+            );
+        }
+        return queryParams;
+    }
+
+    private boolean authenticateRequest(Map<String, String> queryParams) {
+        String authToken = queryParams.get("auth_token");
+        return authToken != null && authToken.equals(Factions.get().getFConfig().getWebAuthToken());
     }
 
     /* Getters */

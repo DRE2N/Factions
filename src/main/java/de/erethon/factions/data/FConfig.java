@@ -1,7 +1,6 @@
 package de.erethon.factions.data;
 
 import de.erethon.aergia.util.TickUtil;
-import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.factions.Factions;
 import de.erethon.factions.building.Building;
@@ -86,6 +85,7 @@ public class FConfig extends EConfig {
     private long webCacheUpdateInterval = 30; // minutes
     private boolean webEnabled = true;
     private int webPort = 8000;
+    private String webAuthToken = "change_this_token";
 
     public FConfig(File file) {
         super(file, CONFIG_VERSION);
@@ -190,6 +190,7 @@ public class FConfig extends EConfig {
         webCacheUpdateInterval = config.getLong("web.cacheUpdateInterval", webCacheUpdateInterval);
         webPort = config.getInt("web.port", webPort);
         webEnabled = config.getBoolean("web.enabled", webEnabled);
+        webAuthToken = config.getString("web.authToken", webAuthToken);
     }
 
     public void lateLoad() { // Config values that depend on FConfig already being loaded
@@ -408,6 +409,10 @@ public class FConfig extends EConfig {
 
     public boolean isWebEnabled() {
         return webEnabled;
+    }
+
+    public String getWebAuthToken() {
+        return webAuthToken;
     }
 
     public int getWebPort() {
