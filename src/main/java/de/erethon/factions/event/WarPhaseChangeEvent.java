@@ -1,6 +1,7 @@
 package de.erethon.factions.event;
 
 import de.erethon.factions.war.WarPhase;
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,7 @@ public class WarPhaseChangeEvent extends Event {
     private final WarPhase oldPhase, newPhase;
 
     public WarPhaseChangeEvent(@NotNull WarPhase oldPhase, @NotNull WarPhase newPhase) {
+        super(!Bukkit.isPrimaryThread());
         this.oldPhase = oldPhase;
         this.newPhase = newPhase;
     }

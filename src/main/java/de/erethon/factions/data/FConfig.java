@@ -132,6 +132,7 @@ public class FConfig extends EConfig {
             initValue("defaultResourceLimits." + resource.name(), 512);
         }
         initValue("web.cacheUpdateInterval", webCacheUpdateInterval);
+        initValue("web.authToken", webAuthToken);
         save();
     }
 
