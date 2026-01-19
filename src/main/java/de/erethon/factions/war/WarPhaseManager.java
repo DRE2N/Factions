@@ -98,7 +98,8 @@ public class WarPhaseManager extends EConfig {
         }
 
         WarPhaseStage nextStage = getNextWarPhaseStage();
-        long delay = nextStage.getDelay();
+        long midnightEpochMillis = midnight.toInstant().toEpochMilli();
+        long delay = currentStage.getDelay(midnightEpochMillis);
 
         if (delay <= 0) {
             FLogger.WARN.log("Invalid phase switch delay: " + delay + ". Using 1 minute fallback.");
@@ -195,6 +196,8 @@ public class WarPhaseManager extends EConfig {
             setupInactiveSchedule();
         }
         validateSchedule();
+        initializeStage();
+        scheduleNextPhaseSwitch();
     }
 
     private void validateSchedule() {
