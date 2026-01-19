@@ -391,7 +391,9 @@ public class RegionBorderCalculator {
             boolean nextIsRegion = grid.get(nextX, nextZ) == regionId;
             boolean outsideIsRegion = grid.get(outsideX, outsideZ) == regionId;
 
-            if (outsideIsRegion) {
+            if (outsideIsRegion && !nextIsRegion) {
+                // Concave corner: outside is our region but we can't go forward
+                // Turn left into the outside chunk
                 int[] cornerVertex = getOuterCornerVertex(x, z, edgeDir);
                 if (!arraysEqual(vertices.getLast(), cornerVertex)) {
                     vertices.add(cornerVertex);
@@ -400,6 +402,7 @@ public class RegionBorderCalculator {
                 z = outsideZ;
                 edgeDir = (edgeDir + 3) % 4; // Turn left
             } else if (nextIsRegion) {
+                // Can continue forward (next chunk is ours)
                 int[] cornerVertex = getOuterCornerVertex(x, z, edgeDir);
                 int nextOutsideX = nextX, nextOutsideZ = nextZ;
                 switch (edgeDir) {
@@ -410,13 +413,17 @@ public class RegionBorderCalculator {
                 }
                 boolean nextOutsideIsRegion = grid.get(nextOutsideX, nextOutsideZ) == regionId;
                 if (nextOutsideIsRegion) {
+                    // Inner corner: add vertex and turn left after moving
                     if (!arraysEqual(vertices.getLast(), cornerVertex)) {
                         vertices.add(cornerVertex);
                     }
+                    edgeDir = (edgeDir + 3) % 4; // Turn left
                 }
                 x = nextX;
                 z = nextZ;
             } else {
+                // Convex corner: neither outside nor next is our region
+                // Add corner vertex and turn right
                 int[] cornerVertex = getOuterCornerVertex(x, z, edgeDir);
                 if (!arraysEqual(vertices.getLast(), cornerVertex)) {
                     vertices.add(cornerVertex);
