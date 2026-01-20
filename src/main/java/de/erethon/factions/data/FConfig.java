@@ -86,6 +86,9 @@ public class FConfig extends EConfig {
     private boolean webEnabled = true;
     private int webPort = 8000;
     private String webAuthToken = "change_this_token";
+    private String webCapitalColor = "FFD700";
+    private String webDefaultColor = "FFFFFF";
+    private String webWarZoneColor = "BBBBBB";
 
     public FConfig(File file) {
         super(file, CONFIG_VERSION);
@@ -133,6 +136,9 @@ public class FConfig extends EConfig {
         }
         initValue("web.cacheUpdateInterval", webCacheUpdateInterval);
         initValue("web.authToken", webAuthToken);
+        initValue("web.capitalColor", webCapitalColor);
+        initValue("web.defaultColor", webDefaultColor);
+        initValue("web.warZoneColor", webWarZoneColor);
         save();
     }
 
@@ -192,6 +198,9 @@ public class FConfig extends EConfig {
         webPort = config.getInt("web.port", webPort);
         webEnabled = config.getBoolean("web.enabled", webEnabled);
         webAuthToken = config.getString("web.authToken", webAuthToken);
+        webCapitalColor = config.getString("web.capitalColor", webCapitalColor);
+        webDefaultColor = config.getString("web.defaultColor", webDefaultColor);
+        webWarZoneColor = config.getString("web.warZoneColor", webWarZoneColor);
     }
 
     public void lateLoad() { // Config values that depend on FConfig already being loaded
@@ -418,5 +427,17 @@ public class FConfig extends EConfig {
 
     public int getWebPort() {
         return webPort;
+    }
+
+    public String getWebCapitalColor() {
+        return webCapitalColor;
+    }
+
+    public String getWebDefaultColor() {
+        return webDefaultColor;
+    }
+
+    public String getWebWarZoneColor() {
+        return webWarZoneColor;
     }
 }

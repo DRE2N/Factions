@@ -12,6 +12,7 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionBorderCalculator;
 import de.erethon.factions.region.RegionCache;
 import de.erethon.factions.region.RegionType;
+import de.erethon.factions.util.FLogger;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -95,8 +96,11 @@ public class RegionServerCache {
         JsonArray regionsWithBordersArray = new JsonArray();
         for (Region region : cache) {
             // Include only claimed regions, or CAPITAL and WAR_ZONE types
-            if (!region.isOwned() && region.getType() != RegionType.CAPITAL
-                    && region.getType() != RegionType.WAR_ZONE) {
+            if (!region.isOwned()
+                    && region.getType() != RegionType.CAPITAL
+                    && region.getType() != RegionType.WAR_ZONE
+                    && region.getType() != RegionType.ALLIANCE_CITY
+            ) {
                 continue;
             }
 
@@ -104,6 +108,19 @@ public class RegionServerCache {
             regionData.addProperty("id", region.getId());
             regionData.addProperty("name", region.getName());
             regionData.addProperty("type", region.getType().name());
+            regionData.addProperty("alliance", region.hasAlliance() ? region.getAlliance().getId() : null);
+
+            String color = switch (region.getType()) {
+                case CAPITAL -> Factions.get().getFConfig().getWebCapitalColor();
+                case WAR_ZONE -> Factions.get().getFConfig().getWebWarZoneColor();
+                // Highlight alliance cities in pink if no alliance
+                case ALLIANCE_CITY -> region.hasAlliance() ? region.getAlliance().getColor().asHexString() : "FFC0CB";
+                default -> region.hasAlliance()
+                        ? region.getAlliance().getColor().asHexString()
+                        : Factions.get().getFConfig().getWebDefaultColor();
+            };
+
+            regionData.addProperty("color", color);
 
             // Add owner faction info
             if (region.getOwner() != null) {
@@ -125,6 +142,7 @@ public class RegionServerCache {
             regionsWithBordersArray.add(regionData);
         }
         this.mapdataJsonString = toJsonString(regionsWithBordersArray);
+        FLogger.INFO.log("Updated region server cache for world " + worldId);
     }
 
     public String toJsonString(JsonElement json) {
@@ -132,7 +150,7 @@ public class RegionServerCache {
             StringWriter stringWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonWriter(stringWriter);
             jsonWriter.setLenient(true);
-            jsonWriter.setIndent("  "); // for more readability
+            jsonWriter.setIndent(""); // not human readable, but saves space
             Streams.write(json, jsonWriter);
             return stringWriter.toString();
         } catch (IOException e) {
