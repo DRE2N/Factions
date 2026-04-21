@@ -1,8 +1,8 @@
 plugins {
     `java-library`
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.17"
-    id("xyz.jpenilla.run-paper") version "2.3.1" // Adds runServer and runMojangMappedServer tasks for testing
-    id("io.github.goooler.shadow") version "8.1.5"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.21"
+    id("xyz.jpenilla.run-paper") version "3.0.2" // Adds runServer and runMojangMappedServer tasks for testing
+    id("com.gradleup.shadow") version "9.3.1"
     id("maven-publish")
 }
 
@@ -10,7 +10,7 @@ group = "de.erethon.factions"
 version = "1.0-SNAPSHOT"
 description = "A Factions plugin"
 
-val papyrusVersion = "1.21.11-R0.1-SNAPSHOT"
+val papyrusVersion = "26.1.2-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -46,6 +46,10 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0-M2")
 }
 
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+}
+
 tasks.withType(Test::class) {
     useJUnitPlatform()
 }
@@ -70,7 +74,7 @@ tasks {
     }
     compileJava {
         options.encoding = Charsets.UTF_8.name()
-        options.release.set(21)
+        options.release.set(25)
     }
     processResources {
         filteringCharset = Charsets.UTF_8.name()

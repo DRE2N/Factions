@@ -63,7 +63,7 @@ public class CaravanGuard extends Vindicator {
             return;
         }
         carrier.level().addFreshEntity(this);
-        setPersistenceRequired(false);
+        persistenceRequired = false;
     }
 
     private void createPlayerStuff(ServerLevel level) {

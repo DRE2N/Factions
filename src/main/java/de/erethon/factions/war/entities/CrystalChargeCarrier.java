@@ -71,7 +71,7 @@ public class CrystalChargeCarrier extends IronGolem {
             getAttribute(Attributes.MAX_HEALTH).setBaseValue(getAttribute(Attributes.MAX_HEALTH).getBaseValue() * 1.2);
         }
         world.addFreshEntity(this);
-        setPersistenceRequired(true);
+        persistenceRequired = true;
         getBukkitEntity().getPersistentDataContainer().set(CARRIER_KEY, PersistentDataType.BYTE, (byte) 1);
     }
 

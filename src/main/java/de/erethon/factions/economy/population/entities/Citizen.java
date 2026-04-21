@@ -49,7 +49,7 @@ public class Citizen extends Villager {
         goalSelector.addGoal(0, new RandomStrollGoal(this, 0.5D));
         goalSelector.addGoal(1, new RandomLookAroundGoal(this));
         goalSelector.addGoal(2, new OpenDoorGoal(this, true));
-        setPersistenceRequired(false); // We just respawn them
+        persistenceRequired = false; // We just respawn them
         persist = false;
     }
 
@@ -75,7 +75,7 @@ public class Citizen extends Villager {
         goalSelector.addGoal(0, new RandomStrollGoal(this, 0.5D));
         goalSelector.addGoal(1, new RandomLookAroundGoal(this));
         goalSelector.addGoal(2, new OpenDoorGoal(this, true));
-        setPersistenceRequired(false); // We just respawn them
+        persistenceRequired = false; // We just respawn them
         persist = false;
         level().addFreshEntity(this);
     }

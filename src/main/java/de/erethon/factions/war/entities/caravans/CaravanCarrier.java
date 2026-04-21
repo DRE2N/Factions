@@ -71,7 +71,7 @@ public class CaravanCarrier extends Ravager {
         addPassenger(itemDisplay);
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(10000);
         setHealth(getMaxHealth());
-        setPersistenceRequired(false);
+        persistenceRequired = false;
     }
 
     @Override

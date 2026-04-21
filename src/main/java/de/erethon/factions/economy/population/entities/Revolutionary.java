@@ -127,7 +127,7 @@ public class Revolutionary extends Vindicator {
             if (random.nextDouble() > 0.01) {
                 return;
             }
-            nearby.getPlayersByChunk(chunkPosition().x, chunkPosition().z, NearbyPlayers.NearbyMapType.GENERAL_SMALL).forEach(player -> {
+            nearby.getPlayersByChunk(chunkPosition().x(), chunkPosition().z(), NearbyPlayers.NearbyMapType.GENERAL_SMALL).forEach(player -> {
                 Player nearbyPlayer = player.getBukkitEntity();
                 if (faction.getMembers().contains(nearbyPlayer)) {
                     net.kyori.adventure.text.Component message = randomRevolutionaryMessage().decoration(TextDecoration.ITALIC, true).color(NamedTextColor.RED);

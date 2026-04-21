@@ -60,7 +60,7 @@ public class LoggedOutPlayer extends Vindicator {
             return;
         }
         storeItems(player);
-        setPersistenceRequired(false); // If the chunk unloads, it's okay if the player despawns because apparently no other player is around them
+        persistenceRequired = false; // If the chunk unloads, it's okay if the player despawns because apparently no other player is around them
     }
 
     private void createPlayerStuff(ServerLevel level) {

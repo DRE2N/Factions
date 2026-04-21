@@ -40,7 +40,7 @@ public class Councillor extends Villager {
         setCustomNameVisible(true);
         setPos(location.getX(), location.getY(), location.getZ());
         level().addFreshEntity(this);
-        setPersistenceRequired(false);
+        persistenceRequired = false;
         persist = false;
         this.faction = faction;
     }

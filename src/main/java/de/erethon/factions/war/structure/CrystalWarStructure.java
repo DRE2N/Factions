@@ -203,7 +203,7 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
                     cancel();
                     return;
                 }
-                crystal.getDataCrystal().setBeamTarget(CraftLocation.toBlockPosition(player.getLocation().add(0, 1, 0)));
+                crystal.getDataCrystal().setBeamTarget(CraftLocation.toBlockPos(player.getLocation().add(0, 1, 0)));
             }
         };
         animation.runTaskTimer(plugin, 0, 1);
