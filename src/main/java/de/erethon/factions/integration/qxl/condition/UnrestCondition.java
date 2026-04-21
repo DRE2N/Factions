@@ -2,9 +2,9 @@ package de.erethon.factions.integration.qxl.condition;
 
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.questsxl.common.QConfig;
-import de.erethon.questsxl.common.QLoadableDoc;
-import de.erethon.questsxl.common.QParamDoc;
+import de.erethon.questsxl.common.script.QConfig;
+import de.erethon.questsxl.common.doc.QLoadableDoc;
+import de.erethon.questsxl.common.doc.QParamDoc;
 import de.erethon.questsxl.common.Quester;
 
 @QLoadableDoc(
@@ -25,7 +25,7 @@ public class UnrestCondition extends FBaseCondition {
     private int maximumUnrest;
 
     @Override
-    public boolean check(Quester quester) {
+    public boolean checkInternal(Quester quester) {
         FPlayer fPlayer = getFPlayer(quester);
         if (fPlayer == null) {
             return fail(quester);

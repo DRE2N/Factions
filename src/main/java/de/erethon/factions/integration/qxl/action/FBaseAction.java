@@ -8,9 +8,9 @@ import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.player.FPlayerCache;
 import de.erethon.factions.region.RegionCache;
 import de.erethon.questsxl.QuestsXL;
-import de.erethon.questsxl.action.QBaseAction;
 import de.erethon.questsxl.common.Quester;
 import de.erethon.questsxl.common.data.QDatabaseManager;
+import de.erethon.questsxl.component.action.QBaseAction;
 import de.erethon.questsxl.player.QPlayer;
 import org.bukkit.Bukkit;
 

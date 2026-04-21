@@ -8,12 +8,19 @@ import de.erethon.aergia.placeholder.HoverInfo;
 import de.erethon.aergia.util.TickUtil;
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.compatibility.Internals;
+import de.erethon.bedrock.database.BedrockDBConnection;
 import de.erethon.bedrock.misc.FileUtil;
 import de.erethon.bedrock.misc.Registry;
 import de.erethon.bedrock.plugin.EPlugin;
 import de.erethon.bedrock.plugin.EPluginSettings;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.alliance.AllianceCache;
+import de.erethon.factions.blocklog.BaselineManager;
+import de.erethon.factions.blocklog.FaweBlockLogBridge;
+import de.erethon.factions.blocklog.BlockLogListener;
+import de.erethon.factions.blocklog.BlockLogManager;
+import de.erethon.factions.blocklog.RenaturationService;
+import de.erethon.factions.blocklog.mapupdate.MapUpdateSessionManager;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.BuildSiteCache;
 import de.erethon.factions.building.BuildingManager;
@@ -70,6 +77,7 @@ import de.erethon.factions.web.RegionHttpServer;
 import de.erethon.hecate.Hecate;
 import de.erethon.questsxl.QuestsXL;
 import de.erethon.questsxl.common.QRegistries;
+import de.erethon.questsxl.common.data.QDatabaseManager;
 import de.erethon.spellbook.teams.SpellbookTeam;
 import de.erethon.spellbook.teams.TeamManager;
 import de.erethon.tyche.EconomyService;
@@ -81,6 +89,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -95,6 +104,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 public final class Factions extends EPlugin {
@@ -153,6 +164,13 @@ public final class Factions extends EPlugin {
     private RegionBorderCalculator regionBorderCalculator;
     private RegionSchematicManager regionSchematicManager;
 
+    /* Block Logging */
+    private BlockLogManager blockLogManager;
+    private BaselineManager baselineManager;
+    private FaweBlockLogBridge faweBlockLogBridge;
+    private RenaturationService renaturationService;
+    private MapUpdateSessionManager mapUpdateSessionManager;
+
     /* Tasks */
     private BukkitTask backupTask;
     private BukkitTask saveDataTask;
@@ -160,6 +178,7 @@ public final class Factions extends EPlugin {
     private BukkitTask webCacheUpdateTask;
 
     /* Listeners */
+    private BlockLogListener blockLogListener;
     private BlockProtectionListener blockProtectionListener;
     private DiscordBotListener discordBotListener;
     private EntityProtectionListener entityProtectionListener;
@@ -201,6 +220,15 @@ public final class Factions extends EPlugin {
         Bukkit.getScheduler().cancelTasks(this);
         unregisterAergiaPlaceholders();
         stopWebApplication();
+        if (blockLogManager != null) {
+            blockLogManager.shutdown();
+        }
+        if (faweBlockLogBridge != null) {
+            faweBlockLogBridge.unregister();
+        }
+        if (mapUpdateSessionManager != null) {
+            mapUpdateSessionManager.clearAllVisuals();
+        }
         saveData();
         FLogger.closeWriter();
     }
@@ -213,6 +241,7 @@ public final class Factions extends EPlugin {
         loadFMessages();
         initializeCaches();
         loadCaches();
+        initializeBlockLogSystem();
         War.initializeAlliances();
         loadTaxManager();
         loadWarHistory();
@@ -226,7 +255,9 @@ public final class Factions extends EPlugin {
         registerListeners();
         registerAergiaPlaceholders();
         registerCustomEntities();
-        registerQXLComponents();
+        if (Bukkit.getPluginManager().isPluginEnabled("QuestsXL")) {
+            registerQXLComponents();
+        }
         BoltIntegration.setup(this);
     }
 
@@ -335,6 +366,42 @@ public final class Factions extends EPlugin {
         warHistory.load();
     }
 
+    public void initializeBlockLogSystem() {
+        try {
+            FLogger.INFO.log("Initializing block logging system...");
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(new File(Bukkit.getWorldContainer(), "environment.yml"));
+            try {
+                BedrockDBConnection connection = new BedrockDBConnection(config.getString("dbUrl"),
+                        config.getString("dbUser"),
+                        config.getString("dbPassword"),
+                        "org.postgresql.ds.PGSimpleDataSource");
+                blockLogManager = new BlockLogManager(this, connection);
+                blockLogManager.initialize();
+            }
+            catch (Exception e) {
+                QuestsXL.log("Failed to connect to database. Block logging will not work.");
+                e.printStackTrace();
+                return;
+            }
+
+            baselineManager = new BaselineManager(this, regionSchematicManager, blockLogManager);
+            renaturationService = new RenaturationService(this, blockLogManager, baselineManager);
+            renaturationService.startSweepTask();
+            mapUpdateSessionManager = new MapUpdateSessionManager();
+
+            if (Bukkit.getPluginManager().isPluginEnabled("FastAsyncWorldEdit")
+                    || Bukkit.getPluginManager().isPluginEnabled("WorldEdit")) {
+                faweBlockLogBridge = new FaweBlockLogBridge(this, blockLogManager);
+                faweBlockLogBridge.register();
+            }
+
+            FLogger.INFO.log("Block logging system initialized successfully");
+        } catch (Exception e) {
+            FLogger.ERROR.log("Failed to initialize block logging system: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public void runTasks() {
         factionCache.runKickTask();
         if (taxManager != null) {
@@ -362,6 +429,12 @@ public final class Factions extends EPlugin {
     }
 
     public void registerListeners() {
+        if (blockLogManager != null) {
+            register(blockLogListener = new BlockLogListener(this, blockLogManager));
+        }
+        if (renaturationService != null) {
+            register(renaturationService); // Register as listener for chunk load events
+        }
         register(blockProtectionListener = new BlockProtectionListener());
         if (Aergia.inst().getDiscordConfig().isEnabled()) {
             register(discordBotListener = new DiscordBotListener());
@@ -745,6 +818,22 @@ public final class Factions extends EPlugin {
         return regionHttpServer;
     }
 
+    public @Nullable de.erethon.factions.blocklog.BlockLogManager getBlockLogManager() {
+        return blockLogManager;
+    }
+
+    public @Nullable de.erethon.factions.blocklog.BaselineManager getBaselineManager() {
+        return baselineManager;
+    }
+
+    public @Nullable de.erethon.factions.blocklog.RenaturationService getRenaturationService() {
+        return renaturationService;
+    }
+
+    public @Nullable MapUpdateSessionManager getMapUpdateSessionManager() {
+        return mapUpdateSessionManager;
+    }
+
     public boolean hasEconomyProvider() {
         return Bukkit.getPluginManager().isPluginEnabled("Tyche") && economyService != null;
     }
@@ -760,6 +849,10 @@ public final class Factions extends EPlugin {
     }
 
     public static @NotNull Factions get() {
+        return instance;
+    }
+
+    public static @NotNull Factions getInstance() {
         return instance;
     }
 

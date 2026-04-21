@@ -2,10 +2,10 @@ package de.erethon.factions.integration.qxl.condition;
 
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.questsxl.common.QConfig;
-import de.erethon.questsxl.common.QLoadableDoc;
-import de.erethon.questsxl.common.QParamDoc;
 import de.erethon.questsxl.common.Quester;
+import de.erethon.questsxl.common.doc.QLoadableDoc;
+import de.erethon.questsxl.common.doc.QParamDoc;
+import de.erethon.questsxl.common.script.QConfig;
 
 @QLoadableDoc(
         value = "faction_money",
@@ -24,7 +24,7 @@ public class FactionMoneyCondition extends FBaseCondition {
     private int amount;
 
     @Override
-    public boolean check(Quester quester) {
+    public boolean checkInternal(Quester quester) {
         FPlayer fPlayer = getFPlayer(quester);
         if (fPlayer == null) {
             return fail(quester);

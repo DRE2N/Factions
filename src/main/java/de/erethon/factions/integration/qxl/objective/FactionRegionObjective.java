@@ -2,10 +2,10 @@ package de.erethon.factions.integration.qxl.objective;
 
 import de.erethon.factions.event.FPlayerCrossRegionEvent;
 import de.erethon.factions.region.Region;
-import de.erethon.questsxl.common.QConfig;
-import de.erethon.questsxl.common.QLoadableDoc;
-import de.erethon.questsxl.common.QTranslatable;
-import de.erethon.questsxl.objective.ActiveObjective;
+import de.erethon.questsxl.common.doc.QLoadableDoc;
+import de.erethon.questsxl.common.script.QConfig;
+import de.erethon.questsxl.common.script.QTranslatable;
+import de.erethon.questsxl.component.objective.ActiveObjective;
 import org.bukkit.entity.Player;
 
 @QLoadableDoc(

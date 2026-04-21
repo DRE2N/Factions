@@ -1,7 +1,7 @@
 package de.erethon.factions.integration.qxl.condition;
 
 import de.erethon.factions.player.FPlayer;
-import de.erethon.questsxl.common.QLoadableDoc;
+import de.erethon.questsxl.common.doc.QLoadableDoc;
 import de.erethon.questsxl.common.Quester;
 
 @QLoadableDoc(
@@ -15,7 +15,7 @@ import de.erethon.questsxl.common.Quester;
 public class HasFactionCondition extends FBaseCondition{
 
     @Override
-    public boolean check(Quester quester) {
+    public boolean checkInternal(Quester quester) {
         FPlayer fPlayer = getFPlayer(quester);
         if (fPlayer != null) {
             if (fPlayer.getFaction() != null) {

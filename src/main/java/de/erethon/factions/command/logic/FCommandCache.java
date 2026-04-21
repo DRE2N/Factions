@@ -21,6 +21,8 @@ public class FCommandCache extends ECommandCache {
         addCommand(new AdminCommand());
         addCommand(new AllianceCommand());
         addCommand(new AuthoriseCommand());
+        addCommand(new BaselineCommand());
+        addCommand(new BlockLogCommand());
         addCommand(new BuildingCommand());
         addCommand(new BuildingAdminCommand());
         addCommand(new BuildingTicketCommand());
@@ -50,6 +52,7 @@ public class FCommandCache extends ECommandCache {
         addCommand(new RegionCommand());
         addCommand(new RegionMapCommand());
         addCommand(new ReloadCommand());
+        addCommand(new RenaturationCommand());
         addCommand(new SetHomeCommand());
         addCommand(new ShortNameCommand());
         addCommand(new ShowCommand());

@@ -10,7 +10,7 @@ import de.erethon.factions.region.RegionCache;
 import de.erethon.questsxl.QuestsXL;
 import de.erethon.questsxl.common.Quester;
 import de.erethon.questsxl.common.data.QDatabaseManager;
-import de.erethon.questsxl.condition.QBaseCondition;
+import de.erethon.questsxl.component.condition.QBaseCondition;
 import de.erethon.questsxl.player.QPlayer;
 import org.bukkit.Bukkit;
 

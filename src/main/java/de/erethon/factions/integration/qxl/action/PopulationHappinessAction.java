@@ -3,10 +3,10 @@ package de.erethon.factions.integration.qxl.action;
 import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.questsxl.common.QConfig;
-import de.erethon.questsxl.common.QLoadableDoc;
-import de.erethon.questsxl.common.QParamDoc;
 import de.erethon.questsxl.common.Quester;
+import de.erethon.questsxl.common.doc.QLoadableDoc;
+import de.erethon.questsxl.common.doc.QParamDoc;
+import de.erethon.questsxl.common.script.QConfig;
 
 @QLoadableDoc(
         value = "population_happiness",
@@ -26,7 +26,7 @@ public class PopulationHappinessAction extends FBaseAction {
     private double happinessChange;
 
     @Override
-    public void play(Quester quester) {
+    public void playInternal(Quester quester) {
         if (!conditions(quester)) return;
         FPlayer fPlayer = getFPlayer(quester);
         if (fPlayer == null) return;

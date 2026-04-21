@@ -29,7 +29,7 @@ dependencies {
     compileOnly("de.erethon.hephaestus:Hephaestus:1.0.5-SNAPSHOT")
     compileOnly("de.erethon.hecate:Hecate:1.2-SNAPSHOT")
     compileOnly("de.erethon.tyche:Tyche:1.0-SNAPSHOT")
-    compileOnly("de.erethon.questsxl:QuestsXL:1.0.5-SNAPSHOT")
+    compileOnly("de.erethon.questsxl:QuestsXL:1.0.6-SNAPSHOT")
 
     // External dependencies
     compileOnly("org.jetbrains:annotations:23.1.0")

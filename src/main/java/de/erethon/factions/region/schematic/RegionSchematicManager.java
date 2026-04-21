@@ -109,6 +109,87 @@ public class RegionSchematicManager {
     }
 
     /**
+     * Saves the state of a region's bounding box as read from a separate source world.
+     * The same chunk-based bounding box as the region is used, but blocks are copied
+     * from {@code sourceWorld} instead of the region's own world.
+     *
+     * @param region      The region whose bounding box to capture
+     * @param stateId     The state ID to save as
+     * @param sourceWorld The world to read blocks from
+     * @return A CompletableFuture that completes with true if successful
+     */
+    public CompletableFuture<Boolean> saveRegionStateFromWorld(@NotNull Region region,
+                                                               @NotNull String stateId,
+                                                               @NotNull World sourceWorld) {
+        BukkitWorld bukkitSourceWorld = new BukkitWorld(sourceWorld);
+        return CompletableFuture.supplyAsync(() -> {
+            Set<LazyChunk> chunks = region.getChunks();
+            if (chunks.isEmpty()) {
+                FLogger.ERROR.log("Cannot save region " + region.getId() + " from staging world: no chunks defined");
+                return false;
+            }
+
+            int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE;
+            int maxX = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
+
+            for (LazyChunk chunk : chunks) {
+                int chunkMinX = chunk.getX() << 4;
+                int chunkMinZ = chunk.getZ() << 4;
+                int chunkMaxX = chunkMinX + 15;
+                int chunkMaxZ = chunkMinZ + 15;
+
+                minX = Math.min(minX, chunkMinX);
+                minZ = Math.min(minZ, chunkMinZ);
+                maxX = Math.max(maxX, chunkMaxX);
+                maxZ = Math.max(maxZ, chunkMaxZ);
+            }
+
+            int minY = sourceWorld.getMinHeight();
+            int maxY = sourceWorld.getMaxHeight() - 1;
+
+            File schematicFile = getSchematicFile(region, stateId);
+            File folder = schematicFile.getParentFile();
+            if (!folder.exists() && !folder.mkdirs()) {
+                FLogger.ERROR.log("Failed to create schematic folder for region " + region.getId());
+                return false;
+            }
+
+            BlockVector3 pos1 = BlockVector3.at(minX, minY, minZ);
+            BlockVector3 pos2 = BlockVector3.at(maxX, maxY, maxZ);
+            CuboidRegion cuboidRegion = new CuboidRegion(pos1, pos2);
+
+            BlockArrayClipboard clipboard = new BlockArrayClipboard(cuboidRegion);
+            clipboard.setOrigin(pos1);
+
+            try (EditSession session = worldEdit.newEditSessionBuilder()
+                    .world(bukkitSourceWorld)
+                    .fastMode(true)
+                    .combineStages(true)
+                    .checkMemory(false)
+                    .changeSetNull()
+                    .limitUnlimited()
+                    .build()) {
+
+                ForwardExtentCopy copy = new ForwardExtentCopy(session, cuboidRegion, clipboard, pos1);
+                copy.setCopyingEntities(false);
+                copy.setCopyingBiomes(true);
+                Operations.complete(copy);
+            }
+
+            try (ClipboardWriter writer = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.getWriter(new FileOutputStream(schematicFile))) {
+                FLogger.REGION.log("Saving region " + region.getId() + " state '" + stateId + "' from staging world '"
+                        + sourceWorld.getName() + "' to " + schematicFile);
+                writer.write(clipboard);
+                return true;
+            } catch (IOException e) {
+                FLogger.ERROR.log("Error saving region " + region.getId() + " state '" + stateId
+                        + "' from staging world: " + e.getMessage());
+                return false;
+            }
+        });
+    }
+
+    /**
      * Saves the current state of a region to a schematic asynchronously.
      * Uses FAWE's async task system for optimal performance.
      *
@@ -209,14 +290,20 @@ public class RegionSchematicManager {
                 Clipboard clipboard = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.load(schematicFile);
                 FLogger.REGION.log("Loading region " + region.getId() + " state '" + stateId + "' from " + schematicFile);
 
-                try (EditSession session = worldEdit.newEditSessionBuilder()
-                        .world(bukkitWorld)
-                        .fastMode(true)
-                        .combineStages(true)
-                        .checkMemory(false)
-                        .changeSetNull()
-                        .limitUnlimited()
-                        .build()) {
+                AutoCloseable suppression = () -> {};
+                if (Factions.get().getBlockLogManager() != null) {
+                    suppression = Factions.get().getBlockLogManager().suppressExternalEditLogging();
+                }
+
+                try (AutoCloseable ignored = suppression;
+                     EditSession session = worldEdit.newEditSessionBuilder()
+                             .world(bukkitWorld)
+                             .fastMode(true)
+                             .combineStages(true)
+                             .checkMemory(false)
+                             .changeSetNull()
+                             .limitUnlimited()
+                             .build()) {
 
                     session.setSideEffectApplier(com.sk89q.worldedit.util.SideEffectSet.none());
 
@@ -234,7 +321,7 @@ public class RegionSchematicManager {
                     Operations.complete(operation);
                 }
                 return true;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 FLogger.ERROR.log("Error loading region " + region.getId() + " state '" + stateId + "': " + e.getMessage());
                 return false;
             }

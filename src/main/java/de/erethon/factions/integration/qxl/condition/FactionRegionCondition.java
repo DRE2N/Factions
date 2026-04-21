@@ -2,9 +2,9 @@ package de.erethon.factions.integration.qxl.condition;
 
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
-import de.erethon.questsxl.common.QConfig;
-import de.erethon.questsxl.common.QLoadableDoc;
-import de.erethon.questsxl.common.QParamDoc;
+import de.erethon.questsxl.common.script.QConfig;
+import de.erethon.questsxl.common.doc.QLoadableDoc;
+import de.erethon.questsxl.common.doc.QParamDoc;
 import de.erethon.questsxl.common.Quester;
 
 @QLoadableDoc(
@@ -22,7 +22,7 @@ public class FactionRegionCondition extends FBaseCondition {
     private Region region;
 
     @Override
-    public boolean check(Quester quester) {
+    public boolean checkInternal(Quester quester) {
         FPlayer fPlayer = getFPlayer(quester);
         if (fPlayer != null) {
             if (fPlayer.getCurrentRegion() == region) {

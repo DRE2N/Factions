@@ -4,10 +4,10 @@ import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.building.Building;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
-import de.erethon.questsxl.common.QConfig;
-import de.erethon.questsxl.common.QLoadableDoc;
-import de.erethon.questsxl.common.QParamDoc;
+import de.erethon.questsxl.common.doc.QLoadableDoc;
+import de.erethon.questsxl.common.doc.QParamDoc;
 import de.erethon.questsxl.common.Quester;
+import de.erethon.questsxl.common.script.QConfig;
 
 import java.util.Set;
 
@@ -29,7 +29,7 @@ public class FactionBuildingCondition extends FBaseCondition {
     private int amount = 1;
 
     @Override
-    public boolean check(Quester quester) {
+    public boolean checkInternal(Quester quester) {
         FPlayer fPlayer = getFPlayer(quester);
         if (fPlayer == null) {
             return fail(quester);

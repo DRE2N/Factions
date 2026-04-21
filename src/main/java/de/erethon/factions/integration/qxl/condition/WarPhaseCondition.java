@@ -1,9 +1,9 @@
 package de.erethon.factions.integration.qxl.condition;
 
 import de.erethon.factions.war.WarPhase;
-import de.erethon.questsxl.common.QConfig;
-import de.erethon.questsxl.common.QLoadableDoc;
-import de.erethon.questsxl.common.QParamDoc;
+import de.erethon.questsxl.common.script.QConfig;
+import de.erethon.questsxl.common.doc.QLoadableDoc;
+import de.erethon.questsxl.common.doc.QParamDoc;
 import de.erethon.questsxl.common.Quester;
 
 @QLoadableDoc(
@@ -21,7 +21,7 @@ public class WarPhaseCondition extends FBaseCondition {
     private WarPhase warPhase;
 
     @Override
-    public boolean check(Quester quester) {
+    public boolean checkInternal(Quester quester) {
         if (factions.getWar() == null) {
             return fail(quester);
         }
