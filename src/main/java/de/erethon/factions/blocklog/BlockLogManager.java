@@ -9,6 +9,7 @@ import de.erethon.factions.blocklog.dao.RenaturationProgressDAO;
 import de.erethon.factions.blocklog.model.BlockChange;
 import de.erethon.factions.blocklog.model.ChangeType;
 import de.erethon.factions.util.FLogger;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
 
 import java.io.File;
@@ -17,10 +18,15 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,6 +44,7 @@ public class BlockLogManager extends EDatabaseManager {
     private static final int BATCH_SIZE = 10000;
     private static final int BATCH_INTERVAL_MS = 5000;
     private static final int MAX_QUEUE_SIZE = 100000;
+    private static final DateTimeFormatter PARTITION_NAME_FORMAT = DateTimeFormatter.ofPattern("yyyy_MM");
 
     private final Factions plugin;
     private final ConcurrentLinkedQueue<BlockChange> blockQueue;
@@ -45,6 +52,7 @@ public class BlockLogManager extends EDatabaseManager {
     private final AtomicBoolean shuttingDown;
     private final AtomicInteger externalEditLoggingSuppressionDepth;
     private final File emergencyBufferFile;
+    private final Set<YearMonth> ensuredPartitions;
 
     private BlockLogDAO blockLogDAO;
     private RegionBaselineDAO regionBaselineDAO;
@@ -63,6 +71,7 @@ public class BlockLogManager extends EDatabaseManager {
         this.shuttingDown = new AtomicBoolean(false);
         this.externalEditLoggingSuppressionDepth = new AtomicInteger(0);
         this.emergencyBufferFile = new File(plugin.getDataFolder(), "blocklog_emergency_buffer.dat");
+        this.ensuredPartitions = ConcurrentHashMap.newKeySet();
     }
 
     @Override
@@ -128,53 +137,9 @@ public class BlockLogManager extends EDatabaseManager {
                     FLogger.REGION.log("block_log migration check skipped: " + e.getMessage());
                 }
 
-                // Create initial partition for current month
-                String currentMonth = getCurrentMonthPartitionName();
-                String nextMonth = getNextMonthPartitionName();
-
-                try {
-                    handle.execute(String.format("""
-                        CREATE TABLE IF NOT EXISTS %s PARTITION OF block_log
-                            FOR VALUES FROM ('%s-01 00:00:00') TO ('%s-01 00:00:00')
-                        """, currentMonth, getCurrentYearMonth(), getNextYearMonth()));
-                } catch (Exception e) {
-                    // Partition might already exist
-                    FLogger.REGION.log("Partition " + currentMonth + " already exists or creation failed: " + e.getMessage());
-                }
-
-                // Create indexes
-                handle.execute(String.format("""
-                    CREATE INDEX IF NOT EXISTS idx_%s_region_time 
-                        ON %s (region_id, timestamp DESC)
-                    """, currentMonth, currentMonth));
-
-                handle.execute(String.format("""
-                    CREATE INDEX IF NOT EXISTS idx_%s_region_active_time
-                        ON %s (region_id, timestamp DESC)
-                        WHERE reverted = FALSE
-                    """, currentMonth, currentMonth));
-
-                handle.execute(String.format("""
-                    CREATE INDEX IF NOT EXISTS idx_%s_region_y 
-                        ON %s (region_id, y DESC, timestamp DESC)
-                    """, currentMonth, currentMonth));
-
-                handle.execute(String.format("""
-                    CREATE INDEX IF NOT EXISTS idx_%s_cause 
-                        ON %s (cause_uuid, timestamp DESC)
-                    """, currentMonth, currentMonth));
-
-                handle.execute(String.format("""
-                    CREATE INDEX IF NOT EXISTS idx_%s_position 
-                        ON %s (world_name, x, y, z, timestamp DESC)
-                    """, currentMonth, currentMonth));
-
-                // Index for chunk-based queries (renaturation)
-                handle.execute(String.format("""
-                    CREATE INDEX IF NOT EXISTS idx_%s_chunk_renat 
-                        ON %s (region_id, world_name, x, z, change_type, y DESC)
-                        WHERE change_type = 'PLAYER_PLACE'
-                    """, currentMonth, currentMonth));
+                // Keep the next partition ready so month rollover does not break long-running servers.
+                ensureMonthlyPartition(handle, YearMonth.now());
+                ensureMonthlyPartition(handle, YearMonth.now().plusMonths(1));
 
                 // Region baseline table
                 handle.execute("""
@@ -399,6 +364,7 @@ public class BlockLogManager extends EDatabaseManager {
         // Insert batch
         try {
             jdbi.useHandle(handle -> {
+                ensurePartitionsForBatch(handle, batch);
                 BlockLogDAO dao = handle.attach(BlockLogDAO.class);
                 dao.batchInsert(batch);
             });
@@ -464,26 +430,74 @@ public class BlockLogManager extends EDatabaseManager {
         FLogger.REGION.log("BlockLogManager shut down successfully");
     }
 
-    // Helper methods for partition management
-    private String getCurrentMonthPartitionName() {
-        return "block_log_" + getCurrentYearMonth().replace("-", "_");
+    private void ensurePartitionsForBatch(Handle handle, List<BlockChange> batch) {
+        Set<YearMonth> months = new HashSet<>();
+        for (BlockChange change : batch) {
+            months.add(YearMonth.from(change.timestamp().toLocalDateTime()));
+        }
+        for (YearMonth month : months) {
+            ensureMonthlyPartition(handle, month);
+        }
     }
 
-    private String getNextMonthPartitionName() {
-        return "block_log_" + getNextYearMonth().replace("-", "_");
+    private void ensureMonthlyPartition(Handle handle, YearMonth month) {
+        if (ensuredPartitions.contains(month)) {
+            return;
+        }
+
+        synchronized (ensuredPartitions) {
+            if (ensuredPartitions.contains(month)) {
+                return;
+            }
+
+            String partitionName = getMonthPartitionName(month);
+            YearMonth nextMonth = month.plusMonths(1);
+            handle.execute(String.format("""
+                CREATE TABLE IF NOT EXISTS %s PARTITION OF block_log
+                    FOR VALUES FROM ('%s 00:00:00') TO ('%s 00:00:00')
+                """, partitionName, month.atDay(1), nextMonth.atDay(1)));
+
+            createPartitionIndexes(handle, partitionName);
+            ensuredPartitions.add(month);
+        }
     }
 
-    private String getCurrentYearMonth() {
-        Instant now = Instant.now();
-        return String.format("%04d-%02d",
-                now.atZone(java.time.ZoneId.systemDefault()).getYear(),
-                now.atZone(java.time.ZoneId.systemDefault()).getMonthValue());
+    private void createPartitionIndexes(Handle handle, String partitionName) {
+        handle.execute(String.format("""
+            CREATE INDEX IF NOT EXISTS idx_%s_region_time
+                ON %s (region_id, timestamp DESC)
+            """, partitionName, partitionName));
+
+        handle.execute(String.format("""
+            CREATE INDEX IF NOT EXISTS idx_%s_region_active_time
+                ON %s (region_id, timestamp DESC)
+                WHERE reverted = FALSE
+            """, partitionName, partitionName));
+
+        handle.execute(String.format("""
+            CREATE INDEX IF NOT EXISTS idx_%s_region_y
+                ON %s (region_id, y DESC, timestamp DESC)
+            """, partitionName, partitionName));
+
+        handle.execute(String.format("""
+            CREATE INDEX IF NOT EXISTS idx_%s_cause
+                ON %s (cause_uuid, timestamp DESC)
+            """, partitionName, partitionName));
+
+        handle.execute(String.format("""
+            CREATE INDEX IF NOT EXISTS idx_%s_position
+                ON %s (world_name, x, y, z, timestamp DESC)
+            """, partitionName, partitionName));
+
+        handle.execute(String.format("""
+            CREATE INDEX IF NOT EXISTS idx_%s_chunk_renat
+                ON %s (region_id, world_name, x, z, change_type, y DESC)
+                WHERE change_type = 'PLAYER_PLACE'
+            """, partitionName, partitionName));
     }
 
-    private String getNextYearMonth() {
-        Instant now = Instant.now();
-        java.time.LocalDate nextMonth = java.time.LocalDate.now().plusMonths(1);
-        return String.format("%04d-%02d", nextMonth.getYear(), nextMonth.getMonthValue());
+    private String getMonthPartitionName(YearMonth month) {
+        return "block_log_" + month.format(PARTITION_NAME_FORMAT);
     }
 
     // Getters for DAOs
