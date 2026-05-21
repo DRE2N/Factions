@@ -9,6 +9,8 @@ import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.input.TextDialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
+import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
@@ -126,7 +128,18 @@ public final class FDialogFactory {
     }
 
     public static @NotNull Component localize(@NotNull Player player, @NotNull Component component) {
-        return GlobalTranslator.render(component, player.locale());
+        Component localized = GlobalTranslator.render(component, player.locale());
+        if (!(component instanceof TranslatableComponent translatable) || translatable.args().isEmpty()) {
+            return localized;
+        }
+        for (int i = 0; i < translatable.args().size(); i++) {
+            Component arg = localize(player, translatable.args().get(i));
+            localized = localized.replaceText(TextReplacementConfig.builder()
+                    .matchLiteral("<arg:" + i + ">")
+                    .replacement(arg)
+                    .build());
+        }
+        return localized;
     }
 
     public static @NotNull List<Component> localize(@NotNull Player player, @NotNull List<Component> components) {

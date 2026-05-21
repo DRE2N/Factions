@@ -57,7 +57,9 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
             player.sendMessage(FMessage.ERROR_REGION_NOT_FOUND.message());
             return;
         }
-        this.buildings = plugin.getBuildingManager().getBuildings();
+        this.buildings = plugin.getBuildingManager().getBuildings().stream()
+                .filter(Building::isShownInBuildingMenu)
+                .toList();
 
         inventory = Bukkit.createInventory(this, 54, Component.translatable("factions.building.selection"));
 

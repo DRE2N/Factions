@@ -2,9 +2,8 @@ package de.erethon.factions.building;
 
 import de.erethon.factions.Factions;
 import de.erethon.factions.building.effects.AddHousing;
-import de.erethon.factions.economy.PopulationResourceConsumption;
 import de.erethon.factions.economy.population.PopulationLevel;
-import de.erethon.factions.economy.resource.Resource;
+import de.erethon.factions.economy.population.PopulationRequirementLines;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.ClaimableRegion;
@@ -58,7 +57,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -1032,31 +1030,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
             return blockers;
         }
         PopulationLevel targetLevel = targetHousing.getLevel();
-        for (String requiredBuilding : targetLevel.getRequiredBuildingIds()) {
-            String requiredBuildingId = requiredBuilding.toLowerCase(Locale.ROOT);
-            if (!owner.hasBuilding(requiredBuildingId)) {
-                blockers.add(Component.text("")
-                        .append(Component.translatable("factions.building.dialog.site.upgrade_blocker_building",
-                                "factions.building.dialog.site.upgrade_blocker_building"))
-                        .append(Component.translatable("factions.building.buildings." + requiredBuildingId + ".name",
-                                requiredBuildingId).color(NamedTextColor.GOLD)));
-            }
-        }
-        for (Resource resource : targetLevel.getResources()) {
-            PopulationResourceConsumption consumption = targetLevel.getResourceConsumption(resource);
-            if (consumption == null || consumption.minimumInStorageToLevelUp() <= 0) {
-                continue;
-            }
-            int required = consumption.minimumInStorageToLevelUp();
-            int available = owner.getStorage().getResource(resource);
-            if (available < required) {
-                blockers.add(Component.text("")
-                        .append(Component.translatable("factions.building.dialog.site.upgrade_blocker_resource",
-                                "factions.building.dialog.site.upgrade_blocker_resource"))
-                        .append(Component.translatable("factions.economy.resource." + resource.getId(), resource.getId()).color(NamedTextColor.GOLD))
-                        .append(Component.text(" " + available + "/" + required, NamedTextColor.GRAY)));
-            }
-        }
+        blockers.addAll(PopulationRequirementLines.missingTargetLevelRequirements(owner, targetLevel));
         return blockers;
     }
 

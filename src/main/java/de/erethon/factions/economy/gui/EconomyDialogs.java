@@ -10,9 +10,11 @@ import de.erethon.factions.economy.report.ProductionChainReport;
 import de.erethon.factions.economy.report.ResourceFlowReport;
 import de.erethon.factions.economy.resource.Resource;
 import de.erethon.factions.economy.population.PopulationLevel;
+import de.erethon.factions.economy.population.PopulationRequirementLines;
 import de.erethon.factions.faction.Faction;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -119,6 +121,7 @@ public final class EconomyDialogs {
             appendReasonList(body, "factions.economy.dialog.population.level_up_blockers", pop.levelUpBlockers());
             appendReasonList(body, "factions.economy.dialog.population.level_down_risks", pop.levelDownRisks());
         }
+        appendNextLevelRequirements(player, body, faction, level);
         appendUnlocks(body, faction, level);
         FDialogFactory.showNotice(player,
                 Component.translatable("factions.economy.dialog.population.title", level.displayName()),
@@ -172,6 +175,25 @@ public final class EconomyDialogs {
         }
     }
 
+    private static void appendNextLevelRequirements(@NotNull Player player, @NotNull List<Component> body,
+                                                    @NotNull Faction faction, @NotNull PopulationLevel level) {
+        PopulationLevel targetLevel = level.above();
+        if (targetLevel == level) {
+            return;
+        }
+        body.add(Component.empty());
+        body.add(Component.translatable("factions.economy.dialog.population.next_level_requirements",
+                targetLevel.displayName()).color(NamedTextColor.GOLD));
+        List<Component> blockers = PopulationRequirementLines.missingTargetLevelRequirements(faction, targetLevel);
+        if (blockers.isEmpty()) {
+            body.add(Component.translatable("factions.economy.dialog.population.next_level_requirements_satisfied"));
+            return;
+        }
+        for (Component blocker : blockers) {
+            body.add(Component.text("- ", NamedTextColor.RED).append(flattenForDialog(player, blocker).color(NamedTextColor.RED)));
+        }
+    }
+
     private static void appendReasonList(@NotNull List<Component> body, @NotNull String headingKey, @NotNull List<String> reasons) {
         body.add(Component.empty());
         body.add(Component.translatable(headingKey).color(NamedTextColor.GOLD));
@@ -183,6 +205,11 @@ public final class EconomyDialogs {
             body.add(Component.text("- ", NamedTextColor.RED)
                     .append(Component.translatable("factions.economy.reason." + reason.replace(':', '.'))));
         }
+    }
+
+    private static @NotNull Component flattenForDialog(@NotNull Player player, @NotNull Component component) {
+        Component localized = FDialogFactory.localize(player, component);
+        return Component.text(PlainTextComponentSerializer.plainText().serialize(localized));
     }
 
     private static String format(double value) {

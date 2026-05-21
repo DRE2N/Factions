@@ -821,6 +821,8 @@ economy:
       demands: "Demands"
       level_up_blockers: "Level-up blockers"
       level_down_risks: "Level-down risks"
+      next_level_requirements: "Missing for <arg:0>"
+      next_level_requirements_satisfied: "<green>All non-housing requirements for the next level are currently fulfilled."
       unlocks: "Unlocks"
     unlock:
       title: "<gold>Building Unlocks"

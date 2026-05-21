@@ -61,6 +61,7 @@ public class Building {
     private boolean isWarBuilding;
     private boolean allowOverlap;
     private boolean isUnique;
+    private boolean showInBuildingMenu = true;
     private int size;
     private Map<Resource, Integer> unlockCost = new HashMap<>();
     private final List<BlockRequirement> requiredBlocks = new ArrayList<>();
@@ -331,6 +332,10 @@ public class Building {
         return allowOverlap;
     }
 
+    public boolean isShownInBuildingMenu() {
+        return showInBuildingMenu;
+    }
+
     public int getSize() {
         return size;
     }
@@ -454,6 +459,7 @@ public class Building {
         isWarBuilding = config.getBoolean("warBuilding", false);
         isUnique = config.getBoolean("unique", false);
         allowOverlap = config.getBoolean("allowOverlap", false);
+        showInBuildingMenu = config.getBoolean("showInBuildingMenu", true);
         size = config.getInt("size");
         requiredLevel = parseEnum(FactionLevel.class, config.getString("requiredLevel", "HAMLET"), FactionLevel.HAMLET, "requiredLevel");
         if (config.contains("requiredBuildings")) {

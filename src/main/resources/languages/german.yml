@@ -472,6 +472,8 @@ economy:
       demands: "Bedarf"
       level_up_blockers: "Aufstiegsblocker"
       level_down_risks: "Abstiegsrisiken"
+      next_level_requirements: "Fehlt für <arg:0>"
+      next_level_requirements_satisfied: "<green>Alle Nicht-Wohnraum-Anforderungen für die nächste Stufe sind aktuell erfüllt."
       unlocks: "Freischaltungen"
     unlock:
       title: "<gold>Gebäude-Freischaltungen"
