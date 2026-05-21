@@ -23,6 +23,8 @@ public interface FAccount {
 
     double getBalance(String currencyId);
 
+    void ensureAccount(String currencyId);
+
     /**
      * @param amount the amount of money to set
      */

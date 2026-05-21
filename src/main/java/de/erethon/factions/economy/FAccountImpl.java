@@ -3,6 +3,7 @@ package de.erethon.factions.economy;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.faction.Faction;
+import de.erethon.factions.util.FLogger;
 import de.erethon.tyche.EconomyService;
 import de.erethon.tyche.models.OwnerType;
 import de.erethon.tyche.models.Transaction;
@@ -43,12 +44,12 @@ public class FAccountImpl implements FAccount {
 
     @Override
     public boolean canAfford(double amount) {
-        return false;
+        return canAfford(amount, FEconomy.TAX_CURRENCY);
     }
 
     @Override
     public boolean canAfford(double amount, String currencyId) {
-        return economyService.getBalance(accountId, OwnerType.FACTION, currencyId).join() >= amount;
+        return economyService.getBalance(accountId, OwnerType.FACTION, currencyId).join() >= Math.round(amount);
     }
 
     @Override
@@ -57,9 +58,9 @@ public class FAccountImpl implements FAccount {
             return null;
         }
         if (amount < 0) {
-            withdraw(amount, currencyId, logReason, initiator);
+            return withdraw(-amount, currencyId, logReason, initiator);
         }
-        return economyService.deposit(accountId, OwnerType.FACTION, currencyId, (long) amount, logReason, null).join();
+        return economyService.deposit(accountId, OwnerType.FACTION, currencyId, Math.round(amount), logReason, null).join();
     }
 
     @Override
@@ -68,9 +69,9 @@ public class FAccountImpl implements FAccount {
             return null;
         }
         if (amount < 0) {
-            deposit(-amount, currencyId, logReason, initiator);
+            return deposit(-amount, currencyId, logReason, initiator);
         }
-        return economyService.withdraw(accountId, OwnerType.FACTION, currencyId, (long) amount, logReason, null).join();
+        return economyService.withdraw(accountId, OwnerType.FACTION, currencyId, Math.round(amount), logReason, null).join();
     }
 
     @Override
@@ -79,14 +80,28 @@ public class FAccountImpl implements FAccount {
     }
 
     @Override
+    public void ensureAccount(String currencyId) {
+        economyService.getBalance(accountId, OwnerType.FACTION, currencyId)
+                .exceptionally(throwable -> {
+                    FLogger.ERROR.log("Failed to ensure economy account " + accountId + " for currency " + currencyId + ": " + throwable.getMessage());
+                    return null;
+                });
+    }
+
+    @Override
     public void setBalance(double amount, String currencyId) {
-        withdraw(getBalance(currencyId), FEconomy.TAX_CURRENCY, "Set balance for " + accountId, null);
-        deposit(amount, currencyId, "Set balance for " + accountId, null);
+        double current = getBalance(currencyId);
+        if (current > 0) {
+            withdraw(current, currencyId, "Set balance for " + accountId, null);
+        }
+        if (amount > 0) {
+            deposit(amount, currencyId, "Set balance for " + accountId, null);
+        }
     }
 
     @Override
     public String getFormatted(double amount) {
-        return "";
+        return Math.round(amount) + " " + FEconomy.TAX_CURRENCY;
     }
 
 }

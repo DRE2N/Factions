@@ -37,6 +37,10 @@ public class FAccountDummy implements FAccount {
     }
 
     @Override
+    public void ensureAccount(String currencyId) {
+    }
+
+    @Override
     public void setBalance(double amount, String currencyId) {
 
     }

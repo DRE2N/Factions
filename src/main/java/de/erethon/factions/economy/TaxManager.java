@@ -47,7 +47,7 @@ public class TaxManager {
             Alliance alliance = faction.getAlliance();
             FAccount fAccount = faction.getFAccount();
             faction.getEconomy().doEconomyCalculations();
-            double amount = faction.calculateRegionTaxes();
+            double amount = Math.round(faction.calculateRegionTaxes());
 
             if (amount <= 0) {
                 continue;

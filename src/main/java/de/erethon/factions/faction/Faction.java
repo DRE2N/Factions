@@ -113,6 +113,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.coreRegion.setOwner(this);
         this.fHome = admin.getPlayer().getLocation();
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
+        ensureEconomyAccount();
         this.fStorage = new FStorage(this);
         this.fEconomy = new FEconomy(this, fStorage);
         this.alliance.addFaction(this);
@@ -377,6 +378,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         }
         this.unrestLevel = config.getDouble("unrestLevel", unrestLevel);
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
+        ensureEconomyAccount();
         this.fStorage = config.isConfigurationSection("storage")
                 ? new FStorage(this, config.getConfigurationSection("storage"))
                 : new FStorage(this);
@@ -578,7 +580,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     }
 
     public boolean hasCurrentTaxDebt() {
-        return currentTaxDebt > 0;
+        return currentTaxDebt >= 0.5;
     }
 
     public double getCurrentTaxDebt() {
@@ -586,15 +588,15 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     }
 
     public void setCurrentTaxDebt(double currentTaxDebt) {
-        this.currentTaxDebt = Math.max(currentTaxDebt, 0);
+        this.currentTaxDebt = currentTaxDebt < 0.5 ? 0 : currentTaxDebt;
     }
 
     public void addCurrentTaxDebt(double taxDebt) {
-        this.currentTaxDebt += taxDebt;
+        setCurrentTaxDebt(this.currentTaxDebt + taxDebt);
     }
 
     public void removeCurrentTaxDebt(double taxDebt) {
-        this.currentTaxDebt = Math.max(currentTaxDebt - taxDebt, 0);
+        setCurrentTaxDebt(currentTaxDebt - taxDebt);
     }
 
     public double calculateRegionTaxes() {
@@ -822,6 +824,13 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public @NotNull FAccount getFAccount() {
         return fAccount;
+    }
+
+    public void ensureEconomyAccount() {
+        if (!plugin.hasEconomyProvider()) {
+            return;
+        }
+        fAccount.ensureAccount(FEconomy.TAX_CURRENCY);
     }
 
     public @NotNull Set<FPlayer> getInvitedPlayers() {

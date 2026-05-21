@@ -53,6 +53,7 @@ public class FactionCache extends FEntityCache<Faction> {
         FException.throwIf(getByName(name) != null, "Couldn't create faction: name already in use", FMessage.ERROR_NAME_IN_USE, name);
         Faction faction = new Faction(fPlayer, coreRegion, generateId(), name, null);
         cache.put(faction.getId(), faction);
+        faction.ensureEconomyAccount();
         fPlayer.setFaction(faction);
         fPlayer.setLastFactionJoinDate(System.currentTimeMillis());
         new FactionCreateEvent(faction, fPlayer).callEvent();
@@ -121,7 +122,17 @@ public class FactionCache extends FEntityCache<Faction> {
     @Override
     public void loadAll() {
         super.loadAll();
+        ensureEconomyAccounts();
         FLogger.INFO.log("Loaded " + cache.size() + " factions");
+    }
+
+    public void ensureEconomyAccounts() {
+        if (!plugin.hasEconomyProvider()) {
+            return;
+        }
+        for (Faction faction : cache.values()) {
+            faction.ensureEconomyAccount();
+        }
     }
 
     /* Getters */

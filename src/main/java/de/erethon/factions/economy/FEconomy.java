@@ -385,7 +385,7 @@ public class FEconomy {
                     happinessForTax,
                     revenue));
         }
-        faction.getFAccount().deposit((int) totalTaxRevenue, TAX_CURRENCY, "Tax revenue for " + faction.getName(), null);
+        faction.getFAccount().deposit(Math.round(totalTaxRevenue), TAX_CURRENCY, "Tax revenue for " + faction.getName(), null);
         currentReport.totalTaxRevenue(totalTaxRevenue);
         FLogger.ECONOMY.log(String.format("[%s] Collected %.2f money in taxes.",
                 faction.getName(),
