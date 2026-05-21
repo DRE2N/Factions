@@ -10,6 +10,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -30,14 +31,21 @@ import java.util.Set;
 
 public class BuildingSelectionGUI implements InventoryHolder, Listener {
 
+    private static final int PAGE_SIZE = 45;
+    private static final int PREVIOUS_PAGE_SLOT = 45;
+    private static final int NEXT_PAGE_SLOT = 53;
+
     private Inventory inventory;
     private final Map<Integer, Building> buildingSlots = new HashMap<>();
+    private final Factions plugin;
     private final FPlayer fPlayer;
     private final Faction faction;
+    private List<Building> buildings = List.of();
     private ClaimableRegion region;
+    private int page = 0;
 
     public BuildingSelectionGUI(@NotNull Player player) {
-        Factions plugin = Factions.get();
+        plugin = Factions.get();
         this.fPlayer = plugin.getFPlayerCache().getByPlayer(player);
         this.faction = fPlayer.getFaction();
         if (!(fPlayer.getCurrentRegion() instanceof ClaimableRegion claimableRegion)) {
@@ -49,22 +57,33 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
             player.sendMessage(FMessage.ERROR_REGION_NOT_FOUND.message());
             return;
         }
+        this.buildings = plugin.getBuildingManager().getBuildings();
 
         inventory = Bukkit.createInventory(this, 54, Component.translatable("factions.building.selection"));
 
-        List<Building> availableBuildings = BuildingManager.getUnlockedBuildingsForPlacement(fPlayer, faction, region);
-        populateInventory(availableBuildings);
+        populateInventory();
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    private void populateInventory(List<Building> buildings) {
-        int slot = 0;
-        for (Building building : buildings) {
+    private void populateInventory() {
+        inventory.clear();
+        buildingSlots.clear();
+        int start = page * PAGE_SIZE;
+        int end = Math.min(buildings.size(), start + PAGE_SIZE);
+        for (int index = start; index < end; index++) {
+            int slot = index - start;
+            Building building = buildings.get(index);
             ItemStack icon = createBuildingIcon(building);
             inventory.setItem(slot, icon);
             buildingSlots.put(slot, building);
-            slot++;
+        }
+        inventory.setItem(49, createPageInfo());
+        if (page > 0) {
+            inventory.setItem(PREVIOUS_PAGE_SLOT, createNavigationItem(Material.ARROW, Component.translatable("factions.building.catalog.previous_page")));
+        }
+        if (end < buildings.size()) {
+            inventory.setItem(NEXT_PAGE_SLOT, createNavigationItem(Material.ARROW, Component.translatable("factions.building.catalog.next_page")));
         }
     }
 
@@ -94,12 +113,24 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
 
         lore.add(Component.empty());
 
+        lore.add(Component.translatable("factions.building.catalog.population",
+                Component.text(building.getRequiredPopulation().isEmpty() ? "-" : building.getRequiredPopulation().entrySet().stream()
+                        .map(entry -> entry.getKey().name().toLowerCase() + " " + entry.getValue())
+                        .collect(java.util.stream.Collectors.joining(", ")))));
+        if (!building.getUnlockCost().isEmpty()) {
+            lore.add(Component.translatable("factions.building.catalog.cost",
+                    Component.text(building.getUnlockCost().entrySet().stream()
+                            .map(entry -> entry.getKey().getId() + " " + entry.getValue())
+                            .collect(java.util.stream.Collectors.joining(", ")))));
+        }
+        lore.add(Component.empty());
+
         if (canBuild) {
             lore.add(Component.text("✓ ").color(NamedTextColor.GREEN)
-                    .append(Component.translatable("factions.building.requirements.fulfilled")));
+                    .append(Component.translatable("factions.building.requirement.fulfilled")));
         } else {
             lore.add(Component.text("✗ ").color(NamedTextColor.RED)
-                    .append(Component.translatable("factions.building.requirements.unfulfilled")));
+                    .append(Component.translatable("factions.building.requirement.unfulfilled")));
             // Add each failed requirement
             for (RequirementFail fail : fails) {
                 lore.add(Component.text("  • ").color(NamedTextColor.RED)
@@ -112,27 +143,55 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
         return icon;
     }
 
+    private ItemStack createNavigationItem(@NotNull Material material, @NotNull Component name) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        meta.displayName(name.color(NamedTextColor.GOLD));
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private ItemStack createPageInfo() {
+        ItemStack item = new ItemStack(Material.PAPER);
+        ItemMeta meta = item.getItemMeta();
+        int maxPage = Math.max(1, (int) Math.ceil(buildings.size() / (double) PAGE_SIZE));
+        meta.displayName(Component.translatable("factions.building.catalog.page",
+                Component.text(page + 1), Component.text(maxPage)).color(NamedTextColor.GRAY));
+        item.setItemMeta(meta);
+        return item;
+    }
+
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        if (event.getInventory().getHolder() != this) {
+        if (event.getView().getTopInventory().getHolder() != this) {
             return;
         }
         event.setCancelled(true);
+        if (event.getClickedInventory() == null || event.getClickedInventory().getHolder() != this) {
+            return;
+        }
         int slot = event.getSlot();
         if (slot < 0 || slot >= inventory.getSize()) {
+            return;
+        }
+        if (slot == PREVIOUS_PAGE_SLOT && page > 0) {
+            page--;
+            populateInventory();
+            return;
+        }
+        if (slot == NEXT_PAGE_SLOT && (page + 1) * PAGE_SIZE < buildings.size()) {
+            page++;
+            populateInventory();
             return;
         }
         Building building = buildingSlots.get(slot);
         if (building == null) {
             return;
         }
-        if (!building.checkRequirements(fPlayer.getPlayer(), faction, fPlayer.getPlayer().getLocation()).isEmpty()) {
-            fPlayer.sendMessage(Component.translatable("factions.building.requirements.unfulfilled"));
-            return;
-        }
-        new BuildSitePlacer(building, fPlayer, region, faction);
         fPlayer.getPlayer().closeInventory(InventoryCloseEvent.Reason.PLUGIN);
         HandlerList.unregisterAll(this);
+        plugin.getServer().getScheduler().runTask(plugin, () ->
+                BuildingDialogs.showBuildingDetails(fPlayer.getPlayer(), fPlayer, faction, region, building));
 
     }
 
@@ -150,6 +209,9 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
     }
 
     public void open(@NotNull Player player) {
+        if (inventory == null) {
+            return;
+        }
         player.openInventory(inventory);
     }
 }

@@ -25,6 +25,24 @@ building:
   common:
     input_chest: "Input Chest"
     output_chest: "Output Chest"
+  container:
+    protected: "<red>This building chest is protected."
+  state:
+    placed: "<gray>Under construction"
+    ready_for_review: "<yellow>Waiting for approval"
+    denied: "<red>Changes requested"
+    active: "<green>Active"
+    damaged: "<red>Damaged"
+  hologram:
+    progress: "<gray>Progress: <arg:0>"
+    inputBuffer: "<gray>Input buffer: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1>"
+    outputBuffer: "<gray>Output buffer: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1>"
+    efficiency: "<gray>Efficiency: <yellow><arg:0>%"
+  upgrade:
+    ready: "<green>Upgrade ready"
+    in_progress: "<gray>Upgrade to <gold><arg:0></gold>: <yellow><arg:1>"
+    started: "<green>Upgrade started: <gold><arg:0>"
+    completed: "<green><arg:0> upgraded to <gold><arg:1></gold>."
   buildings:
     apple_orchard:
       name: Apple Orchard
@@ -258,6 +276,10 @@ building:
   place:
     cancelled: "<red>Building placement has been cancelled."
     title: "<gray>Right click to place the building, left click to cancel."
+    actionbar:
+      hint: "<gray>Look at a block. <green>Left click</green> to confirm, <red>right click</red> to cancel."
+      allowed: "<green>Valid site.</green> <gray>Left click to place, right click to cancel."
+      blocked: "<red>Blocked site.</red> <gray>Move the preview until the outline turns green."
     requirements: "<red>The following requirements are not fulfilled:"
   status:
     accepted: "<green>A <gold><arg:0> <green>in <gold><arg:1> <green>has been accepted. The effects will now be applied."
@@ -267,6 +289,56 @@ building:
     destroyed: "<red>A <gold><arg:0> <red>in <gold><arg:1> <red>was destroyed!"
     problem: "<red>Issue:"
   selection: "Building Selection"
+  catalog:
+    population: "<gray>Population: <gold><arg:0>"
+    cost: "<gray>Cost: <gold><arg:0>"
+    previous_page: "<gold>Previous Page"
+    next_page: "<gold>Next Page"
+    page: "<gray>Page <gold><arg:0></gold><dark_gray>/</dark_gray><gold><arg:1>"
+  dialog:
+    title: "<gold><arg:0>"
+    requirements:
+      title: "<gold>Requirements: <arg:0>"
+      heading: "Requirements"
+      population: "<gray>Population: <gold><arg:0>"
+      cost: "<gray>Cost: <gold><arg:0>"
+    effects:
+      heading: "Effects"
+    button:
+      place: "Place"
+      place_tooltip: "Start placing this building."
+      requirements: "Requirements"
+      requirements_tooltip: "Show detailed requirements."
+    site:
+      title: "<gold><arg:0>"
+      state: "<gray>State: <arg:0>"
+      progress: "<gray>Progress: <yellow><arg:0>%"
+      missing_sections: "<red>Missing sections: <gray><arg:0>"
+      problem: "<red>Issue: <gray><arg:0>"
+      input_buffer: "<gray>Input: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1>"
+      output_buffer: "<gray>Output: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1>"
+      housing: "<gray>Housing: <gold><arg:0></gold> <dark_gray>(</dark_gray><yellow><arg:1></yellow><dark_gray>)</dark_gray>"
+      upgrade_target: "<gray>Upgrade target: <gold><arg:0>"
+      upgrade_cycles: "<gray>Upgrade readiness: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1> satisfied paydays"
+      upgrade_ready: "<green>This house is ready to upgrade."
+      upgrade_progress: "<gray>Upgrade progress: <yellow><arg:0>%"
+      upgrade_blockers: "Missing for upgrade readiness:"
+      upgrade_blocker_target: "<red>Upgrade target is not configured correctly."
+      upgrade_blocker_building: "<red>Required building missing: "
+      upgrade_blocker_resource: "<red>Required resource missing: "
+      upgrade_requirements_satisfied: "<green>Upgrade requirements are currently satisfied. Keep them satisfied through the required paydays."
+      effects: "Effects"
+      button:
+        begin_upgrade: "Begin Upgrade"
+        begin_upgrade_tooltip: "Start the housing upgrade. Add the required blocks inside the build site."
+  effect:
+    block_efficiency: "<gray>Local efficiency: <yellow><arg:0>%</yellow>"
+    resource_production: "<gray>Produces: <green><arg:0>"
+    resource_consumption: "<gray>Consumes: <red><arg:0>"
+    item_production_interval: "<gray>Produces items every <gold><arg:0>s</gold>."
+    item_conversion: "<gray>Converts input items into output items."
+    input_buffer: "<gray>Input buffer: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1>"
+    output_buffer: "<gray>Output buffer: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1>"
   requirement:
     fulfilled: "Requirements fulfilled"
     unfulfilled: "Missing requirements:"
@@ -282,6 +354,43 @@ building:
     not_in_region: "You are not in a region owned by your faction"
   storage:
     title: "<gold>Building Storage"
+    input_empty: "<gray>Waiting for input items."
+    output_full: "<red>Output storage is full."
+    resource_input_missing: "<red>Missing input resources. Production paused."
+  ticket:
+    accepted: "<green>Building <gold><arg:0></gold> accepted."
+    denied: "<yellow>Building <gold><arg:0></gold> denied: <gray><arg:1>"
+    empty: "<gray>There are no building tickets."
+    entry: "<gray><arg:0>) <green><arg:1></green> <dark_gray>-</dark_gray> <gray><arg:2></gray> <dark_gray>/</dark_gray> <gray><arg:3></gray> <dark_gray>(</dark_gray><arg:4><dark_gray>)</dark_gray>"
+    header: "<green><b>Building Tickets</b>"
+    invalid: "<red>Unknown or invalid building ticket."
+    missingId: "<red>Please provide a ticket id."
+    missingMessage: "<red>Please provide a denial message."
+    missingSections: "<red>Building <gold><arg:0></gold> is missing sections: <gray><arg:1>"
+    teleported: "<green>Teleported to building ticket."
+    dialog:
+      title: "<green>Building Tickets"
+      detail_title: "<green>Building Ticket"
+      summary: "<gray>Open tickets: <gold><arg:0>"
+      building: "<gray>Building: <gold><arg:0>"
+      region: "<gray>Region: <gold><arg:0>"
+      faction: "<gray>Faction: <gold><arg:0>"
+      state: "<gray>State: <arg:0>"
+      button:
+        ticket: "#<arg:0> <arg:1> - <arg:2>"
+        ticket_tooltip: "Open this ticket."
+        teleport: "Teleport"
+        approve: "Approve"
+        deny: "Deny"
+      deny:
+        title: "<red>Deny Building"
+        body: "<gray>Enter the reason the faction should see."
+        input: "Reason"
+buildingSite:
+  created: "<green>Build site created."
+dialog:
+  button:
+    close: "Close"
 cmd:
   alliance:
     choose:
@@ -309,6 +418,9 @@ cmd:
     cancel: "<red>The faction creation request has been cancelled."
     confirm: "<gray>Type <green>/f create confirm</green> to confirm creating the faction <gold><arg:0></gold>. <newline><gray>Type <red>/f create cancel</red> to cancel creation."
     notice: "<newline><gray><i>Please note that faction names must fit into the lore of the server. <newline><gray>Factions with inappropriate names will be forcefully renamed."
+    noPending: "<red>There is no pending faction creation request. Start one with <green>/f create <name></green>."
+    balanceFailed: "<red>Could not retrieve your balance: <gray><arg:0>"
+    withdrawFailed: "<red>Could not withdraw the faction creation cost: <gray><arg:0>"
   createWarFlag:
     success: "<green>A war flag has been added to war object <dark_green><arg:0></dark_green>."
   decline:
@@ -444,6 +556,8 @@ cmd:
     entry: "<arg:0> <dark_gray>-</dark_gray><gray> <arg:1>"
     winner: "<gold>Winner</gold><dark_gray>:</dark_gray><gray> <arg:0>"
 dialog:
+  button:
+    close: "Close"
   edit_name:
     title: "<dark_green>Edit Faction Name"
     hint: "<gray>Enter the new name for your faction. <newline>Test"
@@ -650,9 +764,19 @@ gui:
     population:
       title: "<!i><dark_green>Population"
       description: "<!i><gray>View and manage your faction's population."
+      total: "<!i><gray>Total population: <gold><arg:0>"
+      unrest: "<!i><gray>Unrest: <gold><arg:0>"
     resources:
       title: "<!i><b><yellow>Resources"
       description: "<!i><gray>View and manage your faction's resources."
+      full: "<!i><gray>Full storages: <gold><arg:0>"
+    unlocks:
+      title: "<!i><gold>Unlocks"
+      description: "<!i><gray>View which population levels unlock buildings."
+    warnings:
+      title: "<!i><yellow>Warnings"
+      none: "<!i><green>No major economy warnings."
+      storage_full: "<!i><red><arg:0> resource storages are full."
     resource:
       title: "<!i><b><yellow>Resources"
       category:
@@ -677,6 +801,47 @@ gui:
     happiness: "<!i><gray>Happiness: <gold><arg:0>"
     housing: "<!i><gray>Housing: <gold><arg:0>"
   back: "<!i><gray>Back"
+economy:
+  dialog:
+    resource:
+      title: "<gold><arg:0>"
+      storage: "<gray>Stored: <gold><arg:0></gold><dark_gray>/</dark_gray><gold><arg:1>"
+      production: "<gray>Produced last cycle: <green>+<arg:0>"
+      lost: "<red>Lost to full storage: <arg:0>"
+      consumption: "<gray>Consumed last cycle: <red>-<arg:0>"
+      net: "<gray>Net last cycle: <gold><arg:0>"
+      producers: "Production chain producers"
+      consumers: "Consumers"
+    population:
+      title: "<gold><arg:0>"
+      target_happiness: "<gray>Target happiness: <gold><arg:0>"
+      tax: "<gray>Taxes last cycle: <gold><arg:0>"
+      promoted: "<gray>Promoted last cycle: <green><arg:0>"
+      demoted: "<gray>Demoted last cycle: <red><arg:0>"
+      demands: "Demands"
+      level_up_blockers: "Level-up blockers"
+      level_down_risks: "Level-down risks"
+      unlocks: "Unlocks"
+    unlock:
+      title: "<gold>Building Unlocks"
+      built: "<green>built"
+      available: "<green>available"
+      locked: "<red>locked"
+  reason:
+    housing: "Not enough housing for the next level."
+    prerequisites: "Missing required buildings or minimum stock."
+    sustain_resources: "Resources meet minimum stock, but cannot sustain additional population."
+    low_happiness: "Happiness is below the demotion threshold."
+    resource:
+      grain: "Not enough grain."
+      fish: "Not enough fish."
+      vegetables: "Not enough vegetables."
+      coal: "Not enough coal."
+      meat: "Not enough meat."
+      bread: "Not enough bread."
+      beer: "Not enough beer."
+      wine: "Not enough wine."
+      candles: "Not enough candles."
 placeholder:
   allianceDisplay: "<gold>Alliance</gold><dark_gray>:</dark_gray> <gray><arg:0></gray>"
   factionDisplay: "<gold>Faction</gold><dark_gray>:</dark_gray> <gray><arg:0></gray>"

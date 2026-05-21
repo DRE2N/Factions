@@ -19,8 +19,12 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 
@@ -35,6 +39,9 @@ public class BlockProtectionListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
+        if (cancelIfBuildingContainer(event, event.getPlayer(), event.getBlock())) {
+            return;
+        }
         forbidIfInProtectedTerritory(event, event.getPlayer(), event.getBlock(), FMessage.PROTECTION_CANNOT_DESTROY_FACTION);
     }
 
@@ -56,6 +63,30 @@ public class BlockProtectionListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(PlayerBucketEmptyEvent event) {
         forbidIfInProtectedTerritory(event, event.getPlayer(), event.getBlock(), FMessage.PROTECTION_CANNOT_BUILD_FACTION);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onBlockExplode(BlockExplodeEvent event) {
+        event.blockList().removeIf(block -> getContainerSite(block) != null);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onEntityExplode(EntityExplodeEvent event) {
+        event.blockList().removeIf(block -> getContainerSite(block) != null);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPistonExtend(BlockPistonExtendEvent event) {
+        if (event.getBlocks().stream().anyMatch(block -> getContainerSite(block) != null)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPistonRetract(BlockPistonRetractEvent event) {
+        if (event.getBlocks().stream().anyMatch(block -> getContainerSite(block) != null)) {
+            event.setCancelled(true);
+        }
     }
 
     private void forbidIfInProtectedTerritory(Cancellable event, Player player, Block block, FMessage message) {
@@ -101,6 +132,29 @@ public class BlockProtectionListener implements Listener {
     private void cancel(Cancellable event, FPlayer fPlayer, Region region, FMessage message) {
         event.setCancelled(true);
         fPlayer.sendActionBarMessage(message.message(region.getDisplayOwner()));
+    }
+
+    private boolean cancelIfBuildingContainer(Cancellable event, Player player, Block block) {
+        BuildSite site = getContainerSite(block);
+        if (site == null) {
+            return false;
+        }
+        FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
+        if (fPlayer.isBypassRaw()) {
+            return false;
+        }
+        event.setCancelled(true);
+        fPlayer.sendActionBarMessage(FMessage.BUILDING_CONTAINER_PROTECTED.message());
+        return true;
+    }
+
+    private BuildSite getContainerSite(Block block) {
+        for (BuildSite site : plugin.getBuildSiteCache().get(block.getChunk().getChunkKey())) {
+            if (site.isContainerBlock(block)) {
+                return site;
+            }
+        }
+        return null;
     }
 
     private void doBuildingChecks(Player player, Block block, Cancellable event) {

@@ -1,6 +1,7 @@
 package de.erethon.factions.building;
 
 import de.erethon.factions.Factions;
+import de.erethon.factions.data.FMessage;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.ClaimableRegion;
@@ -32,11 +33,12 @@ public class BuildSitePlacer implements Listener {
         this.region = region;
         this.faction = faction;
         if (building == null || region == null || faction == null || player.getPlayer() == null) {
-            player.sendMessage("<red>Internal error. Invalid building, region, faction or player.");
+            player.sendMessage(FMessage.ERROR_REGION_NOT_FOUND.message());
             return;
         }
         Bukkit.getPluginManager().registerEvents(this, Factions.get());
         player.getPlayer().showTitle(Title.title(Component.empty(), Component.translatable("factions.building.place.title")));
+        player.getPlayer().sendActionBar(Component.translatable("factions.building.place.actionbar.hint"));
     }
 
     @EventHandler
@@ -48,6 +50,9 @@ public class BuildSitePlacer implements Listener {
         if (targetBlock == null) return;
         boolean isAllowed = building.checkRequirements(player.getPlayer(), faction, targetBlock.getLocation()).isEmpty();
         building.displayFrame(player.getPlayer(), targetBlock.getLocation(), isAllowed);
+        event.getPlayer().sendActionBar(isAllowed
+                ? Component.translatable("factions.building.place.actionbar.allowed")
+                : Component.translatable("factions.building.place.actionbar.blocked"));
     }
 
     @EventHandler
@@ -66,7 +71,7 @@ public class BuildSitePlacer implements Listener {
             if (!building.checkRequirements(player.getPlayer(), faction, event.getClickedBlock().getLocation()).isEmpty()) {
                 player.sendMessage(Component.translatable("factions.building.place.requirements"));
                 for (RequirementFail fail : building.checkRequirements(player.getPlayer(), faction, event.getClickedBlock().getLocation())) {
-                    player.sendMessage(fail.getTranslationKey());
+                    player.sendMessage(Component.translatable(fail.getTranslationKey()));
                 }
                 return;
             }

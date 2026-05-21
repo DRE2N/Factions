@@ -21,6 +21,139 @@ acm:
   unselected: "Die Auswahl der Region <green><arg:0></green> wurde aufgehoben."
   transferredChunk: "Chunk <gold><arg:0></gold> wurde an <gold><arg:1></gold> übertragen."
   transferredChunks: "<gold><arg:0></gold> Chunks wurden an <gold><arg:1></gold> übertragen."
+building:
+  common:
+    input_chest: "Eingangskiste"
+    output_chest: "Ausgangskiste"
+  container:
+    protected: "<red>Diese Gebäudekiste ist geschützt."
+  state:
+    placed: "<gray>Im Bau"
+    ready_for_review: "<yellow>Wartet auf Abnahme"
+    denied: "<red>Änderungen erforderlich"
+    active: "<green>Aktiv"
+    damaged: "<red>Beschädigt"
+  hologram:
+    progress: "<gray>Fortschritt: <arg:0>"
+    inputBuffer: "<gray>Eingangspuffer: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1>"
+    outputBuffer: "<gray>Ausgangspuffer: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1>"
+    efficiency: "<gray>Effizienz: <yellow><arg:0>%"
+  upgrade:
+    ready: "<green>Upgrade bereit"
+    in_progress: "<gray>Upgrade zu <gold><arg:0></gold>: <yellow><arg:1>"
+    started: "<green>Upgrade gestartet: <gold><arg:0>"
+    completed: "<green><arg:0> wurde zu <gold><arg:1></gold> verbessert."
+  place:
+    cancelled: "<red>Gebäudeplatzierung wurde abgebrochen."
+    title: "<gray>Linksklick zum Platzieren, Rechtsklick zum Abbrechen."
+    actionbar:
+      hint: "<gray>Sieh einen Block an. <green>Linksklick</green> bestätigt, <red>Rechtsklick</red> bricht ab."
+      allowed: "<green>Gültiger Standort.</green> <gray>Linksklick zum Platzieren, Rechtsklick zum Abbrechen."
+      blocked: "<red>Blockierter Standort.</red> <gray>Verschiebe die Vorschau, bis der Rahmen grün wird."
+    requirements: "<red>Folgende Anforderungen sind nicht erfüllt:"
+  catalog:
+    population: "<gray>Bevölkerung: <gold><arg:0>"
+    cost: "<gray>Kosten: <gold><arg:0>"
+    previous_page: "<gold>Vorherige Seite"
+    next_page: "<gold>Nächste Seite"
+    page: "<gray>Seite <gold><arg:0></gold><dark_gray>/</dark_gray><gold><arg:1>"
+  dialog:
+    title: "<gold><arg:0>"
+    requirements:
+      title: "<gold>Anforderungen: <arg:0>"
+      heading: "Anforderungen"
+      population: "<gray>Bevölkerung: <gold><arg:0>"
+      cost: "<gray>Kosten: <gold><arg:0>"
+    effects:
+      heading: "Effekte"
+    button:
+      place: "Platzieren"
+      place_tooltip: "Platziere dieses Gebäude."
+      requirements: "Anforderungen"
+      requirements_tooltip: "Zeigt die genauen Anforderungen."
+    site:
+      title: "<gold><arg:0>"
+      state: "<gray>Status: <arg:0>"
+      progress: "<gray>Fortschritt: <yellow><arg:0>%"
+      missing_sections: "<red>Fehlende Sektionen: <gray><arg:0>"
+      problem: "<red>Problem: <gray><arg:0>"
+      input_buffer: "<gray>Eingang: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1>"
+      output_buffer: "<gray>Ausgang: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1>"
+      housing: "<gray>Wohnraum: <gold><arg:0></gold> <dark_gray>(</dark_gray><yellow><arg:1></yellow><dark_gray>)</dark_gray>"
+      upgrade_target: "<gray>Upgrade-Ziel: <gold><arg:0>"
+      upgrade_cycles: "<gray>Upgrade-Bereitschaft: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1> erfüllte Zahltage"
+      upgrade_ready: "<green>Dieses Haus kann verbessert werden."
+      upgrade_progress: "<gray>Upgrade-Fortschritt: <yellow><arg:0>%"
+      upgrade_blockers: "Fehlt für Upgrade-Bereitschaft:"
+      upgrade_blocker_target: "<red>Das Upgrade-Ziel ist nicht korrekt konfiguriert."
+      upgrade_blocker_building: "<red>Vorausgesetztes Gebäude fehlt: "
+      upgrade_blocker_resource: "<red>Vorausgesetzte Ressource fehlt: "
+      upgrade_requirements_satisfied: "<green>Die Upgrade-Anforderungen sind aktuell erfüllt. Halte sie für die benötigten Zahltage erfüllt."
+      effects: "Effekte"
+      button:
+        begin_upgrade: "Upgrade beginnen"
+        begin_upgrade_tooltip: "Starte das Wohnhaus-Upgrade. Füge die benötigten Blöcke in der Baustelle hinzu."
+  effect:
+    block_efficiency: "<gray>Lokale Effizienz: <yellow><arg:0>%</yellow>"
+    resource_production: "<gray>Produziert: <green><arg:0>"
+    resource_consumption: "<gray>Verbraucht: <red><arg:0>"
+    item_production_interval: "<gray>Produziert alle <gold><arg:0>s</gold> Gegenstände."
+    item_conversion: "<gray>Wandelt Eingangswaren in Ausgangswaren um."
+    input_buffer: "<gray>Eingangspuffer: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1>"
+    output_buffer: "<gray>Ausgangspuffer: <yellow><arg:0></yellow><dark_gray>/</dark_gray><gray><arg:1>"
+  requirement:
+    fulfilled: "Anforderungen erfüllt"
+    unfulfilled: "Fehlende Anforderungen:"
+    no_permission: "Du hast keine Berechtigung, dieses Gebäude zu bauen"
+    too_close_to_border: "Das Gebäude ist zu nah an der Regionsgrenze"
+    overlapping_building: "Das Gebäude überschneidet sich mit einem anderen Gebäude"
+    required_building_missing: "Ein vorausgesetztes Gebäude fehlt"
+    required_population: "Nicht genug Bevölkerung"
+    wrong_region_type: "Falscher Regionstyp"
+    not_enough_resources: "Nicht genug Ressourcen"
+    unique_building: "Dieses Gebäude existiert bereits"
+    not_in_faction: "Du bist in keiner Fraktion"
+    not_in_region: "Du bist in keiner Region deiner Fraktion"
+  selection: "Gebäudeauswahl"
+  storage:
+    title: "<gold>Gebäudelager"
+    input_empty: "<gray>Wartet auf Eingangswaren."
+    output_full: "<red>Das Ausgangslager ist voll."
+    resource_input_missing: "<red>Eingangsressourcen fehlen. Produktion pausiert."
+  ticket:
+    accepted: "<green>Gebäude <gold><arg:0></gold> angenommen."
+    denied: "<yellow>Gebäude <gold><arg:0></gold> abgelehnt: <gray><arg:1>"
+    empty: "<gray>Es gibt keine Gebäude-Tickets."
+    entry: "<gray><arg:0>) <green><arg:1></green> <dark_gray>-</dark_gray> <gray><arg:2></gray> <dark_gray>/</dark_gray> <gray><arg:3></gray> <dark_gray>(</dark_gray><arg:4><dark_gray>)</dark_gray>"
+    header: "<green><b>Gebäude-Tickets</b>"
+    invalid: "<red>Unbekanntes oder ungültiges Gebäude-Ticket."
+    missingId: "<red>Bitte gib eine Ticket-ID an."
+    missingMessage: "<red>Bitte gib eine Ablehnungsnachricht an."
+    missingSections: "<red>Dem Gebäude <gold><arg:0></gold> fehlen Sektionen: <gray><arg:1>"
+    teleported: "<green>Zum Gebäude-Ticket teleportiert."
+    dialog:
+      title: "<green>Gebäude-Tickets"
+      detail_title: "<green>Gebäude-Ticket"
+      summary: "<gray>Offene Tickets: <gold><arg:0>"
+      building: "<gray>Gebäude: <gold><arg:0>"
+      region: "<gray>Region: <gold><arg:0>"
+      faction: "<gray>Fraktion: <gold><arg:0>"
+      state: "<gray>Status: <arg:0>"
+      button:
+        ticket: "#<arg:0> <arg:1> - <arg:2>"
+        ticket_tooltip: "Dieses Ticket öffnen."
+        teleport: "Teleportieren"
+        approve: "Annehmen"
+        deny: "Ablehnen"
+      deny:
+        title: "<red>Gebäude ablehnen"
+        body: "<gray>Gib den Grund ein, den die Fraktion sehen soll."
+        input: "Grund"
+buildingSite:
+  created: "<green>Baustelle erstellt."
+dialog:
+  button:
+    close: "Schließen"
 cmd:
   alliance:
     choose:
@@ -37,6 +170,14 @@ cmd:
   authorised:
     added: "<green>Du hast der Fraktion <dark_green><arg:0></dark_green> die Erlaubnis <dark_green>erteilt</dark_green>, auf dem Gebiet von <dark_green><arg:1></dark_green> zu bauen."
     removed: "<green>Du hast der Fraktion <dark_green><arg:0></dark_green> die Erlaubnis <dark_green>entzogen</dark_green>, auf dem Gebiet von <dark_green><arg:1></dark_green> zu bauen."
+  create:
+    alreadyPending: "<red>Es gibt bereits eine offene Fraktionserstellung. Bestätige sie mit <green>/f create confirm</green> oder brich sie mit <red>/f create cancel</red> ab."
+    cancel: "<red>Die Fraktionserstellung wurde abgebrochen."
+    confirm: "<gray>Gib <green>/f create confirm</green> ein, um die Fraktion <gold><arg:0></gold> zu erstellen. <newline><gray>Gib <red>/f create cancel</red> ein, um abzubrechen."
+    notice: "<newline><gray><i>Bitte beachte, dass Fraktionsnamen zur Lore des Servers passen müssen. <newline><gray>Fraktionen mit unpassenden Namen werden umbenannt."
+    noPending: "<red>Es gibt keine offene Fraktionserstellung. Starte eine mit <green>/f create <name></green>."
+    balanceFailed: "<red>Dein Kontostand konnte nicht abgefragt werden: <gray><arg:0>"
+    withdrawFailed: "<red>Die Kosten für die Fraktionserstellung konnten nicht abgebucht werden: <gray><arg:0>"
   createWarFlag:
     success: "<green>Eine Kriegsflagge wurde dem Kriegsobjekt <dark_green><arg:0></dark_green> hinzugefügt."
   decline:
@@ -269,6 +410,37 @@ general:
   wilderness: "Wildnis"
   yes: "<green>Ja"
 gui:
+  economy:
+    title: "<dark_green><bold>Wirtschaft"
+    population:
+      title: "<!i><dark_green>Bevölkerung"
+      description: "<!i><gray>Bevölkerung deiner Fraktion ansehen."
+      total: "<!i><gray>Gesamtbevölkerung: <gold><arg:0>"
+      unrest: "<!i><gray>Unruhe: <gold><arg:0>"
+    resources:
+      title: "<!i><b><yellow>Ressourcen"
+      description: "<!i><gray>Ressourcen deiner Fraktion ansehen."
+      full: "<!i><gray>Volle Lager: <gold><arg:0>"
+    unlocks:
+      title: "<!i><gold>Freischaltungen"
+      description: "<!i><gray>Zeigt, welche Bevölkerung Gebäude freischaltet."
+    warnings:
+      title: "<!i><yellow>Warnungen"
+      none: "<!i><green>Keine wichtigen Wirtschaftswarnungen."
+      storage_full: "<!i><red><arg:0> Ressourcenlager sind voll."
+    resource:
+      title: "<!i><b><yellow>Ressourcen"
+      category:
+        description: "<!i><gray>Klicken, um Ressourcen dieser Kategorie zu sehen."
+      amount: "<!i><gray>Menge: <gold><arg:0> <dark_gray>/ <gold><arg:1>"
+      production: "<!i><gray>Produktion: <green>+<arg:0>"
+      totalConsumption: "<!i><gray>Gesamtverbrauch: <red>-<arg:0>"
+  population:
+    title: "<dark_green>Bevölkerung"
+    count: "<!i><gray>Bevölkerung: <gold><arg:0>"
+    happiness: "<!i><gray>Zufriedenheit: <gold><arg:0>"
+    housing: "<!i><gray>Wohnraum: <gold><arg:0>"
+  back: "<!i><gray>Zurück"
   poll:
     nextPage:
       name: "<gold>Nächste Seite"
@@ -280,6 +452,47 @@ gui:
     titleClosed: "<st><green>Abstimmung<dark_gray>:</dark_gray></green> <arg:0>"
     regionTypeDisplay: "<gold>Regionstyp<dark_gray>:</dark_gray></gold><gray> <arg:0>"
     votesDisplay: "<gray><gold><arg:0></gold> Stimmen"
+economy:
+  dialog:
+    resource:
+      title: "<gold><arg:0>"
+      storage: "<gray>Gelagert: <gold><arg:0></gold><dark_gray>/</dark_gray><gold><arg:1>"
+      production: "<gray>Letzter Zyklus produziert: <green>+<arg:0>"
+      lost: "<red>Durch volles Lager verloren: <arg:0>"
+      consumption: "<gray>Letzter Zyklus verbraucht: <red>-<arg:0>"
+      net: "<gray>Netto letzter Zyklus: <gold><arg:0>"
+      producers: "Produzenten in Produktionsketten"
+      consumers: "Verbraucher"
+    population:
+      title: "<gold><arg:0>"
+      target_happiness: "<gray>Ziel-Zufriedenheit: <gold><arg:0>"
+      tax: "<gray>Steuern letzter Zyklus: <gold><arg:0>"
+      promoted: "<gray>Aufgestiegen letzter Zyklus: <green><arg:0>"
+      demoted: "<gray>Abgestiegen letzter Zyklus: <red><arg:0>"
+      demands: "Bedarf"
+      level_up_blockers: "Aufstiegsblocker"
+      level_down_risks: "Abstiegsrisiken"
+      unlocks: "Freischaltungen"
+    unlock:
+      title: "<gold>Gebäude-Freischaltungen"
+      built: "<green>gebaut"
+      available: "<green>verfügbar"
+      locked: "<red>gesperrt"
+  reason:
+    housing: "Nicht genug Wohnraum für die nächste Stufe."
+    prerequisites: "Benötigte Gebäude oder Mindestlager fehlen."
+    sustain_resources: "Die Mindestmenge ist vorhanden, reicht aber nicht für zusätzliche Bevölkerung."
+    low_happiness: "Die Zufriedenheit liegt unter der Abstiegsgrenze."
+    resource:
+      grain: "Nicht genug Getreide."
+      fish: "Nicht genug Fisch."
+      vegetables: "Nicht genug Gemüse."
+      coal: "Nicht genug Kohle."
+      meat: "Nicht genug Fleisch."
+      bread: "Nicht genug Brot."
+      beer: "Nicht genug Bier."
+      wine: "Nicht genug Wein."
+      candles: "Nicht genug Kerzen."
 placeholder:
   allianceDisplay: "<gold>Allianz</gold><dark_gray>:</dark_gray> <gray><arg:0>"
   factionDisplay: "<gold>Fraktion</gold><dark_gray>:</dark_gray> <gray><arg:0>"

@@ -19,6 +19,7 @@ public class ResourceGUI extends EconomyGUI {
 
     private boolean showingCategories = true;
     private ResourceCategory currentCategory;
+    private final java.util.Map<Integer, Resource> resourceSlots = new java.util.HashMap<>();
 
     public ResourceGUI(Player player, Faction faction) {
         this.player = player;
@@ -52,6 +53,7 @@ public class ResourceGUI extends EconomyGUI {
 
     private void showResources(ResourceCategory category) {
         inventory.clear();
+        resourceSlots.clear();
         int slot = 0;
         ItemStack categoryLabel = createGuiItem(Material.BOOK,
                 Component.text(category.getName()),
@@ -61,6 +63,7 @@ public class ResourceGUI extends EconomyGUI {
         for (Resource resource : category.getResources()) {
             ItemStack item = createResourceItem(resource);
             inventory.setItem(slot++, item);
+            resourceSlots.put(slot - 1, resource);
         }
 
         ItemStack back = createGuiItem(Material.ARROW, Component.translatable("factions.gui.back"));
@@ -149,6 +152,11 @@ public class ResourceGUI extends EconomyGUI {
             if (slot == inventory.getSize() - 9) {
                 showingCategories = true;
                 initializeItems();
+                return;
+            }
+            Resource resource = resourceSlots.get(slot);
+            if (resource != null) {
+                EconomyDialogs.showResource(player, faction, resource);
             }
         }
     }

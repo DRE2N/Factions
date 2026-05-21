@@ -3,9 +3,14 @@ package de.erethon.factions.building;
 import de.erethon.factions.Factions;
 import de.erethon.factions.util.FLogger;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 
 import java.io.File;
@@ -43,11 +48,14 @@ public class BuildSiteCache implements Listener {
         BuildSite loaded;
         try {
             loaded = new BuildSite(file);
+            loaded.load();
         } catch (Exception e) {
             FLogger.ERROR.log("Failed to load build site from file: " + file.getName());
+            e.printStackTrace();
             return null;
         }
         sites.put(uuid, loaded);
+        addToChunkCache(loaded);
         return loaded;
     }
 
@@ -73,6 +81,52 @@ public class BuildSiteCache implements Listener {
     }
 
     @EventHandler
+    private void onPlayerInteract(PlayerInteractEvent event) {
+        if (event.getClickedBlock() == null) {
+            return;
+        }
+        Set<BuildSite> sites = chunkCache.get(event.getClickedBlock().getChunk().getChunkKey());
+        if (sites == null) {
+            return;
+        }
+        for (BuildSite site : sites) {
+            site.handleContainerInteract(event);
+        }
+    }
+
+    @EventHandler
+    private void onHologramInteract(PlayerInteractEntityEvent event) {
+        BuildSite site = getByHologramInteraction(event.getRightClicked().getUniqueId());
+        if (site == null) {
+            return;
+        }
+        event.setCancelled(true);
+        site.handleHologramRightClick(event.getPlayer());
+    }
+
+    @EventHandler
+    private void onHologramDamage(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player player)) {
+            return;
+        }
+        BuildSite site = getByHologramInteraction(event.getEntity().getUniqueId());
+        if (site == null) {
+            return;
+        }
+        event.setCancelled(true);
+        site.handleHologramLeftClick(player);
+    }
+
+    private BuildSite getByHologramInteraction(UUID entityId) {
+        for (BuildSite site : sites.values()) {
+            if (site.isHologramInteractionId(entityId)) {
+                return site;
+            }
+        }
+        return null;
+    }
+
+    @EventHandler
     private void onChunkLoad(ChunkLoadEvent event) {
         long chunkKey = event.getChunk().getChunkKey();
         Set<BuildSite> sites = chunkCache.get(chunkKey);
@@ -95,7 +149,7 @@ public class BuildSiteCache implements Listener {
     }
 
     @EventHandler
-    private void onChunkUnload(ChunkLoadEvent event) {
+    private void onChunkUnload(ChunkUnloadEvent event) {
         long chunkKey = event.getChunk().getChunkKey();
         Set<BuildSite> sites = chunkCache.get(chunkKey);
         if (sites != null) {

@@ -6,13 +6,16 @@ import de.erethon.factions.building.BuildingEffectData;
 import de.erethon.factions.building.attributes.FactionResourceAttribute;
 import de.erethon.factions.economy.resource.Resource;
 import de.erethon.factions.util.FLogger;
+import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public class ResourceProduction extends BuildingEffect {
+public class ResourceProduction extends BuildingEffect implements ResourceChainEffect {
 
     protected final Map<Resource, Integer> production = new HashMap<>();
 
@@ -47,6 +50,9 @@ public class ResourceProduction extends BuildingEffect {
     }
 
     protected void produce() {
+        if (!site.hasResourceInputsAvailable()) {
+            return;
+        }
         for (Map.Entry<Resource, Integer> entry : production.entrySet()) {
             FactionResourceAttribute attribute = faction.getOrCreateAttribute(
                     entry.getKey().name(),
@@ -55,5 +61,22 @@ public class ResourceProduction extends BuildingEffect {
             );
             attribute.setBaseValue(attribute.getBaseValue() + entry.getValue());
         }
+    }
+
+    @Override
+    public @NotNull Map<Resource, Integer> getProducedResources() {
+        return Map.copyOf(production);
+    }
+
+    @Override
+    public @NotNull List<Component> getDetailLines() {
+        return List.of(Component.translatable("factions.building.effect.resource_production",
+                Component.text(formatResources(production))));
+    }
+
+    protected String formatResources(@NotNull Map<Resource, ? extends Number> resources) {
+        return resources.entrySet().stream()
+                .map(entry -> entry.getKey().getId() + " +" + entry.getValue())
+                .collect(Collectors.joining(", "));
     }
 }

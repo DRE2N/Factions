@@ -50,7 +50,7 @@ public class CrystalChargeCarrier extends IronGolem {
 
     private final Factions plugin = Factions.get();
     private WarRegion region;
-    private Alliance alliance;
+        private Alliance alliance;
 
     // Required constructor for entity loading
     public CrystalChargeCarrier(EntityType<? extends IronGolem> type, Level world) {

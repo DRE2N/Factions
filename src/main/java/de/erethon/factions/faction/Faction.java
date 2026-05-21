@@ -370,13 +370,16 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.level = FactionLevel.getByName(config.getString("level"), FactionLevel.HAMLET);
         for (PopulationLevel level : PopulationLevel.values()) {
             this.population.put(level, config.getInt("population." + level.name(), 0));
+            this.populationHappiness.put(level, config.getDouble("populationHappiness." + level.name(), populationHappiness.getOrDefault(level, 0.0)));
         }
         if (population.getOrDefault(PopulationLevel.PEASANT, 0) == 0) {
             population.put(PopulationLevel.PEASANT, 5); // Let's start with something at least
         }
         this.unrestLevel = config.getDouble("unrestLevel", unrestLevel);
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
-        this.fStorage = new FStorage(this, config.getConfigurationSection("storage"));
+        this.fStorage = config.isConfigurationSection("storage")
+                ? new FStorage(this, config.getConfigurationSection("storage"))
+                : new FStorage(this);
         this.fEconomy = new FEconomy(this, fStorage);
         List<String> buildSiteUUIDs = config.getStringList("buildSites");
         for (String uuid : buildSiteUUIDs) {
@@ -417,6 +420,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         config.set("polls", serializePolls());
         for (PopulationLevel level : PopulationLevel.values()) {
             config.set("population." + level.name(), population.get(level));
+            config.set("populationHappiness." + level.name(), populationHappiness.getOrDefault(level, 0.0));
         }
         config.set("unrestLevel", unrestLevel);
         config.set("storage", fStorage.save());
@@ -687,7 +691,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     @Override
     public boolean matchingName(@NotNull String name) {
-        return super.matchingName(name) || this.name.equalsIgnoreCase(shortName);
+        return super.matchingName(name) || shortName != null && shortName.equalsIgnoreCase(name);
     }
 
     public boolean isOpen() {

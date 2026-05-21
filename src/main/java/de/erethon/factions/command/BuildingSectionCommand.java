@@ -18,19 +18,19 @@ public class BuildingSectionCommand extends FCommand {
     public BuildingSectionCommand() {
         setCommand("section");
         setAliases("s");
-        setFUsage("/f building section create|delete|list|rename");
+        setFUsage("/f buildingadmin section <create|delete|list|rename>");
         setHelp("Manage building sections");
     }
 
     @Override
     public void onExecute(CommandSender sender, String[] args) {
-        if (args.length == 0) {
+        if (args.length < 3) {
             displayHelp(sender);
             return;
         }
         Player player = (Player) sender;
         FPlayer fPlayer = getFPlayer(player);
-        switch (args[3].toLowerCase()) {
+        switch (args[2].toLowerCase()) {
             case "create" -> {
                 createSection(fPlayer, args);
             }
@@ -56,17 +56,18 @@ public class BuildingSectionCommand extends FCommand {
         if (buildSite == null) {
             return;
         }
-        if (args.length < 2) {
-            fPlayer.sendMessage("/f building section create <name>");
+        if (args.length < 4) {
+            fPlayer.sendMessage("/f buildingadmin section create <name>");
             return;
         }
-        if (buildSite.getSections().stream().anyMatch(section -> section.name().equalsIgnoreCase(args[1]))) {
-            fPlayer.sendMessage(Component.translatable("factions.error.sectionExists", Component.text(args[1])));
+        String name = args[3];
+        if (buildSite.getSections().stream().anyMatch(section -> section.name().equalsIgnoreCase(name))) {
+            fPlayer.sendMessage(Component.translatable("factions.error.sectionExists", Component.text(name)));
             return;
         }
-        BuildSiteSection section = new BuildSiteSection(args[1], fPlayer.getPos1(), fPlayer.getPos2(), false);
+        BuildSiteSection section = new BuildSiteSection(name, fPlayer.getPos1(), fPlayer.getPos2(), false);
         buildSite.getSections().add(section);
-        fPlayer.sendMessage(Component.translatable("factions.cmd.building.section.created", Component.text(args[1])));
+        fPlayer.sendMessage(Component.translatable("factions.cmd.building.section.created", Component.text(name)));
     }
 
     private void deleteSection(FPlayer fPlayer, String[] args) {
@@ -74,17 +75,18 @@ public class BuildingSectionCommand extends FCommand {
         if (buildSite == null) {
             return;
         }
-        if (args.length < 2) {
-            fPlayer.sendMessage("/f building section delete <name>");
+        if (args.length < 4) {
+            fPlayer.sendMessage("/f buildingadmin section delete <name>");
             return;
         }
-        BuildSiteSection section = buildSite.getSections().stream().filter(s -> s.name().equalsIgnoreCase(args[1])).findFirst().orElse(null);
+        String name = args[3];
+        BuildSiteSection section = buildSite.getSections().stream().filter(s -> s.name().equalsIgnoreCase(name)).findFirst().orElse(null);
         if (section == null) {
-            fPlayer.sendMessage(Component.translatable("factions.error.sectionNotFound", Component.text(args[1])));
+            fPlayer.sendMessage(Component.translatable("factions.error.sectionNotFound", Component.text(name)));
             return;
         }
         buildSite.getSections().remove(section);
-        fPlayer.sendMessage(Component.translatable("factions.cmd.building.section.deleted", Component.text(args[1])));
+        fPlayer.sendMessage(Component.translatable("factions.cmd.building.section.deleted", Component.text(name)));
     }
 
     private void listSections(FPlayer fPlayer, String[] args) {
@@ -105,23 +107,25 @@ public class BuildingSectionCommand extends FCommand {
         if (buildSite == null) {
             return;
         }
-        if (args.length < 3) {
-            fPlayer.sendMessage("/f building section rename <oldName> <newName>");
+        if (args.length < 5) {
+            fPlayer.sendMessage("/f buildingadmin section rename <oldName> <newName>");
             return;
         }
-        BuildSiteSection section = buildSite.getSections().stream().filter(s -> s.name().equalsIgnoreCase(args[1])).findFirst().orElse(null);
+        String oldName = args[3];
+        String newName = args[4];
+        BuildSiteSection section = buildSite.getSections().stream().filter(s -> s.name().equalsIgnoreCase(oldName)).findFirst().orElse(null);
         if (section == null) {
-            fPlayer.sendMessage(Component.translatable("factions.error.sectionNotFound", Component.text(args[1])));
+            fPlayer.sendMessage(Component.translatable("factions.error.sectionNotFound", Component.text(oldName)));
             return;
         }
-        if (buildSite.getSections().stream().anyMatch(s -> s.name().equalsIgnoreCase(args[2]))) {
-            fPlayer.sendMessage(Component.translatable("factions.error.sectionExists", Component.text(args[2])));
+        if (buildSite.getSections().stream().anyMatch(s -> s.name().equalsIgnoreCase(newName))) {
+            fPlayer.sendMessage(Component.translatable("factions.error.sectionExists", Component.text(newName)));
             return;
         }
-        section = new BuildSiteSection(args[2], section.corner1(), section.corner2(), section.protectedSection());
-        buildSite.getSections().removeIf(s -> s.name().equalsIgnoreCase(args[1]));
+        section = new BuildSiteSection(newName, section.corner1(), section.corner2(), section.protectedSection());
+        buildSite.getSections().removeIf(s -> s.name().equalsIgnoreCase(oldName));
         buildSite.getSections().add(section);
-        fPlayer.sendMessage(Component.translatable("factions.cmd.building.section.renamed", Component.text(args[1]), Component.text(args[2])));
+        fPlayer.sendMessage(Component.translatable("factions.cmd.building.section.renamed", Component.text(oldName), Component.text(newName)));
     }
 
     private BuildSite getSite(FPlayer fPlayer) {

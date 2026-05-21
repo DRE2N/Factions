@@ -31,10 +31,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -53,7 +53,7 @@ public class BuildingManager implements Listener {
     private final List<Building> buildings = new CopyOnWriteArrayList<>();
     private final List<BuildSite> buildingTickets = new ArrayList<>();
 
-    private Queue<BuildingEffect> tickingEffects = new PriorityQueue<>();
+    private final Queue<BuildingEffect> tickingEffects = new ArrayDeque<>();
     private int effectsPerTick = 5;
 
     public BuildingManager(@NotNull File dir) {
@@ -130,10 +130,15 @@ public class BuildingManager implements Listener {
         BuildSite buildSite = getBuildSite(player.getTargetBlockExact(20), claimableRg);
         if (buildSite == null) {
             MessageUtil.sendMessage(player, "&cNot a build site.");
+            return;
         }
         buildSite.getRegion().getBuildSites().remove(buildSite);
         Faction owner = buildSite.getRegion().getOwner();
-        owner.getFactionBuildings().remove(buildSite);
+        if (owner != null) {
+            owner.getFactionBuildings().remove(buildSite);
+            owner.getBuildingEffects().removeIf(effect -> effect.getSite() == buildSite);
+            owner.getTickingBuildingEffects().removeIf(effect -> effect.getSite() == buildSite);
+        }
         MessageUtil.sendMessage(player, "&aBuildSite deleted.");
     }
 
@@ -157,7 +162,28 @@ public class BuildingManager implements Listener {
     }
 
     public boolean hasOverlap(@NotNull Location corner1, @NotNull Location corner2, @NotNull BuildSite existingSite) {
-        return existingSite.isInBuildSite(corner1) || existingSite.isInBuildSite(corner2);
+        if (!corner1.getWorld().equals(existingSite.getWorld()) || !corner2.getWorld().equals(existingSite.getWorld())) {
+            return false;
+        }
+        double minX = Math.min(corner1.getX(), corner2.getX());
+        double minY = Math.min(corner1.getY(), corner2.getY());
+        double minZ = Math.min(corner1.getZ(), corner2.getZ());
+        double maxX = Math.max(corner1.getX(), corner2.getX());
+        double maxY = Math.max(corner1.getY(), corner2.getY());
+        double maxZ = Math.max(corner1.getZ(), corner2.getZ());
+
+        Location existingCorner = existingSite.getCorner();
+        Location existingOtherCorner = existingSite.getOtherCorner();
+        double existingMinX = Math.min(existingCorner.getX(), existingOtherCorner.getX());
+        double existingMinY = Math.min(existingCorner.getY(), existingOtherCorner.getY());
+        double existingMinZ = Math.min(existingCorner.getZ(), existingOtherCorner.getZ());
+        double existingMaxX = Math.max(existingCorner.getX(), existingOtherCorner.getX());
+        double existingMaxY = Math.max(existingCorner.getY(), existingOtherCorner.getY());
+        double existingMaxZ = Math.max(existingCorner.getZ(), existingOtherCorner.getZ());
+
+        return minX <= existingMaxX && maxX >= existingMinX
+                && minY <= existingMaxY && maxY >= existingMinY
+                && minZ <= existingMaxZ && maxZ >= existingMinZ;
     }
 
     @Contract("null, _ -> null; !null, _ -> _")
@@ -174,6 +200,13 @@ public class BuildingManager implements Listener {
     }
 
     private void tickBuildingEffects() {
+        for (Faction faction : plugin.getFactionCache()) {
+            for (BuildingEffect effect : faction.getTickingBuildingEffects()) {
+                if (!tickingEffects.contains(effect)) {
+                    tickingEffects.add(effect);
+                }
+            }
+        }
         for (int i = 0; i < effectsPerTick; i++) {
             if (tickingEffects.isEmpty()) {
                 continue;
@@ -186,7 +219,9 @@ public class BuildingManager implements Listener {
                 continue;
             }
             effect.tick();
-            tickingEffects.add(effect); // Add it back to the queue for the next run
+            if (effect.getFaction().getTickingBuildingEffects().contains(effect)) {
+                tickingEffects.add(effect); // Add it back to the queue for the next run
+            }
         }
     }
 
@@ -245,33 +280,26 @@ public class BuildingManager implements Listener {
 
     public static List<Building> getUnlockedBuildingsForPlacement(FPlayer fPlayer, Faction faction, ClaimableRegion region) {
         List<Building> available = new ArrayList<>();
+        Map<String, Integer> builtCounts = new java.util.HashMap<>();
+        for (BuildSite site : faction.getFactionBuildings()) {
+            if (site.isActive() && site.isFinished()) {
+                builtCounts.merge(site.getBuilding().getId(), 1, Integer::sum);
+            }
+        }
+        for (BuildSite site : region.getBuildSites()) {
+            if (site.isActive() && site.isFinished()) {
+                builtCounts.merge(site.getBuilding().getId(), 1, Integer::sum);
+            }
+        }
         for (Building building : Factions.get().getBuildingManager().getBuildings()) {
-            if (building.getRequiredBuildings().isEmpty()) {
-                available.add(building);
-                continue;
-            }
-            Set<Building> factionBuildings = new HashSet<>();
-            for (BuildSite site : faction.getFactionBuildings()) {
-                if (site.isActive() && site.isFinished()) {
-                    factionBuildings.add(site.getBuilding());
-                }
-            }
-            for (BuildSite site : region.getBuildSites()) {
-                if (site.isActive() && site.isFinished()) {
-                    factionBuildings.add(site.getBuilding());
-                }
-            }
+            boolean unlocked = true;
             for (Map.Entry<String, Integer> entry : building.getRequiredBuildings().entrySet()) {
-                Building required = Factions.get().getBuildingManager().getById(entry.getKey());
-                int buildingsInFaction = 0;
-                for (Building factionBuilding : factionBuildings) {
-                    if (factionBuilding.getId().equals(required.getId())) {
-                        buildingsInFaction++;
-                    }
-                }
-                if (buildingsInFaction < entry.getValue()) {
+                if (builtCounts.getOrDefault(entry.getKey(), 0) < entry.getValue()) {
+                    unlocked = false;
                     break;
                 }
+            }
+            if (unlocked) {
                 available.add(building);
             }
         }

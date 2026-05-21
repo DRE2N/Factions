@@ -6,15 +6,13 @@ import org.bukkit.Location;
 public record BuildSiteSection(String name, Position corner1, Position corner2, boolean protectedSection) {
 
     public boolean contains(Position position) {
-        return position.x() >= corner1.x() && position.x() <= corner2.x() &&
-                position.y() >= corner1.y() && position.y() <= corner2.y() &&
-                position.z() >= corner1.z() && position.z() <= corner2.z();
+        return contains(position.x(), position.y(), position.z());
     }
 
     public boolean contains(double x, double y, double z) {
-        return x >= corner1.x() && x <= corner2.x() &&
-                y >= corner1.y() && y <= corner2.y() &&
-                z >= corner1.z() && z <= corner2.z();
+        return x >= Math.min(corner1.x(), corner2.x()) && x <= Math.max(corner1.x(), corner2.x()) &&
+                y >= Math.min(corner1.y(), corner2.y()) && y <= Math.max(corner1.y(), corner2.y()) &&
+                z >= Math.min(corner1.z(), corner2.z()) && z <= Math.max(corner1.z(), corner2.z());
     }
 
     public boolean contains(Location location) {

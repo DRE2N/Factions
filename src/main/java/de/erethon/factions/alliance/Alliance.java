@@ -312,7 +312,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     @Override
     public boolean matchingName(@NotNull String name) {
-        return super.matchingName(name) || this.name.equalsIgnoreCase(shortName);
+        return super.matchingName(name) || shortName != null && shortName.equalsIgnoreCase(name);
     }
 
     public double getWarScore() {

@@ -14,6 +14,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Villager;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Locale;
 import java.util.Random;
 
 public class AddHousing extends BuildingEffect {
@@ -22,12 +23,14 @@ public class AddHousing extends BuildingEffect {
     private final FactionAttribute attribute;
     private final double citizenSpawnChance;
     private final PopulationLevel level;
+    private final int amount;
 
     public AddHousing(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
-        this.level = PopulationLevel.valueOf(data.getString("level", "PEASANT").toUpperCase());
-        attribute = faction.getOrCreateAttribute("housing_" + data.getString("level"), 1.0);
-        modifier = new FactionAttributeModifier(data.getInt("amount", 0), AttributeModifier.Operation.ADD_NUMBER);
+        this.level = PopulationLevel.valueOf(data.getString("level", "PEASANT").toUpperCase(Locale.ROOT));
+        attribute = faction.getOrCreateAttribute("housing_" + level.name().toLowerCase(Locale.ROOT), 0.0);
+        amount = data.getInt("amount", 0);
+        modifier = new FactionAttributeModifier(amount, AttributeModifier.Operation.ADD_NUMBER);
         citizenSpawnChance = data.getDouble("citizenSpawnChance", 0.1);
     }
 
@@ -58,5 +61,13 @@ public class AddHousing extends BuildingEffect {
             Factions.log("Spawning citizen for faction " + faction.getName() + " at " + highestBlock + "(x + " + x + ", z + " + z + ")");
             new Citizen(faction, highestBlock, level);
         }
+    }
+
+    public PopulationLevel getLevel() {
+        return level;
+    }
+
+    public int getAmount() {
+        return amount;
     }
 }

@@ -2,7 +2,6 @@ package de.erethon.factions.command;
 
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.alliance.Alliance;
-import de.erethon.factions.building.TechTree;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
@@ -166,10 +165,6 @@ public class DebugCommand extends FCommand {
                 }
             };
             runnable.runTaskTimer(plugin, 0L, 0L);
-        }
-        if (args[1].equalsIgnoreCase("tech")) {
-            new TechTree().show((Player) sender);
-            MessageUtil.sendMessage(sender, "Tech tree?");
         }
         if (args[1].equalsIgnoreCase("pasteRegion")) {
             Region region = plugin.getRegionManager().getRegionByPlayer((Player) sender);

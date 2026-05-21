@@ -23,12 +23,12 @@ public class FStorage {
 
     public FStorage(@NotNull Faction faction) {
         this.faction = faction;
-        resourceLimits = Factions.get().getFConfig().getDefaultResourceLimits();
+        resourceLimits = new HashMap<>(Factions.get().getFConfig().getDefaultResourceLimits());
     }
 
     public FStorage(@NotNull Faction faction, @NotNull ConfigurationSection section) {
         this.faction = faction;
-        resourceLimits = Factions.get().getFConfig().getDefaultResourceLimits();
+        resourceLimits = new HashMap<>(Factions.get().getFConfig().getDefaultResourceLimits());
         for (String key : section.getKeys(false)) {
             Resource resource = Resource.getById(key);
             if (resource == null) {

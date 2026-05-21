@@ -2,13 +2,21 @@ package de.erethon.factions.economy;
 
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
+import de.erethon.factions.building.Building;
 import de.erethon.factions.building.BuildSite;
+import de.erethon.factions.building.BuildingEffect;
 import de.erethon.factions.building.attributes.FactionAttribute;
 import de.erethon.factions.building.attributes.FactionAttributeModifier;
 import de.erethon.factions.building.attributes.FactionResourceAttribute;
+import de.erethon.factions.building.effects.ResourceChainEffect;
 import de.erethon.factions.economy.population.HappinessModifier;
 import de.erethon.factions.economy.population.PopulationLevel;
 import de.erethon.factions.economy.population.entities.Revolutionary;
+import de.erethon.factions.economy.report.BuildingUnlockReport;
+import de.erethon.factions.economy.report.EconomyCycleReport;
+import de.erethon.factions.economy.report.PopulationLevelReport;
+import de.erethon.factions.economy.report.ProductionChainReport;
+import de.erethon.factions.economy.report.ResourceFlowReport;
 import de.erethon.factions.economy.resource.Resource;
 import de.erethon.factions.economy.resource.ResourceCategory;
 import de.erethon.factions.faction.Faction;
@@ -16,10 +24,14 @@ import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.util.FLogger;
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -49,6 +61,9 @@ public class FEconomy {
 
     private final static double MONEY_PER_CITIZEN = 10.0;
     private static final double VARIETY_BONUS_FACTOR = 0.01; // Bonus per distinct resource
+    private static final double POPULATION_GROWTH_HAPPINESS_THRESHOLD = 0.75;
+    private static final double POPULATION_GROWTH_HAPPINESS_EPSILON = 0.005;
+    private static final double POPULATION_GROWTH_RATE = 0.10;
     private static final double MAX_PERCENTAGE_TO_LEVEL_DOWN = 0.1; // Percentage of citizens that can level down in one cycle
     private static final double DEMOTION_EVENT_BASE_PENALTY_PER_CITIZEN = 0.1; // Base penalty for leveling down
     private static final double HAPPINESS_THRESHOLD_FOR_UNREST_DECAY = 0.6; // How high happiness needs to be to decay unrest
@@ -57,6 +72,7 @@ public class FEconomy {
     private static final double MAX_UNREST_FOR_PENALTY_CALC = 50.0; // Unrest beyond this value doesn't increase the penalty
     private static final double MAX_HAPPINESS_PENALTY_FROM_UNREST = 0.25; // Max happiness reduction (e.g., -0.25 happiness)
     private static final double UNREST_PENALTY_EFFECTIVENESS_THRESHOLD = 1.0;
+    private static final double MAX_UNREST_LEVEL = 30.0;
     public static final double REVOLT_THRESHOLD = 25.0; // Unrest level at which a revolt is triggered
     public final static double UNREST_SPAWN_MULTIPLIER = 1.2; // How many revolutionaries spawn per unrest point
     private static final int REVOLT_HOTSPOT_RADIUS = 1;
@@ -82,6 +98,21 @@ public class FEconomy {
      * Stores the last production values for each resource. This is mostly for user feedback.
      */
     private final Map<Resource, Double> lastProduction = new HashMap<>();
+    private EconomyCycleReport lastReport = new EconomyCycleReport();
+    private EconomyCycleReport currentReport = new EconomyCycleReport();
+    private final Map<Resource, Double> currentRawProduction = new EnumMap<>(Resource.class);
+    private final Map<Resource, Double> currentAcceptedProduction = new EnumMap<>(Resource.class);
+    private final Map<Resource, Double> currentLostProduction = new EnumMap<>(Resource.class);
+    private final Map<PopulationLevel, Map<Resource, Double>> currentRequiredConsumption = new EnumMap<>(PopulationLevel.class);
+    private final Map<PopulationLevel, Double> currentBaseSatisfaction = new EnumMap<>(PopulationLevel.class);
+    private final Map<PopulationLevel, Double> currentVarietyBonus = new EnumMap<>(PopulationLevel.class);
+    private final Map<PopulationLevel, Double> currentModifierBonus = new EnumMap<>(PopulationLevel.class);
+    private final Map<PopulationLevel, Double> currentTargetHappiness = new EnumMap<>(PopulationLevel.class);
+    private final Map<PopulationLevel, Double> currentTaxRevenue = new EnumMap<>(PopulationLevel.class);
+    private final Map<PopulationLevel, Integer> currentPromotions = new EnumMap<>(PopulationLevel.class);
+    private final Map<PopulationLevel, Integer> currentDemotions = new EnumMap<>(PopulationLevel.class);
+    private final Map<PopulationLevel, List<String>> currentLevelUpBlockers = new EnumMap<>(PopulationLevel.class);
+    private final Map<PopulationLevel, List<String>> currentLevelDownRisks = new EnumMap<>(PopulationLevel.class);
 
     /**
      * Constructs the economy system for a given faction.
@@ -95,9 +126,12 @@ public class FEconomy {
     }
 
     public void doEconomyCalculations() {
+        faction.setUnrestLevel(sanitizeUnrest(faction.getUnrestLevel()));
+        resetCycleState();
         // Reset all modifiers for the resources. Buildings will add their own modifiers in the payday cycle.
         for (Map.Entry<String, FactionAttribute> entry : faction.getAttributes().entrySet()) {
             if (entry.getValue() instanceof FactionResourceAttribute attribute) {
+                attribute.setBaseValue(0.0);
                 Set<FactionAttributeModifier> toRemove = new HashSet<>();
                 for (FactionAttributeModifier modifier : attribute.getModifiers()) {
                     if (modifier.isPaydayPersistent()) {
@@ -117,9 +151,16 @@ public class FEconomy {
                 Resource resource = attribute.getResource();
                 double factor = faction.getAttributeValue("production_rate", 1.0);
                 double amount = attribute.apply().getValue() * factor;
+                int before = storage.getResource(resource);
                 storage.addResource(resource, (int) amount);
-                lastProduction.put(resource, amount);
-                FLogger.ECONOMY.log("[" + faction.getName() + "] Received/Lost " + amount + " of " + resource.name());
+                int after = storage.getResource(resource);
+                double accepted = after - before;
+                double lost = Math.max(0, amount - accepted);
+                lastProduction.put(resource, accepted);
+                currentRawProduction.put(resource, amount);
+                currentAcceptedProduction.put(resource, accepted);
+                currentLostProduction.put(resource, lost);
+                FLogger.ECONOMY.log("[" + faction.getName() + "] Produced " + amount + " of " + resource.name() + " (accepted " + accepted + ", lost " + lost + ")");
             }
         }
 
@@ -128,6 +169,37 @@ public class FEconomy {
         calculateTaxRevenue();
         calculatePopulationLevels();
         calculateFactionLevel();
+        evaluateHousingUpgradeReadiness();
+        buildCycleReport();
+        lastReport = currentReport;
+        faction.saveData();
+    }
+
+    private void resetCycleState() {
+        lastProduction.clear();
+        lastConsumption.clear();
+        resourceSatisfaction.clear();
+        currentReport = new EconomyCycleReport();
+        currentReport.unrestBefore(faction.getUnrestLevel());
+        currentRawProduction.clear();
+        currentAcceptedProduction.clear();
+        currentLostProduction.clear();
+        currentRequiredConsumption.clear();
+        currentBaseSatisfaction.clear();
+        currentVarietyBonus.clear();
+        currentModifierBonus.clear();
+        currentTargetHappiness.clear();
+        currentTaxRevenue.clear();
+        currentPromotions.clear();
+        currentDemotions.clear();
+        currentLevelUpBlockers.clear();
+        currentLevelDownRisks.clear();
+        for (PopulationLevel level : PopulationLevel.values()) {
+            currentLevelUpBlockers.put(level, new ArrayList<>());
+            currentLevelDownRisks.put(level, new ArrayList<>());
+            currentPromotions.put(level, 0);
+            currentDemotions.put(level, 0);
+        }
     }
 
     /**
@@ -161,12 +233,14 @@ public class FEconomy {
         for (PopulationLevel level : PopulationLevel.values()) {
             int currentPop = faction.getPopulation(level);
             Map<Resource, Double> satisfactionMap = new HashMap<>();
+            Map<Resource, Double> requiredMap = new HashMap<>();
             for (Resource resource : level.getResources()) {
                 double consumptionPerPop = level.getResourceConsumption(resource).consumptionPerPop();
                 double required = consumptionPerPop * currentPop;
                 double available = storage.getResource(resource);
                 double satisfaction = (required > 0) ? Math.min(1.0, available / required) : 1.0;
                 satisfactionMap.put(resource, satisfaction);
+                requiredMap.put(resource, required);
                 // Consume resource up to the required amount
                 storage.removeResource(resource, (int) Math.min(available, required));
                 lastConsumption.computeIfAbsent(level, k -> new HashMap<>()).put(resource, Math.min(available, required));
@@ -175,6 +249,7 @@ public class FEconomy {
                         + " population. Satisfaction: " + satisfaction + " Available: " + available + " / Required: " + required);
             }
             resourceSatisfaction.put(level, satisfactionMap);
+            currentRequiredConsumption.put(level, requiredMap);
         }
     }
 
@@ -254,6 +329,10 @@ public class FEconomy {
             }
 
             double finalHappiness = Math.max(0.0, Math.min(1.0, rawHappiness));
+            currentBaseSatisfaction.put(level, baseSatisfaction);
+            currentVarietyBonus.put(level, totalVarietyBonus);
+            currentModifierBonus.put(level, additionalModifiers);
+            currentTargetHappiness.put(level, finalHappiness);
 
             double currentHappiness = faction.getHappiness(level);
             double newHappiness = currentHappiness + (finalHappiness - currentHappiness) * 0.25; // Slow change so it doesn't spike too much
@@ -292,6 +371,7 @@ public class FEconomy {
 
             double revenue = population * MONEY_PER_CITIZEN * happinessForTax;
             totalTaxRevenue += revenue;
+            currentTaxRevenue.put(level, revenue);
             if (Double.isNaN(totalTaxRevenue)) {
                 FLogger.ECONOMY.log(String.format("[%s] Total tax revenue became NaN. Setting to 0.", faction.getName()));
                 totalTaxRevenue = 0.0;
@@ -306,6 +386,7 @@ public class FEconomy {
                     revenue));
         }
         faction.getFAccount().deposit((int) totalTaxRevenue, TAX_CURRENCY, "Tax revenue for " + faction.getName(), null);
+        currentReport.totalTaxRevenue(totalTaxRevenue);
         FLogger.ECONOMY.log(String.format("[%s] Collected %.2f money in taxes.",
                 faction.getName(),
                 totalTaxRevenue));
@@ -347,7 +428,9 @@ public class FEconomy {
      * </p>
      */
     private void calculatePopulationLevels() {
-        double totalUnrest = faction.getUnrestLevel();
+        double startingUnrest = sanitizeUnrest(faction.getUnrestLevel());
+        double unrestDelta = 0.0;
+        growPopulationIntoAvailableHousing();
         for (PopulationLevel level : PopulationLevel.values()) {
             int initialPopAtThisLevel = faction.getPopulation(level);
             if (initialPopAtThisLevel == 0) {
@@ -372,13 +455,15 @@ public class FEconomy {
 
                     if (housingCapacityInNextLevel == 0) {
                         canPotentiallyLevelUp = false;
+                        addLevelUpBlocker(level, "housing");
                         FLogger.ECONOMY.log("[" + faction.getName() + "] No housing capacity in " + nextLevel.name() + " for " + level.name() + " to level up. Needed for pop > " + popInNextLevel + ", available stock: " + housingStockNextLevel);
                     }
 
                     // 2. Check General Faction/Level Prerequisites
-                    if (canPotentiallyLevelUp && !level.canLevelUp(storage)) {
+                    if (canPotentiallyLevelUp && !nextLevel.canLevelUp(storage)) {
                         canPotentiallyLevelUp = false;
-                        FLogger.ECONOMY.log("[" + faction.getName() + "] Level " + level.name() + " does not meet general criteria to level up its population (checked by " + level.name() + ".canLevelUp()).");
+                        addLevelUpBlocker(level, "prerequisites");
+                        FLogger.ECONOMY.log("[" + faction.getName() + "] Level " + level.name() + " does not meet target-level criteria to level up into " + nextLevel.name() + ".");
                     }
 
                     // 3. Determine Resource-Based Support Capacity for the Next Level
@@ -400,6 +485,7 @@ public class FEconomy {
                                 // Check 1: Absolute minimum amount of this resource required in storage
                                 if (!storage.canAfford(resource, (int) minimumInStorageToLevelUp)) {
                                     canPotentiallyLevelUp = false;
+                                    addLevelUpBlocker(level, "resource:" + resource.getId());
                                     FLogger.ECONOMY.log("[" + faction.getName() + "] Cannot level up to " + nextLevel.name() + ": Insufficient " + resource.name() + " (need " + minimumInStorageToLevelUp + ", have " + storage.getResource(resource) + ").");
                                     break; // Stop checking other resources if one critical minimum is not met
                                 }
@@ -417,6 +503,7 @@ public class FEconomy {
 
                     if (canPotentiallyLevelUp && popSupportedByNextLevelResources == 0 && !nextLevel.getResources().isEmpty()) {
                         // This means minimums were met, but current stock vs consumption supports 0 new pops.
+                        addLevelUpBlocker(level, "sustain_resources");
                         FLogger.ECONOMY.log("[" + faction.getName() + "] Resources for " + nextLevel.name() + " meet minimums, but cannot sustain any new population based on current stock and consumption rates.");
                         canPotentiallyLevelUp = false; // Cannot sustain anyone new
                     }
@@ -436,9 +523,10 @@ public class FEconomy {
                         if (numToLevelUp > 0) {
                             faction.getPopulation().put(level, currentPopTryingToLevelUp - numToLevelUp);
                             faction.getPopulation().put(nextLevel, popInNextLevel + numToLevelUp);
+                            currentPromotions.put(level, currentPromotions.getOrDefault(level, 0) + numToLevelUp);
 
                             double unrestImpactFromTierChange = numToLevelUp * (nextLevel.getUnrestMultiplier() - level.getUnrestMultiplier());
-                            totalUnrest += unrestImpactFromTierChange;
+                            unrestDelta += unrestImpactFromTierChange;
 
                             FLogger.ECONOMY.log(String.format("[%s] Leveled up %d from %s (remaining: %d) to %s (total: %d). Unrest change: %.2f",
                                     faction.getName(), numToLevelUp,
@@ -462,6 +550,7 @@ public class FEconomy {
                 double levelDownThreshold = 0.15;
                 if (happiness < levelDownThreshold) {
                     needsToLevelDown = true;
+                    addLevelDownRisk(level, "low_happiness");
                     double severity = (levelDownThreshold - happiness) / levelDownThreshold; // Ranges from 0 (basically fine) to 1 (at 0 happiness)
 
                     popToLevelDown = (int) Math.ceil(currentPopForLevelDown * severity * MAX_PERCENTAGE_TO_LEVEL_DOWN);
@@ -473,12 +562,13 @@ public class FEconomy {
                 if (needsToLevelDown && popToLevelDown > 0) {
                     faction.getPopulation().put(level, currentPopForLevelDown - popToLevelDown);
                     faction.getPopulation().put(previousLevel, faction.getPopulation(previousLevel) + popToLevelDown);
+                    currentDemotions.put(level, currentDemotions.getOrDefault(level, 0) + popToLevelDown);
 
                     double unrestImpactFromTierChange = popToLevelDown * (previousLevel.getUnrestMultiplier() - level.getUnrestMultiplier());
                     double demotionEventPenalty = popToLevelDown * DEMOTION_EVENT_BASE_PENALTY_PER_CITIZEN;
 
                     double totalUnrestChangeFromDemotion = unrestImpactFromTierChange + demotionEventPenalty;
-                    totalUnrest += totalUnrestChangeFromDemotion;
+                    unrestDelta += totalUnrestChangeFromDemotion;
 
                     FLogger.ECONOMY.log(String.format("[%s] Leveled down %d from %s (remaining: %d) to %s (total: %d) due to low happiness (%.2f). Unrest change: +%.2f (TierShift: %.2f, EventPenalty: %.2f)",
                             faction.getName(), popToLevelDown,
@@ -489,23 +579,24 @@ public class FEconomy {
             }
         }
 
-        totalUnrest = Math.max(0, totalUnrest); // Unrest should not be negative
-        totalUnrest = totalUnrest * faction.getAttributeValue("unrest_multiplier", 1.0); // Apply faction-wide unrest modifier
+        double totalUnrest = startingUnrest + (unrestDelta * faction.getAttributeValue("unrest_multiplier", 1.0));
+        totalUnrest = sanitizeUnrest(totalUnrest);
         faction.setUnrestLevel(totalUnrest);
 
         // Decay after calculating the new unrest level
         applyUnrestDecay();
         totalUnrest = faction.getUnrestLevel();
+        currentReport.unrestAfter(totalUnrest);
 
         // Spawn Revolt if unrest is significant
         if (totalUnrest > REVOLT_THRESHOLD) {
-            int revoltAttempts = (int) Math.ceil(totalUnrest * UNREST_SPAWN_MULTIPLIER);
+            int revoltAttempts = Math.min(100, (int) Math.ceil(Math.min(totalUnrest, MAX_UNREST_LEVEL) * UNREST_SPAWN_MULTIPLIER));
             if (revoltAttempts > 0) {
                 FLogger.ECONOMY.log(String.format("[%s] High unrest (%.2f), attempting to spawn revolt with %d attempts.",
                         faction.getName(),
                         totalUnrest,
                         revoltAttempts));
-                spawnRevolt(faction, Math.min(revoltAttempts, 100));
+                spawnRevolt(faction, revoltAttempts);
             }
         } else if (totalUnrest > 0) {
             FLogger.ECONOMY.log(String.format("[%s] Current unrest level is %.2f (below revolt threshold of %.2f).",
@@ -520,8 +611,9 @@ public class FEconomy {
      * Unrest decays by a percentage of its current value, influenced by overall happiness.
      */
     private void applyUnrestDecay() {
-        double currentUnrest = faction.getUnrestLevel();
+        double currentUnrest = sanitizeUnrest(faction.getUnrestLevel());
         if (currentUnrest <= 0) {
+            faction.setUnrestLevel(0);
             return;
         }
 
@@ -549,7 +641,7 @@ public class FEconomy {
             decayRate *= faction.getAttributeValue("unrest_decay_modifier", 1.0);
 
             double amountToDecay = currentUnrest * decayRate;
-            double newUnrest = Math.max(0, currentUnrest - amountToDecay); // Ensure unrest doesn't go negative
+            double newUnrest = sanitizeUnrest(currentUnrest - amountToDecay);
 
             if (newUnrest < currentUnrest) {
                 faction.setUnrestLevel(newUnrest);
@@ -560,9 +652,17 @@ public class FEconomy {
                         newUnrest));
             }
         } else {
+            faction.setUnrestLevel(currentUnrest);
             FLogger.ECONOMY.log(String.format("[%s] Unrest did not decay. Average happiness (%.2f) is below threshold (%.2f).",
                     faction.getName(), averageHappiness, HAPPINESS_THRESHOLD_FOR_UNREST_DECAY));
         }
+    }
+
+    private double sanitizeUnrest(double unrest) {
+        if (Double.isNaN(unrest) || Double.isInfinite(unrest)) {
+            return MAX_UNREST_LEVEL;
+        }
+        return Math.max(0.0, Math.min(MAX_UNREST_LEVEL, unrest));
     }
 
     /**
@@ -576,6 +676,40 @@ public class FEconomy {
                 FLogger.ECONOMY.log("[" + faction.getName() + "] Leveled up to " + level.name());
             }
         }
+    }
+
+    private void evaluateHousingUpgradeReadiness() {
+        List<BuildSite> readyCandidates = new ArrayList<>();
+        for (BuildSite site : faction.getFactionBuildings()) {
+            if (!site.isActive() || !site.isFinished() || site.isUpgradeReady() || site.isUpgradeInProgress() || site.getUpgradeConfig() == null) {
+                continue;
+            }
+            if (site.getHousingEffect() == null) {
+                continue;
+            }
+            Building target = Factions.get().getBuildingManager().getById(site.getUpgradeConfig().targetBuildingId());
+            var targetHousing = target == null ? null : site.getConfiguredHousingEffect(target);
+            if (targetHousing == null) {
+                site.resetUpgradeSatisfiedPaydays();
+                continue;
+            }
+            PopulationLevel targetLevel = targetHousing.getLevel();
+            if (targetLevel.canLevelUp(storage)) {
+                site.markUpgradeSatisfiedPayday();
+                if (site.getUpgradeSatisfiedPaydays() >= site.getUpgradeRequiredSatisfiedPaydays()) {
+                    readyCandidates.add(site);
+                }
+            } else {
+                site.resetUpgradeSatisfiedPaydays();
+            }
+        }
+        if (readyCandidates.isEmpty()) {
+            return;
+        }
+        Collections.shuffle(readyCandidates, new Random());
+        BuildSite selected = readyCandidates.get(0);
+        selected.markUpgradeReady();
+        FLogger.ECONOMY.log("[" + faction.getName() + "] Housing upgrade ready at " + selected.getBuilding().getId() + " build site " + selected.getUUIDString());
     }
 
     /**
@@ -606,6 +740,146 @@ public class FEconomy {
         happinessModifiers.remove(modifier);
     }
 
+    private void growPopulationIntoAvailableHousing() {
+        for (PopulationLevel level : PopulationLevel.values()) {
+            int population = faction.getPopulation(level);
+            int housing = (int) faction.getAttributeValue("housing_" + level.name().toLowerCase(), 0);
+            int availableHousing = housing - population;
+            if (availableHousing <= 0) {
+                continue;
+            }
+            double happiness = faction.getHappiness(level);
+            if (population > 0 && happiness + POPULATION_GROWTH_HAPPINESS_EPSILON < POPULATION_GROWTH_HAPPINESS_THRESHOLD) {
+                FLogger.ECONOMY.log(String.format("[%s] %s population did not grow: happiness %.2f below %.2f.",
+                        faction.getName(), level.name(), happiness, POPULATION_GROWTH_HAPPINESS_THRESHOLD));
+                continue;
+            }
+            if (!hasCurrentLevelNeedsForGrowth(level)) {
+                FLogger.ECONOMY.log("[" + faction.getName() + "] " + level.name() + " population did not grow: current needs are not satisfied.");
+                continue;
+            }
+            int baseline = Math.max(10, population);
+            int growth = Math.max(1, (int) Math.ceil(baseline * POPULATION_GROWTH_RATE));
+            growth = Math.min(growth, availableHousing);
+            faction.getPopulation().put(level, population + growth);
+            FLogger.ECONOMY.log("[" + faction.getName() + "] Grew " + level.name() + " population by " + growth + " into available housing (" + (population + growth) + "/" + housing + ").");
+        }
+    }
+
+    private boolean hasCurrentLevelNeedsForGrowth(@NotNull PopulationLevel level) {
+        for (Resource resource : level.getResources()) {
+            if (resourceSatisfaction.getOrDefault(level, Map.of()).getOrDefault(resource, 0.0) < 1.0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void addLevelUpBlocker(@NotNull PopulationLevel level, @NotNull String blocker) {
+        currentLevelUpBlockers.computeIfAbsent(level, ignored -> new ArrayList<>());
+        if (!currentLevelUpBlockers.get(level).contains(blocker)) {
+            currentLevelUpBlockers.get(level).add(blocker);
+        }
+    }
+
+    private void addLevelDownRisk(@NotNull PopulationLevel level, @NotNull String risk) {
+        currentLevelDownRisks.computeIfAbsent(level, ignored -> new ArrayList<>());
+        if (!currentLevelDownRisks.get(level).contains(risk)) {
+            currentLevelDownRisks.get(level).add(risk);
+        }
+    }
+
+    private void buildCycleReport() {
+        Map<Resource, Double> buildingConsumption = new EnumMap<>(Resource.class);
+        for (BuildSite site : faction.getFactionBuildings()) {
+            Map<Resource, Integer> inputs = new EnumMap<>(Resource.class);
+            Map<Resource, Integer> outputs = new EnumMap<>(Resource.class);
+            for (BuildingEffect effect : site.getEffects()) {
+                if (effect instanceof ResourceChainEffect chainEffect) {
+                    chainEffect.getConsumedResources().forEach((resource, amount) -> inputs.merge(resource, amount, Integer::sum));
+                    chainEffect.getProducedResources().forEach((resource, amount) -> outputs.merge(resource, amount, Integer::sum));
+                }
+            }
+            if (!inputs.isEmpty() || !outputs.isEmpty()) {
+                currentReport.productionChains().add(new ProductionChainReport(
+                        site.getBuilding().getId(),
+                        site.hasResourceInputsAvailable(),
+                        Map.copyOf(inputs),
+                        Map.copyOf(outputs)
+                ));
+                if (site.hasResourceInputsAvailable()) {
+                    inputs.forEach((resource, amount) -> buildingConsumption.merge(resource, (double) amount, Double::sum));
+                }
+            }
+        }
+        for (Resource resource : Resource.values()) {
+            double consumed = getLastTotalConsumption(resource) + buildingConsumption.getOrDefault(resource, 0.0);
+            double accepted = currentAcceptedProduction.getOrDefault(resource, 0.0);
+            double raw = currentRawProduction.getOrDefault(resource, 0.0);
+            double lost = currentLostProduction.getOrDefault(resource, 0.0);
+            currentReport.resources().put(resource, new ResourceFlowReport(
+                    resource,
+                    storage.getResource(resource),
+                    storage.getResourceLimit(resource),
+                    raw,
+                    accepted,
+                    lost,
+                    consumed,
+                    accepted - consumed,
+                    storage.isFull(resource)
+            ));
+        }
+
+        for (PopulationLevel level : PopulationLevel.values()) {
+            int housing = (int) faction.getAttributeValue("housing_" + level.name().toLowerCase(), 0);
+            currentReport.population().put(level, new PopulationLevelReport(
+                    level,
+                    faction.getPopulation(level),
+                    housing,
+                    faction.getHappiness(level),
+                    currentTargetHappiness.getOrDefault(level, 0.0),
+                    currentBaseSatisfaction.getOrDefault(level, 0.0),
+                    currentVarietyBonus.getOrDefault(level, 0.0),
+                    currentModifierBonus.getOrDefault(level, 0.0),
+                    currentTaxRevenue.getOrDefault(level, 0.0),
+                    currentPromotions.getOrDefault(level, 0),
+                    currentDemotions.getOrDefault(level, 0),
+                    Map.copyOf(currentRequiredConsumption.getOrDefault(level, Map.of())),
+                    Map.copyOf(lastConsumption.getOrDefault(level, Map.of())),
+                    Map.copyOf(resourceSatisfaction.getOrDefault(level, Map.of())),
+                    List.copyOf(currentLevelUpBlockers.getOrDefault(level, List.of())),
+                    List.copyOf(currentLevelDownRisks.getOrDefault(level, List.of()))
+            ));
+        }
+
+        for (Building building : Factions.get().getBuildingManager().getBuildings()) {
+            List<String> blockers = getBuildingUnlockBlockers(building);
+            boolean built = building.isBuilt(faction);
+            currentReport.buildings().put(building.getId(), new BuildingUnlockReport(
+                    building.getId(),
+                    built,
+                    blockers.isEmpty(),
+                    blockers
+            ));
+        }
+    }
+
+    private @NotNull List<String> getBuildingUnlockBlockers(@NotNull Building building) {
+        List<String> blockers = new ArrayList<>();
+        if (!building.hasRequiredBuildings(faction)) {
+            blockers.add("required_building");
+        }
+        if (!building.canPay(faction)) {
+            blockers.add("resources");
+        }
+        for (Map.Entry<PopulationLevel, Integer> entry : building.getRequiredPopulation().entrySet()) {
+            if (faction.getPopulation(entry.getKey()) < entry.getValue()) {
+                blockers.add("population:" + entry.getKey().name().toLowerCase());
+            }
+        }
+        return blockers;
+    }
+
     public  Map<PopulationLevel, Map<Resource, Double>> getResourceSatisfaction() {
         if (resourceSatisfaction.isEmpty()) {
             for (PopulationLevel level : PopulationLevel.values()) {
@@ -613,6 +887,10 @@ public class FEconomy {
             }
         }
         return resourceSatisfaction;
+    }
+
+    public @NotNull EconomyCycleReport getLastReport() {
+        return lastReport;
     }
 
     /**

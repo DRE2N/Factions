@@ -32,7 +32,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.print.attribute.IntegerSyntax;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,6 +71,7 @@ public class Building {
     private final Set<BuildingEffectData> effects = new HashSet<>();
     private final Set<String> requiredSections = new HashSet<>();
     private final Set<Material> blocksOfInterest = new HashSet<>();
+    private @Nullable BuildingUpgradeConfig upgradeConfig;
     private FactionLevel requiredLevel = FactionLevel.HAMLET;
     private Material icon = Material.CHEST;
 
@@ -412,6 +412,10 @@ public class Building {
         return blocksOfInterest;
     }
 
+    public @Nullable BuildingUpgradeConfig getUpgradeConfig() {
+        return upgradeConfig;
+    }
+
     public @NotNull Material getIcon() {
         return icon;
     }
@@ -451,7 +455,7 @@ public class Building {
         isUnique = config.getBoolean("unique", false);
         allowOverlap = config.getBoolean("allowOverlap", false);
         size = config.getInt("size");
-        requiredLevel = FactionLevel.valueOf(config.getString("requiredLevel", "HAMLET"));
+        requiredLevel = parseEnum(FactionLevel.class, config.getString("requiredLevel", "HAMLET"), FactionLevel.HAMLET, "requiredLevel");
         if (config.contains("requiredBuildings")) {
             Set<String> cfgList = config.getConfigurationSection("requiredBuildings").getKeys(false);
             for (String s : cfgList) {
@@ -477,26 +481,34 @@ public class Building {
         if (config.contains("requiredBlocks")) {
             Set<String> cfgList = config.getConfigurationSection("requiredBlocks").getKeys(false);
             for (String s : cfgList) {
-                BuildingTagManager tagManager = plugin.getBuildingManager().getTagManager();
-                if (tagManager.isValidTag(s.toUpperCase())) {
-                    FSetTag tag = tagManager.getTag(s.toUpperCase());
-                    int amount = config.getInt("requiredBlocks." + s);
-                    requiredBlocks.add(new BlockRequirement(tag, amount));
-                    continue;
+                parseBlockRequirement("requiredBlocks", s, requiredBlocks);
+            }
+        }
+        if (config.contains("upgrade")) {
+            ConfigurationSection upgradeSection = config.getConfigurationSection("upgrade");
+            if (upgradeSection != null) {
+                String targetBuilding = upgradeSection.getString("targetBuilding");
+                if (targetBuilding == null || targetBuilding.isBlank()) {
+                    FLogger.ERROR.log("Building " + id + " has an upgrade section without upgrade.targetBuilding");
+                } else {
+                    List<BlockRequirement> upgradeRequiredBlocks = new ArrayList<>();
+                    ConfigurationSection requiredUpgradeBlocks = upgradeSection.getConfigurationSection("requiredBlocks");
+                    if (requiredUpgradeBlocks != null) {
+                        for (String key : requiredUpgradeBlocks.getKeys(false)) {
+                            parseBlockRequirement("upgrade.requiredBlocks", key, upgradeRequiredBlocks);
+                        }
+                    }
+                    upgradeConfig = new BuildingUpgradeConfig(targetBuilding, upgradeSection.getInt("requiredSatisfiedPaydays", 3), upgradeRequiredBlocks);
                 }
-                Material material = Material.getMaterial(s.toUpperCase());
-                if (material == null) {
-                    FLogger.ERROR.log("Invalid material in requiredBlocks for building " + id + ": " + s);
-                    continue;
-                }
-                int amount = config.getInt("requiredBlocks." + s);
-                requiredBlocks.add(new BlockRequirement(material, amount));
             }
         }
         if (config.contains("unlockCost")) {
             Set<String> cfgList = config.getConfigurationSection("unlockCost").getKeys(false);
             for (String s : cfgList) {
-                Resource resource = Resource.getById(s.toUpperCase());
+                Resource resource = parseEnum(Resource.class, s, null, "unlockCost");
+                if (resource == null) {
+                    continue;
+                }
                 int mod = config.getInt("unlockCost." + s);
                 unlockCost.put(resource, mod);
             }
@@ -504,7 +516,10 @@ public class Building {
         if (config.contains("requiredPopulation")) {
             Set<String> cfgList = config.getConfigurationSection("requiredPopulation").getKeys(false);
             for (String s : cfgList) {
-                PopulationLevel level = PopulationLevel.valueOf(s.toUpperCase());
+                PopulationLevel level = parseEnum(PopulationLevel.class, s, null, "requiredPopulation");
+                if (level == null) {
+                    continue;
+                }
                 int mod = config.getInt("requiredPopulation." + s);
                 requiredPopulation.put(level, mod);
             }
@@ -512,7 +527,10 @@ public class Building {
         if (config.contains("requiredRegionTypes")) {
             Set<String> cfgList = config.getConfigurationSection("requiredRegionTypes").getKeys(false);
             for (String s : cfgList) {
-                RegionType type = RegionType.valueOf(s.toUpperCase());
+                RegionType type = parseEnum(RegionType.class, s, null, "requiredRegionTypes");
+                if (type == null) {
+                    continue;
+                }
                 requiredRegionTypes.add(type);
             }
         }
@@ -523,6 +541,14 @@ public class Building {
                     try {
                         ConfigurationSection section = effectsParentSection.getConfigurationSection(effectKey);
                         BuildingEffectData effect = new BuildingEffectData(section, effectKey);
+                        if (effect.getId().equals("BlockDependentResourceProduction") && effect.getConfigurationSection("blockModifiers") != null) {
+                            for (String materialKey : effect.getConfigurationSection("blockModifiers").getKeys(false)) {
+                                Material material = Material.matchMaterial(materialKey);
+                                if (material != null) {
+                                    blocksOfInterest.add(material);
+                                }
+                            }
+                        }
                         FLogger.BUILDING.log("Loaded effect data " + effect + " with parentSection " + effectsParentSection.getCurrentPath() + " and key " + effectKey);
                         effects.add(effect);
                     } catch (Exception e) {
@@ -539,8 +565,36 @@ public class Building {
         FLogger.BUILDING.log("Effects: " + effects);
     }
 
+    private void parseBlockRequirement(@NotNull String path, @NotNull String key, @NotNull List<BlockRequirement> target) {
+        BuildingTagManager tagManager = manager.getTagManager();
+        int amount = config.getInt(path + "." + key);
+        if (tagManager.isValidTag(key.toUpperCase())) {
+            FSetTag tag = tagManager.getTag(key.toUpperCase());
+            target.add(new BlockRequirement(tag, amount));
+            return;
+        }
+        Material material = Material.getMaterial(key.toUpperCase());
+        if (material == null) {
+            FLogger.ERROR.log("Invalid material in " + path + " for building " + id + ": " + key);
+            return;
+        }
+        target.add(new BlockRequirement(material, amount));
+    }
+
     public void save() {
 
+    }
+
+    private <E extends Enum<E>> @Nullable E parseEnum(@NotNull Class<E> enumClass, @Nullable String value, @Nullable E fallback, @NotNull String path) {
+        if (value == null) {
+            return fallback;
+        }
+        try {
+            return Enum.valueOf(enumClass, value.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            FLogger.ERROR.log("Invalid " + path + " value in building " + id + ": " + value);
+            return fallback;
+        }
     }
 
 }

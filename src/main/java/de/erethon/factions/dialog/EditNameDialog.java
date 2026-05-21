@@ -25,26 +25,26 @@ public class EditNameDialog {
             return;
         }
         Dialog dialog =  Dialog.create(builder -> builder.empty()
-                .base(DialogBase.builder(Component.translatable("factions.dialog.edit_name.title"))
+                .base(DialogBase.builder(FDialogFactory.localize(player, Component.translatable("factions.dialog.edit_name.title")))
                         .body(List.of(
                                 DialogBody.plainMessage(
-                                        Component.translatable("factions.dialog.edit_name.hint")
+                                        FDialogFactory.localize(player, Component.translatable("factions.dialog.edit_name.hint"))
                                 )
                         ))
                         .inputs(Arrays.asList(
-                                DialogInput.text("name", Component.translatable("factions.dialog.edit_name.input.name"))
+                                DialogInput.text("name", FDialogFactory.localize(player, Component.translatable("factions.dialog.edit_name.input.name")))
                                         .initial(faction.getName())
                                         .build(),
-                                DialogInput.text("short_name", Component.translatable("factions.dialog.edit_name.input.short_name"))
+                                DialogInput.text("short_name", FDialogFactory.localize(player, Component.translatable("factions.dialog.edit_name.input.short_name")))
                                         .initial(faction.getShortName() != null ? faction.getShortName() : "")
                                         .build(),
-                                DialogInput.text("long_name", Component.translatable("factions.dialog.edit_name.input.long_name"))
+                                DialogInput.text("long_name", FDialogFactory.localize(player, Component.translatable("factions.dialog.edit_name.input.long_name")))
                                         .initial(faction.getLongName() != null ? faction.getLongName() : "")
                                         .build()
                         ))
                         .build()
                 )
-                .type(DialogType.notice(ActionButton.builder(Component.translatable("factions.dialog.edit_name.button.save"))
+                .type(DialogType.notice(ActionButton.builder(FDialogFactory.localize(player, Component.translatable("factions.dialog.edit_name.button.save")))
                         .action(DialogAction.customClick((response, audience) -> {
                                     faction.setName(response.getText("name"));
                                     faction.setShortName(response.getText("short_name"));

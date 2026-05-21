@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 
 public class PopulationGUI extends EconomyGUI {
 
+    private final java.util.Map<Integer, PopulationLevel> levelSlots = new java.util.HashMap<>();
+
     public PopulationGUI(Player player, Faction faction) {
         this.player = player;
         this.faction = faction;
@@ -71,6 +73,7 @@ public class PopulationGUI extends EconomyGUI {
             );
 
             inventory.setItem(slot++, item);
+            levelSlots.put(slot - 1, level);
         }
 
         // Back button
@@ -86,6 +89,11 @@ public class PopulationGUI extends EconomyGUI {
         event.setCancelled(true);
         if (event.getSlot() == 26) {
             new EconomyGUI(player, faction).open();
+            return;
+        }
+        PopulationLevel level = levelSlots.get(event.getSlot());
+        if (level != null) {
+            EconomyDialogs.showPopulation(player, faction, level);
         }
     }
 }

@@ -17,7 +17,7 @@ public class BuildingAdminCommand extends FCommand {
         setAliases("ba");
         setPermission("factions.buildingadmin");
         setPlayerCommand(true);
-        setMaxArgs(3);
+        setMaxArgs(5);
         setFUsage("/f buildingadmin");
         setDescription("...");
         addSubCommand(new BuildingSectionCommand());

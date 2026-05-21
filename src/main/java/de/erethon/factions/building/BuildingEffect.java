@@ -2,6 +2,7 @@ package de.erethon.factions.building;
 
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
+import net.kyori.adventure.text.Component;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -9,6 +10,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -74,6 +76,22 @@ public class BuildingEffect {
     }
 
     public void onChunkUnload() {
+    }
+
+    public @NotNull Set<BuildingContainerType> getRequiredContainers() {
+        return Set.of();
+    }
+
+    public @NotNull List<Component> getStatusLines() {
+        return List.of();
+    }
+
+    public @NotNull List<Component> getDetailLines() {
+        return getStatusLines();
+    }
+
+    public @NotNull Component getDisplayName() {
+        return data.getDisplayName();
     }
 
     public @NotNull BuildSite getSite() {

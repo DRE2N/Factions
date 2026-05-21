@@ -173,11 +173,15 @@ public enum PopulationLevel {
      */
     public boolean hasRequiredBuildings(Faction faction) {
         for (String id : buildings) {
-            if (!faction.hasBuilding(id)) {
+            if (!faction.hasBuilding(id.toLowerCase())) {
                 return false;
             }
         }
         return true;
+    }
+
+    public @NotNull Set<String> getRequiredBuildingIds() {
+        return buildings;
     }
 
     /**

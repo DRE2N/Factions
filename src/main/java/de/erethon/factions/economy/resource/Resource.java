@@ -2,6 +2,7 @@ package de.erethon.factions.economy.resource;
 
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Malfrador
@@ -54,8 +55,12 @@ public enum Resource {
     WEAPONS,
     ARMOR;
 
-    public static Resource getById(@NotNull String id) {
-        return valueOf(id.toUpperCase());
+    public static @Nullable Resource getById(@NotNull String id) {
+        try {
+            return valueOf(id.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     public @NotNull String getId() {
