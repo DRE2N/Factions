@@ -5,6 +5,7 @@ import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.WarRegion;
+import de.erethon.factions.util.WorldEditSelection;
 import de.erethon.factions.war.structure.FlagStructure;
 import de.erethon.factions.war.structure.OccupyWarStructure;
 import org.bukkit.command.CommandSender;
@@ -32,10 +33,11 @@ public class CreateWarFlagCommand extends FCommand {
         Region region = getRegion(fPlayer);
         assure(region instanceof WarRegion, FMessage.ERROR_REGION_IS_NOT_A_WARZONE);
         WarRegion warRegion = (WarRegion) region;
-        assure(fPlayer.hasSelection(), FMessage.ERROR_NO_SELECTION);
+        WorldEditSelection selection = WorldEditSelection.get(fPlayer.getPlayer());
+        assure(selection != null, FMessage.ERROR_NO_SELECTION);
         OccupyWarStructure objective = warRegion.getStructure(args[1], OccupyWarStructure.class);
         assure(objective != null, FMessage.ERROR_WAR_OBJECTIVE_NOT_FOUND, args[1]);
-        objective.getFlagStructures().add(new FlagStructure(warRegion, new MemoryConfiguration(), fPlayer.getPos1(), fPlayer.getPos2()));
+        objective.getFlagStructures().add(new FlagStructure(warRegion, new MemoryConfiguration(), selection.min(), selection.max()));
         sender.sendMessage(FMessage.CMD_CREATE_WAR_FLAG_SUCCESS.message(objective.getName()));
     }
 

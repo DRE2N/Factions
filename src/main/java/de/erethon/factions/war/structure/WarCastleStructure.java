@@ -1,22 +1,29 @@
 package de.erethon.factions.war.structure;
 
 import de.erethon.factions.event.WarPhaseChangeEvent;
+import de.erethon.factions.alliance.Alliance;
+import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
+import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
 import de.erethon.factions.region.WarRegion;
+import de.erethon.factions.region.schematic.FAWESchematicUtils;
 import de.erethon.factions.region.schematic.SchematicSavable;
 import de.erethon.factions.util.FLogger;
 import io.papermc.paper.math.Position;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +39,10 @@ public class WarCastleStructure extends RegionStructure implements Listener, Sch
 
 
     private CrystalWarStructure crystalObjective;
+    private BukkitRunnable repairTask;
+    private int nextRepairSlice;
+    private int nextRepairBlockInSlice;
+    private BossBar repairBossBar;
 
     public WarCastleStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config) {
         super(region, config);
@@ -43,8 +54,17 @@ public class WarCastleStructure extends RegionStructure implements Listener, Sch
 
     @Override
     public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @Nullable Block block) {
+        if (plugin.getCurrentWarPhase().isAllowRuinBuilding()) {
+            if (block == null || !fPlayer.hasFaction() || region.getRegionalWarTracker().getOperatingFaction() != fPlayer.getFaction()) {
+                return TriState.FALSE;
+            }
+            if (block.getType().isSolid() && block.getRelative(0, -1, 0).getType().isAir()) {
+                return TriState.FALSE;
+            }
+            return TriState.TRUE;
+        }
         if (!plugin.getCurrentWarPhase().isAllowPvP()) {
-            return fPlayer.hasAlliance() && fPlayer.getAlliance() == region.getAlliance() ? TriState.TRUE : TriState.FALSE;
+            return TriState.FALSE;
         }
         return super.canBuild(fPlayer, block);
     }
@@ -81,6 +101,7 @@ public class WarCastleStructure extends RegionStructure implements Listener, Sch
                 crystalObjective.deactivate();
             } else {
                 // PvP: false -> true
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> FAWESchematicUtils.saveWarStructureToSchematic(this));
                 crystalObjective.activate();
             }
         }
@@ -134,6 +155,11 @@ public class WarCastleStructure extends RegionStructure implements Listener, Sch
     }
 
     @Override
+    public void onTemporaryOccupy(@NotNull Alliance alliance) {
+        crystalObjective.onTemporaryOccupy(alliance);
+    }
+
+    @Override
     public String getSchematicID() {
         return getName() + "_" + getRegion().getId();
     }
@@ -141,5 +167,138 @@ public class WarCastleStructure extends RegionStructure implements Listener, Sch
     @Override
     public Location getOrigin() {
         return getCenterPosition().toLocation(getRegion().getWorld());
+    }
+
+    public void startRepair() {
+        if (repairTask != null) {
+            return;
+        }
+        nextRepairSlice = 0;
+        nextRepairBlockInSlice = 0;
+        repairBossBar = BossBar.bossBar(repairProgressMessage(), getRepairProgress(), BossBar.Color.GREEN, BossBar.Overlay.PROGRESS);
+        Bukkit.getScheduler().runTask(plugin, this::updateRepairBossBar);
+        repairTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                int availableSupplies = region.getRegionalWarTracker().getRepairSupplies();
+                if (availableSupplies <= 0) {
+                    repairTask = null;
+                    Bukkit.getScheduler().runTask(plugin, WarCastleStructure.this::hideRepairBossBar);
+                    cancel();
+                    return;
+                }
+                if (!hasFriendlyPlayerInCastle()) {
+                    Bukkit.getScheduler().runTask(plugin, WarCastleStructure.this::updateRepairBossBar);
+                    return;
+                }
+                FAWESchematicUtils.BlockPasteResult result = FAWESchematicUtils.pasteNextBlockInSlice(getSchematicID(), getOrigin(), nextRepairSlice, nextRepairBlockInSlice);
+                nextRepairBlockInSlice = result.nextBlockIndex();
+                if (result.changedBlock()) {
+                    region.getRegionalWarTracker().consumeRepairSupplies(1);
+                }
+                if (result.completedSlice()) {
+                    nextRepairSlice++;
+                    nextRepairBlockInSlice = 0;
+                }
+                Bukkit.getScheduler().runTask(plugin, WarCastleStructure.this::updateRepairBossBar);
+                if (nextRepairSlice >= getRepairSliceCount() || region.getRegionalWarTracker().getRepairSupplies() <= 0) {
+                    nextRepairSlice = 0;
+                    nextRepairBlockInSlice = 0;
+                    repairTask = null;
+                    Bukkit.getScheduler().runTask(plugin, WarCastleStructure.this::hideRepairBossBar);
+                    cancel();
+                }
+            }
+        };
+        repairTask.runTaskTimerAsynchronously(plugin, 0, 1L);
+    }
+
+    public boolean isRepairing() {
+        return repairTask != null;
+    }
+
+    public int getRepairSliceCount() {
+        return getYRange().getMaximumInteger() - getYRange().getMinimumInteger() + 1;
+    }
+
+    public int getCurrentRepairY() {
+        return Math.min(getYRange().getMinimumInteger() + nextRepairSlice, getYRange().getMaximumInteger());
+    }
+
+    public float getRepairProgress() {
+        double progress = getRepairBlockCursor() / (double) getTotalRepairBlocks();
+        return Math.min(1.0f, Math.max(0.0f, (float) progress));
+    }
+
+    private int getBlocksPerRepairSlice() {
+        return (getXRange().getMaximumInteger() - getXRange().getMinimumInteger() + 1)
+                * (getZRange().getMaximumInteger() - getZRange().getMinimumInteger() + 1);
+    }
+
+    private int getTotalRepairBlocks() {
+        return Math.max(1, getBlocksPerRepairSlice() * getRepairSliceCount());
+    }
+
+    private int getRepairBlockCursor() {
+        return Math.min(getTotalRepairBlocks(), nextRepairSlice * getBlocksPerRepairSlice() + nextRepairBlockInSlice);
+    }
+
+    private void updateRepairBossBar() {
+        if (repairBossBar == null) {
+            return;
+        }
+        repairBossBar.name(repairProgressMessage());
+        repairBossBar.progress(getRepairProgress());
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (shouldSeeRepairBossBar(player)) {
+                player.showBossBar(repairBossBar);
+            } else {
+                player.hideBossBar(repairBossBar);
+            }
+        }
+    }
+
+    private void hideRepairBossBar() {
+        if (repairBossBar == null) {
+            return;
+        }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.hideBossBar(repairBossBar);
+        }
+        repairBossBar = null;
+    }
+
+    private boolean shouldSeeRepairBossBar(Player player) {
+        Region currentRegion = plugin.getRegionManager().getRegionByLocation(player.getLocation());
+        if (currentRegion != region) {
+            return false;
+        }
+        FPlayer fPlayer = plugin.getFPlayerCache().getByPlayerIfCached(player);
+        return fPlayer != null && fPlayer.hasAlliance() && fPlayer.getAlliance() == region.getAlliance();
+    }
+
+    private boolean hasFriendlyPlayerInCastle() {
+        if (region.getAlliance() == null) {
+            return false;
+        }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getWorld() != region.getWorld() || !containsPosition(player.getLocation())) {
+                continue;
+            }
+            FPlayer fPlayer = plugin.getFPlayerCache().getByPlayerIfCached(player);
+            if (fPlayer != null && fPlayer.hasAlliance() && fPlayer.getAlliance() == region.getAlliance()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private net.kyori.adventure.text.Component repairProgressMessage() {
+        return FMessage.WAR_OBJECTIVE_REPAIR_PROGRESS.message(
+                region.getName(),
+                String.format(java.util.Locale.ROOT, "%.2f", getRepairProgress() * 100.0),
+                String.valueOf(getCurrentRepairY()),
+                String.valueOf(region.getRegionalWarTracker().getRepairSupplies())
+        );
     }
 }

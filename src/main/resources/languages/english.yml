@@ -450,10 +450,6 @@ cmd:
       success: "<green>Condition <dark_green><arg:0></dark_green> has been removed from portal <dark_green><arg:1></dark_green>."
     setLocation:
       success: "<green>Location of alliance <dark_green><arg:0></dark_green> for portal <dark_green><arg:1></dark_green> has been set."
-  pos1:
-    success: "<green>The first position has been set to <dark_green><arg:0></dark_green>."
-  pos2:
-    success: "<green>The second position has been set to <dark_green><arg:0></dark_green>."
   region:
     addChunk:
       success: "<green>The chunk has been successfully added to region <dark_green><arg:0></dark_green>."
@@ -909,23 +905,76 @@ ui:
     occupyProgress: "<b><dark_gray>[</dark_gray><dark_green><arg:0></dark_green><dark_gray>-</dark_gray><green><arg:1>%</green><b><dark_gray>]</dark_gray></b> <green>  Area is being occupied...</green>"
     occupyProgressOther: "<dark_gray><b>[</b><dark_red><arg:0></dark_red><dark_gray>-</dark_gray><red><arg:1>%</red><b>]</b></dark_gray> <gold>  Enemy influence is diminishing...</gold>"
     occupyNeutral: "<dark_gray><b>[</b><yellow>0%</yellow><b>]</b></dark_gray> <gray>  Area is not contested.</gray>"
+    occupyCaptureDisabled: "<dark_gray><b>[</b><yellow>0%</yellow><b>]</b></dark_gray> <gray>  Capture is disabled in this phase.</gray>"
+    occupyCrystalLocked: "<dark_gray><b>[</b><yellow>0%</yellow><b>]</b></dark_gray> <gray>  Capture is locked by charged crystals.</gray>"
     occupied: "<b><dark_gray>[</dark_gray><dark_green><arg:0></dark_green><dark_gray>-</dark_gray><green>100%</green><b><dark_gray>]</dark_gray></b> <green>  Area has been occupied.</green>"
     occupiedContested: "<b><dark_gray>[</dark_gray><dark_green><arg:0></dark_green><dark_gray>-</dark_gray><green>100%</green><b><dark_gray>]</dark_gray></b> <red>  Area is under attack!</red>"
     occupiedContestedOther: "<b><dark_gray>[</dark_gray><dark_red><arg:0></dark_red><dark_gray>-</dark_gray><red>100%</red><b><dark_gray>]</dark_gray></b> <red>  Area is under attack!</red>"
 war:
+  command:
+    header: "War"
+    phase: "<gray>Phase<dark_gray>:</dark_gray> <gold><arg:0>"
+    scoreLine: "<gray><arg:0><dark_gray>:</dark_gray> <gold><arg:1></gold> score, <green>+<arg:2></green> next tick, <gold><arg:3></gold> VP"
+    nearestHint: "<gray>Use <green>/f war nearest</green> for a waypoint or active fight."
+    nearestFight: "<yellow>Nearest active fight: <gold><arg:0></gold> at <gold><arg:1></gold>."
+    nearestWaypoint: "<green>Nearest alliance waypoint: <gold><arg:0></gold> at <gold><arg:1></gold>."
+    nearestNone: "<gray>No active fight or valid alliance waypoint found."
+    objectiveLine: "<gray><arg:0> <dark_gray>|</dark_gray> <arg:1> <dark_gray>|</dark_gray> owner=<arg:2> <dark_gray>|</dark_gray> +<arg:3> <dark_gray>|</dark_gray> <arg:4>"
+  caravan:
+    arrived: "<green>A caravan delivered <gold><arg:0></gold> repair supplies to <gold><arg:1></gold>."
   carrier:
     deposit: "<green>Crystal charging..."
     noFaction: "<red>You cannot attack the carrier when you are not in a faction."
     killed: "<red>You killed the crystal charge carrier!"
     killedHint: "<gray>Deliver the crystal charge to your crystal to recharge it."
     spawn: "<green>A crystal charge carrier has spawned."
+  respawn:
+    waypoint: "<green>War respawn: returning at the waypoint in <gold><arg:0></gold>."
+    factionHome: "<green>War respawn: returning at your faction home."
   end:
     ranking: " <arg:0> <dark_gray>(<gray><arg:1></gray>)</dark_gray>"
     winner: "<arg:0> has won the alliance war and received the blessing of the ancient emperor!"
   objective:
+    claimed: "<green>Your faction now operates <gold><arg:0></gold>."
+    repair:
+      started: "<green>Started a repair pass for <gold><arg:0></gold>."
+      progress: "<green>Repairing <gold><arg:0></gold> <dark_gray>|</dark_gray> <gold><arg:1>%</gold> <dark_gray>|</dark_gray> Y <gold><arg:2></gold> <dark_gray>|</dark_gray> <gold><arg:3></gold> supplies"
+    upgrade:
+      bought: "<green>Bought objective upgrade <gold><arg:0></gold> for <gold><arg:1></gold>."
+    waypoint:
+      enabled: "<green>Waypoint enabled at <gold><arg:0></gold>."
+      notSet: "not set"
+      setState: "set"
+      enabledState: "enabled"
+      lockedState: "set, upgrade locked"
+    info:
+      name: "<gray>Objective<dark_gray>:</dark_gray> <gold><arg:0>"
+      alliance: "<gray>Alliance<dark_gray>:</dark_gray> <gold><arg:0>"
+      allianceNone: "<gray>Alliance<dark_gray>:</dark_gray> <dark_gray>None"
+      owner: "<gray>Owner<dark_gray>:</dark_gray> <gold><arg:0>"
+      ownerNone: "<gray>Owner<dark_gray>:</dark_gray> <dark_gray>None"
+      operator: "<gray>Operator<dark_gray>:</dark_gray> <gold><arg:0>"
+      operatorNone: "<gray>Operator<dark_gray>:</dark_gray> <dark_gray>None"
+      tier: "<gray>Tier<dark_gray>:</dark_gray> <gold><arg:0>"
+      pointValue: "<gray>Point value<dark_gray>:</dark_gray> <gold><arg:0>"
+      captureUnlockedYes: "<gray>Capture unlocked<dark_gray>:</dark_gray> <green>Yes"
+      captureUnlockedNo: "<gray>Capture unlocked<dark_gray>:</dark_gray> <red>No"
+      contestedYes: "<gray>Contested<dark_gray>:</dark_gray> <green>Yes</green> <dark_gray>(</dark_gray><gold><arg:0>%</gold><dark_gray>)</dark_gray>"
+      contestedNo: "<gray>Contested<dark_gray>:</dark_gray> <red>No</red> <dark_gray>(</dark_gray><gold><arg:0>%</gold><dark_gray>)</dark_gray>"
+      waypointNotSet: "<gray>Waypoint<dark_gray>:</dark_gray> <dark_gray>not set"
+      waypointSet: "<gray>Waypoint<dark_gray>:</dark_gray> <gold>set"
+      waypointEnabled: "<gray>Waypoint<dark_gray>:</dark_gray> <green>enabled"
+      waypointLocked: "<gray>Waypoint<dark_gray>:</dark_gray> <yellow>set, upgrade locked"
+      waypointAvailableNotSet: "<gray>Waypoint<dark_gray>:</dark_gray> <dark_gray>not set</dark_gray>, <gray>available<dark_gray>:</dark_gray> <red>No"
+      waypointAvailableYes: "<gray>Waypoint<dark_gray>:</dark_gray> <gold>set</gold>, <gray>available<dark_gray>:</dark_gray> <green>Yes"
+      waypointAvailableNo: "<gray>Waypoint<dark_gray>:</dark_gray> <gold>set</gold>, <gray>available<dark_gray>:</dark_gray> <red>No"
+      repairSupplies: "<gray>Repair supplies<dark_gray>:</dark_gray> <gold><arg:0>"
+      upgrades: "<gray>Upgrades<dark_gray>:</dark_gray> <gold><arg:0>"
+      crystals: "<gray>Crystals<dark_gray>:</dark_gray> <gold><arg:0></gold> charged"
     crystal:
       destroyed: "<gray>The crystal of <gold><arg:0></gold> in the region <gold><arg:1></gold> has been destroyed."
       destroyedByPlayer: "<gray>The crystal of <gold><arg:0></gold> in the region <gold><arg:1></gold> has been destroyed by <gold><arg:2></gold>."
+      recharged: "<green>The crystal at <gold><arg:0></gold> has been recharged."
   region:
     occupied: "The alliance <arg:0> has taken control of the region <gold><arg:1></gold>."
   phase:
@@ -938,11 +987,11 @@ war:
       announcement: "<dark_red>The capital conquest has begun. The capital can now be contested.</dark_red>"
       displayName: "Capital Conquest"
     hover: "<gold>PVP<dark_gray>:</dark_gray> <arg:0></gold> <br><gold>Scoring<dark_gray>:</dark_gray> <arg:1></gold><br><gold>Open capital<dark_gray>:</dark_gray> <arg:2></gold><br>"
-    regular:
-      announcement: "<dark_green>The combat phase has ended. War zones are no longer contested and PvP is <red>disabled</red>.</dark_green>"
-      displayName: "Normal State"
+    truce:
+      announcement: "<gold>The truce phase has begun. PvP remains enabled, captures are locked, and operated ruins can be fortified.</gold>"
+      displayName: "Truce"
     scoring:
-      announcement: "<dark_red>The combat phase has begun. War zones now influence the war score.</dark_red>"
+      announcement: "<dark_red>The combat phase has begun. War zones can now be contested, captured, and scored.</dark_red>"
       displayName: "Combat Phase"
     peace:
       announcement: "<dark_green>The war has temporarily ceased. War zones cannot be contested anymore and PvP is <red>disabled</red>.</dark_green>"

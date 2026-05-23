@@ -29,7 +29,16 @@ public abstract class TickingWarStructure extends WarStructure {
 
     @Override
     protected void load(@NotNull ConfigurationSection config) {
-        this.tickInterval = config.getLong("tickInterval", TickUtil.SECOND);
+        this.tickInterval = Math.max(1, config.getLong("tickInterval", TickUtil.SECOND));
+    }
+
+    @Override
+    public void activate() {
+        super.activate();
+        if (task == null) {
+            long interval = Math.max(1, tickInterval);
+            task = Bukkit.getScheduler().runTaskTimer(plugin, this::tick, interval, interval);
+        }
     }
 
     @Override
@@ -38,7 +47,17 @@ public abstract class TickingWarStructure extends WarStructure {
         if (task != null) {
             return;
         }
-        task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::tick, tickInterval, tickInterval);
+        long interval = Math.max(1, tickInterval);
+        task = Bukkit.getScheduler().runTaskTimer(plugin, this::tick, interval, interval);
+    }
+
+    @Override
+    public void deactivate() {
+        super.deactivate();
+        if (task != null) {
+            task.cancel();
+            task = null;
+        }
     }
 
     public abstract void tick();

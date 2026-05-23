@@ -82,7 +82,7 @@ public class FlagStructure extends RegionStructure {
 
     public void displayColor(@NotNull World world, @NotNull NamedTextColor color) {
         final Material wool = COLOR_TO_WOOL.getOrDefault(color, Material.WHITE_WOOL);
-        final Material concrete = COLOR_TO_CONCRETE.getOrDefault(color, Material.WHITE_CONCRETE);
+        final Material concrete = concreteFor(color);
         final Position minPosition = getMinPosition();
         final Position maxPosition = getMaxPosition();
         final int maxX = maxPosition.blockX(), maxY = maxPosition.blockY(), maxZ = maxPosition.blockZ();
@@ -100,6 +100,10 @@ public class FlagStructure extends RegionStructure {
                 }
             }
         });
+    }
+
+    public static @NotNull Material concreteFor(@NotNull NamedTextColor color) {
+        return COLOR_TO_CONCRETE.getOrDefault(color, Material.WHITE_CONCRETE);
     }
 
 }

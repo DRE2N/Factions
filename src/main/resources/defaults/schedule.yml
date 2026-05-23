@@ -8,33 +8,33 @@ currentWeek: 1
 schedule:
   1-4:
     1-7:
-      duration: 68400000 # 19h
-      phase: "regular"
+      duration: 61200000 # 17h
+      phase: "truce"
       next:
-        duration: 10800000 # 3h
+        duration: 14400000 # 4h
         phase: "scoring"
         next:
-          duration: 7200000 # 2h
-          phase: "regular"
+          duration: 10800000 # 3h
+          phase: "truce"
   5:
     7-5:
-      duration: 68400000 # 19h
-      phase: "regular"
+      duration: 61200000 # 17h
+      phase: "truce"
       next:
-        duration: 10800000 # 3h
+        duration: 14400000 # 4h
         phase: "scoring"
         next:
-          duration: 7200000 # 2h
-          phase: "regular"
+          duration: 10800000 # 3h
+          phase: "truce"
     6:
       duration: 72000000 # 20h
-      phase: "regular"
+      phase: "truce"
       next:
         duration: 7200000 # 2h
         phase: "capital"
         next:
           duration: 7200000 # 2h
-          phase: "regular"
+          phase: "truce"
   6:
     1-7:
       duration: 86400000 # 24h

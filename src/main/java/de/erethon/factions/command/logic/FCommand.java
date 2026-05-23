@@ -3,6 +3,7 @@ package de.erethon.factions.command.logic;
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.command.CommandFailedException;
 import de.erethon.bedrock.command.ECommand;
+import de.erethon.bedrock.config.Message;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
@@ -45,6 +46,7 @@ public abstract class FCommand extends ECommand {
     public static final String PERM_PREFIX = FCommandCache.LABEL + ".cmd.";
 
     protected final Factions plugin = Factions.get();
+    private final ThreadLocal<CommandSender> executingSender = new ThreadLocal<>();
 
     public FCommand() {
         setPlayerCommand(true);
@@ -53,10 +55,13 @@ public abstract class FCommand extends ECommand {
 
     @Override
     public final void onExecute(String[] args, CommandSender sender) {
+        executingSender.set(sender);
         try {
             onExecute(sender, args);
         } catch (FException e) {
             sender.sendMessage(e.getPlayerMessage());
+        } finally {
+            executingSender.remove();
         }
     }
 
@@ -130,6 +135,11 @@ public abstract class FCommand extends ECommand {
     }
 
     protected @NotNull Region getRegion(@NotNull String arg) {
+        if ("here".equalsIgnoreCase(arg)) {
+            CommandSender sender = executingSender.get();
+            assure(sender instanceof Player, FMessage.ERROR_SENDER_IS_NO_PLAYER);
+            return getRegion(getFPlayer(sender));
+        }
         Region region;
         try {
             int regionId = Integer.parseInt(arg);
@@ -282,13 +292,21 @@ public abstract class FCommand extends ECommand {
     protected @NotNull List<String> getTabRegions(@NotNull World world, @NotNull String arg) {
         RegionCache cache = plugin.getRegionManager().getCache(world);
         if (cache == null) {
-            return List.of();
+            return "here".startsWith(arg.toLowerCase()) ? List.of("here") : List.of();
         }
-        return getTabEntities(cache, arg);
+        List<String> regions = new ArrayList<>();
+        if ("here".startsWith(arg.toLowerCase())) {
+            regions.add("here");
+        }
+        regions.addAll(getTabEntities(cache, arg));
+        return regions;
     }
 
     protected @NotNull List<String> getTabRegions(@NotNull String arg) {
         List<String> regions = new ArrayList<>();
+        if ("here".startsWith(arg.toLowerCase())) {
+            regions.add("here");
+        }
         for (RegionCache cache : plugin.getRegionManager().getCaches().values()) {
             regions.addAll(getTabEntities(cache, arg));
         }
@@ -332,6 +350,10 @@ public abstract class FCommand extends ECommand {
     }
 
     /* Assure methods */
+
+    protected void assure(boolean b, @NotNull Message playerMessage, @NotNull String... args) {
+        FException.throwIf(!b, "Command assurance failed: " + playerMessage.getPath(), playerMessage, args);
+    }
 
     protected void fAssure(boolean b, @NotNull Supplier<String> message) {
         if (!b) {

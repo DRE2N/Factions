@@ -5,6 +5,7 @@ import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.RegionStructure;
 import de.erethon.factions.region.WarRegion;
 import io.papermc.paper.math.Position;
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -57,9 +58,11 @@ public abstract class WarStructure extends RegionStructure {
     }
 
     public void onExit(@NotNull FPlayer fPlayer) {
-        long enterTime = activePlayers.remove(fPlayer);
+        Long enterTime = activePlayers.remove(fPlayer);
         fPlayer.getActiveWarObjectives().remove(this);
-        fPlayer.getWarStats().incrementCapturingTime(System.currentTimeMillis() - enterTime);
+        if (enterTime != null) {
+            fPlayer.getWarStats().incrementCapturingTime(System.currentTimeMillis() - enterTime);
+        }
     }
 
     public void onSpectatorEnter(@NotNull FPlayer fPlayer) {
@@ -87,6 +90,10 @@ public abstract class WarStructure extends RegionStructure {
 
     public boolean isActive(@NotNull FPlayer fPlayer) {
         return activePlayers.containsKey(fPlayer);
+    }
+
+    public boolean containsPlayerPosition(@NotNull Location location) {
+        return containsPosition(location) || containsPosition(location.clone().subtract(0, 1, 0));
     }
 
     public @NotNull Set<FPlayer> getActiveSpectators() {

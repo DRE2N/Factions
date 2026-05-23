@@ -26,6 +26,7 @@ public class FCommandCache extends ECommandCache {
         addCommand(new BuildingCommand());
         addCommand(new BuildingAdminCommand());
         addCommand(new BuildingTicketCommand());
+        addCommand(new CaravanCommand());
         addCommand(new ClaimCommand());
         addCommand(new CreateCommand());
         addCommand(new CreateWarFlagCommand());
@@ -45,10 +46,9 @@ public class FCommandCache extends ECommandCache {
         addCommand(new NameCommand());
         addCommand(new MarkerCommand());
         addCommand(new OccupyCommand());
+        addCommand(new ObjectiveCommand());
         addCommand(new PaydayCommand());
         addCommand(new PortalCommand());
-        addCommand(new Pos1Command());
-        addCommand(new Pos2Command());
         addCommand(new RegionCommand());
         addCommand(new RegionMapCommand());
         addCommand(new ReloadCommand());
@@ -60,6 +60,7 @@ public class FCommandCache extends ECommandCache {
         addCommand(new UnclaimCommand());
         addCommand(new VersionCommand());
         addCommand(new VoteCommand());
+        addCommand(new WarCommand());
         addCommand(new WarHistoryCommand());
     }
 

@@ -1,9 +1,14 @@
 package de.erethon.factions.region;
 
 import de.erethon.factions.util.FLogger;
+import de.erethon.factions.alliance.Alliance;
+import de.erethon.factions.faction.Faction;
 import de.erethon.factions.war.RegionalWarTracker;
 import io.papermc.paper.math.Position;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,10 +66,49 @@ public class WarRegion extends Region {
     @Override
     protected void serializeData() {
         super.serializeData();
-        config.set("warTracker", regionalWarTracker.serialize());
+        config.set("warTracker", sanitizeYamlValue(regionalWarTracker.serialize()));
         Map<String, Object> serializedStructures = new HashMap<>(structures.size());
-        structures.forEach((name, structure) -> serializedStructures.put(String.valueOf(serializedStructures.size()), structure.serialize()));
+        structures.forEach((name, structure) -> serializedStructures.put(String.valueOf(serializedStructures.size()), sanitizeYamlValue(structure.serialize())));
         config.set("structures", serializedStructures);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object sanitizeYamlValue(Object value) {
+        if (value == null
+                || value instanceof String
+                || value instanceof Number
+                || value instanceof Boolean
+                || value instanceof Location) {
+            return value;
+        }
+        if (value instanceof Alliance alliance) {
+            return alliance.getId();
+        }
+        if (value instanceof Faction faction) {
+            return faction.getId();
+        }
+        if (value instanceof TextColor color) {
+            return color.asHexString();
+        }
+        if (value instanceof BossBar.Color color) {
+            return color.name();
+        }
+        if (value instanceof Enum<?> enumValue) {
+            return enumValue.name();
+        }
+        if (value instanceof Map<?, ?> map) {
+            Map<String, Object> sanitized = new HashMap<>(map.size());
+            map.forEach((key, nestedValue) -> sanitized.put(String.valueOf(key), sanitizeYamlValue(nestedValue)));
+            return sanitized;
+        }
+        if (value instanceof Iterable<?> iterable) {
+            List<Object> sanitized = new ArrayList<>();
+            for (Object nestedValue : iterable) {
+                sanitized.add(sanitizeYamlValue(nestedValue));
+            }
+            return sanitized;
+        }
+        return String.valueOf(value);
     }
 
     @Override

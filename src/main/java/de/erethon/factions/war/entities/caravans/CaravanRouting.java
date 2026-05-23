@@ -2,24 +2,31 @@ package de.erethon.factions.war.entities.caravans;
 
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.factions.Factions;
+import de.erethon.factions.data.FMessage;
+import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionStructure;
 import de.erethon.factions.region.WarRegion;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.EntitiesLoadEvent;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Set;
 
 public class CaravanRouting implements Listener {
 
     private static final int TIME_BETWEEN_NODES = 20 * 60;
+    private static final int MAX_NODE_DISTANCE = 16;
 
     private final Factions plugin = Factions.get();
 
@@ -28,7 +35,7 @@ public class CaravanRouting implements Listener {
     private final Set<ActiveCaravanRoute> activeRoutes = new HashSet<>();
     private final Map<RegionStructure, Set<CaravanRoute>> byStart = new HashMap<>();
     private final Map<CaravanChunkPos, ActiveCaravanRoute> chunksPosToRoutes = new HashMap<>();
-    private final Set<ActiveCaravanRoute> routesWithRealCaravans = new HashSet<>();
+    private final Map<ActiveCaravanRoute, UUID> realCaravanIds = new HashMap<>();
 
     public CaravanRouting() {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -37,6 +44,7 @@ public class CaravanRouting implements Listener {
     }
 
     public void addRoute(CaravanRoute route) {
+        route = normalizeRoute(route);
         if (!byStart.containsKey(route.start())) {
             byStart.put(route.start(), new HashSet<>());
         }
@@ -47,8 +55,34 @@ public class CaravanRouting implements Listener {
         byStart.get(route.start()).remove(route);
     }
 
+    public CaravanRoute replaceRoute(CaravanRoute oldRoute, CaravanRoute newRoute) {
+        Set<CaravanRoute> routes = byStart.get(oldRoute.start());
+        if (routes == null || !routes.remove(oldRoute)) {
+            return null;
+        }
+        newRoute = normalizeRoute(newRoute);
+        routes.add(newRoute);
+        return newRoute;
+    }
+
+    public CaravanRoute replaceRouteRaw(CaravanRoute oldRoute, CaravanRoute newRoute) {
+        Set<CaravanRoute> routes = byStart.get(oldRoute.start());
+        if (routes == null || !routes.remove(oldRoute)) {
+            return null;
+        }
+        routes.add(newRoute);
+        return newRoute;
+    }
+
     public void addActiveRoute(ActiveCaravanRoute route) {
         activeRoutes.add(route);
+    }
+
+    public void startRoute(ActiveCaravanRoute route, boolean spawnRealCaravan) {
+        addActiveRoute(route);
+        if (spawnRealCaravan) {
+            spawnRealCaravan(route);
+        }
     }
 
     public void removeActiveRoute(ActiveCaravanRoute route) {
@@ -79,7 +113,16 @@ public class CaravanRouting implements Listener {
     }
 
     public void onCaravanArrived(ActiveCaravanRoute route) {
-        // route.route().end().getRegion() - add supplies to the region
+        if (route.route().end().getRegion() instanceof WarRegion warRegion) {
+            int supplies = route.supplies();
+            if (warRegion.getRegionalWarTracker().isLowestRankedAlliance(warRegion.getAlliance())) {
+                supplies = (int) Math.ceil(supplies * 1.15);
+            }
+            warRegion.getRegionalWarTracker().addRepairSupplies(supplies);
+            warRegion.getRegionalWarTracker().addContribution(warRegion.getRegionalWarTracker().getOperatingFaction(), "caravan_deliveries", 1);
+            Factions.log("Caravan delivered " + supplies + " repair supplies to " + warRegion.getName());
+            FBroadcastUtil.broadcastWar(FMessage.WAR_CARAVAN_ARRIVED, String.valueOf(supplies), warRegion.getName());
+        }
     }
 
     // We process routes every x seconds, so they "move" through the world
@@ -87,10 +130,11 @@ public class CaravanRouting implements Listener {
     private void updateRoutes() {
         Iterator<ActiveCaravanRoute> iterator = activeRoutes.iterator();
         while (iterator.hasNext()) {
-            if (routesWithRealCaravans.contains(iterator.next())) { // Skip routes that have real caravans
+            ActiveCaravanRoute route = iterator.next();
+            discardStaleVisual(route);
+            if (hasRealCaravan(route)) {
                 continue;
             }
-            ActiveCaravanRoute route = iterator.next();
             CaravanRouteNode[] nodes = route.route().nodes();
             if (nodes.length == 0) {
                 continue;
@@ -98,6 +142,7 @@ public class CaravanRouting implements Listener {
             if (route.isAtEnd()) {
                 onCaravanArrived(route);
                 iterator.remove();
+                discardVisual(route);
                 continue;
             }
             route.advance();
@@ -109,6 +154,9 @@ public class CaravanRouting implements Listener {
             int chunkX = currentNode.x() >> 4;
             int chunkZ = currentNode.z() >> 4;
             chunksPosToRoutes.put(new CaravanChunkPos(chunkX, chunkZ), route);
+            if (route.route().start().getRegion().getWorld().isChunkLoaded(chunkX, chunkZ) && !hasRealCaravan(route)) {
+                spawnRealCaravan(route);
+            }
         }
     }
 
@@ -121,13 +169,74 @@ public class CaravanRouting implements Listener {
         if (route == null) {
             return;
         }
+        if (hasRealCaravan(route)) {
+            return;
+        }
         // Spawn in the real caravan
-        CaravanCarrier carrier = new CaravanCarrier(event.getWorld(), route.currentNode().x(), route.currentNode().y(), route.currentNode().z(), route.route().start().getRegion().getAlliance(), route,this);
-        routesWithRealCaravans.add(route);
+        spawnRealCaravan(route);
+    }
+
+    public void spawnRealCaravan(ActiveCaravanRoute route) {
+        if (route.route().start().getRegion().getAlliance() == null) {
+            Factions.log("Cannot spawn caravan for route from " + route.route().start().getName() + ": start region has no alliance");
+            return;
+        }
+        discardVisual(route);
+        CaravanRouteNode node = route.currentNode();
+        CaravanCarrier carrier = new CaravanCarrier(route.route().start().getRegion().getWorld(), node.x() + 0.5, node.y(), node.z() + 0.5, route.route().start().getRegion().getAlliance(), route, this);
+        ((CraftWorld) route.route().start().getRegion().getWorld()).getHandle().addFreshEntity(carrier);
+        carrier.startVisuals();
+        realCaravanIds.put(route, carrier.getUUID());
+    }
+
+    public void onVisualReachedNextNode(ActiveCaravanRoute route, CaravanCarrier carrier) {
+        if (!activeRoutes.contains(route)) {
+            return;
+        }
+        UUID activeId = realCaravanIds.get(route);
+        if (activeId == null || !activeId.equals(carrier.getUUID())) {
+            carrier.discard();
+            return;
+        }
+        route.advance();
+        if (!route.isAtEnd()) {
+            return;
+        }
+        onCaravanArrived(route);
+        activeRoutes.remove(route);
+        discardVisual(route);
     }
 
     public void removeRouteWithRealCaravan(ActiveCaravanRoute route) {
-        routesWithRealCaravans.remove(route);
+        realCaravanIds.remove(route);
+    }
+
+    private boolean hasRealCaravan(ActiveCaravanRoute route) {
+        UUID uuid = realCaravanIds.get(route);
+        if (uuid == null) {
+            return false;
+        }
+        return ((CraftWorld) route.route().start().getRegion().getWorld()).getHandle().getEntity(uuid) instanceof CaravanCarrier;
+    }
+
+    private void discardStaleVisual(ActiveCaravanRoute route) {
+        if (!hasRealCaravan(route)) {
+            realCaravanIds.remove(route);
+        }
+    }
+
+    private void discardVisual(ActiveCaravanRoute route) {
+        UUID uuid = realCaravanIds.remove(route);
+        if (uuid == null) {
+            return;
+        }
+        net.minecraft.world.entity.Entity entity = ((CraftWorld) route.route().start().getRegion().getWorld()).getHandle().getEntity(uuid);
+        if (entity != null) {
+            if (entity instanceof CaravanCarrier carrier) {
+                carrier.discardVisuals();
+            }
+            entity.discard();
+        }
     }
 
     private void loadRoutesFromFile() {
@@ -139,31 +248,49 @@ public class CaravanRouting implements Listener {
             return;
         }
         for (String start : cfg.getConfigurationSection("routes").getKeys(false)) {
-            Region startRegion = plugin.getRegionManager().getRegionById(Integer.parseInt(start));
+            int startRegionId = parseRouteRegionId(start);
+            if (startRegionId < 0) {
+                Factions.log("Could not parse start region " + start + " for caravan route");
+                continue;
+            }
+            Region startRegion = plugin.getRegionManager().getRegionById(startRegionId);
             if (startRegion == null || !(startRegion instanceof WarRegion warStartRegion)) {
                 Factions.log("Could not find region " + start + " for caravan route");
                 continue;
             }
-            RegionStructure startStructure = warStartRegion.getStructure(cfg.getString("routes." + start + ".startStructure"));
-            if (startStructure == null) {
-                Factions.log("Could not find structure " + cfg.getString("routes." + start + ".structure") + " for caravan route");
-                continue;
-            }
             for (String end : cfg.getConfigurationSection("routes." + start).getKeys(false)) {
-                Region endRegion = plugin.getRegionManager().getRegionById(Integer.parseInt(end));
+                if ("startStructure".equals(end)) {
+                    continue;
+                }
+                String routePath = "routes." + start + "." + end;
+                if (!cfg.isConfigurationSection(routePath)) {
+                    continue;
+                }
+                RegionStructure startStructure = warStartRegion.getStructure(cfg.getString(routePath + ".startStructure"));
+                if (startStructure == null) {
+                    Factions.log("Could not find start structure " + cfg.getString(routePath + ".startStructure") + " for caravan route");
+                    continue;
+                }
+                int endRegionId = parseRouteRegionId(end);
+                if (endRegionId < 0) {
+                    Factions.log("Could not parse end region " + end + " for caravan route");
+                    continue;
+                }
+                Region endRegion = plugin.getRegionManager().getRegionById(endRegionId);
                 if (endRegion == null || !(endRegion instanceof WarRegion warEndRegion)) {
                     Factions.log("Could not find region " + end + " for caravan route");
                     continue;
                 }
-                RegionStructure endStructure = warEndRegion.getStructure(cfg.getString("routes." + start + "." + end + ".endStructure"));
+                RegionStructure endStructure = warEndRegion.getStructure(cfg.getString(routePath + ".endStructure"));
                 if (endStructure == null) {
-                    Factions.log("Could not find structure " + cfg.getString("routes." + start + "." + end + ".structure") + " for caravan route");
+                    Factions.log("Could not find end structure " + cfg.getString(routePath + ".endStructure") + " for caravan route");
                     continue;
                 }
-                CaravanRoute route = new CaravanRoute(startStructure, endStructure, deserializeNodes(cfg.getString("routes." + start + "." + end + ".nodes")));
+                CaravanRoute route = new CaravanRoute(startStructure, endStructure, deserializeNodes(cfg.getString(routePath + ".nodes", "")));
                 addRoute(route);
             }
         }
+        saveRoutesToFile();
 
     }
 
@@ -190,6 +317,9 @@ public class CaravanRouting implements Listener {
     }
 
     private static CaravanRouteNode[] deserializeNodes(String nodes) {
+        if (nodes == null || nodes.isBlank()) {
+            return new CaravanRouteNode[0];
+        }
         String[] nodeStrings = nodes.split(";");
         CaravanRouteNode[] deserialized = new CaravanRouteNode[nodeStrings.length];
         for (int i = 0; i < nodeStrings.length; i++) {
@@ -200,12 +330,65 @@ public class CaravanRouting implements Listener {
     }
 
     private static String serializeNodes(CaravanRouteNode[] nodes) {
-        String serialized = "";
+        StringBuilder serialized = new StringBuilder();
         for (CaravanRouteNode node : nodes) {
-            // Serialize each node
-            serialized += node.x() + "," + node.y() + "," + node.z() + ";";
+            if (!serialized.isEmpty()) {
+                serialized.append(";");
+            }
+            serialized.append(node.x()).append(",").append(node.y()).append(",").append(node.z());
         }
-        return serialized;
+        return serialized.toString();
+    }
+
+    private CaravanRoute normalizeRoute(CaravanRoute route) {
+        org.bukkit.World world = route.start().getRegion().getWorld();
+        CaravanRouteNode[] sourceNodes = route.nodes();
+        if (sourceNodes.length == 0) {
+            sourceNodes = new CaravanRouteNode[] {
+                    node(route.start().getCenterPosition()),
+                    node(route.end().getCenterPosition())
+            };
+        }
+        List<CaravanRouteNode> normalized = new ArrayList<>();
+        CaravanRouteNode previous = normalizeNode(world, sourceNodes[0].x(), sourceNodes[0].z());
+        normalized.add(previous);
+        for (int i = 1; i < sourceNodes.length; i++) {
+            CaravanRouteNode target = normalizeNode(world, sourceNodes[i].x(), sourceNodes[i].z());
+            int dx = target.x() - previous.x();
+            int dz = target.z() - previous.z();
+            int steps = Math.max(1, (int) Math.ceil(Math.sqrt(dx * dx + dz * dz) / MAX_NODE_DISTANCE));
+            for (int step = 1; step <= steps; step++) {
+                double factor = step / (double) steps;
+                int x = (int) Math.round(previous.x() + dx * factor);
+                int z = (int) Math.round(previous.z() + dz * factor);
+                addNodeIfDistinct(normalized, normalizeNode(world, x, z));
+            }
+            previous = target;
+        }
+        return new CaravanRoute(route.start(), route.end(), normalized.toArray(CaravanRouteNode[]::new));
+    }
+
+    private CaravanRouteNode node(io.papermc.paper.math.Position position) {
+        return new CaravanRouteNode(position.blockX(), position.blockY(), position.blockZ());
+    }
+
+    private CaravanRouteNode normalizeNode(org.bukkit.World world, int x, int z) {
+        return new CaravanRouteNode(x, world.getHighestBlockYAt(x, z) + 1, z);
+    }
+
+    private void addNodeIfDistinct(List<CaravanRouteNode> nodes, CaravanRouteNode node) {
+        if (!nodes.isEmpty() && nodes.get(nodes.size() - 1).equals(node)) {
+            return;
+        }
+        nodes.add(node);
+    }
+
+    private static int parseRouteRegionId(String raw) {
+        try {
+            return Integer.parseInt(raw);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
 

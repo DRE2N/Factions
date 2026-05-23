@@ -3,6 +3,8 @@ package de.erethon.factions.war;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.region.RegionCache;
+import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.WarMath;
 import net.kyori.adventure.text.Component;
@@ -17,6 +19,8 @@ import org.bukkit.util.NumberConversions;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -91,9 +95,16 @@ public class WarScore {
     }
 
     private void tickScoring() {
+        rebuildPotentialPoints();
+        if (!plugin.getCurrentWarPhase().isInfluencingScoring()) {
+            return;
+        }
         for (Alliance alliance : totalScore.keySet()) {
             int potential = potentialPointsNextTick.getOrDefault(alliance, 0);
-            potentialPointsNextTick.put(alliance, potential + 1);
+            if (potential <= 0) {
+                continue;
+            }
+            add(alliance, potential, WarScoreType.OBJECTIVE);
         }
     }
 
@@ -106,7 +117,28 @@ public class WarScore {
             regions.remove(region);
             currentOwnership.put(oldOwner, regions);
         }
-        FLogger.WAR.log("Region " + region.getName() + " captured by " + newOwner.getName() + " from " + oldOwner.getName());
+        rebuildPotentialPoints();
+        FLogger.WAR.log("Region " + region.getName() + " captured by " + newOwner.getName() + " from " + (oldOwner == null ? "nobody" : oldOwner.getName()));
+    }
+
+    public void rebuildPotentialPoints() {
+        for (Alliance alliance : potentialPointsNextTick.keySet()) {
+            potentialPointsNextTick.put(alliance, 0);
+            currentOwnership.getOrDefault(alliance, Set.of()).clear();
+        }
+        for (RegionCache cache : plugin.getRegionManager()) {
+            for (Region region : cache) {
+                if (!(region instanceof WarRegion warRegion)) {
+                    continue;
+                }
+                Alliance owner = warRegion.getAlliance();
+                if (owner == null) {
+                    continue;
+                }
+                potentialPointsNextTick.put(owner, potentialPointsNextTick.getOrDefault(owner, 0) + warRegion.getRegionalWarTracker().getRegionValue());
+                currentOwnership.computeIfAbsent(owner, ignored -> new HashSet<>()).add(warRegion);
+            }
+        }
     }
 
     public void add(Alliance alliance, int score, WarScoreType type) {
@@ -122,6 +154,22 @@ public class WarScore {
         FLogger.WAR.log("Added " + score + " points to " + alliance.getName() + " for " + type.name());
     }
 
+    public void awardDailyVictoryPoints() {
+        List<Alliance> ranked = totalScore.keySet().stream()
+                .sorted(Comparator.comparingInt((Alliance alliance) -> totalScore.getOrDefault(alliance, 0)).reversed())
+                .toList();
+        int[] victoryPoints = {5, 4, 3};
+        for (int i = 0; i < ranked.size() && i < victoryPoints.length; i++) {
+            ranked.get(i).addWarScore(victoryPoints[i]);
+        }
+        for (Alliance alliance : totalScore.keySet()) {
+            totalScore.put(alliance, 0);
+            objectiveScore.put(alliance, 0);
+            playerKillScore.put(alliance, 0);
+        }
+        FLogger.WAR.log("Awarded daily victory points from war score.");
+    }
+
     public ConfigurationSection save() {
         YamlConfiguration config = new YamlConfiguration();
         for (Alliance alliance : totalScore.keySet()) {
@@ -130,6 +178,22 @@ public class WarScore {
             config.set("playerKill." + alliance.getId(), playerKillScore.get(alliance));
         }
         return config;
+    }
+
+    public int getTotalScore(Alliance alliance) {
+        return totalScore.getOrDefault(alliance, 0);
+    }
+
+    public int getObjectiveScore(Alliance alliance) {
+        return objectiveScore.getOrDefault(alliance, 0);
+    }
+
+    public int getPlayerKillScore(Alliance alliance) {
+        return playerKillScore.getOrDefault(alliance, 0);
+    }
+
+    public int getPotentialPointsNextTick(Alliance alliance) {
+        return potentialPointsNextTick.getOrDefault(alliance, 0);
     }
 
     private Component getTabFooter() {
@@ -163,7 +227,7 @@ public class WarScore {
         Map<Alliance, Double> distribution = new HashMap<>();
 
         for (Map.Entry<Alliance, Integer> entry : potentialPointsNextTick.entrySet()) {
-            double percentage = (entry.getValue() / (double) totalPotentialPoints) * 100;
+            double percentage = totalPotentialPoints == 0 ? 0 : (entry.getValue() / (double) totalPotentialPoints) * 100;
             distribution.put(entry.getKey(), percentage);
         }
 

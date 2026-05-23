@@ -75,7 +75,6 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     private final Set<WarStructure> activeWarStructures = new HashSet<>();
     private final AutomatedChunkManager automatedChunkManager = new AutomatedChunkManager(this);
     private Region lastRegion;
-    private Location pos1, pos2;
     private PermissionAttachment permissionAttachment;
 
     public FPlayer(@NotNull UUID uuid) {
@@ -433,26 +432,6 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
             polls.putAll(faction.getPollsFor(this));
         }
         return polls;
-    }
-
-    public @Nullable Location getPos1() {
-        return pos1;
-    }
-
-    public void setPos1(@Nullable Location pos1) {
-        this.pos1 = pos1;
-    }
-
-    public @Nullable Location getPos2() {
-        return pos2;
-    }
-
-    public void setPos2(@Nullable Location pos2) {
-        this.pos2 = pos2;
-    }
-
-    public boolean hasSelection() {
-        return pos1 != null && pos2 != null;
     }
 
     public @NotNull PermissionAttachment getPermissionAttachment() {

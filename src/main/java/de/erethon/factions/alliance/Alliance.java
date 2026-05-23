@@ -80,11 +80,16 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     public void temporaryOccupy(@NotNull WarRegion region) {
         FLogger.WAR.log("Region '" + region.getId() + "' was temporarily occupied by alliance '" + id + "'");
-        if (region.hasAlliance()) {
-            region.getAlliance().removeTemporaryRegion(region);
+        Alliance oldOwner = region.getAlliance();
+        if (oldOwner != null) {
+            oldOwner.removeTemporaryRegion(region);
         }
         temporaryRegions.add(region);
+        region.setAlliance(this);
         region.getRegionalWarTracker().reset(true);
+        if (plugin.getWar() != null && plugin.getWar().getScore() != null) {
+            plugin.getWar().getScore().regionCaptured(this, oldOwner, region);
+        }
         for (RegionStructure structure : region.getStructures().values()) {
             structure.onTemporaryOccupy(this);
         }

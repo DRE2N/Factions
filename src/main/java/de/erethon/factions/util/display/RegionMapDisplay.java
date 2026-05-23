@@ -6,6 +6,7 @@ import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.RegionCache;
+import de.erethon.factions.region.WarRegion;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -370,6 +371,14 @@ public class RegionMapDisplay implements Listener {
         mapBuilder.append(Component.text(WILDERNESS_CHAR, NamedTextColor.DARK_GRAY));
         mapBuilder.append(Component.text("=Wild ", NamedTextColor.GRAY));
         mapBuilder.append(Component.text("(bright=owned, faded=unclaimed)", NamedTextColor.DARK_GRAY));
+        mapBuilder.append(Component.newline());
+        mapBuilder.append(Component.text("War: ", NamedTextColor.GRAY));
+        mapBuilder.append(Component.text("█", NamedTextColor.YELLOW));
+        mapBuilder.append(Component.text("=Contested ", NamedTextColor.GRAY));
+        mapBuilder.append(Component.text("█", NamedTextColor.RED));
+        mapBuilder.append(Component.text("=Crystal down ", NamedTextColor.GRAY));
+        mapBuilder.append(Component.text("█", NamedTextColor.AQUA));
+        mapBuilder.append(Component.text("=Waypoint", NamedTextColor.GRAY));
 
         // Region names list (for closer zoom levels)
         if (!regionNames.isEmpty() && zoomLevel.ordinal() <= ZoomLevel.MEDIUM.ordinal()) {
@@ -586,6 +595,18 @@ public class RegionMapDisplay implements Listener {
      * Regions without an alliance use gray.
      */
     private TextColor getRegionColor(Region region) {
+        if (region instanceof WarRegion warRegion && region.getType().isWarGround()) {
+            String warState = warRegion.getRegionalWarTracker().getMapWarState(fPlayer.getAlliance());
+            if ("crystal-down".equals(warState)) {
+                return NamedTextColor.RED;
+            }
+            if ("contested".equals(warState)) {
+                return NamedTextColor.YELLOW;
+            }
+            if ("waypoint".equals(warState)) {
+                return NamedTextColor.AQUA;
+            }
+        }
         Alliance alliance = region.getAlliance();
         if (alliance == null) {
             return NamedTextColor.GRAY;

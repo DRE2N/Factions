@@ -5,15 +5,18 @@ import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
 import de.erethon.factions.event.FPlayerCrossRegionEvent;
+import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
 import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.war.structure.CrystalWarStructure;
 import de.erethon.factions.war.structure.WarStructure;
+import net.kyori.adventure.text.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.CombatEntry;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import org.bukkit.Location;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
@@ -26,10 +29,14 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Fyreum
@@ -37,6 +44,7 @@ import java.util.List;
 public class WarListener implements Listener {
 
     final Factions plugin = Factions.get();
+    private final Map<UUID, PendingWarRespawn> pendingWarRespawns = new HashMap<>();
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
@@ -51,7 +59,7 @@ public class WarListener implements Listener {
             return;
         }
         for (WarStructure objective : warRegion.getStructures(WarStructure.class).values()) {
-            boolean inRange = objective.containsPosition(event.getTo());
+            boolean inRange = objective.containsPlayerPosition(event.getTo());
             if (objective.isActive(fPlayer)) {
                 if (inRange) {
                     continue;
@@ -61,6 +69,11 @@ public class WarListener implements Listener {
                 } else {
                     objective.onExit(fPlayer);
                 }
+            } else if (objective.isSpectator(fPlayer)) {
+                if (inRange) {
+                    continue;
+                }
+                objective.onSpectatorExit(fPlayer);
             } else if (inRange) {
                 if (isSpectator(fPlayer)) {
                     objective.onSpectatorEnter(fPlayer);
@@ -78,14 +91,14 @@ public class WarListener implements Listener {
             return;
         }
         // Remove previous objectives
-        for (WarStructure objective : fPlayer.getActiveWarObjectives()) {
+        for (WarStructure objective : List.copyOf(fPlayer.getActiveWarObjectives())) {
             objective.onExit(fPlayer);
         }
         fPlayer.getActiveWarObjectives().clear();
     }
 
     private boolean isSpectator(FPlayer fPlayer) {
-        return fPlayer.getAlliance() == null || fPlayer.getPlayer().getGameMode() != GameMode.SURVIVAL;
+        return fPlayer.getAlliance() == null || fPlayer.getPlayer().getGameMode() == GameMode.SPECTATOR;
     }
 
     @EventHandler
@@ -97,9 +110,11 @@ public class WarListener implements Listener {
         }
         FPlayer fKilled = plugin.getFPlayerCache().getByPlayer(event.getPlayer());
         FPlayer fKiller = plugin.getFPlayerCache().getByPlayer(killer);
-        if (fKilled.getCurrentRegion() != null && fKilled.getCurrentRegion().getType().isWarGround() && fKilled.getRelation(fKiller) != Relation.ENEMY) {
+        Region deathRegion = fKilled.getCurrentRegion();
+        if (deathRegion != null && deathRegion.getType().isWarGround() && fKilled.getRelation(fKiller) != Relation.ENEMY) {
             return;
         }
+        prepareWarRespawn(event, fKilled, deathRegion);
         // Update stats for the killed player
         WarStats kdStats = fKilled.getWarStats();
         kdStats.deaths++;
@@ -110,7 +125,13 @@ public class WarListener implements Listener {
         if (++krStats.killStreak > krStats.highestKillStreak) {
             krStats.highestKillStreak = krStats.killStreak;
         }
-        /* Update stats for assisting players - needs Papyrus patch again
+        if (plugin.getCurrentWarPhase().isInfluencingScoring() && fKiller.getAlliance() != null) {
+            plugin.getWar().getScore().add(fKiller.getAlliance(), 1, WarScoreType.PLAYER_KILL);
+        }
+        if (deathRegion instanceof WarRegion warRegion && fKiller.getAlliance() == warRegion.getAlliance()) {
+            warRegion.getRegionalWarTracker().addContribution(fKiller.getFaction(), "defense_kills", 1);
+        }
+        // Update stats for assisting players - needs Papyrus patch again
         List<CombatEntry> entries = sKilled.getCombatTracker().entries;
         if (entries.size() > 1) {
             for (int i = 0; i < entries.size() - 1; i++) {
@@ -120,6 +141,7 @@ public class WarListener implements Listener {
                 }
                 FPlayer fAssist = plugin.getFPlayerCache().getByPlayer(player);
                 fAssist.getWarStats().assists++;
+                fKiller = fAssist;
             }
         }
         // Update war score if necessary
@@ -134,7 +156,55 @@ public class WarListener implements Listener {
         if (region == null || region.getType().isWarGround()) {
             return;
         }
-        region.getRegionalWarTracker().addKill(krAlliance);*/
+        if (deathRegion instanceof WarRegion warRegion && fKiller.getAlliance() == warRegion.getAlliance()) {
+            warRegion.getRegionalWarTracker().addKill(krAlliance);
+        }
+    }
+
+    private void prepareWarRespawn(PlayerDeathEvent event, FPlayer fKilled, Region deathRegion) {
+        if (deathRegion == null || !deathRegion.getType().isWarGround() || !plugin.getCurrentWarPhase().isAllowPvP()) {
+            return;
+        }
+        Alliance alliance = fKilled.getAlliance();
+        if (alliance == null) {
+            return;
+        }
+        event.setKeepInventory(true);
+        event.setKeepLevel(true);
+        event.getDrops().clear();
+        event.setDroppedExp(0);
+
+        WarRegion waypointRegion = plugin.getWar().getNearestWaypoint(event.getPlayer().getLocation(), alliance);
+        if (waypointRegion != null) {
+            Location waypoint = waypointRegion.getRegionalWarTracker().getWaypointSpawn();
+            if (waypoint != null) {
+                pendingWarRespawns.put(event.getPlayer().getUniqueId(), new PendingWarRespawn(waypoint,
+                        FMessage.WAR_RESPAWN_WAYPOINT.message(waypointRegion.getName()), waypointRegion));
+                return;
+            }
+        }
+        Faction faction = fKilled.getFaction();
+        if (faction != null && faction.getFHome() != null) {
+            pendingWarRespawns.put(event.getPlayer().getUniqueId(), new PendingWarRespawn(faction.getFHome(),
+                    FMessage.WAR_RESPAWN_FACTION_HOME.message(), null));
+        }
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent event) {
+        PendingWarRespawn pending = pendingWarRespawns.remove(event.getPlayer().getUniqueId());
+        if (pending == null) {
+            return;
+        }
+        event.setRespawnLocation(pending.location());
+        event.getPlayer().sendMessage(pending.message());
+        if (pending.waypointRegion() != null) {
+            FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(event.getPlayer());
+            pending.waypointRegion().getRegionalWarTracker().addContribution(fPlayer.getFaction(), "waypoint_uses_enabled", 1);
+        }
+    }
+
+    private record PendingWarRespawn(Location location, Component message, WarRegion waypointRegion) {
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -145,6 +215,9 @@ public class WarListener implements Listener {
         }
         event.setCancelled(true);
         if (!(event.getDamager() instanceof Player player)) {
+            return;
+        }
+        if (!plugin.getCurrentWarPhase().isAllowCapture()) {
             return;
         }
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
@@ -172,14 +245,7 @@ public class WarListener implements Listener {
         if (crystal == null) {
             return;
         }
-        Player player = event.getPlayer();
-        ItemStack item = player.getInventory().getItem(event.getHand());
-        if (item.getType() != Material.NETHER_STAR) {
-            return;
-        }
-        item.setAmount(item.getAmount() - 1);
-        player.getInventory().setItem(event.getHand(), item.getAmount() == 0 ? null : item);
-        crystal.addEnergy(20); // todo: Make energy configurable
+        event.setCancelled(true);
     }
 
     private CrystalWarStructure getCrystalObjective(org.bukkit.entity.Entity entity) {

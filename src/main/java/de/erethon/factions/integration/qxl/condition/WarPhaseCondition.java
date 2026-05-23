@@ -17,7 +17,7 @@ import de.erethon.questsxl.common.Quester;
 )
 public class WarPhaseCondition extends FBaseCondition {
 
-    @QParamDoc(name = "phase", description = "The war phase to check for. One of `capital`, `regular`, `scoring`, `peace`", required = true)
+    @QParamDoc(name = "phase", description = "The war phase to check for. One of `capital`, `truce`, `scoring`, `peace`", required = true)
     private WarPhase warPhase;
 
     @Override

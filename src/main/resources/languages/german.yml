@@ -207,10 +207,6 @@ cmd:
       success: "<green>Die Bedingung <dark_green><arg:0></dark_green> wurde aus dem Portal <dark_green><arg:1></dark_green> entfernt."
     setLocation:
       success: "<green>Die Position der Allianz <dark_green><arg:0></dark_green> für das Portal <dark_green><arg:1></dark_green> wurde gesetzt."
-  pos1:
-    success: "<green>Die erste Position wurde zu <dark_green><arg:0></dark_green> gesetzt."
-  pos2:
-    success: "<green>Die zweite Position wurde zu <dark_green><arg:0></dark_green> gesetzt."
   region:
     addChunk:
       success: "<green>Der Chunk wurde der Region <dark_green><arg:0></dark_green> erfolgreich hinzugefügt."
@@ -548,17 +544,76 @@ ui:
     occupyProgress: "<b><dark_gray>[</b><dark_green><arg:0></dark_green> <dark_gray>-</dark_gray> <green><arg:1>%</green><b><dark_gray>]</dark_gray></b> <green>  Gebiet wird eingenommen...</green>"
     occupyProgressOther: "<dark_gray><b>[</b><dark_red><arg:0></dark_red> <dark_gray>-</dark_gray> <red><arg:1>%</red><b>]</b></dark_gray> <gold>  Gegnerischer Einfluss schwindet...</gold>"
     occupyNeutral: "<dark_gray><b>[</b><yellow>0%</yellow><b>]</b></dark_gray> <gray>  Gebiet nicht umkämpft.</gray>"
+    occupyCaptureDisabled: "<dark_gray><b>[</b><yellow>0%</yellow><b>]</b></dark_gray> <gray>  Eroberung ist in dieser Phase deaktiviert.</gray>"
+    occupyCrystalLocked: "<dark_gray><b>[</b><yellow>0%</yellow><b>]</b></dark_gray> <gray>  Eroberung ist durch geladene Kristalle gesperrt.</gray>"
     occupied: "<b><dark_gray>[</b><dark_green><arg:0></dark_green> <dark_gray>-</dark_gray> <green>100%</green><b><dark_gray>]</dark_gray></b> <green>  Gebiet wurde eingenommen.</green>"
     occupiedContested: "<b><dark_gray>[</b><dark_green><arg:0></dark_green> <dark_gray>-</dark_gray> <green>100%</green><b><dark_gray>]</dark_gray></b> <red>  Gebiet wird angegriffen!</red>"
     occupiedContestedOther: "<b><dark_gray>[</b><dark_red><arg:0></dark_red> <dark_gray>-</dark_gray> <red>100%</red><b><dark_gray>]</dark_gray></b> <red>  Gebiet wird angegriffen!</red>"
 war:
+  command:
+    header: "Krieg"
+    phase: "<gray>Phase<dark_gray>:</dark_gray> <gold><arg:0>"
+    scoreLine: "<gray><arg:0><dark_gray>:</dark_gray> <gold><arg:1></gold> Punkte, <green>+<arg:2></green> beim nächsten Tick, <gold><arg:3></gold> SP"
+    nearestHint: "<gray>Nutze <green>/f war nearest</green> für einen Wegpunkt oder aktiven Kampf."
+    nearestFight: "<yellow>Nächster aktiver Kampf: <gold><arg:0></gold> bei <gold><arg:1></gold>."
+    nearestWaypoint: "<green>Nächster Allianz-Wegpunkt: <gold><arg:0></gold> bei <gold><arg:1></gold>."
+    nearestNone: "<gray>Kein aktiver Kampf und kein gültiger Allianz-Wegpunkt gefunden."
+    objectiveLine: "<gray><arg:0> <dark_gray>|</dark_gray> <arg:1> <dark_gray>|</dark_gray> Besitzer=<arg:2> <dark_gray>|</dark_gray> +<arg:3> <dark_gray>|</dark_gray> <arg:4>"
+  caravan:
+    arrived: "<green>Eine Karawane hat <gold><arg:0></gold> Reparaturvorräte nach <gold><arg:1></gold> geliefert."
+  carrier:
+    deposit: "<green>Kristall wird aufgeladen..."
+    noFaction: "<red>Du kannst den Träger nicht angreifen, wenn du in keiner Fraktion bist."
+    killed: "<red>Du hast den Kristallladungsträger getötet!"
+    killedHint: "<gray>Bring die Kristallladung zu deinem Kristall, um ihn aufzuladen."
+    spawn: "<green>Ein Kristallladungsträger ist erschienen."
+  respawn:
+    waypoint: "<green>Kriegsrespawn: Rückkehr am Wegpunkt in <gold><arg:0></gold>."
+    factionHome: "<green>Kriegsrespawn: Rückkehr an deinem Fraktionshome."
   end:
     ranking: " <arg:0> <dark_gray>(<gray><arg:1></gray>)</dark_gray>"
     winner: "<arg:0> hat den Allianzkrieg gewonnen und den Segen des alten Kaisers erhalten!"
   objective:
+    claimed: "<green>Deine Fraktion betreibt nun <gold><arg:0></gold>."
+    repair:
+      started: "<green>Reparaturdurchlauf für <gold><arg:0></gold> gestartet."
+      progress: "<green>Repariere <gold><arg:0></gold> <dark_gray>|</dark_gray> <gold><arg:1>%</gold> <dark_gray>|</dark_gray> Y <gold><arg:2></gold> <dark_gray>|</dark_gray> <gold><arg:3></gold> Vorräte"
+    upgrade:
+      bought: "<green>Objekt-Upgrade <gold><arg:0></gold> für <gold><arg:1></gold> gekauft."
+    waypoint:
+      enabled: "<green>Wegpunkt bei <gold><arg:0></gold> aktiviert."
+      notSet: "nicht gesetzt"
+      setState: "gesetzt"
+      enabledState: "aktiviert"
+      lockedState: "gesetzt, Upgrade gesperrt"
+    info:
+      name: "<gray>Objekt<dark_gray>:</dark_gray> <gold><arg:0>"
+      alliance: "<gray>Allianz<dark_gray>:</dark_gray> <gold><arg:0>"
+      allianceNone: "<gray>Allianz<dark_gray>:</dark_gray> <dark_gray>Keine"
+      owner: "<gray>Besitzer<dark_gray>:</dark_gray> <gold><arg:0>"
+      ownerNone: "<gray>Besitzer<dark_gray>:</dark_gray> <dark_gray>Keiner"
+      operator: "<gray>Betreiber<dark_gray>:</dark_gray> <gold><arg:0>"
+      operatorNone: "<gray>Betreiber<dark_gray>:</dark_gray> <dark_gray>Keiner"
+      tier: "<gray>Stufe<dark_gray>:</dark_gray> <gold><arg:0>"
+      pointValue: "<gray>Punktwert<dark_gray>:</dark_gray> <gold><arg:0>"
+      captureUnlockedYes: "<gray>Eroberung freigeschaltet<dark_gray>:</dark_gray> <green>Ja"
+      captureUnlockedNo: "<gray>Eroberung freigeschaltet<dark_gray>:</dark_gray> <red>Nein"
+      contestedYes: "<gray>Umkämpft<dark_gray>:</dark_gray> <green>Ja</green> <dark_gray>(</dark_gray><gold><arg:0>%</gold><dark_gray>)</dark_gray>"
+      contestedNo: "<gray>Umkämpft<dark_gray>:</dark_gray> <red>Nein</red> <dark_gray>(</dark_gray><gold><arg:0>%</gold><dark_gray>)</dark_gray>"
+      waypointNotSet: "<gray>Wegpunkt<dark_gray>:</dark_gray> <dark_gray>nicht gesetzt"
+      waypointSet: "<gray>Wegpunkt<dark_gray>:</dark_gray> <gold>gesetzt"
+      waypointEnabled: "<gray>Wegpunkt<dark_gray>:</dark_gray> <green>aktiviert"
+      waypointLocked: "<gray>Wegpunkt<dark_gray>:</dark_gray> <yellow>gesetzt, Upgrade gesperrt"
+      waypointAvailableNotSet: "<gray>Wegpunkt<dark_gray>:</dark_gray> <dark_gray>nicht gesetzt</dark_gray>, <gray>verfügbar<dark_gray>:</dark_gray> <red>Nein"
+      waypointAvailableYes: "<gray>Wegpunkt<dark_gray>:</dark_gray> <gold>gesetzt</gold>, <gray>verfügbar<dark_gray>:</dark_gray> <green>Ja"
+      waypointAvailableNo: "<gray>Wegpunkt<dark_gray>:</dark_gray> <gold>gesetzt</gold>, <gray>verfügbar<dark_gray>:</dark_gray> <red>Nein"
+      repairSupplies: "<gray>Reparaturvorräte<dark_gray>:</dark_gray> <gold><arg:0>"
+      upgrades: "<gray>Upgrades<dark_gray>:</dark_gray> <gold><arg:0>"
+      crystals: "<gray>Kristalle<dark_gray>:</dark_gray> <gold><arg:0></gold> geladen"
     crystal:
       destroyed: "<gray>Der Kristall von <gold><arg:0></gold> in der Region <gold><arg:1></gold> wurde zerstört."
       destroyedByPlayer: "<gray>Der Kristall von <gold><arg:0></gold> in der Region <gold><arg:1></gold> wurde von <gold><arg:2></gold> zerstört."
+      recharged: "<green>Der Kristall bei <gold><arg:0></gold> wurde aufgeladen."
   region:
     occupied: "Die Allianz <arg:0> hat die Region <gold><arg:0></gold> eingenommen."
   phase:
@@ -571,11 +626,11 @@ war:
       announcement: "<dark_red>Die Hauptstadteroberung hat begonnen. Die Hauptstadt kann nun umkämpft werden."
       displayName: "Hauptstadteroberung"
     hover: "<gold>PVP<dark_gray>:</dark_gray> <arg:0></gold> <br><gold>Punktevergabe<dark_gray>:</dark_gray> <arg:1></gold><br><gold>Offene Hauptstadt<dark_gray>:</dark_gray> <arg:2></gold><br>"
-    regular:
-      announcement: "<red>Die Kampfphase ist vorbei. PvP in Grenzgebieten ist weiterhin <green>aktiviert</green>."
-      displayName: "Normalzustand"
+    truce:
+      announcement: "<gold>Die Waffenruhe hat begonnen. PvP bleibt aktiv, Eroberungen sind gesperrt und besetzte Ruinen können befestigt werden."
+      displayName: "Waffenruhe"
     scoring:
-      announcement: "<dark_red>Die Kampfphase hat begonnen. Kriegsgebiete beeinflussen nun in die Kriegsbewertung."
+      announcement: "<dark_red>Die Kampfphase hat begonnen. Kriegsgebiete können jetzt umkämpft, eingenommen und gewertet werden.</dark_red>"
       displayName: "Kampfphase"
     peace:
       announcement: "<dark_green>Der Krieg ist vorübergehend beendet. Kriegsgebiete können nicht mehr umkämpft werden und PvP ist <red>deaktiviert</red>."

@@ -9,13 +9,11 @@ import de.erethon.factions.region.LazyChunk;
 import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.util.FBroadcastUtil;
 import de.erethon.factions.war.entities.CrystalChargeCarrier;
-import de.erethon.factions.war.entities.CrystalMob;
 import io.papermc.paper.math.Position;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
-import net.minecraft.world.entity.Entity;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -23,9 +21,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.Display;
+import org.bukkit.entity.EnderCrystal;
+import org.bukkit.entity.Interaction;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
@@ -59,13 +57,17 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
     protected double energyGainPerCarrier;
     protected double energyLossForCarrierSpawn;
     /* Temporary */
-    protected CrystalMob crystal;
+    protected EnderCrystal crystal;
+    protected Interaction crystalHitbox;
     protected double energy;
     protected double energyAtLastCarrierSpawn;
     protected TextDisplay energyDisplay;
     protected Location crystalLocation;
     protected Set<CrystalChargeCarrier> carriers = new HashSet<>();
     protected boolean defenderCrystal;
+    protected boolean depleted;
+    protected long carrierSpawnInterval;
+    protected long ticksSinceCarrierSpawn;
 
     public CrystalWarStructure(@NotNull WarRegion region, @NotNull ConfigurationSection config) {
         super(region, config);
@@ -77,12 +79,15 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
 
     @Override
     protected void load(@NotNull ConfigurationSection config) {
+        super.load(config);
         this.alliance = plugin.getAllianceCache().getById(config.getInt("alliance", -1));
         this.energyLossOnDamage = config.getDouble("energyLossOnDamage", 10.0);
         this.energyLossPerInterval = config.getDouble("energyLossPerInterval", 1.0);
         this.maxEnergy = config.getDouble("maxEnergy", 600.0);
         this.energyGainPerCarrier = config.getDouble("energyGainPerCarrier", 200.0);
         this.energyLossForCarrierSpawn = config.getDouble("energyLossForCarrierSpawn", 180.0);
+        this.carrierSpawnInterval = config.getLong("carrierSpawnInterval", 120);
+        this.depleted = config.getBoolean("depleted", false);
         this.energy = maxEnergy;
 
         World world = region.getWorld();
@@ -101,10 +106,13 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
 
     @Override
     public void tick() {
+        if (depleted || alliance == null || energy >= maxEnergy || !plugin.getCurrentWarPhase().isAllowCapture()) {
+            return;
+        }
         removeEnergy(defenderCrystal ? energyLossPerInterval : energyLossPerInterval * 1.25, null);
-        if (energy - energyAtLastCarrierSpawn >= energyLossForCarrierSpawn) {
+        if (++ticksSinceCarrierSpawn >= carrierSpawnInterval && maxEnergy - energy >= energyLossForCarrierSpawn) {
             spawnCrystalCarrier();
-            energyAtLastCarrierSpawn = energy;
+            ticksSinceCarrierSpawn = 0;
         }
     }
 
@@ -117,24 +125,44 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
     }
 
     public void destroy(@Nullable FPlayer damager) {
+        if (depleted) {
+            return;
+        }
         if (damager != null) {
             FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED_BY_PLAYER, alliance.getDisplayShortName(), region.getName(true), damager.getLastName());
         } else {
             FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_DESYTROYED, alliance.getDisplayShortName(), region.getName(true));
         }
         deactivate();
-        deleteStructure();
+        depleted = true;
         crystalLocation.createExplosion(4f, false, false);
+    }
+
+    public void forceDeplete(@Nullable FPlayer causingPlayer) {
+        energy = 0;
+        displayEnergy();
+        destroy(causingPlayer);
+    }
+
+    public void forceRecharge() {
+        energy = maxEnergy;
+        depleted = false;
+        ticksSinceCarrierSpawn = 0;
+        displayEnergy();
+        if (plugin.getCurrentWarPhase().isAllowPvP()) {
+            activate();
+        }
     }
 
     @EventHandler
     private void onInteract(PlayerInteractEntityEvent event) {
-        if (((CraftEntity) event.getRightClicked()).getHandle() != crystal) {
+        if (crystalHitbox == null || !event.getRightClicked().getUniqueId().equals(crystalHitbox.getUniqueId())) {
             return;
         }
         Player player = event.getPlayer();
         FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(player);
-        if (!player.getPersistentDataContainer().has(CrystalChargeCarrier.CARRIER_PLAYER_KEY) || fPlayer.getFaction().getRelation(alliance) == Relation.ENEMY) {
+        if (!player.getPersistentDataContainer().has(CrystalChargeCarrier.CARRIER_PLAYER_KEY)
+                || fPlayer.getAlliance() != alliance) {
             return;
         }
         handleCarrierDeposit(player);
@@ -180,7 +208,7 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
         chunkLoad.thenAccept(c -> {
             CrystalChargeCarrier carrier = new CrystalChargeCarrier(world, new Location(world, finalLocationX, world.getHighestBlockYAt((int) finalLocationX, (int) finalLocationZ), finalLocationZ), region, alliance);
             carriers.add(carrier);
-            Title title = Title.title(Component.empty(), Component.translatable("factions.war.carrier.spawn"));
+            Title title = Title.title(Component.empty(), FMessage.WAR_CARRIER_SPAWN.message());
             region.showTitle(title);
         });
 
@@ -191,7 +219,7 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
         removeCarryingPlayerBuffs(player);
         player.playSound(Sound.sound(org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, Sound.Source.RECORD, 0.8f, 0.6f));
         player.playSound(Sound.sound(org.bukkit.Sound.ENTITY_PHANTOM_SWOOP, Sound.Source.RECORD, 0.8f, 1.0f));
-        Title title = Title.title(Component.empty(), Component.translatable("factions.war.carrier.deposit"));
+        Title title = Title.title(Component.empty(), FMessage.WAR_CARRIER_DEPOSIT.message());
         player.showTitle(title);
         BukkitRunnable animation = new BukkitRunnable() {
             int i = 0;
@@ -200,10 +228,15 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
             public void run() {
                 if (i++ > 40) {
                     addEnergy(energyGainPerCarrier);
+                    if (depleted && energy > 0) {
+                        depleted = false;
+                        activate();
+                    }
+                    FBroadcastUtil.broadcastWar(FMessage.WAR_OBJECTIVE_CRYSTAL_RECHARGED, region.getName());
                     cancel();
                     return;
                 }
-                crystal.getDataCrystal().setBeamTarget(CraftLocation.toBlockPos(player.getLocation().add(0, 1, 0)));
+                crystal.setBeamTarget(player.getLocation().add(0, 1, 0));
             }
         };
         animation.runTaskTimer(plugin, 0, 1);
@@ -247,10 +280,24 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
     @Override
     public void activate() {
         super.activate();
+        if (depleted || crystal != null) {
+            return;
+        }
         World world = crystalLocation.getWorld();
-        crystal = new CrystalMob(world, crystalLocation.getX(), crystalLocation.getY(), crystalLocation.getZ());
-        crystal.getBukkitEntity().getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name);
-        crystal.getBukkitEntity().addPassenger(energyDisplay = world.spawn(crystalLocation, TextDisplay.class, display -> {
+        crystal = world.spawn(crystalLocation, EnderCrystal.class, entity -> {
+            entity.setShowingBottom(false);
+            entity.setInvulnerable(true);
+            entity.setPersistent(false);
+            entity.getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name);
+        });
+        crystalHitbox = world.spawn(crystalLocation, Interaction.class, interaction -> {
+            interaction.setInteractionWidth(2.2f);
+            interaction.setInteractionHeight(3.0f);
+            interaction.setResponsive(true);
+            interaction.setPersistent(false);
+            interaction.getPersistentDataContainer().set(NAME_KEY, PersistentDataType.STRING, name);
+        });
+        crystal.addPassenger(energyDisplay = world.spawn(crystalLocation, TextDisplay.class, display -> {
             display.setBillboard(Display.Billboard.VERTICAL);
             display.setPersistent(false);
             displayEnergy(display);
@@ -260,11 +307,22 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
     @Override
     public void deactivate() {
         super.deactivate();
-        energyDisplay.remove();
-        crystal.remove(Entity.RemovalReason.DISCARDED);
-        for (CrystalChargeCarrier carrier : carriers) {
-            carrier.remove(Entity.RemovalReason.DISCARDED);
+        if (energyDisplay != null) {
+            energyDisplay.remove();
+            energyDisplay = null;
         }
+        if (crystal != null) {
+            crystal.remove();
+            crystal = null;
+        }
+        if (crystalHitbox != null) {
+            crystalHitbox.remove();
+            crystalHitbox = null;
+        }
+        for (CrystalChargeCarrier carrier : carriers) {
+            carrier.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+        }
+        carriers.clear();
     }
 
     @Override
@@ -278,6 +336,13 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
     @Override
     public void onTemporaryOccupy(@NotNull Alliance alliance) {
         deactivate();
+        this.alliance = alliance;
+        this.energy = maxEnergy;
+        this.depleted = false;
+        this.ticksSinceCarrierSpawn = 0;
+        if (plugin.getCurrentWarPhase().isAllowPvP()) {
+            activate();
+        }
     }
 
     private void displayEnergy() {
@@ -302,12 +367,14 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
     @Override
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> serialized = super.serialize();
-        serialized.put("alliance", alliance);
+        serialized.put("alliance", alliance == null ? null : alliance.getId());
         serialized.put("energyLossOnDamage", energyLossOnDamage);
         serialized.put("energyLossPerInterval", energyLossPerInterval);
         serialized.put("maxEnergy", maxEnergy);
         serialized.put("energyGainPerCarrier", energyGainPerCarrier);
         serialized.put("energyLossForCarrierSpawn", energyLossForCarrierSpawn);
+        serialized.put("carrierSpawnInterval", carrierSpawnInterval);
+        serialized.put("depleted", depleted);
         return serialized;
     }
 
@@ -327,6 +394,18 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
 
     public void setEnergyLossPerInterval(double energyLossPerInterval) {
         this.energyLossPerInterval = energyLossPerInterval;
+    }
+
+    public void setEnergyGainPerCarrier(double energyGainPerCarrier) {
+        this.energyGainPerCarrier = energyGainPerCarrier;
+    }
+
+    public void setEnergyLossForCarrierSpawn(double energyLossForCarrierSpawn) {
+        this.energyLossForCarrierSpawn = energyLossForCarrierSpawn;
+    }
+
+    public void setCarrierSpawnInterval(long carrierSpawnInterval) {
+        this.carrierSpawnInterval = carrierSpawnInterval;
     }
 
     public double getMaxEnergy() {
@@ -352,10 +431,19 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
 
     public void addEnergy(double amount) {
         this.energy = Math.min(energy + amount, maxEnergy);
+        if (energy > 0 && depleted) {
+            depleted = false;
+            if (plugin.getCurrentWarPhase().isAllowPvP()) {
+                activate();
+            }
+        }
         displayEnergy();
     }
 
     public void removeEnergy(double amount, @Nullable FPlayer causingPlayer) {
+        if (depleted) {
+            return;
+        }
         energy -= amount;
         displayEnergy();
         if (energy <= 0) {
@@ -372,8 +460,12 @@ public class CrystalWarStructure extends TickingWarStructure implements Listener
         return this;
     }
 
-    public @Nullable CrystalMob getCrystal() {
+    public @Nullable EnderCrystal getCrystal() {
         return crystal;
+    }
+
+    public boolean isDepleted() {
+        return depleted;
     }
 
     public boolean isDefenderCrystal() {

@@ -20,7 +20,7 @@ public class RegionStructureCommand extends FCommand {
         setDescription("Befehle rund um Regionsstrukturen");
         setHelpType(HelpType.LISTED);
         setListedHelpHeader("Regionsstrukturenbefehle");
-        addSubCommands(new RegionStructureCreateCommand(), new RegionStructureListCommand());
+        addSubCommands(new RegionStructureCreateCommand(), new RegionStructureEditCommand(), new RegionStructureListCommand());
         setAllExecutionPrefixes();
     }
 

@@ -17,10 +17,11 @@ import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FollowMobGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -43,6 +44,7 @@ public class CaravanGuard extends Vindicator {
     private ServerPlayer dataPlayer;
     private ServerLevel serverLevel;
     private CaravanCarrier carrier;
+    private boolean caravanGoalsRegistered;
 
     public CaravanGuard(EntityType<? extends Vindicator> type, Level world) {
         super(type, world);
@@ -52,6 +54,7 @@ public class CaravanGuard extends Vindicator {
 
     public CaravanGuard(CaravanCarrier carrier) {
         this(EntityType.VINDICATOR, carrier.level());
+        this.carrier = carrier;
         //syncAttributes = false; Don't think we still need this
         setPos(carrier.getX(), carrier.getY(), carrier.getZ());
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(plugin.getFConfig().getDefaultObjectiveGuardHealth());
@@ -62,12 +65,13 @@ public class CaravanGuard extends Vindicator {
             FLogger.WAR.log("Failed to create a fake player for a caravan guard");
             return;
         }
+        registerCaravanGoals();
         carrier.level().addFreshEntity(this);
         persistenceRequired = false;
     }
 
     private void createPlayerStuff(ServerLevel level) {
-        CraftPlayerProfile craftPlayerProfile = new CraftPlayerProfile(uuid, "Caravan Guard");
+        CraftPlayerProfile craftPlayerProfile = new CraftPlayerProfile(uuid, "Guard");
         this.dataPlayer = new ServerPlayer(MinecraftServer.getServer(), level, craftPlayerProfile.buildGameProfile(), new ClientInformation("en", 0, ChatVisiblity.SYSTEM, false, 1, HumanoidArm.RIGHT, false, false, ParticleStatus.ALL));
         dataPlayer.getInventory().add(100, new ItemStack(Items.CHAINMAIL_BOOTS));
         dataPlayer.getInventory().add(101, new ItemStack(Items.CHAINMAIL_LEGGINGS));
@@ -77,10 +81,55 @@ public class CaravanGuard extends Vindicator {
 
     @Override
     protected void registerGoals() {
-        goalSelector.addGoal(0, new FollowMobGoal(carrier, 0.4, 3, 16));
+        // Called from the Mob superclass constructor before our carrier field can be assigned.
+    }
+
+    private void registerCaravanGoals() {
+        if (caravanGoalsRegistered || carrier == null) {
+            return;
+        }
+        caravanGoalsRegistered = true;
         goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.0, true));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, carrier::isFactionEnemy));
+    }
+
+    public CaravanCarrier getCarrier() {
+        return carrier;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (carrier == null || carrier.isRemoved() || !carrier.isAlive()) {
+            discard();
+        }
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
+    protected void doPush(@NotNull Entity entity) {
+        if (entity instanceof CaravanCarrier || entity instanceof CaravanGuard) {
+            return;
+        }
+        super.doPush(entity);
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel level, @NotNull DamageSource source, float amount) {
+        if (carrier != null && source.getEntity() instanceof Player player && !carrier.isFactionEnemy(player, level)) {
+            return false;
+        }
+        return super.hurtServer(level, source, amount);
+    }
+
+    @Override
+    public boolean shouldBeSaved() {
+        return false;
     }
 
     @Override
@@ -109,6 +158,8 @@ public class CaravanGuard extends Vindicator {
     @Override
     public void addAdditionalSaveData(@NotNull ValueOutput output) {
         super.addAdditionalSaveData(output);
-        output.putString("factions-caravan-uuid", carrier.getUUID().toString());
+        if (carrier != null) {
+            output.putString("factions-caravan-uuid", carrier.getUUID().toString());
+        }
     }
 }

@@ -4,7 +4,11 @@ import de.erethon.bedrock.misc.FileUtil;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.region.WarRegion;
+import de.erethon.factions.war.entities.caravans.CaravanRouting;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.HashSet;
@@ -21,6 +25,7 @@ public class War {
 
     private WarPhaseManager phaseManager;
     private WarScore score;
+    private CaravanRouting caravanRouting;
     private YamlConfiguration storage;
     private final Set<RegionalWarTracker> regionsAtWar = new HashSet<>();
     private final Region theanorRegion;
@@ -44,6 +49,7 @@ public class War {
             plugin.getLogger().warning("Region named Theanor region not found. Please create it.");
             return;
         }
+        caravanRouting = new CaravanRouting();
         load();
     }
 
@@ -53,6 +59,10 @@ public class War {
 
     public WarScore getScore() {
         return score;
+    }
+
+    public CaravanRouting getCaravanRouting() {
+        return caravanRouting;
     }
 
     public WarPhase getCurrentPhase() {
@@ -65,6 +75,38 @@ public class War {
 
     public void unregisterRegion(RegionalWarTracker tracker) {
         regionsAtWar.remove(tracker);
+    }
+
+    public @Nullable WarRegion getNearestWaypoint(@Nullable Location location, @Nullable Alliance alliance) {
+        if (location == null || location.getWorld() == null || alliance == null) {
+            return null;
+        }
+        WarRegion nearest = null;
+        double nearestDistance = Double.MAX_VALUE;
+        for (RegionalWarTracker tracker : regionsAtWar) {
+            Region region = tracker.getRegion();
+            if (!(region instanceof WarRegion warRegion)) {
+                continue;
+            }
+            Location waypoint = tracker.getWaypointSpawn();
+            if (waypoint == null || waypoint.getWorld() == null || waypoint.getWorld() != location.getWorld()) {
+                continue;
+            }
+            if (!tracker.isWaypointAvailable(alliance)) {
+                continue;
+            }
+            double distance = waypoint.distanceSquared(location);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearest = warRegion;
+            }
+        }
+        return nearest;
+    }
+
+    public @Nullable Location getNearestWaypointLocation(@Nullable Location location, @Nullable Alliance alliance) {
+        WarRegion region = getNearestWaypoint(location, alliance);
+        return region == null ? null : region.getRegionalWarTracker().getWaypointSpawn();
     }
 
     public void save() {

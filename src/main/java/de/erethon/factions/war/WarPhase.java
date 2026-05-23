@@ -27,18 +27,29 @@ import java.util.function.Predicate;
  */
 public enum WarPhase {
 
-    CAPITAL(FMessage.WAR_PHASE_CAPITAL_DISPLAY_NAME, FMessage.WAR_PHASE_CAPITAL_ANNOUNCEMENT),
-    REGULAR(FMessage.WAR_PHASE_REGULAR_DISPLAY_NAME, FMessage.WAR_PHASE_REGULAR_ANNOUNCEMENT),
-    SCORING(FMessage.WAR_PHASE_SCORING_DISPLAY_NAME, FMessage.WAR_PHASE_SCORING_ANNOUNCEMENT),
-    PEACE(FMessage.WAR_PHASE_PEACE_DISPLAY_NAME, FMessage.WAR_PHASE_PEACE_ANNOUNCEMENT),
-    UNDEFINED(FMessage.WAR_PHASE_UNDEFINED_DISPLAY_NAME, FMessage.WAR_PHASE_UNDEFINED_ANNOUNCEMENT); // do not use as an actual phase
+    CAPITAL(FMessage.WAR_PHASE_CAPITAL_DISPLAY_NAME, FMessage.WAR_PHASE_CAPITAL_ANNOUNCEMENT, true, true, false, true, true),
+    TRUCE(FMessage.WAR_PHASE_TRUCE_DISPLAY_NAME, FMessage.WAR_PHASE_TRUCE_ANNOUNCEMENT, true, false, true, false, false),
+    SCORING(FMessage.WAR_PHASE_SCORING_DISPLAY_NAME, FMessage.WAR_PHASE_SCORING_ANNOUNCEMENT, true, true, false, true, false),
+    PEACE(FMessage.WAR_PHASE_PEACE_DISPLAY_NAME, FMessage.WAR_PHASE_PEACE_ANNOUNCEMENT, false, false, false, false, false),
+    UNDEFINED(FMessage.WAR_PHASE_UNDEFINED_DISPLAY_NAME, FMessage.WAR_PHASE_UNDEFINED_ANNOUNCEMENT, false, false, false, false, false); // do not use as an actual phase
 
     private final Factions plugin = Factions.get();
     private final FMessage displayName, announcementMessage;
+    private final boolean allowPvP;
+    private final boolean allowCapture;
+    private final boolean allowRuinBuilding;
+    private final boolean influencingScoring;
+    private final boolean openCapital;
 
-    WarPhase(@NotNull FMessage displayName, @NotNull FMessage announcementMessage) {
+    WarPhase(@NotNull FMessage displayName, @NotNull FMessage announcementMessage, boolean allowPvP, boolean allowCapture,
+             boolean allowRuinBuilding, boolean influencingScoring, boolean openCapital) {
         this.displayName = displayName;
         this.announcementMessage = announcementMessage;
+        this.allowPvP = allowPvP;
+        this.allowCapture = allowCapture;
+        this.allowRuinBuilding = allowRuinBuilding;
+        this.influencingScoring = influencingScoring;
+        this.openCapital = openCapital;
     }
 
     public void onChangeTo(WarPhase nextPhase) {
@@ -84,13 +95,9 @@ public enum WarPhase {
 
     // Called after the SCORING phase has ended
     private void onScoringClose() {
-        FLogger.WAR.log("Awarding alliances relative to their captured regions...");
-        for (Alliance alliance : plugin.getAllianceCache()) {
-            for (Region region : alliance.getTemporaryRegions()) {
-                if (region instanceof WarRegion warRegion) {
-                    alliance.addWarScore(warRegion.getRegionalWarTracker().getRegionValue());
-                }
-            }
+        FLogger.WAR.log("Awarding daily victory points from current WvW score...");
+        if (plugin.getWar() != null && plugin.getWar().getScore() != null) {
+            plugin.getWar().getScore().awardDailyVictoryPoints();
         }
     }
 
@@ -105,7 +112,7 @@ public enum WarPhase {
                 if (!(region instanceof WarRegion warRegion)) {
                     continue;
                 }
-                warRegion.getRegionalWarTracker().reset(false);
+                warRegion.getRegionalWarTracker().clearCycleState();
 
                 if (!region.hasAlliance() || !warRegion.getStructures(WarFortressStructure.class).isEmpty()) {
                     continue;
@@ -158,15 +165,23 @@ public enum WarPhase {
     /* Getters */
 
     public boolean isAllowPvP() {
-        return this != PEACE && this != UNDEFINED;
+        return allowPvP;
+    }
+
+    public boolean isAllowCapture() {
+        return allowCapture;
+    }
+
+    public boolean isAllowRuinBuilding() {
+        return allowRuinBuilding;
     }
 
     public boolean isOpenCapital() {
-        return this == CAPITAL;
+        return openCapital;
     }
 
     public boolean isInfluencingScoring() {
-        return this == SCORING || this == CAPITAL;
+        return influencingScoring;
     }
 
     public @NotNull FMessage getDisplayName() {

@@ -15,6 +15,7 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.world.block.BaseBlock;
 import de.erethon.bedrock.chat.MessageUtil;
 import de.erethon.bedrock.misc.FileUtil;
 import de.erethon.factions.Factions;
@@ -37,11 +38,18 @@ public class FAWESchematicUtils {
     /**
      * Don't run this on the main thread.
      */
-    public static void pasteSlice(String schematicID, Location origin, int slice) {
+    public static int pasteSlice(String schematicID, Location origin, int slice) {
+        return pasteSlice(schematicID, origin, slice, Integer.MAX_VALUE).changedBlocks();
+    }
+
+    /**
+     * Don't run this on the main thread.
+     */
+    public static SlicePasteResult pasteSlice(String schematicID, Location origin, int slice, int maxChangedBlocks) {
         File schematicFile = new File(schematicFolder, schematicID + ".schematic");
         if (!schematicFile.exists()) {
             Factions.getInstance().getLogger().warning("Schematic " + schematicID + " does not exist.");
-            return;
+            return new SlicePasteResult(0, true);
         }
         Clipboard clipboard;
         try {
@@ -49,26 +57,92 @@ public class FAWESchematicUtils {
             clipboard = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.load(schematicFile);
         } catch (Exception e) {
             Factions.getInstance().getLogger().warning("Error loading schematic " + schematicID);
-            return;
+            return new SlicePasteResult(0, true);
         }
         EditSessionBuilder builder = worldEdit.newEditSessionBuilder();
         BukkitWorld world = new BukkitWorld(origin.getWorld());
         builder.world(world);
         try (EditSession session = builder.build()) {
             Region fullRegion = clipboard.getRegion();
-            int maxY = fullRegion.getMaximumY();
-            int y = Math.min(slice, maxY);
-            Factions.log("Full region: " + fullRegion.getMinimumPoint() + " to " + fullRegion.getMaximumPoint());
-            int locationY = fullRegion.getMinimumY() + y;
-            Factions.log("Location Y: " + locationY);
+            int height = fullRegion.getMaximumY() - fullRegion.getMinimumY() + 1;
+            int yOffset = Math.max(0, Math.min(slice, height - 1));
+            int locationY = fullRegion.getMinimumY() + yOffset;
             // Create the slice region
             Region regionToPaste = new CuboidRegion(fullRegion.getMinimumPoint().withY(locationY), fullRegion.getMaximumPoint().withY(locationY));
-            BlockVector3 to = fullRegion.getMinimumPoint().withY(locationY);
-            Factions.log("Slice: " + regionToPaste.getMinimumPoint() + " to " + regionToPaste.getMaximumPoint());
-            // ForwardExtentCopy limited to the slice region
-            ForwardExtentCopy copy = new ForwardExtentCopy(clipboard, regionToPaste, regionToPaste.getMinimumPoint(), session, to);
-            Operations.complete(copy);
+            int changed = 0;
+            boolean completed = true;
+            for (BlockVector3 position : regionToPaste) {
+                BaseBlock source = clipboard.getFullBlock(position);
+                if (source.equals(session.getFullBlock(position))) {
+                    continue;
+                }
+                if (changed >= maxChangedBlocks) {
+                    completed = false;
+                    break;
+                }
+                if (session.setBlock(position, source)) {
+                    changed++;
+                }
+            }
+            return new SlicePasteResult(changed, completed);
+        } catch (Exception e) {
+            Factions.getInstance().getLogger().warning("Error pasting schematic slice " + schematicID + ": " + e.getMessage());
+            return new SlicePasteResult(0, false);
         }
+    }
+
+    public record SlicePasteResult(int changedBlocks, boolean completed) {
+    }
+
+    /**
+     * Restores at most one changed block in a horizontal schematic slice, starting at blockIndex.
+     * Don't run this on the main thread.
+     */
+    public static BlockPasteResult pasteNextBlockInSlice(String schematicID, Location origin, int slice, int blockIndex) {
+        File schematicFile = new File(schematicFolder, schematicID + ".schematic");
+        if (!schematicFile.exists()) {
+            Factions.getInstance().getLogger().warning("Schematic " + schematicID + " does not exist.");
+            return new BlockPasteResult(false, true, blockIndex);
+        }
+        Clipboard clipboard;
+        try {
+            clipboard = BuiltInClipboardFormat.SPONGE_V3_SCHEMATIC.load(schematicFile);
+        } catch (Exception e) {
+            Factions.getInstance().getLogger().warning("Error loading schematic " + schematicID);
+            return new BlockPasteResult(false, true, blockIndex);
+        }
+        EditSessionBuilder builder = worldEdit.newEditSessionBuilder();
+        BukkitWorld world = new BukkitWorld(origin.getWorld());
+        builder.world(world);
+        try (EditSession session = builder.build()) {
+            Region fullRegion = clipboard.getRegion();
+            int height = fullRegion.getMaximumY() - fullRegion.getMinimumY() + 1;
+            int yOffset = Math.max(0, Math.min(slice, height - 1));
+            int locationY = fullRegion.getMinimumY() + yOffset;
+            Region regionToPaste = new CuboidRegion(fullRegion.getMinimumPoint().withY(locationY), fullRegion.getMaximumPoint().withY(locationY));
+            int index = 0;
+            for (BlockVector3 position : regionToPaste) {
+                int currentIndex = index++;
+                if (currentIndex < blockIndex) {
+                    continue;
+                }
+                if (!origin.getWorld().isChunkLoaded(position.x() >> 4, position.z() >> 4)) {
+                    return new BlockPasteResult(false, false, currentIndex);
+                }
+                BaseBlock source = clipboard.getFullBlock(position);
+                if (source.equals(session.getFullBlock(position))) {
+                    continue;
+                }
+                return new BlockPasteResult(session.setBlock(position, source), false, index);
+            }
+            return new BlockPasteResult(false, true, index);
+        } catch (Exception e) {
+            Factions.getInstance().getLogger().warning("Error pasting schematic block " + schematicID + ": " + e.getMessage());
+            return new BlockPasteResult(false, false, blockIndex);
+        }
+    }
+
+    public record BlockPasteResult(boolean changedBlock, boolean completedSlice, int nextBlockIndex) {
     }
 
     /**

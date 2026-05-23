@@ -7,6 +7,7 @@ import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.Region;
+import de.erethon.factions.util.WorldEditSelection;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -48,7 +49,8 @@ public class BuildingSectionCommand extends FCommand {
     }
 
     private void createSection(FPlayer fPlayer, String[] args) {
-        if (fPlayer.getPos1() == null || fPlayer.getPos2() == null) {
+        WorldEditSelection selection = WorldEditSelection.get(fPlayer.getPlayer());
+        if (selection == null) {
             fPlayer.sendMessage(FMessage.ERROR_NO_SELECTION.message());
             return;
         }
@@ -65,7 +67,7 @@ public class BuildingSectionCommand extends FCommand {
             fPlayer.sendMessage(Component.translatable("factions.error.sectionExists", Component.text(name)));
             return;
         }
-        BuildSiteSection section = new BuildSiteSection(name, fPlayer.getPos1(), fPlayer.getPos2(), false);
+        BuildSiteSection section = new BuildSiteSection(name, selection.min(), selection.max(), false);
         buildSite.getSections().add(section);
         fPlayer.sendMessage(Component.translatable("factions.cmd.building.section.created", Component.text(name)));
     }

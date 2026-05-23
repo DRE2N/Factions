@@ -2,6 +2,7 @@ package de.erethon.factions.war.entities;
 
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
+import de.erethon.factions.data.FMessage;
 import de.erethon.factions.entity.Relation;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.policy.FPolicy;
@@ -9,7 +10,6 @@ import de.erethon.factions.region.Region;
 import de.erethon.factions.region.WarRegion;
 import de.erethon.factions.util.FLogger;
 import de.erethon.factions.war.structure.CrystalWarStructure;
-import net.kyori.adventure.text.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -93,7 +93,7 @@ public class CrystalChargeCarrier extends IronGolem {
         }
         if (entity instanceof Player player) {
             FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer((org.bukkit.entity.Player) player.getBukkitEntity());
-            return region.getFaction() != null && fPlayer.getRelation(alliance) == Relation.ENEMY;
+            return fPlayer.getAlliance() != alliance;
         }
         return false;
     }
@@ -104,7 +104,10 @@ public class CrystalChargeCarrier extends IronGolem {
             org.bukkit.entity.Player bukkitPlayer = (org.bukkit.entity.Player) player.getBukkitEntity();
             FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(bukkitPlayer);
             if (fPlayer.getFaction() == null) {
-                bukkitPlayer.sendMessage(Component.translatable("factions.war.carrier.noFaction"));
+                bukkitPlayer.sendMessage(FMessage.WAR_CARRIER_NO_FACTION.message());
+                return false;
+            }
+            if (fPlayer.getAlliance() != alliance) {
                 return false;
             }
             return true;
@@ -118,9 +121,13 @@ public class CrystalChargeCarrier extends IronGolem {
         super.die(damageSource);
         if (damageSource.getEntity() instanceof Player player) {
             org.bukkit.entity.Player bukkitPlayer = (org.bukkit.entity.Player) player.getBukkitEntity();
+            FPlayer fPlayer = plugin.getFPlayerCache().getByPlayer(bukkitPlayer);
+            if (fPlayer.getAlliance() != alliance) {
+                return;
+            }
             CrystalWarStructure.addCarryingPlayerBuffs(bukkitPlayer);
-            bukkitPlayer.sendMessage(Component.translatable("factions.war.carrier.killed"));
-            bukkitPlayer.sendMessage(Component.translatable("factions.war.carrier.killedHint"));
+            bukkitPlayer.sendMessage(FMessage.WAR_CARRIER_KILLED.message());
+            bukkitPlayer.sendMessage(FMessage.WAR_CARRIER_KILLED_HINT.message());
             region.getRegionalWarTracker().addCrystalCarrier(bukkitPlayer);
         }
     }
