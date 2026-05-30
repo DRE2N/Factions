@@ -27,6 +27,7 @@ public class WarCommand extends FCommand {
         setPermissionFromName();
         setFUsage(getCommand() + " [nearest|objectives]");
         setDescription("Shows current war state");
+        setRegisterSeparately(true);
     }
 
     @Override

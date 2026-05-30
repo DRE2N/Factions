@@ -11,11 +11,11 @@ import org.bukkit.command.CommandSender;
  */
 public class BlockLogCommand extends FCommand {
 
-    public static final String LABEL = "blocklog";
+    public static final String LABEL = "log";
 
     public BlockLogCommand() {
         setCommand(LABEL);
-        setAliases("blog", "bl");
+        setAliases("bl", "blocklog");
         setMinMaxArgs(0, Integer.MAX_VALUE);
         setConsoleCommand(true);
         setPermission("factions.admin.blocklog");
@@ -23,6 +23,7 @@ public class BlockLogCommand extends FCommand {
         setDescription("Block logging and rollback commands");
         setHelpType(HelpType.LISTED);
         setListedHelpHeader("Block Log Commands");
+        setRegisterSeparately(true);
         addSubCommands(
                 new BlockLogQueryCommand(),
                 new BlockLogRollbackCommand(),

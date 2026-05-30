@@ -28,13 +28,14 @@ public class BuildingTicketCommand extends FCommand {
 
     public BuildingTicketCommand() {
         setCommand("buildingticket");
-        setAliases("ticket", "tickets");
+        setAliases("bticket", "btickets");
         setMinArgs(0);
         setMaxArgs(99);
         setPermissionFromName();
         setPlayerCommand(true);
         setConsoleCommand(false);
-        setUsage("/f buildingticket");
+        setUsage("/buildingticket");
+        setRegisterSeparately(true);
     }
 
     @Override

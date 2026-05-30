@@ -20,6 +20,7 @@ public class RegionCommand extends FCommand {
         setDescription("Befehle rund um Regionen");
         setHelpType(HelpType.LISTED);
         setListedHelpHeader("Regionsbefehle");
+        setRegisterSeparately(true);
         addSubCommands(new RegionAddCommand(), new RegionAddNeighbourCommand(), new RegionAllianceCommand(),
                 new RegionAutoCommand(), new RegionCreateCommand(), new RegionBordersCommand(), new RegionBorderDebugCommand(), new RegionDamageReductionCommand(),
                 new RegionClaimableCommand(),
