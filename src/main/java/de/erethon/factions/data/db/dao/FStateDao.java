@@ -92,6 +92,13 @@ public interface FStateDao {
     @SqlQuery("SELECT world_id AS worldId, region_id AS regionId, owner_faction_id AS ownerFactionId, alliance_id AS allianceId, last_claiming_price AS lastClaimingPrice FROM f_region_ownership")
     List<RegionState> getRegionStates();
 
+    @SqlQuery("""
+        SELECT world_id AS worldId, region_id AS regionId, owner_faction_id AS ownerFactionId, alliance_id AS allianceId, last_claiming_price AS lastClaimingPrice
+        FROM f_region_ownership
+        WHERE world_id = :worldId AND region_id = :regionId
+        """)
+    Optional<RegionState> getRegionState(@Bind("worldId") UUID worldId, @Bind("regionId") int regionId);
+
     @SqlUpdate("""
         INSERT INTO f_region_ownership (world_id, region_id, owner_faction_id, alliance_id, last_claiming_price, updated_at)
         VALUES (:worldId, :regionId, :ownerFactionId, :allianceId, :lastClaimingPrice, NOW())

@@ -95,7 +95,7 @@ public enum WarPhase {
 
     // Called after the SCORING phase has ended
     private void onScoringClose() {
-        FLogger.WAR.log("Awarding daily victory points from current WvW score...");
+        FLogger.WAR.log("Awarding daily victory points from current score...");
         if (plugin.getWar() != null && plugin.getWar().getScore() != null) {
             plugin.getWar().getScore().awardDailyVictoryPoints();
         }

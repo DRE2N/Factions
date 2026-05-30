@@ -374,6 +374,22 @@ public class FDatabaseManager extends EDatabaseManager {
         stateDao.upsertRegionState(region.getWorldId(), region.getId(), ownerId, allianceId, lastClaimingPrice);
     }
 
+    public void migrateRegionAllianceIfAbsent(Region region, int allianceId) {
+        if (allianceId < 0) {
+            return;
+        }
+        awaitReady();
+        Optional<FStateDao.RegionState> existing = stateDao.getRegionState(region.getWorldId(), region.getId());
+        if (existing.isPresent() && existing.get().allianceId() != null) {
+            return;
+        }
+        Integer ownerId = existing.map(FStateDao.RegionState::ownerFactionId).orElse(null);
+        double lastClaimingPrice = existing.map(FStateDao.RegionState::lastClaimingPrice).orElse(
+                region instanceof ClaimableRegion claimable ? claimable.getLastClaimingPrice() : 0d
+        );
+        stateDao.upsertRegionState(region.getWorldId(), region.getId(), ownerId, allianceId, lastClaimingPrice);
+    }
+
     public void loadWarHistoryInto(WarHistory history) {
         awaitReady();
         for (FStateDao.WarHistoryState row : stateDao.getWarHistory()) {

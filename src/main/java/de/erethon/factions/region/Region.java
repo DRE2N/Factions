@@ -99,6 +99,7 @@ public class Region extends FLegalEntity {
             }
             this.adjacentRegions.add(region);
         }
+        plugin.getDatabaseManager().migrateRegionAllianceIfAbsent(this, config.getInt("alliance", -1));
         for (String string : config.getStringList("chunks")) {
             try {
                 addChunk(new LazyChunk(string));
