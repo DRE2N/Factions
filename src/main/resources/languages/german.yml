@@ -363,6 +363,7 @@ error:
   warObjectiveTypeNotFound: "<red>Der Kriegsobjekttyp <gold><arg:0></gold> konnte nicht gefunden werden."
   warObjectiveWrongArgFormat: "<red>Zusätzliche Einstellungen müssen wie folgt angegeben werden: <gold>NAME</gold><gold>:</gold><gold>WERT</gold>."
   warPhaseNotFound: "<red>Die Kriegsphase <gold><arg:0></gold> konnte nicht gefunden werden."
+  warRequiresPeace: "<red>Diese Kriegsaktion kann nur während der Friedensphase verwendet werden."
   worldIsRegionless: "<red>Die Welt <gold><arg:0></gold> beinhaltet keine Regionen."
   wrongDoubleValue: "<red>Der angegebene Zahlenwert muss zwischen <gold><arg:0></gold> und </gold> liegen."
 faction:

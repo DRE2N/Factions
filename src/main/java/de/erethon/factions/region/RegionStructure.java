@@ -62,6 +62,10 @@ public class RegionStructure {
         return TriState.NOT_SET;
     }
 
+    public @NotNull TriState canPlace(@NotNull FPlayer fPlayer, @Nullable Block block) {
+        return canBuild(fPlayer, block);
+    }
+
     public @NotNull TriState canAttack(@NotNull FPlayer fPlayer, @Nullable Entity target) {
         return TriState.NOT_SET;
     }

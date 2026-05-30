@@ -15,7 +15,10 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,6 +31,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.List;
 
 /**
  * An area that can only be modified, when warzones are closed.
@@ -37,9 +41,12 @@ import java.util.Map;
 @SuppressWarnings("UnstableApiUsage")
 public class WarCastleStructure extends RegionStructure implements Listener, SchematicSavable {
 
+    private static final Particle.DustOptions BUILD_PREVIEW_DUST = new Particle.DustOptions(org.bukkit.Color.LIME, 0.45f);
+    private static final List<BlockFace> BUILD_PREVIEW_FACES = List.of(BlockFace.UP, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST);
 
     private CrystalWarStructure crystalObjective;
     private BukkitRunnable repairTask;
+    private BukkitRunnable placementPreviewTask;
     private int nextRepairSlice;
     private int nextRepairBlockInSlice;
     private BossBar repairBossBar;
@@ -54,6 +61,9 @@ public class WarCastleStructure extends RegionStructure implements Listener, Sch
 
     @Override
     public @NotNull TriState canBuild(@NotNull FPlayer fPlayer, @Nullable Block block) {
+        if (plugin.getCurrentWarPhase() == de.erethon.factions.war.WarPhase.PEACE) {
+            return canModifyDuringPeace(fPlayer, block);
+        }
         if (plugin.getCurrentWarPhase().isAllowRuinBuilding()) {
             if (block == null || !fPlayer.hasFaction() || region.getRegionalWarTracker().getOperatingFaction() != fPlayer.getFaction()) {
                 return TriState.FALSE;
@@ -67,6 +77,44 @@ public class WarCastleStructure extends RegionStructure implements Listener, Sch
             return TriState.FALSE;
         }
         return super.canBuild(fPlayer, block);
+    }
+
+    @Override
+    public @NotNull TriState canPlace(@NotNull FPlayer fPlayer, @Nullable Block block) {
+        if (plugin.getCurrentWarPhase() == de.erethon.factions.war.WarPhase.PEACE) {
+            TriState modify = canModifyDuringPeace(fPlayer, block);
+            if (modify != TriState.TRUE || block == null) {
+                return modify;
+            }
+            if (requiresObsidianSupport(block) && !hasObsidianBelow(block)) {
+                return TriState.FALSE;
+            }
+            return TriState.TRUE;
+        }
+        return canBuild(fPlayer, block);
+    }
+
+    private @NotNull TriState canModifyDuringPeace(@NotNull FPlayer fPlayer, @Nullable Block block) {
+        if (block == null || !fPlayer.hasFaction() || region.getRegionalWarTracker().getOperatingFaction() != fPlayer.getFaction()) {
+            return TriState.FALSE;
+        }
+        if (requiresObsidianSupport(block) && !hasObsidianBelow(block)) {
+            return TriState.FALSE;
+        }
+        return TriState.TRUE;
+    }
+
+    private boolean requiresObsidianSupport(@NotNull Block block) {
+        return block.getType().isSolid() && block.getType().getHardness() >= Material.STONE.getHardness();
+    }
+
+    private boolean hasObsidianBelow(@NotNull Block block) {
+        for (int y = block.getY() - 1; y >= block.getWorld().getMinHeight(); y--) {
+            if (block.getWorld().getBlockAt(block.getX(), y, block.getZ()).getType() == Material.OBSIDIAN) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /* Listeners */
@@ -137,6 +185,71 @@ public class WarCastleStructure extends RegionStructure implements Listener, Sch
         this.crystalObjective = new CrystalWarStructure(region, section);
         this.crystalObjective.setDefenderCrystal(true);
         Bukkit.getPluginManager().registerEvents(this, plugin);
+        startPlacementPreviewTask();
+    }
+
+    private void startPlacementPreviewTask() {
+        if (placementPreviewTask != null) {
+            return;
+        }
+        placementPreviewTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (plugin.getCurrentWarPhase() != de.erethon.factions.war.WarPhase.PEACE
+                        || region.getRegionalWarTracker().getOperatingFaction() == null) {
+                    return;
+                }
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    FPlayer fPlayer = plugin.getFPlayerCache().getByPlayerIfCached(player);
+                    if (fPlayer == null || !fPlayer.hasFaction()
+                            || fPlayer.getFaction() != region.getRegionalWarTracker().getOperatingFaction()
+                            || !isHoldingBlock(player)
+                            || player.getWorld() != region.getWorld()
+                            || !containsPosition(player.getLocation())) {
+                        continue;
+                    }
+                    showPlacementPreview(player);
+                }
+            }
+        };
+        placementPreviewTask.runTaskTimer(plugin, 20L, 20L);
+    }
+
+    private boolean isHoldingBlock(Player player) {
+        return player.getInventory().getItemInMainHand().getType().isBlock()
+                || player.getInventory().getItemInOffHand().getType().isBlock();
+    }
+
+    private void showPlacementPreview(Player player) {
+        Location center = player.getLocation();
+        int radius = 4;
+        for (int x = center.getBlockX() - radius; x <= center.getBlockX() + radius; x++) {
+            for (int z = center.getBlockZ() - radius; z <= center.getBlockZ() + radius; z++) {
+                for (int y = center.getBlockY() - 1; y <= center.getBlockY() + 2; y++) {
+                    showPlacementPreviewFaces(player, player.getWorld().getBlockAt(x, y, z));
+                }
+            }
+        }
+    }
+
+    private void showPlacementPreviewFaces(Player player, Block support) {
+        if (!support.getType().isSolid()) {
+            return;
+        }
+        for (BlockFace face : BUILD_PREVIEW_FACES) {
+            Block target = support.getRelative(face);
+            if (!containsPosition(target.getLocation()) || !target.isPassable() || !hasObsidianBelow(target)) {
+                continue;
+            }
+            player.spawnParticle(Particle.DUST, faceCenter(support, face), 1, 0, 0, 0, 0, BUILD_PREVIEW_DUST);
+        }
+    }
+
+    private Location faceCenter(Block block, BlockFace face) {
+        double x = block.getX() + 0.5 + face.getModX() * 0.51;
+        double y = block.getY() + 0.5 + face.getModY() * 0.51;
+        double z = block.getZ() + 0.5 + face.getModZ() * 0.51;
+        return new Location(block.getWorld(), x, y, z);
     }
 
     @Override

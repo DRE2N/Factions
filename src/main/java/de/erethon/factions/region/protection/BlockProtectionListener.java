@@ -110,10 +110,14 @@ public class BlockProtectionListener implements Listener {
             if (state != TriState.NOT_SET) {
                 break;
             }
-            state = structure.canBuild(fPlayer, block);
+            state = event instanceof BlockPlaceEvent ? structure.canPlace(fPlayer, block) : structure.canBuild(fPlayer, block);
         }
         if (state == TriState.TRUE) {
             doBuildingChecks(player, block, event);
+            return;
+        }
+        if (region instanceof WarRegion) {
+            cancel(event, fPlayer, region, message);
             return;
         }
         if (state == TriState.FALSE || !region.getType().isAllowsBuilding() ||

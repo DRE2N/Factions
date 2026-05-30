@@ -208,6 +208,7 @@ public enum FMessage implements Message {
     ERROR_WAR_OBJECTIVE_NOT_FOUND("error.warObjectiveNotFound"),
     ERROR_WAR_OBJECTIVE_TYPE_NOT_FOUND("error.warObjectiveTypeNotFound"),
     ERROR_WAR_PHASE_NOT_FOUND("error.warPhaseNotFound"),
+    ERROR_WAR_REQUIRES_PEACE("error.warRequiresPeace"),
     ERROR_WORLD_IS_REGIONLESS("error.worldIsRegionless"),
     ERROR_WRONG_DOUBLE_VALUE("error.wrongDoubleValue"),
 

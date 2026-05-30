@@ -7,6 +7,9 @@ import de.erethon.factions.economy.FEconomy;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import de.erethon.factions.region.ClaimableRegion;
+import de.erethon.factions.region.Region;
+import de.erethon.factions.region.WarRegion;
+import de.erethon.factions.war.WarPhase;
 import org.bukkit.command.CommandSender;
 
 /**
@@ -26,7 +29,15 @@ public class ClaimCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         FPlayer fPlayer = getFPlayerRaw(sender);
         Faction faction = getFaction(fPlayer);
-        ClaimableRegion region = args.length == 2 ? getClaimableRegion(args[1]) : getClaimableRegion(fPlayer);
+        Region rawRegion = args.length == 2 ? getRegion(args[1]) : getRegion(fPlayer);
+        assure(rawRegion.isClaimable(), FMessage.ERROR_REGION_IS_NOT_CLAIMABLE);
+        if (rawRegion instanceof WarRegion warRegion) {
+            claimWarRegion(sender, fPlayer, faction, warRegion);
+            return;
+        }
+        assureRegionIsClaimable(rawRegion);
+        assureRegionIsUnowned(rawRegion);
+        ClaimableRegion region = (ClaimableRegion) rawRegion;
         assureSameAlliance(region, fPlayer);
 
         FAccount fAccount = faction.getFAccount();
@@ -40,5 +51,14 @@ public class ClaimCommand extends FCommand {
         region.setLastClaimingPrice(price);
 
         faction.sendMessage(FMessage.FACTION_INFO_REGION_CLAIMED.message(region.getName(), fAccount.getFormatted(price)));
+    }
+
+    private void claimWarRegion(CommandSender sender, FPlayer fPlayer, Faction faction, WarRegion region) {
+        assure(plugin.getCurrentWarPhase() == WarPhase.PEACE, FMessage.ERROR_WAR_REQUIRES_PEACE);
+        assure(region.getAlliance() == fPlayer.getAlliance(), FMessage.ERROR_PERMITLESS_ALLIANCE);
+        assure(region.getRegionalWarTracker().getOperatingFaction() == null, FMessage.ERROR_REGION_ALREADY_CLAIMED);
+        region.getRegionalWarTracker().setOperatingFaction(faction);
+        region.saveData();
+        sender.sendMessage(FMessage.WAR_OBJECTIVE_CLAIMED.message(region.getName()));
     }
 }

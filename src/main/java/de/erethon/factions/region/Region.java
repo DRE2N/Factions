@@ -54,6 +54,7 @@ public class Region extends FLegalEntity {
     private double damageReduction = 0.0;
     private RegionType type = RegionType.BARREN;
     private RegionMode mode = type.getDefaultMode();
+    private boolean claimable = true;
     private Map<RegionPOIType, Set<RegionPOIContainer>> poiMap = new HashMap<>();
 
     protected Region(@NotNull RegionCache regionCache, @NotNull File file, int id, @NotNull String name, @Nullable String description) {
@@ -110,6 +111,7 @@ public class Region extends FLegalEntity {
         damageReduction = config.getDouble("damageReduction", damageReduction);
         type = RegionType.getByName(config.getString("type", type.name()), type);
         mode = RegionMode.getByName(config.getString("mode", type.getDefaultMode().name()), type.getDefaultMode());
+        claimable = config.getBoolean("claimable", claimable);
     }
 
     @Override
@@ -120,6 +122,7 @@ public class Region extends FLegalEntity {
         config.set("damageReduction", damageReduction);
         config.set("type", type.name());
         config.set("mode", mode.name());
+        config.set("claimable", claimable);
     }
 
     /* Getters and setters */
@@ -278,6 +281,15 @@ public class Region extends FLegalEntity {
 
     public void setMode(@NotNull RegionMode mode) {
         this.mode = mode;
+    }
+
+    public boolean isClaimable() {
+        return claimable;
+    }
+
+    public void setClaimable(boolean claimable) {
+        this.claimable = claimable;
+        saveData();
     }
 
     /**
@@ -526,7 +538,7 @@ public class Region extends FLegalEntity {
         Faction owner = getOwner();
         json.addProperty("owner", owner == null ? -1 : owner.getId());
         json.addProperty("alliance", alliance == null ? -1 : alliance.getId());
-        json.addProperty("claimable", this instanceof ClaimableRegion);
+        json.addProperty("claimable", claimable);
         return json;
     }
 }

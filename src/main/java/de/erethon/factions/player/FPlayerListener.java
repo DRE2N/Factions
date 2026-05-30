@@ -15,6 +15,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import net.minecraft.world.damagesource.CombatEntry;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -101,6 +102,7 @@ public class FPlayerListener implements Listener {
     private boolean updateLastRegion(FPlayer fPlayer, Location to) {
         Region region = plugin.getRegionManager().getRegionByLocation(to);
         if (region == fPlayer.getLastRegion()) {
+            updateRegionGameMode(fPlayer, region, region);
             return true;
         }
         Region oldRegion = fPlayer.getLastRegion();
@@ -108,6 +110,7 @@ public class FPlayerListener implements Listener {
             return false;
         }
         fPlayer.setLastRegion(region);
+        updateRegionGameMode(fPlayer, oldRegion, region);
         UIComponent component = fPlayer.getUIBossBar().getCenter().getById(UIFactionsListener.REGION_DISPLAY_ID);
         if (component != null) {
             component.resetDuration();
@@ -121,6 +124,9 @@ public class FPlayerListener implements Listener {
             tabHeader = tabHeader.append(Component.text(region.getName().replace("_", " ")).color(region.getType().getColor()));
             tabHeader = tabHeader.append(Component.text(" | ").color(NamedTextColor.DARK_GRAY));
             tabHeader = tabHeader.append(region.getMode().getName().color(region.getMode().getColor()));
+            if (region.isClaimable() && isUnclaimedForDisplay(region)) {
+                tabHeader = tabHeader.append(Component.text(" (Claimable)").color(NamedTextColor.GREEN));
+            }
         } else {
             tabHeader = tabHeader.append(FMessage.GENERAL_WILDERNESS.message().color(NamedTextColor.DARK_GRAY));
         }
@@ -176,6 +182,51 @@ public class FPlayerListener implements Listener {
             }
         }
         return false;
+    }
+
+    private void updateRegionGameMode(FPlayer fPlayer, Region oldRegion, Region newRegion) {
+        Player player = fPlayer.getPlayer();
+        if (fPlayer.isBypassRaw() || player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR) {
+            return;
+        }
+        boolean shouldAdventure = shouldForceAdventure(fPlayer, newRegion);
+        if (shouldAdventure && player.getGameMode() != GameMode.ADVENTURE) {
+            player.setGameMode(GameMode.ADVENTURE);
+            return;
+        }
+        if (!shouldAdventure && player.getGameMode() == GameMode.ADVENTURE) {
+            player.setGameMode(GameMode.SURVIVAL);
+        }
+    }
+
+    private boolean shouldForceAdventure(FPlayer fPlayer, Region region) {
+        if (region == null) {
+            return false;
+        }
+        if (region instanceof de.erethon.factions.region.WarRegion) {
+            return !isPeaceOperatorInsideCastle(fPlayer, region);
+        }
+        return !region.isClaimable();
+    }
+
+    private boolean isUnclaimedForDisplay(Region region) {
+        if (region.isOwned()) {
+            return false;
+        }
+        if (region instanceof de.erethon.factions.region.WarRegion warRegion) {
+            return warRegion.getRegionalWarTracker().getOperatingFaction() == null;
+        }
+        return true;
+    }
+
+    private boolean isPeaceOperatorInsideCastle(FPlayer fPlayer, Region region) {
+        if (plugin.getCurrentWarPhase() != de.erethon.factions.war.WarPhase.PEACE
+                || !(region instanceof de.erethon.factions.region.WarRegion warRegion)
+                || !fPlayer.hasFaction()
+                || warRegion.getRegionalWarTracker().getOperatingFaction() != fPlayer.getFaction()) {
+            return false;
+        }
+        return !warRegion.getStructuresAt(fPlayer.getPlayer().getLocation(), de.erethon.factions.war.structure.WarCastleStructure.class).isEmpty();
     }
 
     private int getScaledLevel(Region region, HCharacter character) {
