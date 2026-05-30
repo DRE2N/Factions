@@ -38,19 +38,25 @@ public class BuildSiteCache implements Listener {
     }
 
     public BuildSite loadFromUUID(String uuid) {
-        File file = new File(cacheFolder, uuid + ".yml");
-        if (!file.exists()) {
-            return null;
-        }
         if (sites.containsKey(uuid)) {
             return sites.get(uuid);
         }
+        UUID parsedUuid;
+        try {
+            parsedUuid = UUID.fromString(uuid);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        String state = Factions.get().getDatabaseManager().loadBuildSiteState(parsedUuid).orElse(null);
+        if (state == null) {
+            return null;
+        }
         BuildSite loaded;
         try {
-            loaded = new BuildSite(file);
+            loaded = new BuildSite(parsedUuid, state);
             loaded.load();
         } catch (Exception e) {
-            FLogger.ERROR.log("Failed to load build site from file: " + file.getName());
+            FLogger.ERROR.log("Failed to load build site from database: " + uuid);
             e.printStackTrace();
             return null;
         }

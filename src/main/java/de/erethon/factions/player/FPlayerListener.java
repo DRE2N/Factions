@@ -33,6 +33,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
  */
 public class FPlayerListener implements Listener {
 
+    private static final int SCALED_PVP_LEVEL = 18;
+
     final Factions plugin = Factions.get();
     final Hecate hecate = Hecate.getInstance();
     final MiniMessage miniMessage = MiniMessage.miniMessage();
@@ -123,6 +125,7 @@ public class FPlayerListener implements Listener {
             tabHeader = tabHeader.append(FMessage.GENERAL_WILDERNESS.message().color(NamedTextColor.DARK_GRAY));
         }
         fPlayer.getPlayer().sendPlayerListHeader(tabHeader);
+        setScaledLevel(fPlayer.getPlayer(), region);
         if (oldRegion != null && oldRegion.getMode().isSafe()) {
             if (region != null && !region.getMode().isSafe()) {
                 Title title = Title.title(
@@ -131,9 +134,6 @@ public class FPlayerListener implements Listener {
                         Title.DEFAULT_TIMES
                 );
                 fPlayer.getPlayer().showTitle(title);
-                if (region.getMode().isPvPScaling()) {
-                    setScaledPvP(fPlayer.getPlayer(), true);
-                }
             }
         } else if (region != null && region.getMode().isSafe()) {
             Title title = Title.title(
@@ -142,9 +142,8 @@ public class FPlayerListener implements Listener {
                     Title.DEFAULT_TIMES
             );
             fPlayer.getPlayer().showTitle(title);
-            setScaledPvP(fPlayer.getPlayer(), false);
         }
-        new FPlayerCrossRegionEvent(fPlayer, fPlayer.getLastRegion(), region).callEvent();
+        new FPlayerCrossRegionEvent(fPlayer, oldRegion, region).callEvent();
         return true;
     }
 
@@ -179,12 +178,29 @@ public class FPlayerListener implements Listener {
         return false;
     }
 
-    private void setScaledPvP(Player player, boolean scaledPvP) {
+    private int getScaledLevel(Region region, HCharacter character) {
+        if (region == null) {
+            return -1;
+        }
+        if (region.getMode().isPvPScaling()) {
+            return SCALED_PVP_LEVEL;
+        }
+        if (region instanceof PvERegion pve && pve.getLowerLevelBound() != -1 && pve.getUpperLevelBound() != -1) {
+            if (character.getLevel() <= pve.getUpperLevelBound()) {
+                return -1;
+            }
+            return pve.getLowerLevelBound() + Math.round((pve.getUpperLevelBound() - pve.getLowerLevelBound()) / 2.0f);
+        }
+        return -1;
+    }
+
+    private void setScaledLevel(Player player, Region region) {
         HCharacter character = hecate.getDatabaseManager().getCurrentCharacter(player);
         if (character == null) {
             return;
         }
-        character.setScaledPvP(scaledPvP);
+        int scaledLevel = getScaledLevel(region, character);
+        character.setScaledLevel(scaledLevel != -1, Math.max(1, scaledLevel));
     }
 
 

@@ -152,6 +152,7 @@ public class WarScore {
         }
         totalScore.put(alliance, totalScore.getOrDefault(alliance, 0) + score);
         FLogger.WAR.log("Added " + score + " points to " + alliance.getName() + " for " + type.name());
+        plugin.getWar().save();
     }
 
     public void awardDailyVictoryPoints() {
@@ -168,6 +169,7 @@ public class WarScore {
             playerKillScore.put(alliance, 0);
         }
         FLogger.WAR.log("Awarded daily victory points from war score.");
+        plugin.getWar().save();
     }
 
     public ConfigurationSection save() {

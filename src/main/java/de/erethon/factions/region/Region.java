@@ -99,7 +99,6 @@ public class Region extends FLegalEntity {
             }
             this.adjacentRegions.add(region);
         }
-        this.alliance = plugin.getAllianceCache().getById(config.getInt("alliance", -1));
         for (String string : config.getStringList("chunks")) {
             try {
                 addChunk(new LazyChunk(string));
@@ -116,7 +115,6 @@ public class Region extends FLegalEntity {
     protected void serializeData() {
         FLogger.REGION.log("Saving region '" + id + "'...");
         config.set("adjacentRegions", adjacentRegions.stream().map(Region::getId).toList());
-        config.set("alliance", alliance == null ? null : alliance.getId());
         config.set("chunks", chunks.stream().map(LazyChunk::toString).toList());
         config.set("damageReduction", damageReduction);
         config.set("type", type.name());
@@ -192,6 +190,7 @@ public class Region extends FLegalEntity {
 
     public void setAlliance(@Nullable Alliance alliance) {
         this.alliance = alliance;
+        plugin.getDatabaseManager().saveRegionState(this);
     }
 
     public @NotNull Set<LazyChunk> getChunks() {

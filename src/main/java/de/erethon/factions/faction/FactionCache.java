@@ -5,6 +5,7 @@ import de.erethon.factions.Factions;
 import de.erethon.factions.building.BuildSite;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.data.db.dao.FStateDao;
 import de.erethon.factions.entity.FEntityCache;
 import de.erethon.factions.event.FPlayerFactionLeaveEvent;
 import de.erethon.factions.event.FactionCreateEvent;
@@ -35,7 +36,7 @@ public class FactionCache extends FEntityCache<Faction> {
     private BukkitTask kickTask;
 
     public FactionCache(@NotNull File folder) {
-        super(folder);
+        super(folder, false);
     }
 
     @Override
@@ -63,6 +64,7 @@ public class FactionCache extends FEntityCache<Faction> {
 
     protected void removeFaction(@NotNull Faction faction) {
         cache.remove(faction.getId());
+        plugin.getDatabaseManager().deleteFaction(faction.getId());
     }
 
     /**
@@ -71,7 +73,7 @@ public class FactionCache extends FEntityCache<Faction> {
      * @return an unused faction id
      */
     public synchronized int generateId() {
-        int id = 0;
+        int id = plugin.getDatabaseManager().nextFactionId();
         while (getById(id) != null) {
             id++;
         }
@@ -121,7 +123,19 @@ public class FactionCache extends FEntityCache<Faction> {
 
     @Override
     public void loadAll() {
-        super.loadAll();
+        cache.clear();
+        for (FStateDao.EntityState row : plugin.getDatabaseManager().loadFactions()) {
+            try {
+                Faction faction = new Faction(row);
+                cache.put(faction.getId(), faction);
+            } catch (Exception e) {
+                FLogger.ERROR.log("Couldn't load faction '" + row.id() + "' from database: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        for (Faction faction : cache.values()) {
+            faction.load();
+        }
         ensureEconomyAccounts();
         FLogger.INFO.log("Loaded " + cache.size() + " factions");
     }

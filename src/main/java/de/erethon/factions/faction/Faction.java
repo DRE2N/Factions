@@ -11,6 +11,8 @@ import de.erethon.factions.building.attributes.FactionAttribute;
 import de.erethon.factions.building.attributes.FactionAttributeModifier;
 import de.erethon.factions.building.attributes.FactionStatAttribute;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.data.db.FDatabaseManager;
+import de.erethon.factions.data.db.dao.FStateDao;
 import de.erethon.factions.economy.FAccount;
 import de.erethon.factions.economy.FAccountDummy;
 import de.erethon.factions.economy.FAccountImpl;
@@ -125,6 +127,15 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         super(file);
     }
 
+    protected Faction(@NotNull FStateDao.EntityState row) {
+        super(new File(Factions.FACTIONS, row.id() + ".yml"), row.id(), row.uuid(), row.name(), row.description());
+        try {
+            config.loadFromString(row.state());
+        } catch (Exception e) {
+            FLogger.ERROR.log("Failed to load faction DB state for '" + row.id() + "': " + e.getMessage());
+        }
+    }
+
     @Override
     protected void addDefaultAttributes() {
         super.addDefaultAttributes();
@@ -170,6 +181,8 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         members.add(fPlayer);
         fPlayer.setFaction(this);
         fPlayer.setLastFactionJoinDate(System.currentTimeMillis());
+        saveData();
+        fPlayer.saveUser();
         sendMessage(FMessage.FACTION_INFO_PLAYER_JOINED.message(fPlayer.getLastName()));
 
         for (BuildSite buildSite : buildSites) {
@@ -187,6 +200,8 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         members.remove(fPlayer);
         mods.remove(fPlayer);
         fPlayer.setFaction(null);
+        saveData();
+        fPlayer.saveUser();
         FPlayerFactionLeaveEvent event = new FPlayerFactionLeaveEvent(this, fPlayer, reason);
         event.callEvent();
         sendMessage(event.getMessage());
@@ -214,6 +229,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
                 }
             }
             admin = successor.getUniqueId();
+            saveData();
             BroadcastUtil.broadcast(FMessage.FACTION_INFO_NEW_ADMIN.message(successor.getLastName(), name));
         }
     }
@@ -241,11 +257,6 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
             }
         }
         fAccount.setBalance(0, FEconomy.TAX_CURRENCY);
-        try {
-            file.delete();
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        }
         BroadcastUtil.broadcast(FMessage.FACTION_INFO_DISBANDED.message(name));
     }
 
@@ -336,6 +347,9 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
                 continue;
             }
             this.regions.add(region);
+            if (region instanceof ClaimableRegion claimable) {
+                claimable.setOwnerRaw(this);
+            }
         }
         int coreRegionId = config.getInt("coreRegion");
         Region coreRegionRaw = plugin.getRegionManager().getRegionById(coreRegionId);
@@ -396,6 +410,9 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         this.discordTextChannelId = config.getLong("discordChannelId", discordTextChannelId);
         this.discordVoiceChannelId = config.getLong("discordVoiceChannelId", discordVoiceChannelId);
         this.discordRoleId = config.getLong("discordRoleId", discordRoleId);
+        if (alliance != null) {
+            alliance.addFaction(this);
+        }
     }
 
     @Override
@@ -482,6 +499,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setAlliance(@NotNull Alliance alliance) {
         this.alliance = alliance;
+        saveData();
     }
 
     @Override
@@ -507,6 +525,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setAdmin(@NotNull UUID uuid) {
         this.admin = uuid;
+        saveData();
     }
 
     public @NotNull PlayerCollection getMods() {
@@ -523,6 +542,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void addMod(@NotNull FPlayer fPlayer) {
         mods.add(fPlayer);
+        saveData();
     }
 
     public @NotNull PlayerCollection getMembers() {
@@ -551,6 +571,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setCoreRegion(@NotNull ClaimableRegion coreRegion) {
         this.coreRegion = coreRegion;
+        saveData();
     }
 
     public boolean hasOccupiedRegion() {
@@ -563,6 +584,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setOccupiedRegion(Region occupiedRegion) {
         this.occupiedRegion = occupiedRegion;
+        saveData();
     }
 
     public @Nullable Location getFHome() {
@@ -577,6 +599,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setFHome(@Nullable Location fHome) {
         this.fHome = fHome;
+        saveData();
     }
 
     public boolean hasCurrentTaxDebt() {
@@ -589,6 +612,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setCurrentTaxDebt(double currentTaxDebt) {
         this.currentTaxDebt = currentTaxDebt < 0.5 ? 0 : currentTaxDebt;
+        saveData();
     }
 
     public void addCurrentTaxDebt(double taxDebt) {
@@ -627,6 +651,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         copyMeta.setPatterns(bannerMeta.getPatterns());
         copy.setItemMeta(copyMeta);
         this.flag = copy;
+        saveData();
     }
 
     public @NotNull Set<Region> getRegions() {
@@ -645,6 +670,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
             }
             addAdjacentFaction(adjacent.getOwner());
         }
+        saveData();
     }
 
     /**
@@ -662,12 +688,14 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
                 removeAdjacentFaction(other);
             }
         }
+        saveData();
     }
 
     @Override
     public void setName(@NotNull String name) {
         super.setName(name);
         updateMemberDisplayNames();
+        saveData();
     }
 
     @Override
@@ -679,6 +707,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     public void setShortName(@Nullable String shortName) {
         this.shortName = shortName;
         updateMemberDisplayNames();
+        saveData();
     }
 
     @Override
@@ -689,6 +718,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     @Override
     public void setLongName(@Nullable String longName) {
         this.longName = longName;
+        saveData();
     }
 
     @Override
@@ -702,6 +732,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setOpen(boolean open) {
         this.open = open;
+        saveData();
     }
 
     public @NotNull Set<Faction> getAuthorisedBuilders() {
@@ -731,6 +762,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         }
         sendMessage(FMessage.FACTION_INFO_ADDED_BUILDER_AUTHORITY.message(faction.getDisplayShortName()));
         faction.sendMessage(FMessage.FACTION_INFO_ADDED_BUILDER_AUTHORITY_OTHER.message(getDisplayShortName()));
+        saveData();
     }
 
     public void removeAuthorisedBuilder(@NotNull Faction faction) {
@@ -739,6 +771,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         }
         sendMessage(FMessage.FACTION_INFO_ADDED_BUILDER_AUTHORITY.message(faction.getDisplayShortName()));
         faction.sendMessage(FMessage.FACTION_INFO_ADDED_BUILDER_AUTHORITY_OTHER.message(getDisplayShortName()));
+        saveData();
     }
 
     public @NotNull Set<Faction> getAdjacentFactions() {
@@ -776,6 +809,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void addPopulation(@NotNull PopulationLevel level, int amount) {
         population.put(level, population.getOrDefault(level, 0) + amount);
+        saveData();
     }
 
     public double getUnrestLevel() {
@@ -784,6 +818,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setUnrestLevel(double unrestLevel) {
         this.unrestLevel = unrestLevel;
+        saveData();
     }
 
     public @NotNull FStorage getStorage() {
@@ -800,6 +835,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setOngoingRevolt(boolean ongoingRevolt) {
         this.ongoingRevolt = ongoingRevolt;
+        saveData();
     }
 
     public @NotNull FactionLevel getLevel() {
@@ -808,6 +844,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setLevel(@NotNull FactionLevel level) {
         this.level = level;
+        saveData();
     }
 
     public @NotNull Set<BuildingEffect> getBuildingEffects() {
@@ -856,6 +893,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
     public void setHappiness(@NotNull PopulationLevel level, double happiness) {
         double clampedHappiness = Math.max(0.0, Math.min(1.0, happiness));
         populationHappiness.put(level, clampedHappiness);
+        saveData();
     }
 
     public long getDiscordTextChannelId() {
@@ -864,6 +902,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setDiscordTextChannelId(long channelId) {
         this.discordTextChannelId = channelId;
+        saveData();
     }
 
     public long getDiscordVoiceChannelId() {
@@ -872,6 +911,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setDiscordVoiceChannelId(long channelId) {
         this.discordVoiceChannelId = channelId;
+        saveData();
     }
 
     public long getDiscordRoleId() {
@@ -880,6 +920,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
 
     public void setDiscordRoleId(long roleId) {
         this.discordRoleId = roleId;
+        saveData();
     }
 
     @Override
@@ -898,6 +939,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
             poll.openPoll(duration);
         }
         polls.put(poll.getName(), poll);
+        saveData();
         FBroadcastUtil.broadcastIf(FMessage.FACTION_INFO_NEW_POLL.message(poll.getName()), fPlayer -> fPlayer.getFaction() == this && poll.canParticipate(fPlayer));
     }
 
@@ -907,6 +949,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         if (poll.isOpen()) {
             poll.closePoll();
         }
+        saveData();
         HandlerList.unregisterAll(poll);
     }
 

@@ -3,6 +3,7 @@ package de.erethon.factions.alliance;
 import de.erethon.bedrock.misc.EnumUtil;
 import de.erethon.factions.building.attributes.FactionStatAttribute;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.data.db.FDatabaseManager;
 import de.erethon.factions.economy.FAccount;
 import de.erethon.factions.economy.FAccountDummy;
 import de.erethon.factions.economy.FAccountImpl;
@@ -134,29 +135,31 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     @Override
     public void load() {
-        loadRegions("coreRegions", coreRegions);
-        loadRegions("temporaryRegions", temporaryRegions);
-        for (int factionId : config.getIntegerList("factions")) {
-            Faction faction = plugin.getFactionCache().getById(factionId);
-            if (faction == null) {
-                FLogger.ERROR.log("Unknown faction ID in alliance '" + id + "' found: " + factionId);
-                continue;
-            }
-            this.factions.add(faction);
-        }
-        this.polls.putAll(loadPolls(config.getConfigurationSection("polls")));
+        coreRegions.clear();
+        temporaryRegions.clear();
+        factions.clear();
+        polls.clear();
         this.bossBarColor = EnumUtil.getEnumIgnoreCase(BossBar.Color.class, config.getString("bossBarColor"), BossBar.Color.WHITE);
         String colorString = config.getString("color", NamedTextColor.GRAY.toString());
         this.color = FUtil.getNotNullOr(NamedTextColor.GRAY, () -> NamedTextColor.NAMES.value(colorString), () -> TextColor.fromHexString(colorString));
-        this.currentEmperor = config.getBoolean("currentEmperor");
         this.icon = config.getString("icon", "");
         this.shortName = config.getString("shortName");
         this.longName = config.getString("longName");
         this.fAccount = plugin.hasEconomyProvider() ? new FAccountImpl(this) : FAccountDummy.INSTANCE;
-        this.warScore = config.getDouble("warScore", warScore);
-        this.discordCategoryId = config.getLong("discordCategoryId", discordCategoryId);
-        this.discordArchiveCategoryId = config.getLong("discordArchiveCategoryId", discordArchiveCategoryId);
-        this.discordRoleId = config.getLong("discordRoleId", discordRoleId);
+        boolean[] loadedState = {false};
+        plugin.getDatabaseManager().loadAllianceState(id).ifPresent(state -> {
+            loadedState[0] = true;
+            var db = FDatabaseManager.fromString(state);
+            this.currentEmperor = db.getBoolean("currentEmperor", currentEmperor);
+            this.warScore = db.getDouble("warScore", warScore);
+            this.discordCategoryId = db.getLong("discordCategoryId", discordCategoryId);
+            this.discordArchiveCategoryId = db.getLong("discordArchiveCategoryId", discordArchiveCategoryId);
+            this.discordRoleId = db.getLong("discordRoleId", discordRoleId);
+            this.polls.putAll(loadPolls(db.getConfigurationSection("polls")));
+        });
+        if (!loadedState[0]) {
+            saveData();
+        }
     }
 
     private void loadRegions(String key, Collection<Region> into) {
@@ -233,6 +236,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
             claimable.setOwner(null);
         }
         sendMessage(FMessage.ALLIANCE_INFO_REGION_LOST.message(region.getName()));
+        saveData();
     }
 
     public @NotNull Set<Faction> getFactions() {
@@ -241,10 +245,12 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     public void addFaction(@NotNull Faction faction) {
         factions.add(faction);
+        saveData();
     }
 
     public void removeFaction(@NotNull Faction faction) {
         factions.remove(faction);
+        saveData();
     }
 
     public @NotNull BossBar.Color getBossBarColor() {
@@ -269,6 +275,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     public void setCurrentEmperor(boolean currentEmperor) {
         this.currentEmperor = currentEmperor;
+        saveData();
     }
 
     public @NotNull String getIcon() {
@@ -326,14 +333,17 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     public void setWarScore(double warScore) {
         this.warScore = warScore;
+        saveData();
     }
 
     public void addWarScore(double amount) {
         this.warScore += amount;
+        saveData();
     }
 
     public void removeWarScore(double amount) {
         this.warScore -= amount;
+        saveData();
     }
 
     public long getDiscordCategoryId() {
@@ -342,6 +352,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     public void setDiscordCategoryId(long categoryId) {
         this.discordCategoryId = categoryId;
+        saveData();
     }
 
     public long getDiscordArchiveCategoryId() {
@@ -350,6 +361,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     public void setDiscordArchiveCategoryId(long categoryId) {
         this.discordArchiveCategoryId = categoryId;
+        saveData();
     }
 
     public long getDiscordRoleId() {
@@ -358,6 +370,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
 
     public void setDiscordRoleId(long roleId) {
         this.discordRoleId = roleId;
+        saveData();
     }
 
     public @NotNull FAccount getFAccount() {
@@ -380,6 +393,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
             poll.openPoll(duration);
         }
         polls.put(poll.getName(), poll);
+        saveData();
         FBroadcastUtil.broadcastIf(FMessage.ALLIANCE_INFO_NEW_POLL.message(poll.getName()), fPlayer -> fPlayer.getAlliance() == this && poll.canParticipate(fPlayer));
     }
 
@@ -389,6 +403,7 @@ public class Alliance extends FLegalEntity implements ShortableNamed, PollContai
         if (poll.isOpen()) {
             poll.closePoll();
         }
+        saveData();
         HandlerList.unregisterAll(poll);
     }
 

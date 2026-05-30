@@ -32,12 +32,7 @@ public class War {
 
     public War() {
         File scheduleFile = FileUtil.initFile(plugin, new File(Factions.WAR, "schedule.yml"), "defaults/schedule.yml");
-        File file = new File(Factions.WAR, "war.yml");
-        if (file.exists()) {
-            storage = YamlConfiguration.loadConfiguration(file);
-        } else {
-            storage = new YamlConfiguration();
-        }
+        storage = new YamlConfiguration();
         try { // With how broken this is, I'm not even going to try to fix it
             phaseManager = new WarPhaseManager(scheduleFile);
         } catch (Exception e) {
@@ -111,17 +106,22 @@ public class War {
 
     public void save() {
         phaseManager.save();
+        storage.set("phase.currentWeek", phaseManager.getCurrentWeek());
         storage.set("score", score.save());
-        try {
-            storage.save(new File(Factions.WAR, "war.yml"));
-        } catch (Exception e) {
-            plugin.getLogger().warning("Failed to save war data.");
-            e.printStackTrace();
-        }
+        plugin.getDatabaseManager().saveWarState(storage.saveToString());
     }
 
     public void load() {
         phaseManager.load();
+        plugin.getDatabaseManager().loadWarState().ifPresent(state -> {
+            try {
+                storage.loadFromString(state);
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to load war data from database.");
+                e.printStackTrace();
+            }
+        });
+        phaseManager.loadRuntimeState(storage.getConfigurationSection("phase"));
         if (storage.contains("score")) {
             score = new WarScore(storage.getConfigurationSection("score"));
         } else {

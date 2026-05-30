@@ -20,9 +20,15 @@ public abstract class FEntityCache<E extends FLegalEntity> implements Iterable<E
     protected final Map<Integer, E> cache = new HashMap<>();
 
     public FEntityCache(@NotNull File folder) {
+        this(folder, true);
+    }
+
+    public FEntityCache(@NotNull File folder, boolean initializeFromFiles) {
         this.folder = folder;
         this.folder.mkdir();
-        initializeAll();
+        if (initializeFromFiles) {
+            initializeAll();
+        }
     }
 
     public void initializeAll() {

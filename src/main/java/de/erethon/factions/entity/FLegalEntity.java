@@ -37,9 +37,13 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
     protected final Map<FPolicy, Boolean> policies = new HashMap<>(); // boolean == forced by war
 
     public FLegalEntity(@NotNull File file, int id, @NotNull String name, @Nullable String description) {
+        this(file, id, UUID.randomUUID(), name, description);
+    }
+
+    public FLegalEntity(@NotNull File file, int id, @NotNull UUID uuid, @NotNull String name, @Nullable String description) {
         super(file, CONFIG_VERSION);
         this.id = id;
-        this.uuid = UUID.randomUUID();
+        this.uuid = uuid;
         this.name = name;
         this.description = description;
         addDefaultAttributes(); // Initialize default attributes
@@ -84,6 +88,10 @@ public abstract class FLegalEntity extends EConfig implements FEntity {
         config.set("description", description);
         config.set("policies", policies.keySet().stream().map(policy -> policy.name() + ":" + policies.get(policy)).toList());
         serializeData();
+        if (this instanceof de.erethon.factions.faction.Faction || this instanceof de.erethon.factions.alliance.Alliance) {
+            plugin.getDatabaseManager().saveLegalEntity(this, config.saveToString());
+            return;
+        }
         save();
     }
 

@@ -13,7 +13,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.EntitiesLoadEvent;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,8 +29,6 @@ public class CaravanRouting implements Listener {
 
     private final Factions plugin = Factions.get();
 
-    private final File routeStorage = new File(plugin.getDataFolder(), "caravanRoutes.yml");
-
     private final Set<ActiveCaravanRoute> activeRoutes = new HashSet<>();
     private final Map<RegionStructure, Set<CaravanRoute>> byStart = new HashMap<>();
     private final Map<CaravanChunkPos, ActiveCaravanRoute> chunksPosToRoutes = new HashMap<>();
@@ -41,6 +38,7 @@ public class CaravanRouting implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, this::updateRoutes, 0, TIME_BETWEEN_NODES);
         loadRoutesFromFile();
+        loadActiveRoutesFromDatabase();
     }
 
     public void addRoute(CaravanRoute route) {
@@ -76,6 +74,7 @@ public class CaravanRouting implements Listener {
 
     public void addActiveRoute(ActiveCaravanRoute route) {
         activeRoutes.add(route);
+        saveActiveRoutesToDatabase();
     }
 
     public void startRoute(ActiveCaravanRoute route, boolean spawnRealCaravan) {
@@ -87,6 +86,7 @@ public class CaravanRouting implements Listener {
 
     public void removeActiveRoute(ActiveCaravanRoute route) {
         activeRoutes.remove(route);
+        saveActiveRoutesToDatabase();
     }
 
     public Set<CaravanRoute> getRoutes(RegionStructure start) {
@@ -143,9 +143,11 @@ public class CaravanRouting implements Listener {
                 onCaravanArrived(route);
                 iterator.remove();
                 discardVisual(route);
+                saveActiveRoutesToDatabase();
                 continue;
             }
             route.advance();
+            saveActiveRoutesToDatabase();
         }
         // Keep a map of chunk positions to routes. If one of those chunks gets loaded, spawn in the real NPC caravan
         chunksPosToRoutes.clear();
@@ -199,16 +201,19 @@ public class CaravanRouting implements Listener {
             return;
         }
         route.advance();
+        saveActiveRoutesToDatabase();
         if (!route.isAtEnd()) {
             return;
         }
         onCaravanArrived(route);
         activeRoutes.remove(route);
         discardVisual(route);
+        saveActiveRoutesToDatabase();
     }
 
     public void removeRouteWithRealCaravan(ActiveCaravanRoute route) {
         realCaravanIds.remove(route);
+        saveActiveRoutesToDatabase();
     }
 
     private boolean hasRealCaravan(ActiveCaravanRoute route) {
@@ -240,10 +245,15 @@ public class CaravanRouting implements Listener {
     }
 
     private void loadRoutesFromFile() {
-        if (!routeStorage.exists()) {
-            return;
-        }
-        YamlConfiguration cfg = YamlConfiguration.loadConfiguration(routeStorage);
+        YamlConfiguration cfg = new YamlConfiguration();
+        plugin.getDatabaseManager().loadCaravanRoutesState().ifPresent(state -> {
+            try {
+                cfg.loadFromString(state);
+            } catch (Exception e) {
+                Factions.log("Failed to load caravan routes from database");
+                e.printStackTrace();
+            }
+        });
         if (!cfg.contains("routes")) {
             return;
         }
@@ -307,13 +317,63 @@ public class CaravanRouting implements Listener {
                 cfg.set("routes." + startRegion + "." + endRegion + ".nodes", serializeNodes(route.nodes()));
             }
         }
-        try {
-            cfg.save(routeStorage);
-        } catch (Exception e) {
-            Factions.log("Failed to save caravan routes to file");
-            e.printStackTrace();
-        }
+        plugin.getDatabaseManager().saveCaravanRoutesState(cfg.saveToString());
+    }
 
+    private void loadActiveRoutesFromDatabase() {
+        YamlConfiguration cfg = new YamlConfiguration();
+        plugin.getDatabaseManager().loadActiveCaravanRoutesState().ifPresent(state -> {
+            try {
+                cfg.loadFromString(state);
+            } catch (Exception e) {
+                Factions.log("Failed to load active caravan routes from database");
+                e.printStackTrace();
+            }
+        });
+        if (!cfg.contains("active")) {
+            return;
+        }
+        for (String key : cfg.getConfigurationSection("active").getKeys(false)) {
+            int startRegionId = cfg.getInt("active." + key + ".startRegion", -1);
+            int endRegionId = cfg.getInt("active." + key + ".endRegion", -1);
+            String startStructureName = cfg.getString("active." + key + ".startStructure");
+            String endStructureName = cfg.getString("active." + key + ".endStructure");
+            int currentNodeIndex = cfg.getInt("active." + key + ".currentNodeIndex", 0);
+            int supplies = cfg.getInt("active." + key + ".supplies", 0);
+            Region startRegion = plugin.getRegionManager().getRegionById(startRegionId);
+            Region endRegion = plugin.getRegionManager().getRegionById(endRegionId);
+            if (!(startRegion instanceof WarRegion warStart) || !(endRegion instanceof WarRegion warEnd)) {
+                continue;
+            }
+            RegionStructure start = warStart.getStructure(startStructureName);
+            RegionStructure end = warEnd.getStructure(endStructureName);
+            if (start == null || end == null) {
+                continue;
+            }
+            ActiveCaravanRoute active = newRouteFromStartToFinish(start, end, supplies);
+            if (active == null) {
+                continue;
+            }
+            while (active.currentNodeIndex() < currentNodeIndex && !active.isAtEnd()) {
+                active.advance();
+            }
+            activeRoutes.add(active);
+        }
+    }
+
+    private void saveActiveRoutesToDatabase() {
+        YamlConfiguration cfg = new YamlConfiguration();
+        int i = 0;
+        for (ActiveCaravanRoute route : activeRoutes) {
+            String path = "active." + i++;
+            cfg.set(path + ".startRegion", route.route().start().getRegion().getId());
+            cfg.set(path + ".endRegion", route.route().end().getRegion().getId());
+            cfg.set(path + ".startStructure", route.route().start().getName());
+            cfg.set(path + ".endStructure", route.route().end().getName());
+            cfg.set(path + ".currentNodeIndex", route.currentNodeIndex());
+            cfg.set(path + ".supplies", route.supplies());
+        }
+        plugin.getDatabaseManager().saveActiveCaravanRoutesState(cfg.saveToString());
     }
 
     private static CaravanRouteNode[] deserializeNodes(String nodes) {

@@ -30,4 +30,9 @@ public class FPlayerCache extends UserCache<FPlayer> {
         }
         return null;
     }
+
+    @Override
+    public void loadAll() {
+        // Players are loaded lazily from Postgres when requested.
+    }
 }

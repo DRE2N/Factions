@@ -37,14 +37,12 @@ public class ClaimableRegion extends Region {
     public void load() {
         super.load();
         lastClaimingPrice = config.getDouble("lastClaimingPrice", lastClaimingPrice);
-        owner = plugin.getFactionCache().getById(config.getInt("owner", -1));
     }
 
     @Override
     protected void serializeData() {
         super.serializeData();
         config.set("lastClaimingPrice", lastClaimingPrice);
-        config.set("owner", owner == null ? null : owner.getId());
         config.set("buildsites", buildSites.stream().map(BuildSite::getUUIDString).toList());
         for (BuildSite buildSite : buildSites) {
             try {
@@ -75,6 +73,7 @@ public class ClaimableRegion extends Region {
 
     public void setLastClaimingPrice(double lastClaimingPrice) {
         this.lastClaimingPrice = lastClaimingPrice;
+        plugin.getDatabaseManager().saveRegionState(this);
     }
 
     public @Nullable Faction getOwner() {
@@ -95,6 +94,11 @@ public class ClaimableRegion extends Region {
     }
 
     public void setOwner(@Nullable Faction owner) {
+        this.owner = owner;
+        plugin.getDatabaseManager().saveRegionState(this);
+    }
+
+    public void setOwnerRaw(@Nullable Faction owner) {
         this.owner = owner;
     }
 }

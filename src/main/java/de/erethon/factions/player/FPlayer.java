@@ -14,6 +14,7 @@ import de.erethon.bedrock.user.LoadableUser;
 import de.erethon.factions.Factions;
 import de.erethon.factions.alliance.Alliance;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.data.db.FDatabaseManager;
 import de.erethon.factions.entity.FEntity;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.poll.Poll;
@@ -102,6 +103,15 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
 
     @Override
     public void load() {
+        boolean[] loadedState = {false};
+        plugin.getDatabaseManager().loadPlayerState(uuid).ifPresent(state -> {
+            loadedState[0] = true;
+            try {
+                config.loadFromString(state);
+            } catch (Exception e) {
+                FLogger.ERROR.log("Failed to load player DB state for '" + uuid + "': " + e.getMessage());
+            }
+        });
         alliance = plugin.getAllianceCache().getById(config.getInt("alliance", -1));
         faction = plugin.getFactionCache().getById(config.getInt("faction", -1));
         lastName = config.getString("lastName", lastName);
@@ -114,6 +124,9 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
             seenHints = config.getStringList("seenHints");
         } else {
             seenHints = new ArrayList<>();
+        }
+        if (!loadedState[0]) {
+            saveUser();
         }
     }
 
@@ -158,7 +171,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         config.set("lastFactionJoinDate", lastFactionJoinDate);
         config.set("warStats", warStats.serialize());
         config.set("seenHints", seenHints);
-        save();
+        plugin.getDatabaseManager().savePlayer(this, config.saveToString());
     }
 
     /* Message */
@@ -292,6 +305,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
         }
         this.alliance = alliance;
         updateDisplayNames();
+        saveUser();
         return true;
     }
 
@@ -313,6 +327,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     public void setFaction(@Nullable Faction faction) {
         this.faction = faction;
         updateDisplayNames();
+        saveUser();
     }
 
     public @NotNull Component getFactionTag() {
@@ -350,6 +365,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
 
     public void setLastName(@NotNull String lastName) {
         this.lastName = lastName;
+        saveUser();
     }
 
     public @NotNull String getTitle() {
@@ -358,6 +374,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
 
     public void setTitle(@Nullable String title) {
         this.title = title == null ? "" : title;
+        saveUser();
     }
 
     public long getLastAllianceJoinDate() {
@@ -366,6 +383,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
 
     public void setLastAllianceJoinDate(long lastAllianceJoinDate) {
         this.lastAllianceJoinDate = lastAllianceJoinDate;
+        saveUser();
     }
 
     public long getLastFactionJoinDate() {
@@ -374,6 +392,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
 
     public void setLastFactionJoinDate(long lastFactionJoinDate) {
         this.lastFactionJoinDate = lastFactionJoinDate;
+        saveUser();
     }
 
     public @NotNull WarStats getWarStats() {
@@ -455,6 +474,7 @@ public class FPlayer extends EConfig implements FEntity, LoadableUser, PlayerWra
     public void addSeenHint(@NotNull String hint) {
         if (!seenHints.contains(hint)) {
             seenHints.add(hint);
+            saveUser();
         }
     }
 

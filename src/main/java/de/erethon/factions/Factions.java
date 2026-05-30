@@ -28,6 +28,7 @@ import de.erethon.factions.economy.population.entities.Councillor;
 import de.erethon.factions.command.logic.FCommandCache;
 import de.erethon.factions.data.FConfig;
 import de.erethon.factions.data.FMessage;
+import de.erethon.factions.data.db.FDatabaseManager;
 import de.erethon.factions.economy.TaxManager;
 import de.erethon.factions.economy.population.entities.Revolutionary;
 import de.erethon.factions.faction.Faction;
@@ -145,6 +146,7 @@ public final class Factions extends EPlugin {
     /* Configs */
     private FConfig fConfig;
     private FPolicyConfig fPolicyConfig;
+    private FDatabaseManager databaseManager;
 
     /* Caches */
     private AllianceCache allianceCache;
@@ -230,6 +232,9 @@ public final class Factions extends EPlugin {
             mapUpdateSessionManager.clearAllVisuals();
         }
         saveData();
+        if (databaseManager != null) {
+            databaseManager.close();
+        }
         FLogger.closeWriter();
     }
 
@@ -239,6 +244,7 @@ public final class Factions extends EPlugin {
         loadFLogger();
         loadConfigs();
         loadFMessages();
+        initializeDatabase();
         initializeCaches();
         loadCaches();
         initializeBlockLogSystem();
@@ -308,11 +314,27 @@ public final class Factions extends EPlugin {
         messageHandler.setDefaultLanguage(fConfig.getLanguage());
     }
 
+    public void initializeDatabase() {
+        try {
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(new File(Bukkit.getWorldContainer(), "environment.yml"));
+            BedrockDBConnection connection = new BedrockDBConnection(config.getString("dbUrl"),
+                    config.getString("dbUser"),
+                    config.getString("dbPassword"),
+                    "org.postgresql.ds.PGSimpleDataSource");
+            databaseManager = new FDatabaseManager(this, connection);
+            databaseManager.awaitReady();
+        } catch (Exception e) {
+            FLogger.ERROR.log("Failed to initialize Factions database: " + e.getMessage());
+            e.printStackTrace();
+            throw new IllegalStateException("Factions runtime database is required", e);
+        }
+    }
+
     public void initializeCaches() {
         allianceCache = new AllianceCache(ALLIANCES);
         buildingManager = new BuildingManager(BUILDINGS);
-        factionCache = new FactionCache(FACTIONS);
         regionManager = new RegionManager(REGIONS);
+        factionCache = new FactionCache(FACTIONS);
         regionBorderCalculator = new RegionBorderCalculator(this, REGION_BORDERS);
         regionSchematicManager = new RegionSchematicManager(this);
         fPlayerCache = new FPlayerCache(this);
@@ -323,8 +345,9 @@ public final class Factions extends EPlugin {
 
     public void loadCaches() {
         allianceCache.loadAll();
-        factionCache.loadAll();
         regionManager.loadAll();
+        factionCache.loadAll();
+        databaseManager.applyRegionOwnership();
         regionBorderCalculator.loadCache();
         portalManager.loadAll();
         fPlayerCache.loadAll();
@@ -679,6 +702,7 @@ public final class Factions extends EPlugin {
         allianceCache.saveAll();
         factionCache.saveAll();
         regionManager.saveAll();
+        databaseManager.saveAllRegionStates();
         regionBorderCalculator.saveCache();
         fPlayerCache.saveAll();
         portalManager.saveAll();
@@ -728,6 +752,10 @@ public final class Factions extends EPlugin {
 
     public @NotNull FPolicyConfig getFPolicyConfig() {
         return fPolicyConfig;
+    }
+
+    public @NotNull FDatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 
     public @NotNull AllianceCache getAllianceCache() {

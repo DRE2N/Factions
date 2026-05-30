@@ -73,9 +73,10 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     Factions plugin = Factions.get();
     BuildingManager buildingManager = plugin.getBuildingManager();
 
-        private UUID uuid;
+    private UUID uuid;
 
     private File file;
+    private String databaseState;
     private Building building;
     private ClaimableRegion region;
     private Location corner;
@@ -147,10 +148,20 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         if (!cache.isInCache(uuid)) {
             cache.addBuildSite(this);
         }
+        try {
+            save();
+        } catch (IOException e) {
+            FLogger.BUILDING.log("Failed to save new build site " + uuid + ": " + e.getMessage());
+        }
     }
 
     public BuildSite(File file) {
         this.file = file;
+    }
+
+    public BuildSite(@NotNull UUID uuid, @NotNull String databaseState) {
+        this.uuid = uuid;
+        this.databaseState = databaseState;
     }
 
     public void updateHolo() {
@@ -1598,12 +1609,18 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     // Serialization
     //
     public void load() throws IOException, InvalidConfigurationException {
-        super.load(file);
-        if (!file.exists()) {
+        if (databaseState != null) {
+            loadFromString(databaseState);
+        } else {
+            super.load(file);
+        }
+        if (databaseState == null && !file.exists()) {
             FLogger.BUILDING.log("File " + file.getName() + " does not exist. Cannot load build site.");
             return;
         }
-        uuid = UUID.fromString(file.getName().replace(".yml", ""));
+        if (uuid == null) {
+            uuid = UUID.fromString(file.getName().replace(".yml", ""));
+        }
         progressHoloUUID = UUID.fromString(getString("progressHoloUUID", "00000000-0000-0000-0000-000000000000"));
         hologramInteractionUUID = UUID.fromString(getString("hologramInteractionUUID", "00000000-0000-0000-0000-000000000000"));
         building = buildingManager.getById(getString("building"));
@@ -1750,7 +1767,6 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     }
 
     public void save() throws IOException {
-        File file = new File(Factions.BUILD_SITES, uuid + ".yml");
         set("progressHoloUUID", progressHoloUUID == null ? null : progressHoloUUID.toString());
         set("hologramInteractionUUID", hologramInteractionUUID == null ? null : hologramInteractionUUID.toString());
         set("building", building.getId());
@@ -1817,7 +1833,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
             set("additionalData." + entry.getKey(), entry.getValue());
         }
         set("outputItems", null);
-        super.save(file);
+        plugin.getDatabaseManager().saveBuildSite(this, saveToString());
     }
 }
 

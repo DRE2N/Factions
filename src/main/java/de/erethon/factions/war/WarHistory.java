@@ -2,6 +2,7 @@ package de.erethon.factions.war;
 
 import de.erethon.bedrock.config.EConfig;
 import de.erethon.bedrock.misc.FileUtil;
+import de.erethon.factions.Factions;
 import de.erethon.factions.util.FLogger;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.util.NumberConversions;
@@ -33,9 +34,7 @@ public class WarHistory {
     /* Serialization */
 
     public void load() {
-        for (File file : FileUtil.getFilesForFolder(folder)) {
-            entries.add(new Entry(file));
-        }
+        Factions.get().getDatabaseManager().loadWarHistoryInto(this);
         FLogger.INFO.log("Loaded " + entries.size() + " previous war entries.");
     }
 
@@ -49,6 +48,10 @@ public class WarHistory {
 
     public @NotNull TreeSet<Entry> getEntries() {
         return entries;
+    }
+
+    public void addLoadedEntry(long endDate, @NotNull ConfigurationSection section) {
+        entries.add(new Entry(endDate, section));
     }
 
     /* Classes */
@@ -71,6 +74,19 @@ public class WarHistory {
             load();
         }
 
+        public Entry(long endDate, @NotNull ConfigurationSection section) {
+            super(new File(folder, endDate + ".yml"), CONFIG_VERSION);
+            this.endDate = endDate;
+            this.allianceScores = new HashMap<>();
+            ConfigurationSection entriesSection = section.getConfigurationSection("allianceScores");
+            if (entriesSection == null) {
+                entriesSection = section.getConfigurationSection("entries");
+            }
+            if (entriesSection != null) {
+                entriesSection.getValues(false).forEach((key, value) -> allianceScores.put(NumberConversions.toInt(key), NumberConversions.toDouble(value)));
+            }
+        }
+
         /* Serialization */
 
         @Override
@@ -86,7 +102,7 @@ public class WarHistory {
         public void saveData() {
             config.set("endDate", endDate);
             config.set("allianceScores", allianceScores);
-            save();
+            Factions.get().getDatabaseManager().saveWarHistoryEntry(this, config.saveToString());
         }
 
         /* Getters */

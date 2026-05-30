@@ -66,7 +66,7 @@ public class WarRegion extends Region {
     @Override
     protected void serializeData() {
         super.serializeData();
-        config.set("warTracker", sanitizeYamlValue(regionalWarTracker.serialize()));
+        plugin.getDatabaseManager().saveRegionWarTracker(regionalWarTracker);
         Map<String, Object> serializedStructures = new HashMap<>(structures.size());
         structures.forEach((name, structure) -> serializedStructures.put(String.valueOf(serializedStructures.size()), sanitizeYamlValue(structure.serialize())));
         config.set("structures", serializedStructures);

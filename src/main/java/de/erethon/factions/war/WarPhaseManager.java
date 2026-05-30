@@ -297,7 +297,17 @@ public class WarPhaseManager extends EConfig {
 
     public void saveData() {
         config.set("currentWeek", currentWeek);
-        save();
+    }
+
+    public void loadRuntimeState(@Nullable ConfigurationSection section) {
+        if (section == null) {
+            return;
+        }
+        currentWeek = section.getInt("currentWeek", currentWeek);
+    }
+
+    public int getCurrentWeek() {
+        return currentWeek;
     }
 
     /* Getters and setters */

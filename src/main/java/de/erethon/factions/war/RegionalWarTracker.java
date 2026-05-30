@@ -68,12 +68,14 @@ public class RegionalWarTracker {
             CrystalWarStructure.removeCarryingPlayerBuffs(carrier);
         }
         crystalCarriers.clear();
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
     }
 
     /* Serialization */
 
     public void load(@Nullable ConfigurationSection config) {
         if (config == null) {
+            loadDatabaseState();
             return;
         }
         this.tier = WarObjectiveTier.getByName(config.getString("tier", ""));
@@ -121,6 +123,68 @@ public class RegionalWarTracker {
             }
         }
         this.regionValue = config.getInt("regionValue", regionValue);
+        loadDatabaseState();
+    }
+
+    private void loadDatabaseState() {
+        plugin.getDatabaseManager().loadRegionWarState(region).ifPresent(state -> {
+            ConfigurationSection config = de.erethon.factions.data.db.FDatabaseManager.fromString(state).getConfigurationSection("tracker");
+            if (config == null) {
+                return;
+            }
+            this.tier = WarObjectiveTier.getByName(config.getString("tier", ""));
+            this.waypointSpawn = config.getLocation("waypointSpawn", waypointSpawn);
+            this.captureCap = config.getDouble("captureCap", captureCap);
+            this.operatingFaction = plugin.getFactionCache().getById(config.getInt("operatingFaction", -1));
+            this.repairSupplies = config.getInt("repairSupplies", repairSupplies);
+            this.regionValue = config.getInt("regionValue", regionValue);
+            kills.clear();
+            scores.clear();
+            upgrades.clear();
+            factionContributions.clear();
+            ConfigurationSection upgradesSection = config.getConfigurationSection("upgrades");
+            if (upgradesSection != null) {
+                for (String key : upgradesSection.getKeys(false)) {
+                    WarObjectiveUpgrade upgrade = WarObjectiveUpgrade.getByName(key);
+                    if (upgrade != null) {
+                        upgrades.put(upgrade, upgradesSection.getInt(key));
+                    }
+                }
+            }
+            ConfigurationSection killsSection = config.getConfigurationSection("kills");
+            if (killsSection != null) {
+                for (String key : killsSection.getKeys(false)) {
+                    Alliance alliance = plugin.getAllianceCache().getById(de.erethon.bedrock.misc.NumberUtil.parseInt(key, -1));
+                    if (alliance != null) {
+                        kills.put(alliance, killsSection.getInt(key));
+                    }
+                }
+            }
+            ConfigurationSection scoresSection = config.getConfigurationSection("scores");
+            if (scoresSection != null) {
+                for (String key : scoresSection.getKeys(false)) {
+                    Alliance alliance = plugin.getAllianceCache().getById(de.erethon.bedrock.misc.NumberUtil.parseInt(key, -1));
+                    if (alliance != null) {
+                        scores.put(alliance, scoresSection.getDouble(key));
+                    }
+                }
+            }
+            ConfigurationSection contributionsSection = config.getConfigurationSection("contributions");
+            if (contributionsSection != null) {
+                for (String factionId : contributionsSection.getKeys(false)) {
+                    int parsedFactionId = de.erethon.bedrock.misc.NumberUtil.parseInt(factionId, -1);
+                    ConfigurationSection factionSection = contributionsSection.getConfigurationSection(factionId);
+                    if (parsedFactionId < 0 || factionSection == null) {
+                        continue;
+                    }
+                    Map<String, Integer> stats = new HashMap<>();
+                    for (String key : factionSection.getKeys(false)) {
+                        stats.put(key, factionSection.getInt(key));
+                    }
+                    factionContributions.put(parsedFactionId, stats);
+                }
+            }
+        });
     }
 
     public @NotNull Map<String, Object> serialize() {
@@ -183,6 +247,7 @@ public class RegionalWarTracker {
         int newKills = getKills(alliance) + 1;
         kills.put(alliance, newKills);
         addScore(alliance, WarMath.scoreForKills(newKills));
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
     }
 
     public @NotNull Map<Alliance, Double> getScores() {
@@ -211,6 +276,7 @@ public class RegionalWarTracker {
         if (newScore >= captureCap) {
             alliance.temporaryOccupy(region);
         }
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
     }
 
     public @Nullable Alliance getLeader() {
@@ -238,6 +304,7 @@ public class RegionalWarTracker {
 
     public void setCaptureCap(double captureCap) {
         this.captureCap = captureCap;
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
     }
 
     public int getRegionValue() {
@@ -246,6 +313,7 @@ public class RegionalWarTracker {
 
     public void setRegionValue(int regionValue) {
         this.regionValue = regionValue;
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
     }
 
     public @NotNull WarObjectiveTier getTier() {
@@ -260,6 +328,7 @@ public class RegionalWarTracker {
         if (captureCap == DEFAULT_CAPTURE_CAP) {
             captureCap = tier.getDefaultCaptureCap();
         }
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
     }
 
     private @NotNull WarObjectiveTier inferTier() {
@@ -293,6 +362,7 @@ public class RegionalWarTracker {
 
     public void setOperatingFaction(@Nullable Faction operatingFaction) {
         this.operatingFaction = operatingFaction;
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
     }
 
     public boolean canOperate(@NotNull Faction faction) {
@@ -321,6 +391,7 @@ public class RegionalWarTracker {
         faction.getFAccount().withdraw(cost, FEconomy.TAX_CURRENCY, "War objective upgrade " + upgrade.name() + " for " + region.getName(), initiator.getUniqueId());
         upgrades.put(upgrade, nextLevel);
         addContribution(faction, "upgrades_bought", 1);
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
         return true;
     }
 
@@ -352,6 +423,7 @@ public class RegionalWarTracker {
 
     public void addRepairSupplies(int supplies) {
         repairSupplies += Math.max(0, supplies);
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
     }
 
     public boolean consumeRepairSupply() {
@@ -359,6 +431,7 @@ public class RegionalWarTracker {
             return false;
         }
         repairSupplies--;
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
         return true;
     }
 
@@ -368,6 +441,7 @@ public class RegionalWarTracker {
         }
         int consumed = Math.min(repairSupplies, supplies);
         repairSupplies -= consumed;
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
         return consumed;
     }
 
@@ -378,6 +452,7 @@ public class RegionalWarTracker {
         upgrades.clear();
         factionContributions.clear();
         reset(false);
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
     }
 
     public boolean hasRequiredCrystals() {
@@ -433,6 +508,7 @@ public class RegionalWarTracker {
 
     public void setWaypointSpawn(@Nullable Location waypointSpawn) {
         this.waypointSpawn = waypointSpawn == null ? null : waypointSpawn.clone();
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
     }
 
     public @NotNull String getMapWarState(@Nullable Alliance viewerAlliance) {
@@ -457,6 +533,7 @@ public class RegionalWarTracker {
         }
         factionContributions.computeIfAbsent(faction.getId(), ignored -> new HashMap<>())
                 .merge(key, amount, Integer::sum);
+        plugin.getDatabaseManager().saveRegionWarTracker(this);
     }
 
     public @NotNull Map<Integer, Map<String, Integer>> getFactionContributions() {
