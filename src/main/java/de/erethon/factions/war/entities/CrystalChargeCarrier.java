@@ -58,7 +58,7 @@ public class CrystalChargeCarrier extends IronGolem {
     }
 
     public CrystalChargeCarrier(World world, Location location, WarRegion region, Alliance alliance) {
-        this(EntityType.IRON_GOLEM, ((CraftWorld) world).getHandle(), region, alliance, location.getX(), location.getY(), location.getZ());
+        this(net.minecraft.world.entity.EntityTypes.IRON_GOLEM, ((CraftWorld) world).getHandle(), region, alliance, location.getX(), location.getY(), location.getZ());
     }
 
     public CrystalChargeCarrier(EntityType<? extends IronGolem> type, Level world, WarRegion region, Alliance alliance, double x, double y, double z) {

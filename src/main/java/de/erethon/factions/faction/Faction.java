@@ -397,6 +397,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
                 ? new FStorage(this, config.getConfigurationSection("storage"))
                 : new FStorage(this);
         this.fEconomy = new FEconomy(this, fStorage);
+        this.fEconomy.getHistory().load(config.getMapList("economyHistory"));
         List<String> buildSiteUUIDs = config.getStringList("buildSites");
         for (String uuid : buildSiteUUIDs) {
             BuildSite buildSite = plugin.getBuildSiteCache().loadFromUUID(uuid);
@@ -443,6 +444,7 @@ public class Faction extends FLegalEntity implements ShortableNamed, PollContain
         }
         config.set("unrestLevel", unrestLevel);
         config.set("storage", fStorage.save());
+        config.set("economyHistory", fEconomy.getHistory().save());
         config.set("ongoingRevolt", ongoingRevolt);
         config.set("level", level.name());
         List<String> buildSiteUUIDs = new ArrayList<>();

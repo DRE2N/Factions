@@ -24,6 +24,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,7 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
         }
         this.buildings = plugin.getBuildingManager().getBuildings().stream()
                 .filter(Building::isShownInBuildingMenu)
+                .sorted(Comparator.comparing(building -> !requirementsMet(building)))
                 .toList();
 
         inventory = Bukkit.createInventory(this, 54, Component.translatable("factions.building.selection"));
@@ -90,12 +92,12 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
     }
 
     private ItemStack createBuildingIcon(Building building) {
-        ItemStack icon = new ItemStack(building.getIcon());
+        Set<RequirementFail> fails = building.checkRequirements(fPlayer.getPlayer(), faction, fPlayer.getPlayer().getLocation());
+        boolean canBuild = fails.isEmpty();
+        ItemStack icon = new ItemStack(canBuild ? building.getIcon() : Material.BARRIER);
         ItemMeta meta = icon.getItemMeta();
         Component name = Component.translatable("factions.building.buildings." + building.getId() + ".name");
 
-        Set<RequirementFail> fails = building.checkRequirements(fPlayer.getPlayer(), faction, fPlayer.getPlayer().getLocation());
-        boolean canBuild = fails.isEmpty();
         name = name.color(canBuild ? NamedTextColor.GREEN : NamedTextColor.RED);
         meta.displayName(name);
 
@@ -115,34 +117,23 @@ public class BuildingSelectionGUI implements InventoryHolder, Listener {
 
         lore.add(Component.empty());
 
-        lore.add(Component.translatable("factions.building.catalog.population",
-                Component.text(building.getRequiredPopulation().isEmpty() ? "-" : building.getRequiredPopulation().entrySet().stream()
-                        .map(entry -> entry.getKey().name().toLowerCase() + " " + entry.getValue())
-                        .collect(java.util.stream.Collectors.joining(", ")))));
-        if (!building.getUnlockCost().isEmpty()) {
-            lore.add(Component.translatable("factions.building.catalog.cost",
-                    Component.text(building.getUnlockCost().entrySet().stream()
-                            .map(entry -> entry.getKey().getId() + " " + entry.getValue())
-                            .collect(java.util.stream.Collectors.joining(", ")))));
-        }
-        lore.add(Component.empty());
-
         if (canBuild) {
             lore.add(Component.text("✓ ").color(NamedTextColor.GREEN)
                     .append(Component.translatable("factions.building.requirement.fulfilled")));
         } else {
             lore.add(Component.text("✗ ").color(NamedTextColor.RED)
                     .append(Component.translatable("factions.building.requirement.unfulfilled")));
-            // Add each failed requirement
-            for (RequirementFail fail : fails) {
-                lore.add(Component.text("  • ").color(NamedTextColor.RED)
-                        .append(Component.translatable(fail.getTranslationKey())));
-            }
         }
+        lore.addAll(BuildingRequirementDisplay.createLines(
+                faction, region, fPlayer.getPlayer().getLocation(), building, fails));
 
         meta.lore(lore);
         icon.setItemMeta(meta);
         return icon;
+    }
+
+    private boolean requirementsMet(@NotNull Building building) {
+        return building.checkRequirements(fPlayer.getPlayer(), faction, fPlayer.getPlayer().getLocation()).isEmpty();
     }
 
     private ItemStack createNavigationItem(@NotNull Material material, @NotNull Component name) {

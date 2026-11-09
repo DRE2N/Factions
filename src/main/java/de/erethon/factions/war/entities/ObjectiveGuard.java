@@ -66,7 +66,7 @@ public class ObjectiveGuard extends Vindicator {
     }
 
     public ObjectiveGuard(World world, double x, double y, double z, Region region, Alliance alliance, RegionStructure structure) {
-        this(EntityType.VINDICATOR, ((CraftWorld) world).getHandle());
+        this(net.minecraft.world.entity.EntityTypes.VINDICATOR, ((CraftWorld) world).getHandle());
         if (structure == null) {
             FLogger.WAR.log("Tried to spawn an objective guard without a structure at " + x + ", " + y + ", " + z);
             return;
@@ -138,7 +138,7 @@ public class ObjectiveGuard extends Vindicator {
                 ((ServerPlayer) player).connection.send(infoUpdatePacket);
             }
         });
-        return FUtil.getAddEntityPacketWithType(this, EntityType.PLAYER);
+        return FUtil.getAddEntityPacketWithType(this, net.minecraft.world.entity.EntityTypes.PLAYER);
     }
 
     @Override

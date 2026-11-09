@@ -24,6 +24,7 @@ public class RegionRemoveCommand extends FCommand {
         FPlayer fPlayer = getFPlayerRaw(sender);
         Region region = getRegion(fPlayer);
         region.removeChunk(fPlayer.getPlayer().getChunk());
+        region.saveData();
         sender.sendMessage(FMessage.CMD_REGION_REMOVE_CHUNK_SUCCESS.message(region.getName()));
     }
 }

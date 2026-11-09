@@ -131,6 +131,10 @@ public class Region extends FLegalEntity {
         return regionCache;
     }
 
+    public @NotNull File getFile() {
+        return file;
+    }
+
     public @NotNull UUID getWorldId() {
         return regionCache.getWorldId();
     }

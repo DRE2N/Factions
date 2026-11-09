@@ -1,0 +1,22 @@
+{
+  "namespace": "factions_ui",
+  "fontId": "economy",
+  "html": "economy.html",
+  "width": 700,
+  "height": 360,
+  "renderScale": 6,
+  "bodyFontSize": 16,
+  "bodyFontOversample": 4,
+  "bodyFont": "assets/AlegreyaSans-Regular.ttf",
+  "bodyFontLicense": "assets/OFL-AlegreyaSans.txt",
+  "packVersion": [97, 1],
+  "pages": [
+    {"id":"overview","selected":"overview"},
+    {"id":"population","selected":"population"},
+    {"id":"resources","selected":"resources"},
+    {"id":"buildings","selected":"buildings"},
+    {"id":"building-detail","selected":"building-detail"},
+    {"id":"site","selected":"site"},
+    {"id":"settings","selected":"settings"}
+  ]
+}

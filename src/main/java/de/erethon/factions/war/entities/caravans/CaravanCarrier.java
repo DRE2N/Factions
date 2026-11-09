@@ -56,11 +56,15 @@ public class CaravanCarrier extends Ravager {
     // Required constructor for entity loading
     public CaravanCarrier(EntityType<? extends Ravager> type, Level world) {
         super(type, world);
-        drops.clear();
+    }
+
+    @Override
+    protected void dropAllDeathLoot(ServerLevel level, DamageSource source) {
+        // Caravan carriers do not yield vanilla loot.
     }
 
     public CaravanCarrier(World world, double x, double y, double z, Alliance alliance, ActiveCaravanRoute route, CaravanRouting routing) {
-        this(EntityType.RAVAGER, ((CraftWorld) world).getHandle());
+        this(net.minecraft.world.entity.EntityTypes.RAVAGER, ((CraftWorld) world).getHandle());
         //syncAttributes = false;
         setPos(x, y, z);
         this.alliance = alliance;
@@ -87,13 +91,13 @@ public class CaravanCarrier extends Ravager {
         if (bannerDisplay != null || alliance == null) {
             return;
         }
-        bannerDisplay = new Display.ItemDisplay(EntityType.ITEM_DISPLAY, level());
+        bannerDisplay = new Display.ItemDisplay(net.minecraft.world.entity.EntityTypes.ITEM_DISPLAY, level());
         ItemStack bannerStack;
         switch (alliance.getBossBarColor()) {
-            case RED -> bannerStack = new ItemStack(Items.RED_BANNER);
-            case BLUE -> bannerStack = new ItemStack(Items.BLUE_BANNER);
-            case GREEN -> bannerStack = new ItemStack(Items.GREEN_BANNER);
-            default -> bannerStack = new ItemStack(Items.WHITE_BANNER);
+            case RED -> bannerStack = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(new org.bukkit.inventory.ItemStack(org.bukkit.Material.RED_BANNER));
+            case BLUE -> bannerStack = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(new org.bukkit.inventory.ItemStack(org.bukkit.Material.BLUE_BANNER));
+            case GREEN -> bannerStack = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(new org.bukkit.inventory.ItemStack(org.bukkit.Material.GREEN_BANNER));
+            default -> bannerStack = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(new org.bukkit.inventory.ItemStack(org.bukkit.Material.WHITE_BANNER));
         }
         bannerDisplay.setItemStack(bannerStack);
         bannerDisplay.setPos(getX(), getY() + 1.5, getZ());

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 public record ProductionChainReport(
+        @NotNull String siteId,
         @NotNull String buildingId,
         boolean active,
         @NotNull Map<Resource, Integer> inputs,

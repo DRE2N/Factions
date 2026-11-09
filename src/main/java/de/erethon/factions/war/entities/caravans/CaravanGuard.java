@@ -53,7 +53,7 @@ public class CaravanGuard extends Vindicator {
     }
 
     public CaravanGuard(CaravanCarrier carrier) {
-        this(EntityType.VINDICATOR, carrier.level());
+        this(net.minecraft.world.entity.EntityTypes.VINDICATOR, carrier.level());
         this.carrier = carrier;
         //syncAttributes = false; Don't think we still need this
         setPos(carrier.getX(), carrier.getY(), carrier.getZ());
@@ -142,7 +142,7 @@ public class CaravanGuard extends Vindicator {
                 ((ServerPlayer) player).connection.send(infoUpdatePacket);
             }
         });
-        return FUtil.getAddEntityPacketWithType(this, EntityType.PLAYER);
+        return FUtil.getAddEntityPacketWithType(this, net.minecraft.world.entity.EntityTypes.PLAYER);
     }
 
     @Override

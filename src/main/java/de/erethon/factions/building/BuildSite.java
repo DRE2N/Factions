@@ -289,7 +289,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     }
 
     public void handleHologramRightClick(@NotNull Player player) {
-        BuildingDialogs.showBuildSiteDetails(player, this);
+        de.erethon.factions.economy.gui.FactionEconomyUi.get().buildings().showSite(player, this);
     }
 
     public void handleHologramLeftClick(@NotNull Player player) {
@@ -298,7 +298,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     public @NotNull List<Component> getConfiguredEffectStatusLines() {
         List<Component> lines = new ArrayList<>();
-        for (BuildingEffectData effectData : building.getEffects()) {
+        for (BuildingEffectData effectData : getConfiguredEffects()) {
             if (!effectData.getId().equals("BlockDependentResourceProduction")) {
                 continue;
             }
@@ -310,7 +310,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     public @NotNull List<Component> getConfiguredEffectDetailLines() {
         List<Component> lines = new ArrayList<>();
-        for (BuildingEffectData effectData : building.getEffects()) {
+        for (BuildingEffectData effectData : getConfiguredEffects()) {
             if (!effectData.getId().equals("BlockDependentResourceProduction")) {
                 continue;
             }
@@ -406,7 +406,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         }
 
         if (building != null && building.getEffects() != null) {
-            for (BuildingEffectData effectData : building.getEffects()) {
+            for (BuildingEffectData effectData : getConfiguredEffects()) {
                 BuildingEffect newEffectInstance = effectData.newEffect(this);
                 if (newEffectInstance != null) {
                     this.buildingEffects.add(newEffectInstance);
@@ -735,6 +735,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     }
 
     public boolean addOutputItem(@NotNull ItemStack item) {
+        pushOutputBufferToChest();
         boolean added = addItemToBuffer(outputBuffer, item, outputBufferSlots);
         if (added) {
             pushOutputBufferToChest();
@@ -772,6 +773,15 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         return null;
     }
 
+    public @Nullable ItemStack findFirstInputMatching(@NotNull Predicate<ItemStack> matcher) {
+        for (ItemStack stack : inputBuffer) {
+            if (matcher.test(stack)) {
+                return stack;
+            }
+        }
+        return null;
+    }
+
     public boolean isOutputBufferFull() {
         return outputBuffer.size() >= outputBufferSlots && outputBuffer.stream().allMatch(stack -> stack.getAmount() >= stack.getMaxStackSize());
     }
@@ -801,7 +811,17 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
 
     private boolean addItemToBuffer(@NotNull List<ItemStack> buffer, @NotNull ItemStack source, int maxSlots) {
         if (source.getType() == Material.AIR || source.getAmount() <= 0) {
-            return true;
+            return false;
+        }
+        // The caller retains the source on failure, so insertion must be all-or-nothing.
+        long capacity = (long) Math.max(0, maxSlots - buffer.size()) * source.getMaxStackSize();
+        for (ItemStack stack : buffer) {
+            if (stack.isSimilar(source)) {
+                capacity += Math.max(0, stack.getMaxStackSize() - stack.getAmount());
+            }
+        }
+        if (capacity < source.getAmount()) {
+            return false;
         }
         ItemStack remaining = source.clone();
         for (ItemStack stack : buffer) {
@@ -930,7 +950,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                 stack.setAmount(remaining.getAmount());
                 changed = true;
             }
-            break;
+            // A later item may still fit an existing stack in the chest.
         }
         if (changed) {
             updateHolo();
@@ -985,7 +1005,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                 return housing;
             }
         }
-        for (BuildingEffectData data : building.getEffects()) {
+        for (BuildingEffectData data : getConfiguredEffects()) {
             if (data.getId().equals("AddHousing")) {
                 try {
                     return new AddHousing(data, this);
@@ -998,7 +1018,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     }
 
     public @Nullable AddHousing getConfiguredHousingEffect(@NotNull Building source) {
-        for (BuildingEffectData data : source.getEffects()) {
+        for (BuildingEffectData data : source.getUserConfig().effects(this, source.getEffects())) {
             if (data.getId().equals("AddHousing")) {
                 try {
                     return new AddHousing(data, this);
@@ -1040,8 +1060,10 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
                     "factions.building.dialog.site.upgrade_blocker_target"));
             return blockers;
         }
-        PopulationLevel targetLevel = targetHousing.getLevel();
-        blockers.addAll(PopulationRequirementLines.missingTargetLevelRequirements(owner, targetLevel));
+        AddHousing sourceHousing = getHousingEffect();
+        if (sourceHousing != null) {
+            blockers.addAll(PopulationRequirementLines.missingTargetLevelRequirements(owner, sourceHousing.getLevel()));
+        }
         return blockers;
     }
 
@@ -1141,11 +1163,25 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         owner.addPopulation(targetLevel, amount);
     }
 
+    public List<BuildingEffectData> getConfiguredEffects() {
+        return building.getUserConfig().effects(this, building.getEffects());
+    }
+
+    public boolean canConfigure(Player player) {
+        Faction owner = getFaction();
+        return owner != null && owner.isPrivileged(player) && finished && active
+                && !isDestroyed() && !upgradeInProgress && region.getBuildSites().contains(this);
+    }
+
+    public boolean configure(Player player, String settingId, String optionId) {
+        return BuildingSiteConfiguration.change(player, this, settingId, optionId);
+    }
+
     private void instantiateEffects() {
         if (building == null || building.getEffects() == null) {
             return;
         }
-        for (BuildingEffectData effectData : building.getEffects()) {
+        for (BuildingEffectData effectData : getConfiguredEffects()) {
             BuildingEffect newEffectInstance = effectData.newEffect(this);
             if (newEffectInstance == null) {
                 continue;
@@ -1727,7 +1763,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
         FLogger.BUILDING.log("Loading effects for build site " + uuid + " (" + building.getId() + ")");
         this.buildingEffects.clear();
         if (building != null && building.getEffects() != null) {
-            for (BuildingEffectData data : building.getEffects()) {
+            for (BuildingEffectData data : getConfiguredEffects()) {
                 try {
                     FLogger.BUILDING.log("Loading effect " + data + " for " + uuid);
                     BuildingEffect effect = data.newEffect(this);
@@ -1763,7 +1799,7 @@ public class BuildSite extends YamlConfiguration implements InventoryHolder, Lis
     }
 
     private boolean hasBlockDependentEffects() {
-        return building.getEffects().stream().anyMatch(effect -> effect.getId().equals("BlockDependentResourceProduction"));
+        return getConfiguredEffects().stream().anyMatch(effect -> effect.getId().equals("BlockDependentResourceProduction"));
     }
 
     public void save() throws IOException {

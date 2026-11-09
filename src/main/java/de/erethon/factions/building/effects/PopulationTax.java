@@ -42,16 +42,14 @@ public class PopulationTax extends BuildingEffect {
                 continue;
             }
             double baseAmount = tax * faction.getPopulation(level);
-            double amount = baseAmount * Math.max(faction.getHappiness(level), 1);
-            total += amount;
+            double amount = baseAmount * Math.clamp(faction.getHappiness(level), 0.0, 1.0);
             // Limit the total amount of tax money that can be received from a single effect
-            if (total > maximumTotal) {
-                amount = maximumTotal;
-            }
-            if (amount == 0) {
+            amount = Math.min(amount, Math.max(0, maximumTotal - total));
+            if (!Double.isFinite(amount) || amount <= 0) {
                 continue;
             }
-            faction.getFAccount().deposit(Math.min(1, amount), FEconomy.TAX_CURRENCY, "Population tax for " + level.name().toLowerCase(), site.getUuid());
+            faction.getFAccount().deposit(amount, FEconomy.TAX_CURRENCY, "Population tax for " + level.name().toLowerCase(), site.getUuid());
+            total += amount;
         }
     }
 }

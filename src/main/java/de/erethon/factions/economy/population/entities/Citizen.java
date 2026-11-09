@@ -54,7 +54,7 @@ public class Citizen extends Villager {
     }
 
     public Citizen(Faction faction, Location location, PopulationLevel level) {
-        super(EntityType.VILLAGER, ((CraftWorld) location.getWorld()).getHandle());
+        super(net.minecraft.world.entity.EntityTypes.VILLAGER, ((CraftWorld) location.getWorld()).getHandle());
         randomName = randomCitizenName();
         this.faction = faction;
         this.populationLevel = level;

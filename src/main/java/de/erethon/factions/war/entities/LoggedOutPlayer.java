@@ -48,7 +48,7 @@ public class LoggedOutPlayer extends Vindicator {
     }
 
     public LoggedOutPlayer(ServerLevel level, Player player) {
-        this(EntityType.VINDICATOR, level);
+        this(net.minecraft.world.entity.EntityTypes.VINDICATOR, level);
         setPos(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ());
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(player.getHealth());
         setHealth(getMaxHealth());
@@ -122,7 +122,7 @@ public class LoggedOutPlayer extends Vindicator {
                 ((ServerPlayer) player).connection.send(infoUpdatePacket);
             }
         });
-        return FUtil.getAddEntityPacketWithType(this, EntityType.PLAYER);
+        return FUtil.getAddEntityPacketWithType(this, net.minecraft.world.entity.EntityTypes.PLAYER);
     }
 
     @Override

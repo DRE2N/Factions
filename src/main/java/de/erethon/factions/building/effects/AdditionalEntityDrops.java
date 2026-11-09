@@ -50,7 +50,8 @@ public class AdditionalEntityDrops extends BuildingEffect {
             HItem item = entry.getKey();
             int amount = entry.getValue();
             if (chance < (double) drops.get(entry) / 100) {
-                ItemStack drop = item.rollRandomStack(amount).getBukkitStack();
+                ItemStack drop = item.rollRandomStack().getBukkitStack();
+                drop.setAmount(amount);
                 event.getDrops().add(drop);
             }
         }

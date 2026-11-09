@@ -47,6 +47,7 @@ import de.erethon.factions.integration.qxl.condition.WarPhaseCondition;
 import de.erethon.factions.integration.qxl.objective.ChangeAllianceObjective;
 import de.erethon.factions.integration.qxl.objective.FactionCreateObjective;
 import de.erethon.factions.integration.qxl.objective.FactionDisbandObjective;
+import de.erethon.factions.integration.qxl.objective.FactionRegionObjective;
 import de.erethon.factions.integration.qxl.objective.JoinFactionObjective;
 import de.erethon.factions.integration.qxl.objective.LeaveFactionObjective;
 import de.erethon.factions.player.FPlayer;
@@ -208,6 +209,11 @@ public final class Factions extends EPlugin {
 
     @Override
     public void onEnable() {
+        if (!Bukkit.getPluginManager().isPluginEnabled("FastAsyncWorldEdit")) {
+            getLogger().warning("FastAsyncWorldEdit is unavailable. Factions cannot start until a compatible FAWE build is installed.");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
         super.onEnable();
         instance = this;
         if (Bukkit.getPluginManager().isPluginEnabled("Tyche")) {
@@ -231,7 +237,10 @@ public final class Factions extends EPlugin {
         if (mapUpdateSessionManager != null) {
             mapUpdateSessionManager.clearAllVisuals();
         }
-        saveData();
+        if (allianceCache != null && factionCache != null && regionManager != null
+                && databaseManager != null && fPlayerCache != null && war != null) {
+            saveData();
+        }
         if (databaseManager != null) {
             databaseManager.close();
         }
@@ -554,6 +563,9 @@ public final class Factions extends EPlugin {
     }
 
     public void unregisterAergiaPlaceholders() {
+        if (fPlayerCache == null) {
+            return;
+        }
         // Remove added UI components.
         for (FPlayer fPlayer : fPlayerCache.getCachedUsers()) {
             if (fPlayer.getUIUpdater() == null) {
@@ -610,7 +622,7 @@ public final class Factions extends EPlugin {
         qxl.registerComponent(QRegistries.OBJECTIVES, "change_alliance", ChangeAllianceObjective::new);
         qxl.registerComponent(QRegistries.OBJECTIVES, "faction_create", FactionCreateObjective::new);
         qxl.registerComponent(QRegistries.OBJECTIVES, "faction_disband", FactionDisbandObjective::new);
-        qxl.registerComponent(QRegistries.OBJECTIVES, "faction_region", FactionRegionCondition::new);
+        qxl.registerComponent(QRegistries.OBJECTIVES, "faction_region", FactionRegionObjective::new);
         qxl.registerComponent(QRegistries.OBJECTIVES, "faction_join", JoinFactionObjective::new);
         qxl.registerComponent(QRegistries.OBJECTIVES, "faction_leave", LeaveFactionObjective::new);
     }

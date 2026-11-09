@@ -30,6 +30,10 @@ public class BuildingEffect {
     public void tick() {
     }
 
+    public boolean requiresTicking() {
+        return false;
+    }
+
     public void apply() {
     }
 

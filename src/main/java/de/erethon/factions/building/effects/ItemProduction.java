@@ -10,6 +10,7 @@ import de.erethon.hephaestus.items.HItem;
 import de.erethon.hephaestus.items.HItemLibrary;
 import net.kyori.adventure.text.Component;
 import net.minecraft.resources.Identifier;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,47 +22,53 @@ import java.util.Set;
 public class ItemProduction extends BuildingEffect {
 
     private final HItemLibrary itemLibrary = Hephaestus.INSTANCE.getLibrary();
-    private final Map<HItem, Integer> production = new HashMap<>();
+    private final Map<HItem, Integer> production = new java.util.LinkedHashMap<>();
     private final int interval; // In seconds
-    private int ticks = 0;
+    private int nextProductionTick;
     private boolean storageFull = false;
 
     public ItemProduction(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
         site.setRequiresOutputChest(true);
-        for (String entry : data.getConfigurationSection("production").getKeys(false)) {
-            ConfigurationSection section = data.getConfigurationSection("production." + entry);
-            if (section == null) {
-                FLogger.ERROR.log("Invalid item production effect for building " + site.getBuilding().getId() + ": " + entry);
-                continue;
-            }
-            Identifier id = Identifier.tryParse(section.getString("id", "air"));
-            if (id == null) {
-                FLogger.ERROR.log("Invalid item id in production effect for building " + site.getBuilding().getId() + ": " + section.getString("id"));
-                continue;
-            }
-            HItem item = itemLibrary.get(id);
-            if (item == null) {
-                FLogger.ERROR.log("Item not found in production effect for building " + site.getBuilding().getId() + ": " + section.getString("id"));
-                continue;
-            }
-            production.put(item, section.getInt("amount"));
+        ConfigurationSection configured = data.getConfigurationSection("production");
+        if (configured == null) {
+            throw new IllegalArgumentException("ItemProduction requires a production section");
         }
-        interval = data.getInt("interval", 60);
+        for (String entry : configured.getKeys(false)) {
+            ConfigurationSection section = configured.getConfigurationSection(entry);
+            String id = section == null ? entry : section.getString("id", entry);
+            int amount = section == null ? configured.getInt(entry) : section.getInt("amount", 1);
+            if (amount <= 0) {
+                throw new IllegalArgumentException("ItemProduction amount must be positive for " + entry);
+            }
+            Identifier key = Identifier.tryParse(id);
+            HItem item = key == null ? null : itemLibrary.get(key);
+            if (item == null) {
+                throw new IllegalArgumentException("Unknown Hephaestus item in ItemProduction: " + id);
+            }
+            production.put(item, amount);
+        }
+        interval = Math.clamp(data.getInt("interval", 60), 1, Integer.MAX_VALUE / 20);
+        nextProductionTick = Bukkit.getCurrentTick() + interval * 20;
+    }
+
+    @Override
+    public boolean requiresTicking() {
+        return true;
     }
 
     @Override
     public void tick() {
-        ticks++;
-        if (ticks >= interval * 20) {
-            ticks = 0;
+        int currentTick = Bukkit.getCurrentTick();
+        if (currentTick - nextProductionTick >= 0) {
+            nextProductionTick = currentTick + interval * 20;
             produce();
         }
     }
 
     private void produce() {
         for (Map.Entry<HItem, Integer> entry : production.entrySet()) {
-            if (!site.addOutputItem(entry.getKey().rollRandomStack(entry.getValue()).getBukkitStack())) {
+            if (!site.addOutputItem(entry.getKey().createStack(entry.getValue()).getBukkitStack())) {
                 storageFull = true;
                 site.updateHolo();
                 return;

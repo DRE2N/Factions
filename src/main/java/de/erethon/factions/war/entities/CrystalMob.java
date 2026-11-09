@@ -16,12 +16,12 @@ public class CrystalMob extends EndCrystal {
     }
 
     public CrystalMob(World world, double x, double y, double z) {
-        this(EntityType.END_CRYSTAL, ((CraftWorld) world).getHandle());
+        this(net.minecraft.world.entity.EntityTypes.END_CRYSTAL, ((CraftWorld) world).getHandle());
         Level level = ((CraftWorld) world).getHandle();
         setPos(x, y, z);
         setNoGravity(true);
         setSilent(true);
-        setInvulnerable(false);
+        getBukkitEntity().setInvulnerable(false);
         setShowBottom(false);
         level.addFreshEntity(this);
     }

@@ -129,11 +129,12 @@ public final class FDialogFactory {
 
     public static @NotNull Component localize(@NotNull Player player, @NotNull Component component) {
         Component localized = GlobalTranslator.render(component, player.locale());
-        if (!(component instanceof TranslatableComponent translatable) || translatable.args().isEmpty()) {
+        if (!(component instanceof TranslatableComponent translatable) || translatable.arguments().isEmpty()) {
             return localized;
         }
-        for (int i = 0; i < translatable.args().size(); i++) {
-            Component arg = localize(player, translatable.args().get(i));
+        for (int i = 0; i < translatable.arguments().size(); i++) {
+            Object value = translatable.arguments().get(i).value();
+            Component arg = value instanceof Component argument ? localize(player, argument) : Component.text(String.valueOf(value));
             localized = localized.replaceText(TextReplacementConfig.builder()
                     .matchLiteral("<arg:" + i + ">")
                     .replacement(arg)

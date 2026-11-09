@@ -1,6 +1,6 @@
 package de.erethon.factions.command;
 
-import de.erethon.factions.building.BuildingSelectionGUI;
+import de.erethon.factions.economy.gui.FactionEconomyUi;
 import de.erethon.factions.command.logic.FCommand;
 import de.erethon.factions.data.FMessage;
 import de.erethon.factions.faction.Faction;
@@ -38,7 +38,6 @@ public class BuildingCommand extends FCommand {
             return;
         }
         Player player = fPlayer.getPlayer();
-        BuildingSelectionGUI gui = new BuildingSelectionGUI(player);
-        gui.open(player);
+        FactionEconomyUi.get().buildings().showCatalog(player, faction, 0, null);
     }
 }

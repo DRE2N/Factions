@@ -9,14 +9,22 @@ import java.util.Set;
  */
 public enum ResourceCategory {
 
-    FOOD("Food", Resource.FISH, Resource.GRAIN, Resource.MEAT, Resource.SPICES, Resource.WINE, Resource.BREAD, Resource.CHEESE, Resource.BEER, Resource.FRUIT, Resource.VEGETABLES),
-    GOODS("Goods", Resource.TOOLS, Resource.CLOTH),
-    LUXURY_GOODS("Luxury Goods", Resource.JEWELRY, Resource.FURNITURE),
-    MILITARY("Military", Resource.HORSES, Resource.SIEGE_EQUIPMENT, Resource.WEAPONS, Resource.ARMOR),
-    CULTURE_RELIGION_SCIENCE("Culture, Religion, Science", Resource.BOOKS, Resource.PAPER, Resource.INK, Resource.CANDLES, Resource.MITHRIL);
+    BASIC_FOOD("Basic food", Resource.GRAIN, Resource.FISH, Resource.FRUIT),
+    VEGETABLES("Vegetables", Resource.VEGETABLES),
+    COAL("Coal", Resource.COAL),
+    IRON("Iron", Resource.IRON),
+    COPPER("Copper", Resource.COPPER),
+    WAX("Wax", Resource.WAX),
+    CANDLES("Candles", Resource.CANDLES),
+    BREAD("Bread", Resource.BREAD),
+    MEAT("Meat", Resource.MEAT),
+    BEER("Beer", Resource.BEER),
+    WINE("Wine", Resource.WINE),
+    WOOD("Wood", Resource.WOOD),
+    BARRELS("Barrels", Resource.BARRELS);
 
     private final String name;
-    private Set<Resource> resources;
+    private final Set<Resource> resources;
 
     ResourceCategory(String name, Resource... resources) {
         this.name = name;

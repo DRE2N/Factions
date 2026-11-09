@@ -25,7 +25,7 @@ public class RegionLevelCommand extends FCommand {
     public void onExecute(CommandSender sender, String[] args) {
         FPlayer fPlayer = getFPlayerRaw(sender);
         Region region = getRegion(fPlayer);
-        assure(region instanceof PvERegion, FMessage.ERROR_REGION_IS_NOT_CLAIMABLE);
+        assure(region instanceof PvERegion, FMessage.ERROR_REGION_IS_NOT_PVE);
         PvERegion pveRegion = (PvERegion) region;
         if (args.length > 3) {
             displayHelp(sender);

@@ -1,0 +1,122 @@
+@font-face { font-family: Alegreya; src: url('assets/AlegreyaSans-Regular.ttf'); font-weight: 400; }
+@font-face { font-family: Alegreya; src: url('assets/AlegreyaSans-Bold.ttf'); font-weight: 700; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: transparent; }
+#rhea-page { position: relative; width: 700px; height: 360px; overflow: hidden; color: #f4f0e7;
+  font: 14px/16px Alegreya, sans-serif; background: #14272d; border: 1px solid #a38761;
+  box-shadow: inset 0 0 0 3px #101d22, inset 0 0 0 4px #597572; }
+.paint { position: absolute; inset: 0; opacity: .23; background:
+  linear-gradient(90deg, #14272d 10%, #14272d99 70%), url('assets/erethon-arvisburg.webp') center 45% / cover; }
+header { position: absolute; left: 11px; right: 11px; top: 6px; height: 35px; display: flex; align-items: center;
+  border-bottom: 1px solid #b79b70; }
+header img { width: 24px; height: 24px; object-fit: contain; margin-right: 7px; }
+.brand { color: #dfbb80; font-size: 11px; letter-spacing: 1.5px; margin-right: 12px; }
+.header-title { width: 290px; height: 21px; color: #fff4de; font-size: 19px; line-height: 21px; font-weight: 700; }
+.faction-name { margin-left: auto; width: 190px; height: 18px; text-align: right; color: #e0e8e3; }
+aside { position: absolute; left: 11px; top: 46px; width: 678px; height: 34px; display: flex; gap: 5px; }
+.nav { position: relative; width: 165px; height: 30px; cursor: pointer; border: 1px solid #6c8580;
+  background: linear-gradient(100deg, #294449, #1d3339); }
+.nav.selected { border-color: #dfbe87; background: linear-gradient(90deg, #385956, #274849); box-shadow: inset 0 -3px #dfbe87; }
+.nav img, .card img, .list-row img, .chain-strip img { filter: invert(84%) sepia(19%) saturate(481%) hue-rotate(350deg); }
+.nav img { position: absolute; left: 8px; top: 5px; width: 17px; height: 17px; }
+.nav [data-rhea-slot] { position: absolute; left: 32px; top: 6px; width: 126px; height: 18px; font-size: 14px; line-height: 17px; }
+.nav-rule, .nav-hint { display: none; }
+.view { display: none; position: absolute; left: 11px; top: 84px; width: 678px; height: 236px; }
+.view.selected { display: block; }
+.view-heading { position: absolute; left: 2px; top: 0; width: 674px; height: 26px; color: #fff0d8;
+  font-size: 19px; line-height: 23px; font-weight: 700; border-bottom: 1px solid #997f5b; }
+.footer { position: absolute; right: 12px; bottom: 7px; width: 85px; height: 23px; cursor: pointer;
+  border: 1px solid #a99370; background: #2c4a48; }
+.footer span { display: block; margin: 2px 5px; width: 73px; height: 18px; text-align: center; font-size: 13px; }
+
+/* Overview is a dashboard strip, with one large warning area rather than four tall panels. */
+.card { position: absolute; top: 35px; width: 216px; height: 73px; cursor: pointer; border: 1px solid #75918a;
+  background: linear-gradient(110deg, #315053e8, #1c343ae8); box-shadow: inset 3px 0 #bc9a6b; }
+.card-a { left: 2px; }.card-b { left: 231px; }.card-d { left: 460px; }
+.card img { position: absolute; left: 11px; top: 12px; width: 30px; height: 30px; }
+.card-kicker { position: absolute; left: 52px; top: 7px; width: 154px; height: 17px; color: #f0d0a0; font-weight: 700; }
+.card-value { position: absolute; left: 52px; top: 27px; width: 150px; height: 25px; color: #fff6e8; font-size: 21px; line-height: 24px; font-weight: 700; }
+.card-note { position: absolute; left: 11px; top: 53px; width: 194px; height: 17px; color: #d9e7df; font-size: 13px; }
+.overview-foot { position: absolute; left: 2px; top: 121px; width: 674px; height: 37px; padding: 8px 12px;
+  border: 1px solid #816f52; background: #21383ccf; color: #f0d4a7; cursor: pointer; }
+.overview-foot span { display: block; width: 645px; height: 19px; }
+.overview-graph-label { position: absolute; left: 4px; top: 158px; width: 665px; height: 18px;
+  color: #e9cb9d; font-size: 13px; line-height: 17px; }
+.overview-graph { position: absolute; left: 12px; top: 176px; width: 651px; height: 45px;
+  background: repeating-linear-gradient(to top, transparent 0 14px, #91a9a033 14px 15px), #12292f;
+  border-bottom: 1px solid #8ba39b; }
+
+/* A list and its selected detail stay visible together. */
+.list-head { position: absolute; left: 3px; top: 32px; width: 223px; height: 18px; color: #e8c891; font-weight: 700; }
+.list { position: absolute; left: 2px; top: 53px; width: 224px; }
+.list-row { position: relative; width: 224px; height: 27px; margin-bottom: 6px; cursor: pointer;
+  border: 1px solid #718982; background: linear-gradient(90deg, #30494b, #1c3439); box-shadow: inset 2px 0 #aa8c61; }
+.list-row img { position: absolute; left: 7px; top: 3px; width: 18px; height: 18px; }
+.list-row [data-rhea-slot] { position: absolute; left: 31px; top: 3px; width: 183px; height: 18px; font-size: 13px; line-height: 17px; }
+.pager { position: absolute; left: 3px; top: 217px; width: 221px; height: 18px; display: flex; justify-content: space-between; color: #f0d19f; }
+.pager > div { width: 65px; height: 18px; cursor: pointer; }
+.pager > div:nth-child(2) { text-align: center; cursor: auto; }
+.pager > div:last-child { text-align: right; }
+.pager [data-rhea-slot] { display: block; height: 18px; }
+.right-panel, .wide-panel { position: absolute; top: 32px; left: 240px; width: 436px; height: 202px;
+  border: 1px solid #7c938c; background: linear-gradient(135deg, #263e43ee, #162b31f2);
+  box-shadow: inset 0 0 0 3px #1b3035; }
+.detail-title { position: absolute; left: 11px; top: 7px; width: 409px; height: 24px; color: #fff2db;
+  font-size: 18px; line-height: 21px; font-weight: 700; }
+.detail-stat { position: absolute; left: 11px; top: 35px; width: 405px; height: 18px; }
+.detail-stat.second { top: 68px; }
+.housing-meter, .meter-track, .site-meter { position: absolute; height: 9px; background: #102328; outline: 1px solid #829a91; }
+.housing-meter { left: 11px; top: 53px; width: 403px; }
+.meter-label { position: absolute; left: 11px; top: 88px; width: 96px; height: 18px; color: #e9d0aa; }
+.meter-track { left: 112px; top: 89px; width: 300px; }
+.small-heading { color: #e9c793; font-size: 14px; line-height: 17px; font-weight: 700; }
+.population .small-heading { position: absolute; left: 11px; top: 106px; width: 392px; height: 17px; }
+.needs { position: absolute; left: 11px; top: 125px; width: 400px; }
+.needs > div { height: 17px; margin-bottom: 1px; cursor: pointer; }
+.needs [data-rhea-slot] { display: block; width: 398px; height: 17px; font-size: 13px; line-height: 16px; }
+.detail-note, .chain-caption, .wide-note { position: absolute; left: 11px; bottom: 5px; width: 273px; height: 18px;
+  color: #e8c995; font-size: 13px; line-height: 17px; }
+.detail-note span, .wide-note span { display: block; height: 18px; }
+.population .detail-note { bottom: 3px; }
+.resources .storage { left: 11px; top: 62px; width: 403px; }
+.resource-facts { position: absolute; left: 11px; top: 74px; width: 405px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 9px; }
+.resource-facts > div { height: 18px; font-size: 13px; }
+.chart { position: absolute; left: 37px; top: 125px; width: 354px; height: 54px;
+  background: repeating-linear-gradient(to top, transparent 0 15px, #91a9a033 15px 16px), #132a30;
+  border-bottom: 1px solid #8aa29a; }
+.chart-caption { position: absolute; left: 11px; bottom: 3px; width: 408px; height: 18px; color: #e9c995; font-size: 13px; line-height: 17px; }
+.detail-copy { position: absolute; left: 11px; top: 36px; width: 410px; height: 54px; font-size: 14px; line-height: 17px; }
+.building-heading { position: absolute; left: 11px; top: 101px; width: 405px; height: 18px; }
+.building-notes { position: absolute; left: 11px; top: 122px; width: 406px; height: 35px; font-size: 13px; line-height: 17px; }
+.detail-icon { position: absolute; right: 13px; top: 10px; width: 38px; height: 38px;
+  opacity: .7; filter: invert(84%) sepia(19%) saturate(481%) hue-rotate(350deg); }
+.buildings .detail-note { width: 270px; }
+.detail-button, .site-settings { position: absolute; right: 9px; bottom: 7px; width: 117px; height: 25px; cursor: pointer;
+  border: 1px solid #d8b584; background: #3b5f57; }
+.detail-button span, .site-settings span { display: block; margin: 3px 5px; width: 105px; height: 18px; text-align: center; font-weight: 700; }
+
+/* Building details include the production path; no separate chain tab. */
+.wide-panel { left: 3px; width: 673px; }
+.wide-copy { position: absolute; left: 11px; top: 35px; width: 644px; height: 36px; font-size: 14px; line-height: 17px; }
+.wide-columns { position: absolute; left: 11px; top: 76px; width: 644px; display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.wide-col { height: 63px; padding: 4px 8px; border: 1px solid #68847e; background: #1c363acb; }
+.wide-col .small-heading { height: 17px; }
+.wide-col > [data-rhea-slot]:not(.small-heading) { width: 290px; height: 36px; font-size: 13px; line-height: 17px; }
+.building-detail .wide-col > [data-rhea-slot]:not(.small-heading) { height: 35px; }
+.chain-strip { position: absolute; left: 11px; top: 139px; width: 644px; height: 27px; display: flex; align-items: center; gap: 6px; }
+.chain-good { width: 210px; height: 26px; padding: 4px 6px; border: 1px solid #718d84; background: #254343; cursor: pointer; }
+.chain-good span { display: block; width: 194px; height: 18px; font-size: 13px; }
+.chain-strip img { width: 20px; height: 20px; }
+.chain-arrow { color: #e4bd82; font-size: 18px; }
+.chain-state { position: relative; top: -4px; margin-left: auto; width: 121px; height: 18px; color: #eac896; font-size: 13px; }
+.wide-note { left: 11px; bottom: 5px; width: 430px; }
+.site-stats { position: absolute; left: 11px; top: 35px; width: 644px; display: grid; grid-template-columns: 1fr 1fr; gap: 1px 8px; }
+.site-stats > div { height: 18px; font-size: 13px; }
+.site-meter { left: 11px; top: 80px; width: 642px; }
+.site-columns { top: 98px; }
+.site .wide-note { width: 370px; }
+.site-settings { right: 135px; }
+.settings-heading { position: absolute; left: 11px; top: 38px; width: 405px; height: 18px; }
+.option-list { position: absolute; left: 11px; top: 62px; width: 407px; }
+.option-list > div { height: 22px; margin-bottom: 5px; border: 1px solid #6a867e; background: #29494b; cursor: pointer; }
+.option-list span { display: block; margin: 2px 6px; width: 391px; height: 18px; }

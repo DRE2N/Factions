@@ -11,6 +11,7 @@ import de.erethon.factions.building.attributes.FactionResourceAttribute;
 import de.erethon.factions.building.effects.ResourceChainEffect;
 import de.erethon.factions.economy.population.HappinessModifier;
 import de.erethon.factions.economy.population.PopulationLevel;
+import de.erethon.factions.economy.population.PopulationNeeds;
 import de.erethon.factions.economy.population.entities.Revolutionary;
 import de.erethon.factions.economy.report.BuildingUnlockReport;
 import de.erethon.factions.economy.report.EconomyCycleReport;
@@ -99,6 +100,7 @@ public class FEconomy {
      */
     private final Map<Resource, Double> lastProduction = new HashMap<>();
     private EconomyCycleReport lastReport = new EconomyCycleReport();
+    private final EconomyHistory history = new EconomyHistory();
     private EconomyCycleReport currentReport = new EconomyCycleReport();
     private final Map<Resource, Double> currentRawProduction = new EnumMap<>(Resource.class);
     private final Map<Resource, Double> currentAcceptedProduction = new EnumMap<>(Resource.class);
@@ -172,6 +174,7 @@ public class FEconomy {
         evaluateHousingUpgradeReadiness();
         buildCycleReport();
         lastReport = currentReport;
+        history.capture(lastReport);
         faction.saveData();
     }
 
@@ -237,13 +240,16 @@ public class FEconomy {
             for (Resource resource : level.getResources()) {
                 double consumptionPerPop = level.getResourceConsumption(resource).consumptionPerPop();
                 double required = consumptionPerPop * currentPop;
-                double available = storage.getResource(resource);
+                double available = PopulationNeeds.available(resource, storage::getResource);
                 double satisfaction = (required > 0) ? Math.min(1.0, available / required) : 1.0;
                 satisfactionMap.put(resource, satisfaction);
                 requiredMap.put(resource, required);
                 // Consume resource up to the required amount
-                storage.removeResource(resource, (int) Math.min(available, required));
-                lastConsumption.computeIfAbsent(level, k -> new HashMap<>()).put(resource, Math.min(available, required));
+                for (var entry : PopulationNeeds.consumption(resource, (int) required, storage::getResource).entrySet()) {
+                    storage.removeResource(entry.getKey(), entry.getValue());
+                    lastConsumption.computeIfAbsent(level, k -> new HashMap<>()).merge(entry.getKey(),
+                            entry.getValue().doubleValue(), Double::sum);
+                }
                 FLogger.ECONOMY.log("[" + faction.getName() + "] Consumed " + Math.min(available, required)
                         + " of " + resource.name() + " for " + currentPop + " " + level.name()
                         + " population. Satisfaction: " + satisfaction + " Available: " + available + " / Required: " + required);
@@ -483,7 +489,7 @@ public class FEconomy {
                                 double minimumInStorageToLevelUp = consumptionInfo.minimumInStorageToLevelUp();
 
                                 // Check 1: Absolute minimum amount of this resource required in storage
-                                if (!storage.canAfford(resource, (int) minimumInStorageToLevelUp)) {
+                                if (PopulationNeeds.available(resource, storage::getResource) < minimumInStorageToLevelUp) {
                                     canPotentiallyLevelUp = false;
                                     addLevelUpBlocker(level, "resource:" + resource.getId());
                                     FLogger.ECONOMY.log("[" + faction.getName() + "] Cannot level up to " + nextLevel.name() + ": Insufficient " + resource.name() + " (need " + minimumInStorageToLevelUp + ", have " + storage.getResource(resource) + ").");
@@ -493,7 +499,7 @@ public class FEconomy {
                                 // Check 2: How many new pops can be sustained by this resource's consumption rate
                                 double consumptionPerPop = consumptionInfo.consumptionPerPop();
                                 if (consumptionPerPop > 0) {
-                                    double trulyAvailableForConsumption = Math.max(0, storage.getResource(resource) - minimumInStorageToLevelUp);
+                                    double trulyAvailableForConsumption = Math.max(0, PopulationNeeds.available(resource, storage::getResource) - minimumInStorageToLevelUp);
                                     double popThisResourceCanSupport = Math.floor(trulyAvailableForConsumption / consumptionPerPop);
                                     popSupportedByNextLevelResources = (int) Math.min(popSupportedByNextLevelResources, popThisResourceCanSupport);
                                 }
@@ -693,8 +699,8 @@ public class FEconomy {
                 site.resetUpgradeSatisfiedPaydays();
                 continue;
             }
-            PopulationLevel targetLevel = targetHousing.getLevel();
-            if (targetLevel.canLevelUp(storage)) {
+            PopulationLevel sourceLevel = site.getHousingEffect().getLevel();
+            if (sourceLevel.canLevelUp(storage)) {
                 site.markUpgradeSatisfiedPayday();
                 if (site.getUpgradeSatisfiedPaydays() >= site.getUpgradeRequiredSatisfiedPaydays()) {
                     readyCandidates.add(site);
@@ -802,6 +808,7 @@ public class FEconomy {
             }
             if (!inputs.isEmpty() || !outputs.isEmpty()) {
                 currentReport.productionChains().add(new ProductionChainReport(
+                        site.getUUIDString(),
                         site.getBuilding().getId(),
                         site.hasResourceInputsAvailable(),
                         Map.copyOf(inputs),
@@ -891,6 +898,10 @@ public class FEconomy {
 
     public @NotNull EconomyCycleReport getLastReport() {
         return lastReport;
+    }
+
+    public @NotNull EconomyHistory getHistory() {
+        return history;
     }
 
     /**

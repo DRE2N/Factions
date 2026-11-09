@@ -37,8 +37,7 @@ public enum PopulationLevel {
 
     BEGGAR(new HashSet<>(), 0, 1.5),
     PEASANT(new HashSet<>(List.of("Chapel")), 0, 1.3,
-            new PopulationResourceConsumption(Resource.GRAIN, 1, 0, 3, 1.2, 0.7),
-            new PopulationResourceConsumption(Resource.FISH, 1, 0, 3, 1.2, 0.7)),
+            new PopulationResourceConsumption(Resource.GRAIN, 1, 0, 3, 1.2, 0.7)),
     CITIZEN(new HashSet<>(Arrays.asList("Chapel", "Courthouse")), 4, 1.2,
             new PopulationResourceConsumption(Resource.GRAIN, 2, 0, 3, 1.2, 0.2),
             new PopulationResourceConsumption(Resource.VEGETABLES, 1, 200, 1, 0.5, 0.25),
@@ -114,7 +113,7 @@ public enum PopulationLevel {
      */
     public boolean canLevelUp(FStorage storage) {
         for (PopulationResourceConsumption consumption : requiredResources) {
-            if (!storage.canAfford(consumption.resource(), consumption.minimumInStorageToLevelUp())) {
+            if (PopulationNeeds.available(consumption.resource(), storage::getResource) < consumption.minimumInStorageToLevelUp()) {
                 return false;
             }
         }

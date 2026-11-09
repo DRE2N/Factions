@@ -35,7 +35,7 @@ public final class PopulationRequirementLines {
                 continue;
             }
             int required = consumption.minimumInStorageToLevelUp();
-            int available = faction.getStorage().getResource(resource);
+            int available = PopulationNeeds.available(resource, faction.getStorage()::getResource);
             if (available < required) {
                 blockers.add(Component.text("")
                         .append(Component.translatable("factions.building.dialog.site.upgrade_blocker_resource",

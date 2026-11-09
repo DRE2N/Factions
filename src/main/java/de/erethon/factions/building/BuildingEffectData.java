@@ -51,7 +51,7 @@ public class BuildingEffectData {
             return null;
         }
         owner.getFaction().getBuildingEffects().add(effect);
-        if (isTickable) {
+        if (isTickable || effect.requiresTicking()) {
             owner.getFaction().getTickingBuildingEffects().add(effect);
         }
         return effect;

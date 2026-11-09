@@ -1,0 +1,96 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="economy-wide.css"></head><body>
+<div id="rhea-page">
+  <div class="paint"></div>
+  <header><img src="assets/erethon-crest.png" alt=""><div class="brand">ERETHON</div>
+    <div class="header-title" data-rhea-slot="header"></div><div class="faction-name" data-rhea-slot="faction"></div></header>
+  <aside>
+    <div class="nav" data-rhea-action="go:overview" data-rhea-selected="overview"><img src="assets/icon-compass.svg" alt=""><span data-rhea-slot="nav_overview"></span></div>
+    <div class="nav" data-rhea-action="go:population" data-rhea-selected="population"><img src="assets/icon-castle.svg" alt=""><span data-rhea-slot="nav_population"></span></div>
+    <div class="nav" data-rhea-action="go:resources" data-rhea-selected="resources"><img src="assets/icon-wheat.svg" alt=""><span data-rhea-slot="nav_resources"></span></div>
+    <div class="nav" data-rhea-action="go:buildings" data-rhea-selected="buildings building-detail site settings"><img src="assets/icon-build.svg" alt=""><span data-rhea-slot="nav_buildings"></span></div>
+    <div class="nav-rule"></div><div class="nav-hint" data-rhea-slot="nav_hint"></div>
+  </aside>
+
+  <section class="view overview" data-rhea-selected="overview">
+    <div class="view-heading" data-rhea-slot="view_title"></div>
+    <div class="card card-a" data-rhea-action="card:population"><img src="assets/icon-castle.svg" alt=""><div class="card-kicker" data-rhea-slot="card_a_title"></div><div class="card-value" data-rhea-slot="card_a_value"></div><div class="card-note" data-rhea-slot="card_a_note"></div></div>
+    <div class="card card-b" data-rhea-action="card:resources"><img src="assets/icon-wheat.svg" alt=""><div class="card-kicker" data-rhea-slot="card_b_title"></div><div class="card-value" data-rhea-slot="card_b_value"></div><div class="card-note" data-rhea-slot="card_b_note"></div></div>
+    <div class="card card-d" data-rhea-action="card:buildings"><img src="assets/icon-build.svg" alt=""><div class="card-kicker" data-rhea-slot="card_d_title"></div><div class="card-value" data-rhea-slot="card_d_value"></div><div class="card-note" data-rhea-slot="card_d_note"></div></div>
+    <div class="overview-foot" data-rhea-action="overview:warning"><span data-rhea-slot="overview_status"></span></div>
+    <div class="overview-graph-label" data-rhea-slot="overview_graph_label"></div>
+    <div class="overview-graph" data-rhea-bars="overview_history" data-rhea-points="14"></div>
+  </section>
+
+  <section class="view population" data-rhea-selected="population">
+    <div class="view-heading" data-rhea-slot="view_title"></div>
+    <div class="list-head" data-rhea-slot="list_heading"></div>
+    <div class="list">
+      <div class="list-row" data-rhea-action="tier:0"><span data-rhea-slot="row_0"></span></div>
+      <div class="list-row" data-rhea-action="tier:1"><span data-rhea-slot="row_1"></span></div>
+      <div class="list-row" data-rhea-action="tier:2"><span data-rhea-slot="row_2"></span></div>
+      <div class="list-row" data-rhea-action="tier:3"><span data-rhea-slot="row_3"></span></div>
+      <div class="list-row" data-rhea-action="tier:4"><span data-rhea-slot="row_4"></span></div>
+    </div>
+    <div class="right-panel">
+      <div class="detail-title" data-rhea-slot="detail_title"></div>
+      <div class="detail-stat" data-rhea-slot="detail_0"></div>
+      <div class="housing-meter" data-rhea-meter="housing"></div>
+      <div class="detail-stat second" data-rhea-slot="detail_1"></div>
+      <div class="meter-label" data-rhea-slot="meter_label"></div><div class="meter-track" data-rhea-meter="happiness"></div>
+      <div class="small-heading" data-rhea-slot="subheading"></div>
+      <div class="needs">
+        <div data-rhea-action="need:0"><span data-rhea-slot="detail_2"></span></div>
+        <div data-rhea-action="need:1"><span data-rhea-slot="detail_3"></span></div>
+        <div data-rhea-action="need:2"><span data-rhea-slot="detail_4"></span></div>
+      </div>
+      <div class="detail-note" data-rhea-action="needs:next"><span data-rhea-slot="detail_note"></span></div>
+    </div>
+  </section>
+
+  <section class="view resources" data-rhea-selected="resources">
+    <div class="view-heading" data-rhea-slot="view_title"></div>
+    <div class="list-head" data-rhea-slot="list_heading"></div>
+    <div class="list">
+      <div class="list-row" data-rhea-action="resource:0"><span data-rhea-slot="row_0"></span></div>
+      <div class="list-row" data-rhea-action="resource:1"><span data-rhea-slot="row_1"></span></div>
+      <div class="list-row" data-rhea-action="resource:2"><span data-rhea-slot="row_2"></span></div>
+      <div class="list-row" data-rhea-action="resource:3"><span data-rhea-slot="row_3"></span></div>
+      <div class="list-row" data-rhea-action="resource:4"><span data-rhea-slot="row_4"></span></div>
+    </div>
+    <div class="pager"><div data-rhea-action="page:prev"><span data-rhea-slot="page_prev"></span></div><div data-rhea-slot="page_number"></div><div data-rhea-action="page:next"><span data-rhea-slot="page_next"></span></div></div>
+    <div class="right-panel">
+      <div class="detail-title" data-rhea-slot="detail_title"></div>
+      <div class="detail-stat" data-rhea-slot="detail_0"></div>
+      <div class="meter-track storage" data-rhea-meter="storage"></div>
+      <div class="resource-facts">
+        <div data-rhea-slot="detail_1"></div><div data-rhea-slot="detail_2"></div>
+        <div data-rhea-slot="detail_3"></div><div data-rhea-slot="detail_4"></div>
+      </div>
+      <div class="chart" data-rhea-bars="history" data-rhea-points="14"></div>
+      <div class="chart-caption" data-rhea-slot="detail_note"></div>
+    </div>
+  </section>
+
+  <section class="view buildings" data-rhea-selected="buildings">
+    <div class="view-heading" data-rhea-slot="view_title"></div><div class="list-head" data-rhea-slot="list_heading"></div>
+    <div class="list">
+      <div class="list-row" data-rhea-action="building:0"><img src="assets/icon-build.svg" alt=""><span data-rhea-slot="row_0"></span></div><div class="list-row" data-rhea-action="building:1"><img src="assets/icon-build.svg" alt=""><span data-rhea-slot="row_1"></span></div><div class="list-row" data-rhea-action="building:2"><img src="assets/icon-build.svg" alt=""><span data-rhea-slot="row_2"></span></div><div class="list-row" data-rhea-action="building:3"><img src="assets/icon-build.svg" alt=""><span data-rhea-slot="row_3"></span></div><div class="list-row" data-rhea-action="building:4"><img src="assets/icon-build.svg" alt=""><span data-rhea-slot="row_4"></span></div>
+    </div><div class="pager"><div data-rhea-action="page:prev"><span data-rhea-slot="page_prev"></span></div><div data-rhea-slot="page_number"></div><div data-rhea-action="page:next"><span data-rhea-slot="page_next"></span></div></div>
+    <div class="right-panel"><img class="detail-icon" src="assets/icon-build.svg" alt=""><div class="detail-title" data-rhea-slot="detail_title"></div><div class="detail-copy" data-rhea-slot="detail_0"></div><div class="small-heading building-heading" data-rhea-slot="subheading"></div><div class="building-notes" data-rhea-slot="detail_1"></div><div class="detail-note" data-rhea-slot="detail_note"></div><div class="detail-button" data-rhea-action="building:details"><span data-rhea-slot="button"></span></div></div>
+  </section>
+
+  <section class="view building-detail" data-rhea-selected="building-detail">
+    <div class="view-heading" data-rhea-slot="view_title"></div><div class="wide-panel"><div class="detail-title" data-rhea-slot="detail_title"></div><div class="wide-copy" data-rhea-slot="detail_0"></div><div class="wide-columns"><div class="wide-col"><div class="small-heading" data-rhea-slot="requirements_label"></div><div data-rhea-slot="requirements"></div></div><div class="wide-col"><div class="small-heading" data-rhea-slot="effects_label"></div><div data-rhea-slot="effects"></div></div></div><div class="chain-strip"><div class="chain-good" data-rhea-action="detail:input"><span data-rhea-slot="chain_input"></span></div><div class="chain-arrow">›</div><img src="assets/icon-build.svg" alt=""><div class="chain-arrow">›</div><div class="chain-good" data-rhea-action="detail:output"><span data-rhea-slot="chain_output"></span></div><div class="chain-state" data-rhea-slot="chain_state"></div></div><div class="wide-note" data-rhea-action="details:next"><span data-rhea-slot="detail_note"></span></div><div class="detail-button" data-rhea-action="building:place"><span data-rhea-slot="button"></span></div></div>
+  </section>
+
+  <section class="view site" data-rhea-selected="site">
+    <div class="view-heading" data-rhea-slot="view_title"></div><div class="wide-panel"><div class="detail-title" data-rhea-slot="detail_title"></div><div class="site-stats"><div data-rhea-slot="detail_0"></div><div data-rhea-slot="detail_1"></div><div data-rhea-slot="detail_2"></div><div data-rhea-slot="detail_3"></div></div><div class="site-meter" data-rhea-meter="progress"></div><div class="wide-columns site-columns"><div class="wide-col"><div class="small-heading" data-rhea-slot="requirements_label"></div><div data-rhea-slot="requirements"></div></div><div class="wide-col"><div class="small-heading" data-rhea-slot="effects_label"></div><div data-rhea-slot="effects"></div></div></div><div class="wide-note" data-rhea-slot="detail_note"></div><div class="site-settings" data-rhea-action="site:settings"><span data-rhea-slot="settings_button"></span></div><div class="detail-button" data-rhea-action="site:upgrade"><span data-rhea-slot="button"></span></div></div>
+  </section>
+
+  <section class="view settings" data-rhea-selected="settings">
+    <div class="view-heading" data-rhea-slot="view_title"></div><div class="list-head" data-rhea-slot="list_heading"></div><div class="list"><div class="list-row" data-rhea-action="setting:0"><span data-rhea-slot="row_0"></span></div><div class="list-row" data-rhea-action="setting:1"><span data-rhea-slot="row_1"></span></div><div class="list-row" data-rhea-action="setting:2"><span data-rhea-slot="row_2"></span></div><div class="list-row" data-rhea-action="setting:3"><span data-rhea-slot="row_3"></span></div></div><div class="pager"><div data-rhea-action="page:prev"><span data-rhea-slot="page_prev"></span></div><div data-rhea-slot="page_number"></div><div data-rhea-action="page:next"><span data-rhea-slot="page_next"></span></div></div><div class="right-panel"><div class="detail-title" data-rhea-slot="detail_title"></div><div class="small-heading settings-heading" data-rhea-slot="subheading"></div><div class="option-list"><div data-rhea-action="option:0"><span data-rhea-slot="option_0"></span></div><div data-rhea-action="option:1"><span data-rhea-slot="option_1"></span></div><div data-rhea-action="option:2"><span data-rhea-slot="option_2"></span></div><div data-rhea-action="option:3"><span data-rhea-slot="option_3"></span></div></div><div class="detail-note" data-rhea-action="options:next"><span data-rhea-slot="detail_note"></span></div></div>
+  </section>
+
+  <div class="footer" data-rhea-action="refresh"><span data-rhea-slot="refresh_label"></span></div>
+</div></body></html>

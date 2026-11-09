@@ -73,6 +73,7 @@ public class Building {
     private final Set<String> requiredSections = new HashSet<>();
     private final Set<Material> blocksOfInterest = new HashSet<>();
     private @Nullable BuildingUpgradeConfig upgradeConfig;
+    private BuildingUserConfig userConfig;
     private FactionLevel requiredLevel = FactionLevel.HAMLET;
     private Material icon = Material.CHEST;
 
@@ -328,6 +329,10 @@ public class Building {
         return isWarBuilding;
     }
 
+    public boolean isUnique() {
+        return isUnique;
+    }
+
     public boolean isAllowOverlap() {
         return allowOverlap;
     }
@@ -413,6 +418,10 @@ public class Building {
         return effects;
     }
 
+    public BuildingUserConfig getUserConfig() {
+        return userConfig;
+    }
+
     public @NotNull Set<Material> getBlocksOfInterest() {
         return blocksOfInterest;
     }
@@ -455,6 +464,7 @@ public class Building {
     public void load() {
         ConfigurationSection config = this.config;
         FLogger.BUILDING.log("Loading building " + id + "...");
+        userConfig = new BuildingUserConfig(config.getConfigurationSection("userConfig"), blocksOfInterest);
         isCoreRequired = config.getBoolean("coreRequired", false);
         isWarBuilding = config.getBoolean("warBuilding", false);
         isUnique = config.getBoolean("unique", false);

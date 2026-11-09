@@ -3,6 +3,7 @@ package de.erethon.factions.integration.qxl.objective;
 import de.erethon.factions.event.FPlayerCrossRegionEvent;
 import de.erethon.factions.region.Region;
 import de.erethon.questsxl.common.doc.QLoadableDoc;
+import de.erethon.questsxl.common.doc.QParamDoc;
 import de.erethon.questsxl.common.script.QConfig;
 import de.erethon.questsxl.common.script.QTranslatable;
 import de.erethon.questsxl.component.objective.ActiveObjective;
@@ -18,11 +19,12 @@ import org.bukkit.entity.Player;
         })
 public class FactionRegionObjective extends FBaseObjective<FPlayerCrossRegionEvent> {
 
+    @QParamDoc(name = "region", description = "The name of the faction region the player must enter.", required = true)
     private Region region;
 
     @Override
     protected QTranslatable getDefaultDisplayText(Player player) {
-        return QTranslatable.fromString("en=Enter Region" + region.getName() + "; de=Betrete Region " + region.getName());
+        return QTranslatable.fromString("en=Enter Region " + region.getName() + "; de=Betrete Region " + region.getName());
     }
 
     @Override
@@ -42,7 +44,7 @@ public class FactionRegionObjective extends FBaseObjective<FPlayerCrossRegionEve
     public void load(QConfig cfg) {
         super.load(cfg);
         String regionName = cfg.getString("region");
-        region = regionCache.getByName(regionName);
+        region = factions.getRegionManager().getRegionByName(regionName);
         if  (region == null) {
             throw new RuntimeException("Region " + regionName + " does not exist. (FactionRegionObjective in " + id() + ")");
         }

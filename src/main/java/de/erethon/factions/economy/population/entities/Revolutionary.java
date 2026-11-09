@@ -61,15 +61,19 @@ public class Revolutionary extends Vindicator {
         level = world;
         ServerLevel serverLevel = (ServerLevel) world;
         nearby = serverLevel.getChunkSource().chunkMap.level.moonrise$getNearbyPlayers();
-        drops.clear();
         expToDrop = 0;
         targetSelector.removeAllGoals(Predicates.alwaysTrue());
         goalSelector.removeAllGoals(Predicates.alwaysTrue());
         registerGoals();
     }
 
+    @Override
+    protected void dropAllDeathLoot(ServerLevel level, DamageSource source) {
+        // Revolutionaries do not yield vanilla loot.
+    }
+
     public Revolutionary(Faction faction, Location location) {
-        this(EntityType.VINDICATOR, ((org.bukkit.craftbukkit.CraftWorld) location.getWorld()).getHandle());
+        this(net.minecraft.world.entity.EntityTypes.VINDICATOR, ((org.bukkit.craftbukkit.CraftWorld) location.getWorld()).getHandle());
         this.faction = faction;
         setPos(location.getX(), location.getY(), location.getZ());
         setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SHOVEL));

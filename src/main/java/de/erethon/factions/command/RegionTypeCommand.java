@@ -30,6 +30,7 @@ public class RegionTypeCommand extends FCommand {
         RegionType type = RegionType.getByName(args[1]);
         assure(type != null, FMessage.ERROR_REGION_TYPE_NOT_FOUND, args[1]);
         region.setType(type);
+        region = region.getRegionCache().reloadRegionClass(region);
         sender.sendMessage(FMessage.CMD_REGION_TYPE_SUCCESS.message(region.getName(), type.name()));
     }
 

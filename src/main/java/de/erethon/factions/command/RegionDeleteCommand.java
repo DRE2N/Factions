@@ -14,7 +14,6 @@ public class RegionDeleteCommand extends FCommand {
 
     public RegionDeleteCommand() {
         setCommand("delete");
-        setAliases("remove");
         setMinMaxArgs(1, 2);
         setConsoleCommand(true);
         setPermissionFromName(RegionCommand.LABEL);

@@ -147,6 +147,8 @@ public enum FLogger {
     }
 
     public static void closeWriter() {
-        debugWriter.close();
+        if (debugWriter != null) {
+            debugWriter.close();
+        }
     }
 }

@@ -31,8 +31,14 @@ public class RegionAddCommand extends FCommand {
         Chunk chunk = player.getChunk();
         Region region = getRegion(args[1]);
         assureSameWorld(region, player);
-        assureChunkIsNoRegion(chunk.getWorld(), chunk);
-        region.addChunk(chunk);
+        Region previousRegion = plugin.getRegionManager().getRegionByChunk(chunk);
+        if (previousRegion != null && previousRegion != region) {
+            previousRegion.removeChunk(chunk);
+            previousRegion.saveData();
+        }
+        if (region.addChunk(chunk)) {
+            region.saveData();
+        }
         player.sendMessage(FMessage.CMD_REGION_ADD_CHUNK_SUCCESS.message(region.getName()));
     }
 

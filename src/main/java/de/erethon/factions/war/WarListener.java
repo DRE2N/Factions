@@ -105,7 +105,7 @@ public class WarListener implements Listener {
     public void onKill(PlayerDeathEvent event) {
         ServerPlayer sKilled = ((CraftPlayer) event.getPlayer()).getHandle();
         LivingEntity sKiller = sKilled.getKillCredit();
-        if (sKiller == null || !(sKiller.getBukkitLivingEntity() instanceof Player killer)) {
+        if (sKiller == null || !(sKiller.getBukkitEntity() instanceof Player killer)) {
             return;
         }
         FPlayer fKilled = plugin.getFPlayerCache().getByPlayer(event.getPlayer());

@@ -20,6 +20,7 @@ public class ResourceGUI extends EconomyGUI {
     private boolean showingCategories = true;
     private ResourceCategory currentCategory;
     private final java.util.Map<Integer, Resource> resourceSlots = new java.util.HashMap<>();
+    private final java.util.Map<Integer, ResourceCategory> categorySlots = new java.util.HashMap<>();
 
     public ResourceGUI(Player player, Faction faction) {
         this.player = player;
@@ -40,12 +41,14 @@ public class ResourceGUI extends EconomyGUI {
 
     private void showCategories() {
         inventory.clear();
-        int slot = 11;
+        categorySlots.clear();
+        int slot = 0;
         for (ResourceCategory category : ResourceCategory.values()) {
             ItemStack categoryLabel = createGuiItem(Material.BOOK,
-                    Component.text(category.getName()),
+                    categoryName(category),
                     Component.translatable("factions.gui.economy.resource.category.description"));
-            inventory.setItem(slot++, categoryLabel);
+            inventory.setItem(slot, categoryLabel);
+            categorySlots.put(slot++, category);
         }
         ItemStack back = createGuiItem(Material.ARROW, Component.translatable("factions.gui.back"));
         inventory.setItem(inventory.getSize() - 9, back);
@@ -56,11 +59,11 @@ public class ResourceGUI extends EconomyGUI {
         resourceSlots.clear();
         int slot = 0;
         ItemStack categoryLabel = createGuiItem(Material.BOOK,
-                Component.text(category.getName()),
+                categoryName(category),
                 Component.translatable("factions.gui.economy.resource.category.description"));
         inventory.setItem(slot++, categoryLabel);
 
-        for (Resource resource : category.getResources()) {
+        for (Resource resource : category.getResources().stream().sorted().toList()) {
             ItemStack item = createResourceItem(resource);
             inventory.setItem(slot++, item);
             resourceSlots.put(slot - 1, resource);
@@ -105,6 +108,9 @@ public class ResourceGUI extends EconomyGUI {
             case BEER -> Material.POTION;
             case WINE -> Material.HONEY_BOTTLE;
             case IRON -> Material.IRON_INGOT;
+            case COPPER -> Material.COPPER_INGOT;
+            case WAX -> Material.HONEYCOMB;
+            case BARRELS -> Material.BARREL;
             case GOLD -> Material.GOLD_INGOT;
             case COAL -> Material.COAL;
             case STONE -> Material.STONE;
@@ -136,13 +142,13 @@ public class ResourceGUI extends EconomyGUI {
             return;
         }
         event.setCancelled(true);
-        int slot = event.getSlot();
+        int slot = event.getRawSlot();
         if (slot < 0 || slot >= inventory.getSize()) {
             return;
         }
         if (showingCategories) {
-            if (slot < ResourceCategory.values().length + 11) {
-                currentCategory = ResourceCategory.values()[slot - 11];
+            if (categorySlots.containsKey(slot)) {
+                currentCategory = categorySlots.get(slot);
                 showingCategories = false;
                 initializeItems();
             } else if (slot == inventory.getSize() - 9) {
@@ -159,5 +165,12 @@ public class ResourceGUI extends EconomyGUI {
                 EconomyDialogs.showResource(player, faction, resource);
             }
         }
+    }
+
+    private Component categoryName(ResourceCategory category) {
+        if (category == ResourceCategory.BASIC_FOOD) {
+            return Component.translatable("factions.economy.resource.basic_food");
+        }
+        return category.getResources().iterator().next().displayName();
     }
 }

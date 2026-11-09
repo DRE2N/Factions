@@ -36,7 +36,7 @@ public class FactionRegionCondition extends FBaseCondition {
     public void load(QConfig cfg) {
         super.load(cfg);
         String regionId = cfg.getString("region");
-        region = regionCache.getByName(regionId);
+        region = factions.getRegionManager().getRegionByName(regionId);
         if  (region == null) {
             throw new RuntimeException("Region " + regionId + " does not exist");
         }

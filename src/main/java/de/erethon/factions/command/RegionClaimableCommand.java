@@ -21,6 +21,7 @@ public class RegionClaimableCommand extends FCommand {
         Region region = args.length >= 3 ? getRegion(args[2]) : getRegion(getFPlayer(sender));
         boolean claimable = Boolean.parseBoolean(args[1]);
         region.setClaimable(claimable);
+        region = region.getRegionCache().reloadRegionClass(region);
         sender.sendMessage("Region " + region.getName() + " claimable=" + claimable + ".");
     }
 

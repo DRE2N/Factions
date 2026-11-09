@@ -1,7 +1,7 @@
 package de.erethon.factions.command;
 
 import de.erethon.factions.command.logic.FCommand;
-import de.erethon.factions.economy.gui.EconomyGUI;
+import de.erethon.factions.economy.gui.FactionEconomyUi;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
 import org.bukkit.command.CommandSender;
@@ -23,7 +23,6 @@ public class EconomyCommand extends FCommand {
         Player player = (Player) sender;
         FPlayer fPlayer = getFPlayer(player);
         Faction faction = getFaction(fPlayer);
-        EconomyGUI gui = new EconomyGUI(player, faction);
-        gui.open();
+        FactionEconomyUi.get().showOverview(player, faction);
     }
 }

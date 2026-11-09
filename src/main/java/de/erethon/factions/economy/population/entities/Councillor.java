@@ -35,7 +35,7 @@ public class Councillor extends Villager {
     }
 
     public Councillor(Faction faction, Location location) {
-        super(EntityType.VILLAGER, ((CraftWorld) location.getWorld()).getHandle());
+        super(net.minecraft.world.entity.EntityTypes.VILLAGER, ((CraftWorld) location.getWorld()).getHandle());
         setCustomName(Component.translatable("factions.economy.councillor.name"));
         setCustomNameVisible(true);
         setPos(location.getX(), location.getY(), location.getZ());

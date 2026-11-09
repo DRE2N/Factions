@@ -27,7 +27,7 @@ public class ItemConversion extends BuildingEffect {
     private int ticks = 0;
     private boolean missingInput = false;
     private boolean storageFull = false;
-    private final HashMap<HItem, HItem> conversion = new HashMap<>();
+    private final Map<HItem, HItem> conversion = new java.util.LinkedHashMap<>();
 
     public ItemConversion(@NotNull BuildingEffectData data, BuildSite site) {
         super(data, site);
@@ -41,41 +41,43 @@ public class ItemConversion extends BuildingEffect {
         }
         for (String key : section.getKeys(false)) {
             Identifier inputId = Identifier.tryParse(key);
-            Identifier outputId = Identifier.tryParse(section.getString(key, "air"));
-            if (inputId == null || outputId == null) {
-                FLogger.ERROR.log("Invalid ItemConversion mapping in " + site.getBuilding().getId() + ": " + key + " -> " + section.getString(key));
-                continue;
-            }
-            HItem input = itemLibrary.get(inputId);
-            HItem output = itemLibrary.get(outputId);
+            String outputName = section.getString(key);
+            Identifier outputId = outputName == null ? null : Identifier.tryParse(outputName);
+            HItem input = inputId == null ? null : itemLibrary.get(inputId);
+            HItem output = outputId == null ? null : itemLibrary.get(outputId);
             if (input == null || output == null) {
-                FLogger.ERROR.log("Unknown ItemConversion item in " + site.getBuilding().getId() + ": " + key + " -> " + section.getString(key));
-                continue;
+                throw new IllegalArgumentException("Unknown Hephaestus items in ItemConversion: " + key + " -> " + outputName);
             }
             conversion.put(input, output);
         }
     }
 
     @Override
+    public boolean requiresTicking() {
+        return true;
+    }
+
+    @Override
     public void tick() {
-        if (ticks++ < buildingTicksPerItem) {
+        if (++ticks < Math.max(1, buildingTicksPerItem)) {
             return;
         }
         ticks = 0;
         for (Map.Entry<HItem, HItem> entry : conversion.entrySet()) {
-            ItemStack consumed = site.takeFirstInputMatching(stack -> {
+            ItemStack matchingInput = site.findFirstInputMatching(stack -> {
                 HItemStack hStack = itemLibrary.get(stack);
-                return hStack != null && hStack.getItem().equals(entry.getKey());
-            }, 1);
-            if (consumed == null) {
+                return hStack != null && hStack.getItem() != null
+                        && hStack.getItem().getKey().equals(entry.getKey().getKey());
+            });
+            if (matchingInput == null) {
                 continue;
             }
-            if (!site.addOutputItem(entry.getValue().rollRandomStack().getBukkitStack())) {
-                site.addInputItem(consumed);
+            if (!site.addOutputItem(entry.getValue().createStack().getBukkitStack())) {
                 storageFull = true;
                 site.updateHolo();
                 return;
             }
+            site.takeFirstInputMatching(stack -> stack == matchingInput, 1);
             missingInput = false;
             storageFull = false;
             return;

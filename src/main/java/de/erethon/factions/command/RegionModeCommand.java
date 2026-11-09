@@ -27,6 +27,7 @@ public class RegionModeCommand extends FCommand {
         RegionMode mode = RegionMode.getByName(args[1]);
         assure(mode != null, FMessage.ERROR_REGION_TYPE_NOT_FOUND, args[1]);
         region.setMode(mode);
+        region = region.getRegionCache().reloadRegionClass(region);
         sender.sendMessage(FMessage.CMD_REGION_TYPE_SUCCESS.message(region.getName(), mode.name()));
     }
 

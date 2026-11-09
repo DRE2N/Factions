@@ -189,6 +189,7 @@ public enum FMessage implements Message {
     ERROR_REGION_IN_ANOTHER_WORLD("error.regionInAnotherWorld"),
     ERROR_REGION_IS_NOT_A_WARZONE("error.regionIsNotAWarzone"),
     ERROR_REGION_IS_NOT_CLAIMABLE("error.regionIsNotClaimable"),
+    ERROR_REGION_IS_NOT_PVE("error.regionIsNotPve"),
     ERROR_REGION_IS_NOT_OCCUPIABLE("error.regionIsNotOccupiable"),
     ERROR_REGION_NOT_FOUND("error.regionNotFound"),
     ERROR_REGION_SCHEMATIC_STATE_NOT_FOUND("error.regionSchematicStateNotFound"),

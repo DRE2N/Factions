@@ -49,11 +49,10 @@ public class RegionCache extends FEntityCache<Region> {
      * Only CAPITAL and WAR_ZONE types get WarRegion instances, all others get ClaimableRegion.
      */
     private @NotNull Region createRegionForType(@NotNull RegionType type, @NotNull File file) {
-        return switch (type) {
-            case CAPITAL -> new CapitalRegion(this, file);
-            case WAR_ZONE -> new WarRegion(this, file);
-            default -> new ClaimableRegion(this, file);
-        };
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        RegionMode mode = RegionMode.getByName(config.getString("mode", type.getDefaultMode().name()), type.getDefaultMode());
+        boolean claimable = config.getBoolean("claimable", true);
+        return createRegionForState(type, mode, claimable, file);
     }
 
     protected @NotNull Region createRegion(int id, @NotNull LazyChunk chunk) {
@@ -76,6 +75,34 @@ public class RegionCache extends FEntityCache<Region> {
         region.addChunk(chunk);
         cache.put(id, region);
         return region;
+    }
+
+    public @NotNull Region reloadRegionClass(@NotNull Region region) {
+        region.saveData();
+        if (region instanceof ClaimableRegion claimable && claimable.getOwner() != null) {
+            claimable.getOwner().removeRegion(region);
+        }
+        removeRegion(region);
+        Region reloaded = createRegionForState(region.getType(), region.getMode(), region.isClaimable(), region.getFile());
+        cache.put(reloaded.getId(), reloaded);
+        reloaded.load();
+        return reloaded;
+    }
+
+    private @NotNull Region createRegionForState(@NotNull RegionType type, @NotNull RegionMode mode, boolean claimable, @NotNull File file) {
+        if (type == RegionType.CAPITAL) {
+            return new CapitalRegion(this, file);
+        }
+        if (type == RegionType.WAR_ZONE) {
+            return new WarRegion(this, file);
+        }
+        if (claimable) {
+            return new ClaimableRegion(this, file);
+        }
+        if (mode == RegionMode.PVE || mode == RegionMode.PVPVE) {
+            return new PvERegion(this, file);
+        }
+        return new Region(this, file);
     }
 
     protected void cacheChunkForRegion(@NotNull LazyChunk lazyChunk, @NotNull Region region) {

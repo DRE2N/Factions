@@ -207,7 +207,9 @@ public class BuildingManager implements Listener {
                 }
             }
         }
-        for (int i = 0; i < effectsPerTick; i++) {
+        int effectsToProcess = Math.min(effectsPerTick, tickingEffects.size());
+        Set<BuildSite> syncedSites = new HashSet<>();
+        for (int i = 0; i < effectsToProcess; i++) {
             if (tickingEffects.isEmpty()) {
                 continue;
             }
@@ -215,10 +217,22 @@ public class BuildingManager implements Listener {
             if (effect == null) {
                 continue;
             }
+            if (!effect.getFaction().getTickingBuildingEffects().contains(effect)) {
+                continue;
+            }
             if (!effect.getSite().isActive()) {
                 continue;
             }
-            effect.tick();
+            try {
+                if (syncedSites.add(effect.getSite())) {
+                    effect.getSite().syncLoadedContainers();
+                }
+                effect.tick();
+            } catch (RuntimeException | LinkageError exception) {
+                FLogger.ERROR.log("Failed to tick " + effect.getClass().getSimpleName()
+                        + " for building " + effect.getSite().getBuilding().getId() + ": " + exception.getMessage());
+                exception.printStackTrace();
+            }
             if (effect.getFaction().getTickingBuildingEffects().contains(effect)) {
                 tickingEffects.add(effect); // Add it back to the queue for the next run
             }

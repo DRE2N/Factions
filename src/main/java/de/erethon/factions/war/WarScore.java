@@ -9,6 +9,7 @@ import de.erethon.factions.util.FLogger;
 import de.erethon.factions.util.WarMath;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.ShadowColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -220,6 +221,7 @@ public class WarScore {
         footer = footer.append(bar);
         footer = footer.append(pointsRed.append(Component.text(" | ", NamedTextColor.DARK_GRAY)).append(pointsGreen).append(Component.text(" | ", NamedTextColor.DARK_GRAY)).append(pointsBlue));
         footer = footer.append(Component.text("\n"));
+        footer = footer.shadowColor(ShadowColor.none());
         return footer;
 
     }

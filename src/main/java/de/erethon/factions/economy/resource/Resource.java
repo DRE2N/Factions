@@ -26,6 +26,9 @@ public enum Resource {
     WINE,
     // Goods - base resources
     IRON,
+    COPPER,
+    WAX,
+    BARRELS,
     GOLD,
     COAL,
     STONE,
@@ -57,7 +60,7 @@ public enum Resource {
 
     public static @Nullable Resource getById(@NotNull String id) {
         try {
-            return valueOf(id.toUpperCase());
+            return valueOf((id.equalsIgnoreCase("fruits") ? "FRUIT" : id).toUpperCase(java.util.Locale.ROOT));
         } catch (IllegalArgumentException e) {
             return null;
         }

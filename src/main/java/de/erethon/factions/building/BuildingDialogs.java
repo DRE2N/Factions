@@ -1,5 +1,6 @@
 package de.erethon.factions.building;
 
+import de.erethon.factions.Factions;
 import de.erethon.factions.dialog.FDialogFactory;
 import de.erethon.factions.faction.Faction;
 import de.erethon.factions.player.FPlayer;
@@ -17,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public final class BuildingDialogs {
 
@@ -30,7 +30,7 @@ public final class BuildingDialogs {
         Set<RequirementFail> fails = building.checkRequirements(player, faction, location);
         List<Component> body = new ArrayList<>();
         appendDescription(body, building);
-        appendRequirements(body, faction, building, fails);
+        appendRequirements(body, faction, region, location, building, fails);
         appendEffects(body, building);
 
         List<ActionButton> actions = new ArrayList<>();
@@ -48,9 +48,9 @@ public final class BuildingDialogs {
                 Component.translatable("factions.building.dialog.button.requirements"),
                 Component.translatable("factions.building.dialog.button.requirements_tooltip"),
                 DialogAction.customClick((response, audience) -> {
-                    if (audience instanceof Player clickedPlayer) {
-                        showBuildingRequirements(clickedPlayer, faction, building, fails);
-                    }
+                        if (audience instanceof Player clickedPlayer) {
+                            showBuildingRequirements(clickedPlayer, faction, building);
+                        }
                 }, ClickCallback.Options.builder().build())));
         actions.add(FDialogFactory.button(Component.translatable("factions.dialog.button.close"), null, null));
 
@@ -62,9 +62,14 @@ public final class BuildingDialogs {
     }
 
     public static void showBuildingRequirements(@NotNull Player player, @NotNull Faction faction,
-                                                @NotNull Building building, @NotNull Set<RequirementFail> fails) {
+                                                @NotNull Building building) {
+        Location location = player.getLocation();
+        Set<RequirementFail> fails = building.checkRequirements(player, faction, location);
+        ClaimableRegion region = Factions.get().getFPlayerCache().getByPlayer(player).getCurrentRegion() instanceof ClaimableRegion current
+                ? current
+                : null;
         List<Component> body = new ArrayList<>();
-        appendRequirements(body, faction, building, fails);
+        appendRequirements(body, faction, region, location, building, fails);
         FDialogFactory.showNotice(player,
                 Component.translatable("factions.building.dialog.requirements.title",
                         Component.translatable("factions.building.buildings." + building.getId() + ".name")),
@@ -115,6 +120,12 @@ public final class BuildingDialogs {
                         if (audience instanceof Player clickedPlayer && site.beginUpgrade(clickedPlayer)) {
                             showBuildSiteDetails(clickedPlayer, site);
                         }
+                    }, ClickCallback.Options.builder().build())));
+        }
+        if (!site.getBuilding().getUserConfig().settings().isEmpty()) {
+            actions.add(FDialogFactory.button(Component.translatable("factions.building.settings.title"), null,
+                    DialogAction.customClick((response, audience) -> {
+                        if (audience instanceof Player clicker) BuildingSettingsDialog.show(clicker, site);
                     }, ClickCallback.Options.builder().build())));
         }
         actions.add(FDialogFactory.button(Component.translatable("factions.dialog.button.close"), null, null));
@@ -186,28 +197,16 @@ public final class BuildingDialogs {
     }
 
     private static void appendRequirements(@NotNull List<Component> body, @NotNull Faction faction,
+                                           @NotNull ClaimableRegion region, @NotNull Location location,
                                            @NotNull Building building, @NotNull Set<RequirementFail> fails) {
         body.add(Component.empty());
         body.add(Component.translatable("factions.building.dialog.requirements.heading").color(NamedTextColor.GOLD));
         if (fails.isEmpty()) {
             body.add(Component.text("- ", NamedTextColor.GREEN).append(Component.translatable("factions.building.requirement.fulfilled")));
         } else {
-            for (RequirementFail fail : fails) {
-                body.add(Component.text("- ", NamedTextColor.RED).append(Component.translatable(fail.getTranslationKey())));
-            }
+            body.add(Component.text("- ", NamedTextColor.RED).append(Component.translatable("factions.building.requirement.unfulfilled")));
         }
-        if (!building.getRequiredPopulation().isEmpty()) {
-            String requiredPopulation = building.getRequiredPopulation().entrySet().stream()
-                    .map(entry -> entry.getKey().name().toLowerCase() + ": " + faction.getPopulation(entry.getKey()) + "/" + entry.getValue())
-                    .collect(Collectors.joining(", "));
-            body.add(Component.translatable("factions.building.dialog.requirements.population", Component.text(requiredPopulation)));
-        }
-        if (!building.getUnlockCost().isEmpty()) {
-            String cost = building.getUnlockCost().entrySet().stream()
-                    .map(entry -> entry.getKey().getId() + ": " + faction.getStorage().getResource(entry.getKey()) + "/" + entry.getValue())
-                    .collect(Collectors.joining(", "));
-            body.add(Component.translatable("factions.building.dialog.requirements.cost", Component.text(cost)));
-        }
+        body.addAll(BuildingRequirementDisplay.createLines(faction, region, location, building, fails));
     }
 
     private static void appendEffects(@NotNull List<Component> body, @NotNull Building building) {
